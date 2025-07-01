@@ -580,13 +580,13 @@ export default function InteractiveLessonDemo() {
       </div>
 
       {/* Demo Notification */}
-      <div className="fixed bottom-4 left-4 right-4 bg-gradient-to-r from-blue-600 to-green-500 text-white p-4 rounded-lg shadow-lg md:left-auto md:right-4 md:max-w-sm">
+      {/* <div className="fixed bottom-4 left-4 right-4 bg-gradient-to-r from-blue-600 to-green-500 text-white p-4 rounded-lg shadow-lg md:left-auto md:right-4 md:max-w-sm">
         <p className="font-semibold mb-1">🎮 Interactive Demo</p>
         <p className="text-sm opacity-90">
           This is a sample lesson showing FieldTalk&apos;s interactive learning
           experience.
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }
