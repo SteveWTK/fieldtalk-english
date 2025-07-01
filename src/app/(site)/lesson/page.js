@@ -203,7 +203,7 @@ export default function InteractiveLessonDemo() {
           <div className="text-center">
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-6">
               <img
-                src="/api/placeholder/400/250"
+                src="/images/coach_training_players.jpeg"
                 alt="Training ground scenario"
                 className="w-full max-w-md mx-auto rounded-lg shadow-md mb-4"
               />

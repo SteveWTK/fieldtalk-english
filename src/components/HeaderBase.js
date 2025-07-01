@@ -105,7 +105,7 @@ function HeaderBase({
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
               <Globe className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold font-display bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
               FieldTalk English
             </span>
           </Link>
@@ -180,7 +180,7 @@ function HeaderBase({
 
             {/* Dark Mode Toggle */}
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={setDarkMode}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               {darkMode ? (

@@ -20,18 +20,26 @@ export function useDarkMode(defaultValue = false) {
         "(prefers-color-scheme: dark)"
       ).matches;
       initialDarkMode = prefersDark;
+      // Save the initial preference
+      localStorage.setItem("fieldtalk-darkMode", initialDarkMode.toString());
     }
 
     setDarkMode(initialDarkMode);
     setIsLoaded(true);
 
     // Apply immediately to document
-    if (initialDarkMode) {
+    applyTheme(initialDarkMode);
+  }, []);
+
+  const applyTheme = (isDark) => {
+    if (isDark) {
       document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
+      document.body.classList.remove("dark");
     }
-  }, []);
+  };
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -40,27 +48,9 @@ export function useDarkMode(defaultValue = false) {
     // Update localStorage
     localStorage.setItem("fieldtalk-darkMode", newMode.toString());
 
-    // Update document class immediately
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // Apply theme immediately
+    applyTheme(newMode);
   };
-
-  useEffect(() => {
-    if (isLoaded) {
-      // Sync with localStorage whenever darkMode changes
-      localStorage.setItem("fieldtalk-darkMode", darkMode.toString());
-
-      // Update document class
-      if (darkMode) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    }
-  }, [darkMode, isLoaded]);
 
   return { darkMode, setDarkMode: toggleDarkMode, isLoaded };
 }

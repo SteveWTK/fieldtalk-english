@@ -19,9 +19,14 @@ import {
   MessageSquare,
   Mic,
 } from "lucide-react";
+import AnimatedProgressBar from "@/components/AnimatedProgressBar";
+import AnimatedCounter from "@/components/AnimatedCounter";
+import XPGainAnimation from "@/components/XPGainAnimation";
+import MatchCountdown from "@/components/MatchCountdown";
 
 export default function PlayerDashboard() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
+  const [showXPGain, setShowXPGain] = useState(false);
 
   // Mock player data - would come from Supabase in real app
   const playerData = {
@@ -203,7 +208,7 @@ export default function PlayerDashboard() {
   ];
 
   const currentPillar = pillars[selectedPillar];
-  const progressPercentage = (playerData.xp / playerData.totalXp) * 100;
+  // const progressPercentage = (playerData.xp / playerData.totalXp) * 100;
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -242,7 +247,7 @@ export default function PlayerDashboard() {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Level</p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {playerData.level}
+                <AnimatedCounter value={playerData.level} duration={800} />
               </p>
             </div>
             <div
@@ -252,15 +257,19 @@ export default function PlayerDashboard() {
             </div>
           </div>
           <div className="mt-4">
-            <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
+            <AnimatedProgressBar
+              value={playerData.xp}
+              maxValue={playerData.totalXp}
+              color="from-blue-500 to-green-500"
+              animationDelay={200}
+            />
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-              {playerData.xp}/{playerData.totalXp} XP to Level{" "}
-              {playerData.level + 1}
+              <AnimatedCounter
+                value={playerData.xp}
+                duration={1000}
+                animationDelay={300}
+              />
+              /{playerData.totalXp} XP to Level {playerData.level + 1}
             </p>
           </div>
         </div>
@@ -272,7 +281,11 @@ export default function PlayerDashboard() {
                 Lessons Completed
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {playerData.completedLessons}
+                <AnimatedCounter
+                  value={playerData.completedLessons}
+                  duration={1200}
+                  animationDelay={100}
+                />
               </p>
             </div>
             <BookOpen className="w-8 h-8 text-blue-500" />
@@ -286,7 +299,11 @@ export default function PlayerDashboard() {
                 Learning Streak
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {playerData.streak}
+                <AnimatedCounter
+                  value={playerData.streak}
+                  duration={800}
+                  animationDelay={200}
+                />
               </p>
             </div>
             <div className="text-orange-500">
@@ -305,7 +322,11 @@ export default function PlayerDashboard() {
                 Total XP
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {playerData.xp.toLocaleString()}
+                <AnimatedCounter
+                  value={playerData.xp}
+                  duration={1500}
+                  animationDelay={400}
+                />
               </p>
             </div>
             <TrendingUp className="w-8 h-8 text-green-500" />
@@ -319,7 +340,7 @@ export default function PlayerDashboard() {
           Your Learning Journey
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Object.entries(pillars).map(([key, pillar]) => (
+          {Object.entries(pillars).map(([key, pillar], index) => (
             <button
               key={key}
               onClick={() => setSelectedPillar(key)}
@@ -348,11 +369,14 @@ export default function PlayerDashboard() {
                   {pillar.progress}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                <div
-                  className={`bg-gradient-to-r ${pillar.color} h-2 rounded-full transition-all duration-300`}
-                  style={{ width: `${pillar.progress}%` }}
-                ></div>
+              <div className="mt-2">
+                <AnimatedProgressBar
+                  value={pillar.progress}
+                  maxValue={100}
+                  color={pillar.color}
+                  showPercentage={false}
+                  animationDelay={index * 200 + 500}
+                />
               </div>
             </button>
           ))}
@@ -423,6 +447,13 @@ export default function PlayerDashboard() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Match Day Countdown */}
+          <MatchCountdown
+            opponent="Brighton"
+            matchDate="2025-01-15T15:00:00"
+            competition="Premier League"
+          />
+
           {/* Upcoming Matches */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -448,7 +479,10 @@ export default function PlayerDashboard() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-4 py-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+            <button
+              className="w-full mt-4 py-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              onClick={() => setShowXPGain(true)}
+            >
               Practice Match Communication
             </button>
           </div>
@@ -502,6 +536,13 @@ export default function PlayerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* XP Gain Animation */}
+      <XPGainAnimation
+        xp={50}
+        show={showXPGain}
+        onComplete={() => setShowXPGain(false)}
+      />
     </div>
   );
 }
