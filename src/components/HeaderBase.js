@@ -19,29 +19,53 @@ function HeaderBase({
   const localizedLinks = {
     landing: {
       en: [
-        { href: "#features", label: "Features" },
-        { href: "#demo", label: "Demo" },
-        { href: "#contact", label: "Contact" },
+        { href: "/", label: "Home" },
         { href: "/dashboard", label: "Dashboard" },
+        { href: "/lesson", label: "Lessons" },
+        { href: "/admin", label: "Admin" },
       ],
       pt: [
-        { href: "#features", label: "Recursos" },
-        { href: "#demo", label: "Demo" },
-        { href: "#contact", label: "Contato" },
+        { href: "/", label: "Início" },
         { href: "/dashboard", label: "Painel" },
+        { href: "/lesson", label: "Lições" },
+        { href: "/admin", label: "Admin" },
       ],
       es: [
-        { href: "#features", label: "Características" },
-        { href: "#demo", label: "Demo" },
-        { href: "#contact", label: "Contacto" },
+        { href: "/", label: "Inicio" },
         { href: "/dashboard", label: "Panel" },
+        { href: "/lesson", label: "Lecciones" },
+        { href: "/admin", label: "Admin" },
       ],
       fr: [
-        { href: "#features", label: "Fonctionnalités" },
-        { href: "#demo", label: "Démo" },
-        { href: "#contact", label: "Contact" },
+        { href: "/", label: "Accueil" },
         { href: "/dashboard", label: "Tableau de bord" },
+        { href: "/lesson", label: "Leçons" },
+        { href: "/admin", label: "Admin" },
       ],
+      // en: [
+      //   { href: "#features", label: "Features" },
+      //   { href: "#demo", label: "Demo" },
+      //   { href: "#contact", label: "Contact" },
+      //   { href: "/dashboard", label: "Dashboard" },
+      // ],
+      // pt: [
+      //   { href: "#features", label: "Recursos" },
+      //   { href: "#demo", label: "Demo" },
+      //   { href: "#contact", label: "Contato" },
+      //   { href: "/dashboard", label: "Painel" },
+      // ],
+      // es: [
+      //   { href: "#features", label: "Características" },
+      //   { href: "#demo", label: "Demo" },
+      //   { href: "#contact", label: "Contacto" },
+      //   { href: "/dashboard", label: "Panel" },
+      // ],
+      // fr: [
+      //   { href: "#features", label: "Fonctionnalités" },
+      //   { href: "#demo", label: "Démo" },
+      //   { href: "#contact", label: "Contact" },
+      //   { href: "/dashboard", label: "Tableau de bord" },
+      // ],
     },
     site: {
       en: [
