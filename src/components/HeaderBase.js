@@ -21,21 +21,25 @@ function HeaderBase({
         { href: "#features", label: "Features" },
         { href: "#demo", label: "Demo" },
         { href: "#contact", label: "Contact" },
+        { href: "/dashboard", label: "Dashboard" },
       ],
       pt: [
         { href: "#features", label: "Recursos" },
         { href: "#demo", label: "Demo" },
         { href: "#contact", label: "Contato" },
+        { href: "/dashboard", label: "Painel" },
       ],
       es: [
         { href: "#features", label: "Características" },
         { href: "#demo", label: "Demo" },
         { href: "#contact", label: "Contacto" },
+        { href: "/dashboard", label: "Panel" },
       ],
       fr: [
         { href: "#features", label: "Fonctionnalités" },
         { href: "#demo", label: "Démo" },
         { href: "#contact", label: "Contact" },
+        { href: "/dashboard", label: "Tableau de bord" },
       ],
     },
     site: {
