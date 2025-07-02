@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Globe, Moon, Sun, User, Menu, X } from "lucide-react";
+import { Moon, Sun, User, Menu, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 
@@ -139,7 +139,7 @@ function HeaderBase({
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
+                {/* <Globe className="w-5 h-5 text-white" /> */}
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
                 FieldTalk English

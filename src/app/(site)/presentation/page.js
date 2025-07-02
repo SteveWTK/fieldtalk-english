@@ -91,13 +91,13 @@ export default function FieldTalkPitchDeck() {
     },
     {
       id: "team",
-      title: "The Watkins Family Team",
-      subtitle: "Four Decades of Language Education Excellence",
+      title: "The WTK Team",
+      subtitle: "Five Decades of Language Education Excellence",
       team: [
         {
           name: "Dr Michael Watkins",
           role: "Academic Consultant",
-          experience: "40+ years in language education",
+          experience: "50+ years in language education",
           expertise:
             "Curriculum development, pedagogical frameworks, academic oversight",
           highlight:
@@ -114,7 +114,7 @@ export default function FieldTalkPitchDeck() {
         {
           name: "Paul Watkins",
           role: "Corporate Sales Director",
-          experience: "20+ years Premier League player teaching",
+          experience: "30+ years in language education",
           expertise:
             "B2B partnerships, client relationship management, sports industry knowledge",
           highlight: "Direct experience teaching Premier League footballers",
@@ -122,7 +122,7 @@ export default function FieldTalkPitchDeck() {
         {
           name: "David Watkins",
           role: "Communications Director",
-          experience: "25+ years in language instruction",
+          experience: "30+ years in language instruction",
           expertise:
             "Content creation, cultural adaptation, multilingual communication",
           highlight: "Specialist in cross-cultural communication for athletes",
@@ -326,8 +326,13 @@ export default function FieldTalkPitchDeck() {
         return (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="mb-8">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Globe className="w-12 h-12 text-white" />
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                {/* <Globe className="w-12 h-12 text-white" /> */}
+                {/* <img
+                  src="/logos/flame-blue-bgblack.png"
+                  alt="flame"
+                  className="w-full max-w-md mx-auto rounded-lg shadow-md mb-4"
+                /> */}
               </div>
               <h1 className="text-7xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent mb-4">
                 {currentSlideData.title}
@@ -344,7 +349,7 @@ export default function FieldTalkPitchDeck() {
 
       case "challenge":
         return (
-          <div className="h-full flex flex-col justify-center">
+          <div className="h-full flex flex-col justify-center ml-10">
             <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
               {currentSlideData.title}
             </h1>
