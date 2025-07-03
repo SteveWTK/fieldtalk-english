@@ -157,7 +157,7 @@ export default function FieldTalkPresentation() {
         {
           title: "Proven Experience",
           description:
-            "20+ years teaching Premier League players gives us unique insight into footballer needs",
+            "Extensive experience teaching Premier League players gives us unique insight into footballer needs",
           icon: Trophy,
         },
       ],
