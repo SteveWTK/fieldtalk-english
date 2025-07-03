@@ -1,4 +1,3 @@
-// src/app/(site)/presentation/page.js
 "use client";
 
 import React, { useState } from "react";
@@ -100,7 +99,7 @@ export default function FieldTalkPresentation() {
         {
           name: "Dr Michael Watkins",
           role: "Academic Consultant",
-          experience: "40+ years in language education",
+          experience: "50+ years in language education",
           expertise:
             "Curriculum development, pedagogical frameworks, academic oversight",
           highlight:
@@ -109,7 +108,7 @@ export default function FieldTalkPresentation() {
         {
           name: "Stephen Watkins",
           role: "Technical Director",
-          experience: "15+ years in education technology",
+          experience: "30+ years in education",
           expertise:
             "Full-stack development, learning management systems, AI integration",
           highlight: "Built Neptune's Tribe eco-English platform from scratch",
@@ -117,7 +116,7 @@ export default function FieldTalkPresentation() {
         {
           name: "Paul Watkins",
           role: "Corporate Sales Director",
-          experience: "20+ years Premier League player teaching",
+          experience: "30+ years in language instruction",
           expertise:
             "B2B partnerships, client relationship management, sports industry knowledge",
           highlight: "Direct experience teaching Premier League footballers",
@@ -125,7 +124,7 @@ export default function FieldTalkPresentation() {
         {
           name: "David Watkins",
           role: "Communications Director",
-          experience: "25+ years in language instruction",
+          experience: "30+ years in language instruction",
           expertise:
             "Content creation, cultural adaptation, multilingual communication",
           highlight: "Specialist in cross-cultural communication for athletes",
