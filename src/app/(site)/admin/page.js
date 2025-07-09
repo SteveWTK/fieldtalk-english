@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/app/(site)/admin/page.js
 "use client";
 
@@ -9,132 +10,25 @@ import {
   Target,
   Globe,
   MessageSquare,
-  // ChevronDown,
-  // Filter,
   Download,
   Plus,
   Search,
-  // Calendar,
   AlertCircle,
   CheckCircle,
-  // Clock,
 } from "lucide-react";
+import { useClubStats, useDemoClubData } from "@/lib/hooks/useClubData";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-export default function ClubAdminPanel() {
+function ClubAdminPanelContent() {
   const [selectedView, setSelectedView] = useState("overview");
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  // Mock data - would come from Supabase in real app
-  const clubData = {
-    name: "Watford FC",
-    totalPlayers: 28,
-    activeUsers: 23,
-    averageProgress: 72,
-    totalLessonsCompleted: 156,
-    weeklyActivity: 89,
-  };
+  // For demo purposes, use demo data
+  // In production, this would use real club ID from auth
+  const demoClubId = "demo-club-watford";
 
-  const players = [
-    {
-      id: 1,
-      name: "João Silva",
-      position: "Midfielder",
-      country: "Brazil",
-      level: 7,
-      xp: 2450,
-      survival: 85,
-      precision: 65,
-      fluency: 35,
-      lastActive: "2 hours ago",
-      status: "active",
-      lessonsCompleted: 23,
-      streak: 12,
-      joinDate: "2024-10-15",
-      weakAreas: ["Match Communication", "Media Interviews"],
-      strengths: ["Daily Conversation", "Training Vocabulary"],
-    },
-    {
-      id: 2,
-      name: "Carlos Rodriguez",
-      position: "Defender",
-      country: "Spain",
-      level: 9,
-      xp: 3200,
-      survival: 95,
-      precision: 88,
-      fluency: 67,
-      lastActive: "1 day ago",
-      status: "active",
-      lessonsCompleted: 35,
-      streak: 8,
-      joinDate: "2024-08-20",
-      weakAreas: ["Pronunciation"],
-      strengths: ["Tactical Communication", "Leadership"],
-    },
-    {
-      id: 3,
-      name: "Pierre Dubois",
-      position: "Forward",
-      country: "France",
-      level: 4,
-      xp: 1200,
-      survival: 45,
-      precision: 30,
-      fluency: 15,
-      lastActive: "5 days ago",
-      status: "needs-attention",
-      lessonsCompleted: 8,
-      streak: 0,
-      joinDate: "2024-11-01",
-      weakAreas: ["Basic Conversation", "Training Instructions"],
-      strengths: ["Numbers & Time"],
-    },
-    {
-      id: 4,
-      name: "Ahmed Hassan",
-      position: "Goalkeeper",
-      country: "Egypt",
-      level: 6,
-      xp: 1890,
-      survival: 78,
-      precision: 82,
-      fluency: 41,
-      lastActive: "3 hours ago",
-      status: "active",
-      lessonsCompleted: 19,
-      streak: 15,
-      joinDate: "2024-09-10",
-      weakAreas: ["Media Interviews"],
-      strengths: ["Goalkeeper Communication", "Team Instructions"],
-    },
-  ];
-
-  const recentActivity = [
-    {
-      player: "João Silva",
-      action: "Completed 'Match Communication' lesson",
-      time: "2 hours ago",
-      xp: 200,
-    },
-    {
-      player: "Ahmed Hassan",
-      action: "Achieved 15-day streak",
-      time: "3 hours ago",
-      xp: 100,
-    },
-    {
-      player: "Carlos Rodriguez",
-      action: "Completed 'Press Interview' module",
-      time: "1 day ago",
-      xp: 350,
-    },
-    {
-      player: "Pierre Dubois",
-      action: "Started 'First Day Training' lesson",
-      time: "5 days ago",
-      xp: 50,
-    },
-  ];
+  // Use demo data for now - replace with real data when auth is ready
+  const { stats, players, recentActivity, loading, error } = useDemoClubData();
 
   const upcomingMatches = [
     {
@@ -188,6 +82,28 @@ export default function ClubAdminPanel() {
     }
   };
 
+  const formatLastActive = (lastActivityDate) => {
+    if (!lastActivityDate) return "Never";
+
+    const today = new Date();
+    const activityDate = new Date(lastActivityDate);
+    const diffTime = Math.abs(today - activityDate);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return `${Math.floor(diffDays / 7)} weeks ago`;
+  };
+
+  const calculatePlayerStatus = (player) => {
+    const lastActive = formatLastActive(player.progress?.last_activity_date);
+    if (lastActive === "Today" || lastActive === "Yesterday") return "active";
+    if (lastActive.includes("days ago") && parseInt(lastActive) <= 3)
+      return "active";
+    return "needs-attention";
+  };
+
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -199,10 +115,10 @@ export default function ClubAdminPanel() {
                 Active Players
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {clubData.activeUsers}
+                {stats.activePlayers}
               </p>
               <p className="text-sm text-gray-500">
-                of {clubData.totalPlayers} total
+                of {stats.totalPlayers} total
               </p>
             </div>
             <Users className="w-8 h-8 text-blue-500" />
@@ -216,7 +132,7 @@ export default function ClubAdminPanel() {
                 Average Progress
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {clubData.averageProgress}%
+                {stats.averageProgress}%
               </p>
               <p className="text-sm text-green-600">↗ +5% this week</p>
             </div>
@@ -231,7 +147,7 @@ export default function ClubAdminPanel() {
                 Lessons Completed
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {clubData.totalLessonsCompleted}
+                {stats.totalLessonsCompleted}
               </p>
               <p className="text-sm text-blue-600">+23 this week</p>
             </div>
@@ -246,7 +162,7 @@ export default function ClubAdminPanel() {
                 Weekly Activity
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {clubData.weeklyActivity}%
+                {stats.weeklyActivity || 89}%
               </p>
               <p className="text-sm text-gray-500">engagement rate</p>
             </div>
@@ -372,91 +288,99 @@ export default function ClubAdminPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {players.map((player) => (
-                <tr
-                  key={player.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"></div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {player.name}
+              {players.map((player) => {
+                const lastActive = formatLastActive(
+                  player.progress?.last_activity_date
+                );
+                const status = calculatePlayerStatus(player);
+
+                return (
+                  <tr
+                    key={player.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gray-300 rounded-full flex-shrink-0"></div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {player.full_name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {player.position} • {player.nationality}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {player.position} • {player.country}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        Level {player.progress?.current_level || 1}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {(player.progress?.total_xp || 0).toLocaleString()} XP
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {player.lessonsCompleted} lessons
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="space-y-1">
+                        <div className="flex items-center">
+                          <Globe className="w-3 h-3 text-red-500 mr-1" />
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            Survival: {player.progress?.survival_progress || 0}%
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Target className="w-3 h-3 text-blue-500 mr-1" />
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            Precision:{" "}
+                            {player.progress?.precision_progress || 0}%
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <MessageSquare className="w-3 h-3 text-green-500 mr-1" />
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            Fluency: {player.progress?.fluency_progress || 0}%
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      Level {player.level}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {player.xp.toLocaleString()} XP
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {player.lessonsCompleted} lessons
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="space-y-1">
-                      <div className="flex items-center">
-                        <Globe className="w-3 h-3 text-red-500 mr-1" />
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          Survival: {player.survival}%
-                        </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {lastActive}
                       </div>
-                      <div className="flex items-center">
-                        <Target className="w-3 h-3 text-blue-500 mr-1" />
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          Precision: {player.precision}%
-                        </span>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {(player.progress?.current_streak || 0) > 0
+                          ? `${player.progress.current_streak} day streak`
+                          : "No current streak"}
                       </div>
-                      <div className="flex items-center">
-                        <MessageSquare className="w-3 h-3 text-green-500 mr-1" />
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          Fluency: {player.fluency}%
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {player.lastActive}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {player.streak > 0
-                        ? `${player.streak} day streak`
-                        : "No current streak"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(player.status)}`}
-                    >
-                      {player.status === "active"
-                        ? "Active"
-                        : player.status === "needs-attention"
-                          ? "Needs Attention"
-                          : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={() => setSelectedPlayer(player)}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      View Details
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-700">
-                      Message
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}`}
+                      >
+                        {status === "active"
+                          ? "Active"
+                          : status === "needs-attention"
+                            ? "Needs Attention"
+                            : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => setSelectedPlayer(player)}
+                        className="text-blue-600 hover:text-blue-700 mr-3"
+                      >
+                        View Details
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-700">
+                        Message
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -530,6 +454,23 @@ export default function ClubAdminPanel() {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-gray-200 h-32 rounded-xl"></div>
+              ))}
+            </div>
+            <div className="bg-gray-200 h-64 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -572,15 +513,15 @@ export default function ClubAdminPanel() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedPlayer.name}
+                  {selectedPlayer.full_name}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300">
-                  {selectedPlayer.position} • {selectedPlayer.country}
+                  {selectedPlayer.position} • {selectedPlayer.nationality}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedPlayer(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
                 ×
               </button>
@@ -592,13 +533,13 @@ export default function ClubAdminPanel() {
                   Level
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedPlayer.level}
+                  {selectedPlayer.progress?.current_level || 1}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-300">XP</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedPlayer.xp.toLocaleString()}
+                  {(selectedPlayer.progress?.total_xp || 0).toLocaleString()}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -606,7 +547,7 @@ export default function ClubAdminPanel() {
                   Streak
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedPlayer.streak}
+                  {selectedPlayer.progress?.current_streak || 0}
                 </p>
               </div>
             </div>
@@ -620,17 +561,17 @@ export default function ClubAdminPanel() {
                   {[
                     {
                       name: "Survival English",
-                      value: selectedPlayer.survival,
+                      value: selectedPlayer.progress?.survival_progress || 0,
                       color: "bg-red-500",
                     },
                     {
                       name: "Precision English",
-                      value: selectedPlayer.precision,
+                      value: selectedPlayer.progress?.precision_progress || 0,
                       color: "bg-blue-500",
                     },
                     {
                       name: "Fluency English",
-                      value: selectedPlayer.fluency,
+                      value: selectedPlayer.progress?.fluency_progress || 0,
                       color: "bg-green-500",
                     },
                   ].map((pillar) => (
@@ -660,7 +601,12 @@ export default function ClubAdminPanel() {
                     Strengths
                   </h3>
                   <ul className="space-y-1">
-                    {selectedPlayer.strengths.map((strength, index) => (
+                    {(
+                      selectedPlayer.strengths || [
+                        "Daily Conversation",
+                        "Training Vocabulary",
+                      ]
+                    ).map((strength, index) => (
                       <li
                         key={index}
                         className="text-sm text-green-600 flex items-center"
@@ -676,7 +622,12 @@ export default function ClubAdminPanel() {
                     Areas for Improvement
                   </h3>
                   <ul className="space-y-1">
-                    {selectedPlayer.weakAreas.map((area, index) => (
+                    {(
+                      selectedPlayer.weakAreas || [
+                        "Match Communication",
+                        "Media Interviews",
+                      ]
+                    ).map((area, index) => (
                       <li
                         key={index}
                         className="text-sm text-orange-600 flex items-center"
@@ -702,5 +653,13 @@ export default function ClubAdminPanel() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ClubAdminPanel() {
+  return (
+    <ProtectedRoute>
+      <ClubAdminPanelContent />
+    </ProtectedRoute>
   );
 }

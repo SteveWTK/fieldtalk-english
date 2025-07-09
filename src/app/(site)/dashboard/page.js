@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// src/app/(site)/dashboard/page.js - Fixed version with real user data
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
-  // Trophy,
   Target,
   Globe,
-  // Users,
   Calendar,
   Star,
   ChevronRight,
@@ -22,181 +23,122 @@ import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import XPGainAnimation from "@/components/XPGainAnimation";
 import MatchCountdown from "@/components/MatchCountdown";
+import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
+import { useAuth } from "@/components/AuthProvider";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-export default function PlayerDashboard() {
+function PlayerDashboardContent() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
 
-  // Mock player data - would come from Supabase in real app
+  const { user } = useAuth();
+
+  // Use the actual logged-in user's ID
+  const userId = user?.id;
+
+  const {
+    profile,
+    progress,
+    pillars,
+    lessons,
+    completions,
+    achievements,
+    loading,
+    refetchProgress,
+  } = usePlayerDashboard(userId);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-gray-200 h-32 rounded-xl"></div>
+            ))}
+          </div>
+          <div className="bg-gray-200 h-64 rounded-xl mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-gray-200 h-96 rounded-xl"></div>
+            <div className="bg-gray-200 h-96 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user, show error
+  if (!user) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Please sign in to view your dashboard
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Use real data or fallback to sensible defaults
   const playerData = {
-    name: "João Silva",
-    position: "Midfielder",
-    club: "Watford FC",
-    level: 7,
-    xp: 2450,
-    xpToNext: 550,
-    totalXp: 3000,
-    completedLessons: 23,
-    streak: 12,
-    joinDate: "2024-10-15",
+    name:
+      profile?.full_name ||
+      user.user_metadata?.full_name ||
+      user.email?.split("@")[0] ||
+      "Player",
+    position: profile?.position || user.user_metadata?.position || "Player",
+    club: profile?.club?.name || "FieldTalk English",
+    current_level: progress?.current_level || 1,
+    total_xp: progress?.total_xp || 0,
+    completedLessons: completions?.length || 0,
+    current_streak: progress?.current_streak || 0,
+    joinDate: progress?.created_at || new Date().toISOString(),
   };
 
-  const pillars = {
-    survival: {
-      title: "Survival English",
-      description: "Essential daily communication",
-      color: "from-red-500 to-orange-500",
-      icon: Globe,
-      progress: 85,
-      level: 8,
-      lessons: [
-        {
-          id: 1,
-          title: "First Day at Training",
-          status: "completed",
-          xp: 150,
-          difficulty: "Beginner",
-        },
-        {
-          id: 2,
-          title: "Ordering Food",
-          status: "completed",
-          xp: 120,
-          difficulty: "Beginner",
-        },
-        {
-          id: 3,
-          title: "Bank Account Setup",
-          status: "completed",
-          xp: 180,
-          difficulty: "Intermediate",
-        },
-        {
-          id: 4,
-          title: "Medical Appointments",
-          status: "current",
-          xp: 200,
-          difficulty: "Intermediate",
-        },
-        {
-          id: 5,
-          title: "Housing & Utilities",
-          status: "locked",
-          xp: 220,
-          difficulty: "Intermediate",
-        },
-      ],
-    },
-    precision: {
-      title: "Precision English",
-      description: "Technical football language",
-      color: "from-blue-500 to-cyan-500",
-      icon: Target,
-      progress: 65,
-      level: 6,
-      lessons: [
-        {
-          id: 6,
-          title: "Tactical Instructions",
-          status: "completed",
-          xp: 180,
-          difficulty: "Intermediate",
-        },
-        {
-          id: 7,
-          title: "Match Communication",
-          status: "completed",
-          xp: 200,
-          difficulty: "Intermediate",
-        },
-        {
-          id: 8,
-          title: "Training Drills Vocabulary",
-          status: "current",
-          xp: 250,
-          difficulty: "Advanced",
-        },
-        {
-          id: 9,
-          title: "Injury Reporting",
-          status: "locked",
-          xp: 220,
-          difficulty: "Intermediate",
-        },
-        {
-          id: 10,
-          title: "Performance Analysis",
-          status: "locked",
-          xp: 300,
-          difficulty: "Advanced",
-        },
-      ],
-    },
-    fluency: {
-      title: "Fluency English",
-      description: "Advanced communication & media",
-      color: "from-green-500 to-emerald-500",
-      icon: MessageSquare,
-      progress: 35,
-      level: 4,
-      lessons: [
-        {
-          id: 11,
-          title: "Press Interviews",
-          status: "completed",
-          xp: 300,
-          difficulty: "Advanced",
-        },
-        {
-          id: 12,
-          title: "Team Leadership",
-          status: "current",
-          xp: 350,
-          difficulty: "Expert",
-        },
-        {
-          id: 13,
-          title: "Community Events",
-          status: "locked",
-          xp: 280,
-          difficulty: "Advanced",
-        },
-        {
-          id: 14,
-          title: "Contract Negotiations",
-          status: "locked",
-          xp: 400,
-          difficulty: "Expert",
-        },
-        {
-          id: 15,
-          title: "Coaching Communication",
-          status: "locked",
-          xp: 380,
-          difficulty: "Expert",
-        },
-      ],
-    },
+  const currentPillar =
+    pillars.find((p) => p.name === selectedPillar) || pillars[0];
+  const currentLessons = currentPillar?.lessons || [];
+
+  // Improved lesson status calculation
+  const getLessonStatus = (lesson) => {
+    // Check if this lesson is completed
+    const isCompleted = completions?.some((c) => c.lesson_id === lesson.id);
+    if (isCompleted) return "completed";
+
+    // Get all lessons in this pillar, sorted by sort_order
+    const pillarLessons = currentLessons
+      .filter((l) => l.pillar_id === lesson.pillar_id)
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    const lessonIndex = pillarLessons.findIndex((l) => l.id === lesson.id);
+
+    // First lesson is always available
+    if (lessonIndex === 0) {
+      return "current";
+    }
+
+    // Check if all previous lessons in this pillar are completed
+    const previousLessons = pillarLessons.slice(0, lessonIndex);
+    const allPreviousCompleted = previousLessons.every((prevLesson) =>
+      completions?.some((c) => c.lesson_id === prevLesson.id)
+    );
+
+    if (allPreviousCompleted) {
+      return "current";
+    }
+
+    return "locked";
   };
 
-  const recentAchievements = [
+  const recentAchievements = achievements?.slice(0, 3) || [
     {
-      title: "Survival Master",
-      description: "Completed 10 survival lessons",
-      icon: Globe,
-      date: "2 days ago",
-    },
-    {
-      title: "Week Warrior",
-      description: "7-day learning streak",
-      icon: Calendar,
-      date: "1 week ago",
-    },
-    {
-      title: "First Goal",
-      description: "Completed first lesson",
-      icon: Target,
-      date: "2 weeks ago",
+      achievement: {
+        name: "Welcome to FieldTalk",
+        description: "Started your English learning journey",
+        icon: "Star",
+      },
+      earned_at: "Today",
     },
   ];
 
@@ -205,9 +147,6 @@ export default function PlayerDashboard() {
     { opponent: "Arsenal", date: "Jan 2", type: "Premier League" },
     { opponent: "Man City", date: "Jan 15", type: "FA Cup" },
   ];
-
-  const currentPillar = pillars[selectedPillar];
-  // const progressPercentage = (playerData.xp / playerData.totalXp) * 100;
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -237,8 +176,30 @@ export default function PlayerDashboard() {
     }
   };
 
+  const getIconComponent = (iconName) => {
+    const icons = {
+      Globe,
+      Target,
+      MessageSquare,
+      Star,
+      Calendar,
+      Medal,
+    };
+    return icons[iconName] || Star;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Welcome Message */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Welcome back, {playerData.name}! 👋
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
+          Continue your English learning journey
+        </p>
+      </div>
+
       {/* Player Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
@@ -246,29 +207,32 @@ export default function PlayerDashboard() {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Level</p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                <AnimatedCounter value={playerData.level} duration={800} />
+                <AnimatedCounter
+                  value={playerData.current_level}
+                  duration={800}
+                />
               </p>
             </div>
             <div
-              className={`w-12 h-12 bg-gradient-to-r ${currentPillar.color} rounded-lg flex items-center justify-center`}
+              className={`w-12 h-12 bg-gradient-to-r ${currentPillar?.color_gradient || "from-blue-500 to-green-500"} rounded-lg flex items-center justify-center`}
             >
               <Star className="w-6 h-6 text-white" />
             </div>
           </div>
           <div className="mt-4">
             <AnimatedProgressBar
-              value={playerData.xp}
-              maxValue={playerData.totalXp}
+              value={playerData.total_xp % 500} // XP towards next level
+              maxValue={500}
               color="from-blue-500 to-green-500"
               animationDelay={200}
             />
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
               <AnimatedCounter
-                value={playerData.xp}
+                value={playerData.total_xp % 500}
                 duration={1000}
                 animationDelay={300}
               />
-              /{playerData.totalXp} XP to Level {playerData.level + 1}
+              /500 XP to Level {playerData.current_level + 1}
             </p>
           </div>
         </div>
@@ -299,7 +263,7 @@ export default function PlayerDashboard() {
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
                 <AnimatedCounter
-                  value={playerData.streak}
+                  value={playerData.current_streak}
                   duration={800}
                   animationDelay={200}
                 />
@@ -322,7 +286,7 @@ export default function PlayerDashboard() {
               </p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">
                 <AnimatedCounter
-                  value={playerData.xp}
+                  value={playerData.total_xp}
                   duration={1500}
                   animationDelay={400}
                 />
@@ -339,46 +303,49 @@ export default function PlayerDashboard() {
           Your Learning Journey
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Object.entries(pillars).map(([key, pillar], index) => (
-            <button
-              key={key}
-              onClick={() => setSelectedPillar(key)}
-              className={`p-6 rounded-xl border-2 transition-all duration-200 ${
-                selectedPillar === key
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <div
-                className={`w-12 h-12 bg-gradient-to-r ${pillar.color} rounded-lg flex items-center justify-center mb-4`}
+          {pillars.map((pillar, index) => {
+            const IconComponent = getIconComponent(pillar.icon);
+            return (
+              <button
+                key={pillar.name}
+                onClick={() => setSelectedPillar(pillar.name)}
+                className={`p-6 rounded-xl border-2 transition-all duration-200 ${
+                  selectedPillar === pillar.name
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                }`}
               >
-                <pillar.icon className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {pillar.title}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                {pillar.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Level {pillar.level}
-                </span>
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {pillar.progress}%
-                </span>
-              </div>
-              <div className="mt-2">
-                <AnimatedProgressBar
-                  value={pillar.progress}
-                  maxValue={100}
-                  color={pillar.color}
-                  showPercentage={false}
-                  animationDelay={index * 200 + 500}
-                />
-              </div>
-            </button>
-          ))}
+                <div
+                  className={`w-12 h-12 bg-gradient-to-r ${pillar.color_gradient} rounded-lg flex items-center justify-center mb-4`}
+                >
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  {pillar.display_name}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  {pillar.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Level {pillar.level}
+                  </span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {pillar.progress}%
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <AnimatedProgressBar
+                    value={pillar.progress}
+                    maxValue={100}
+                    color={pillar.color_gradient}
+                    showPercentage={false}
+                    animationDelay={index * 200 + 500}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -388,58 +355,89 @@ export default function PlayerDashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {currentPillar.title}
+                {currentPillar?.display_name}
               </h3>
               <div
-                className={`px-3 py-1 bg-gradient-to-r ${currentPillar.color} text-white rounded-full text-sm font-medium`}
+                className={`px-3 py-1 bg-gradient-to-r ${currentPillar?.color_gradient} text-white rounded-full text-sm font-medium`}
               >
-                Level {currentPillar.level}
+                Level {currentPillar?.level}
               </div>
             </div>
 
             <div className="space-y-4">
-              {currentPillar.lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className={`p-4 rounded-lg border transition-all duration-200 ${
-                    lesson.status === "current"
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : lesson.status === "completed"
-                        ? "border-green-200 bg-green-50 dark:bg-green-900/20"
-                        : "border-gray-200 dark:border-gray-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {getStatusIcon(lesson.status)}
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          {lesson.title}
-                        </h4>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(lesson.difficulty)}`}
-                          >
-                            {lesson.difficulty}
-                          </span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300">
-                            {lesson.xp} XP
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {lesson.status !== "locked" && (
-                      <button className="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                        {lesson.status === "completed" ? (
-                          <CheckCircle className="w-5 h-5" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5" />
-                        )}
-                      </button>
-                    )}
-                  </div>
+              {currentLessons.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No lessons available for this pillar yet.
+                  </p>
                 </div>
-              ))}
+              ) : (
+                currentLessons.map((lesson) => {
+                  const status = getLessonStatus(lesson);
+                  const isClickable = status !== "locked";
+
+                  return (
+                    <div
+                      key={lesson.id}
+                      className={`p-4 rounded-lg border transition-all duration-200 ${
+                        status === "current"
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                          : status === "completed"
+                            ? "border-green-200 bg-green-50 dark:bg-green-900/20"
+                            : "border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-grow">
+                          {getStatusIcon(status)}
+                          <div className="flex-grow">
+                            <h4 className="font-medium text-gray-900 dark:text-white">
+                              {lesson.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                              {lesson.description}
+                            </p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(lesson.difficulty)}`}
+                              >
+                                {lesson.difficulty}
+                              </span>
+                              <span className="text-sm text-gray-600 dark:text-gray-300">
+                                {lesson.xp_reward} XP
+                              </span>
+                              <span className="text-sm text-gray-600 dark:text-gray-300">
+                                {lesson.estimated_duration} min
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {isClickable ? (
+                          <Link
+                            href={`/lesson/${lesson.id}`}
+                            className="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors ml-4"
+                          >
+                            {status === "completed" ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <ChevronRight className="w-5 h-5" />
+                            )}
+                          </Link>
+                        ) : (
+                          <div className="p-2 text-gray-400 ml-4">
+                            <Lock className="w-5 h-5" />
+                          </div>
+                        )}
+                      </div>
+                      {status === "locked" && (
+                        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                          Complete previous lessons to unlock
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -492,24 +490,26 @@ export default function PlayerDashboard() {
               Recent Achievements
             </h3>
             <div className="space-y-3">
-              {recentAchievements.map((achievement, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Medal className="w-4 h-4 text-white" />
+              {recentAchievements.map((achievement, index) => {
+                return (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Medal className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {achievement.achievement.name}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
+                        {achievement.achievement.description}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {achievement.earned_at}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
-                      {achievement.title}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {achievement.description}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {achievement.date}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -543,5 +543,13 @@ export default function PlayerDashboard() {
         onComplete={() => setShowXPGain(false)}
       />
     </div>
+  );
+}
+
+export default function PlayerDashboard() {
+  return (
+    <ProtectedRoute>
+      <PlayerDashboardContent />
+    </ProtectedRoute>
   );
 }
