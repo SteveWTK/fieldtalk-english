@@ -22,14 +22,14 @@ function HeaderBase({
       en: [
         { href: "/", label: "Home" },
         { href: "/dashboard", label: "Dashboard" },
-        { href: "/lesson", label: "Lessons" },
+        // { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Presentation" },
       ],
       pt: [
         { href: "/", label: "Início" },
         { href: "/dashboard", label: "Painel" },
-        { href: "/lesson", label: "Lições" },
+        // { href: "/lesson", label: "Lições" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Apresentação" },
       ],
