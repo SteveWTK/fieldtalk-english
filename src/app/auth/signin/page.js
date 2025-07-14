@@ -197,7 +197,7 @@ export default function SignInPage() {
       return (
       <div className="min-h-screen...">
         {/* your existing content */}
-        <AuthDebug />
+        {/* <AuthDebug /> */}
       </div>
       )
     </div>
