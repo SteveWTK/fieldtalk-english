@@ -36,14 +36,14 @@ function HeaderBase({
       es: [
         { href: "/", label: "Inicio" },
         { href: "/dashboard", label: "Panel" },
-        { href: "/lesson", label: "Lecciones" },
+        // { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Presentación" },
       ],
       fr: [
         { href: "/", label: "Accueil" },
         { href: "/dashboard", label: "Tableau de bord" },
-        { href: "/lesson", label: "Leçons" },
+        // { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Présentation" },
       ],
@@ -51,25 +51,25 @@ function HeaderBase({
     site: {
       en: [
         { href: "/dashboard", label: "Dashboard" },
-        { href: "/lesson", label: "Lessons" },
+        // { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Presentation" },
       ],
       pt: [
         { href: "/dashboard", label: "Painel" },
-        { href: "/lesson", label: "Lições" },
+        // { href: "/lesson", label: "Lições" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Apresentação" },
       ],
       es: [
         { href: "/dashboard", label: "Panel" },
-        { href: "/lesson", label: "Lecciones" },
+        // { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Presentación" },
       ],
       fr: [
         { href: "/dashboard", label: "Tableau de bord" },
-        { href: "/lesson", label: "Leçons" },
+        // { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         { href: "/presentation", label: "Présentation" },
       ],
@@ -125,7 +125,7 @@ function HeaderBase({
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden md:flex space-x-8">
               {links.map(({ href, label }) => (
                 <Link
                   key={href}

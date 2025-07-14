@@ -1,0 +1,114 @@
+<!-- CORRECTED VERTICAL FOOTBALL PITCH SVG -->
+<!-- Save as: public/images/football-pitch-interactive.svg -->
+
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pitch Background with subtle gradient -->
+  <defs>
+    <linearGradient id="pitchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4ade80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Grass stripe pattern for realism -->
+    <pattern id="grassStripes" patternUnits="userSpaceOnUse" width="20" height="20">
+      <rect width="20" height="20" fill="url(#pitchGradient)"/>
+      <rect width="20" height="10" fill="rgba(255,255,255,0.03)"/>
+    </pattern>
+  </defs>
+  
+  <!-- Main Pitch -->
+  <rect width="500" height="800" fill="url(#grassStripes)" stroke="#ffffff" stroke-width="4"/>
+  
+  <!-- Halfway Line (horizontal across middle) -->
+  <line x1="0" y1="400" x2="500" y2="400" stroke="#ffffff" stroke-width="3"/>
+  
+  <!-- Center Circle -->
+  <circle cx="250" cy="400" r="80" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <circle cx="250" cy="400" r="4" fill="#ffffff"/>
+  
+  <!-- TOP GOAL AREA -->
+  <!-- Penalty Area (18-yard box) -->
+  <rect x="125" y="0" width="250" height="140" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Goal Area (6-yard box) -->
+  <rect x="175" y="0" width="150" height="50" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Goal -->
+  <rect x="215" y="-8" width="70" height="8" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Penalty Spot -->
+  <circle cx="250" cy="110" r="4" fill="#ffffff"/>
+  <!-- Penalty Arc -->
+  <path d="M 175 140 A 80 80 0 0 1 325 140" stroke="#ffffff" stroke-width="3" fill="none"/>
+  
+  <!-- BOTTOM GOAL AREA -->
+  <!-- Penalty Area (18-yard box) -->
+  <rect x="125" y="660" width="250" height="140" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Goal Area (6-yard box) -->
+  <rect x="175" y="750" width="150" height="50" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Goal -->
+  <rect x="215" y="800" width="70" height="8" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <!-- Penalty Spot -->
+  <circle cx="250" cy="690" r="4" fill="#ffffff"/>
+  <!-- Penalty Arc -->
+  <path d="M 175 660 A 80 80 0 0 0 325 660" stroke="#ffffff" stroke-width="3" fill="none"/>
+  
+  <!-- Corner Arcs -->
+  <path d="M 0 0 A 15 15 0 0 1 15 0" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <path d="M 485 0 A 15 15 0 0 0 500 15" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <path d="M 0 800 A 15 15 0 0 0 15 800" stroke="#ffffff" stroke-width="3" fill="none"/>
+  <path d="M 500 785 A 15 15 0 0 1 485 800" stroke="#ffffff" stroke-width="3" fill="none"/>
+  
+  <!-- Tactical Thirds (subtle overlay) -->
+  <!-- Attacking Third (top) -->
+  <rect x="0" y="0" width="500" height="267" fill="rgba(239, 68, 68, 0.08)" stroke="none"/>
+  <text x="250" y="130" text-anchor="middle" fill="rgba(239, 68, 68, 0.6)" font-size="16" font-weight="bold">ATTACKING THIRD</text>
+  
+  <!-- Middle Third -->
+  <rect x="0" y="267" width="500" height="266" fill="rgba(59, 130, 246, 0.08)" stroke="none"/>
+  <text x="250" y="400" text-anchor="middle" fill="rgba(59, 130, 246, 0.6)" font-size="16" font-weight="bold">MIDDLE THIRD</text>
+  
+  <!-- Defensive Third (bottom) -->
+  <rect x="0" y="533" width="500" height="267" fill="rgba(34, 197, 94, 0.08)" stroke="none"/>
+  <text x="250" y="670" text-anchor="middle" fill="rgba(34, 197, 94, 0.6)" font-size="16" font-weight="bold">DEFENSIVE THIRD</text>
+  
+  <!-- Interactive Hotspot Visual Indicators (for testing - can be removed later) -->
+  <!-- Goal Areas -->
+  <circle cx="250" cy="25" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="30" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">GOAL</text>
+  
+  <circle cx="250" cy="775" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="780" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">GOAL</text>
+  
+  <!-- Penalty Areas -->
+  <circle cx="250" cy="70" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="75" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">PENALTY</text>
+  
+  <circle cx="250" cy="730" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="735" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">PENALTY</text>
+  
+  <!-- Center Circle -->
+  <circle cx="250" cy="400" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="405" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">CENTER</text>
+  
+  <!-- Wings -->
+  <circle cx="80" cy="300" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="80" y="305" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">LEFT WING</text>
+  
+  <circle cx="420" cy="300" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="420" y="305" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">RIGHT WING</text>
+  
+  <!-- Midfield -->
+  <circle cx="250" cy="500" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="505" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">MIDFIELD</text>
+  
+  <!-- Defensive Area -->
+  <circle cx="250" cy="600" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="605" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">DEFENSE</text>
+  
+  <!-- Attacking Area -->
+  <circle cx="250" cy="200" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="250" y="205" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">ATTACK</text>
+  
+  <!-- Corner -->
+  <circle cx="50" cy="50" r="12" fill="rgba(255,255,255,0.4)" stroke="#ffffff" stroke-width="2"/>
+  <text x="50" y="55" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">CORNER</text>
+</svg>
