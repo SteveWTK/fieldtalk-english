@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import LandingHeader from "@/components/LandingHeader";
+import Footer from "@/components/Footer";
 
 export default function LandingLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
@@ -40,6 +41,7 @@ export default function LandingLayout({ children }) {
         languageOptions={languageOptions}
       />
       <main>{children}</main>
+      <Footer />
     </div>
   );
 }

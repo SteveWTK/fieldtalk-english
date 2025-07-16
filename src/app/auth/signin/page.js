@@ -7,7 +7,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Globe, ArrowRight, Eye, EyeOff } from "lucide-react";
-import AuthDebug from "@/components/AuthDebug";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+// import AuthDebug from "@/components/AuthDebug";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -89,7 +90,9 @@ export default function SignInPage() {
             Experience the platform instantly with sample data
           </p>
         </div>
-
+        <div className="mb-4">
+          <GoogleAuthButton text="Sign in with Google" />
+        </div>
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -194,12 +197,6 @@ export default function SignInPage() {
           </p>
         </div>
       </div>
-      return (
-      <div className="min-h-screen...">
-        {/* your existing content */}
-        {/* <AuthDebug /> */}
-      </div>
-      )
     </div>
   );
 }

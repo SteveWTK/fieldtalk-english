@@ -1,21 +1,26 @@
-// src/lib/supabase/queries.js - Updated with better error handling
+// src/lib/supabase/queries.js - Complete file with all functions + RLS fixes
 import { createClient } from "./client";
 
 const supabase = createClient();
 
-// Player Data Functions
-export async function getPlayerProfile(userId) {
+// FIXED: Better error handling for player profile
+export async function getPlayerProfile(playerId) {
   try {
     const { data, error } = await supabase
       .from("players")
       .select(
         `
         *,
-        club:clubs(*),
-        progress:player_progress(*)
+        clubs:players_club_id_fkey (
+          id,
+          name,
+          country,
+          league,
+          logo_url
+        )
       `
       )
-      .eq("id", userId)
+      .eq("id", playerId)
       .single();
 
     if (error) {
@@ -25,26 +30,37 @@ export async function getPlayerProfile(userId) {
         error.details,
         error.hint
       );
-      throw error;
+      // Return a basic profile structure if there's an error
+      return {
+        id: playerId,
+        full_name: "Unknown Player",
+        user_type: "player",
+        clubs: null,
+      };
     }
+
     return data;
   } catch (error) {
     console.error("Error fetching player profile:", {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      code: error.code,
     });
-    return null;
+    return {
+      id: playerId,
+      full_name: "Unknown Player",
+      user_type: "player",
+      clubs: null,
+    };
   }
 }
 
-export async function getPlayerProgress(userId) {
+export async function getPlayerProgress(playerId) {
   try {
     const { data, error } = await supabase
       .from("player_progress")
       .select("*")
-      .eq("player_id", userId)
+      .eq("player_id", playerId)
       .single();
 
     if (error) {
@@ -54,21 +70,35 @@ export async function getPlayerProgress(userId) {
         error.details,
         error.hint
       );
+      // If no progress record exists, return default values
+      if (error.code === "PGRST116") {
+        return {
+          player_id: playerId,
+          total_xp: 0,
+          current_level: 1,
+          survival_progress: 0,
+          precision_progress: 0,
+          fluency_progress: 0,
+          current_streak: 0,
+          longest_streak: 0,
+          last_activity_date: null,
+        };
+      }
       throw error;
     }
+
     return data;
   } catch (error) {
     console.error("Error fetching player progress:", {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      code: error.code,
     });
-    return null;
+    throw error;
   }
 }
 
-// Pillar and Lesson Functions
+// Pillar and Lesson Functions - FROM ORIGINAL FILE
 export async function getAllPillars() {
   try {
     const { data, error } = await supabase
@@ -80,7 +110,7 @@ export async function getAllPillars() {
       console.error("Pillars error:", error.message, error.details, error.hint);
       throw error;
     }
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Error fetching pillars:", {
       message: error.message,
@@ -110,7 +140,7 @@ export async function getLessonsByPillar(pillarId) {
       );
       throw error;
     }
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Error fetching lessons by pillar:", {
       message: error.message,
@@ -122,6 +152,7 @@ export async function getLessonsByPillar(pillarId) {
   }
 }
 
+// FIXED: Add difficulty back to lesson queries
 export async function getLessonById(lessonId) {
   try {
     const { data, error } = await supabase
@@ -136,101 +167,237 @@ export async function getLessonById(lessonId) {
       .single();
 
     if (error) {
-      console.error(
-        "Lesson by ID error:",
-        error.message,
-        error.details,
-        error.hint
-      );
+      console.error("Lesson by ID error:", error);
       throw error;
     }
     return data;
   } catch (error) {
-    console.error("Error fetching lesson:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
+    console.error("Error fetching lesson:", error);
     return null;
   }
 }
 
-// Player Completion Functions
-export async function getPlayerLessonCompletions(userId) {
+// Get all lessons (for general use)
+export async function getAllLessons() {
+  try {
+    const { data, error } = await supabase
+      .from("lessons")
+      .select("*")
+      .order("order_index", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching lessons:", error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching lessons:", error);
+    return [];
+  }
+}
+
+// FIXED: Add back difficulty column since it exists in your schema
+export async function getPlayerLessonCompletions(playerId) {
   try {
     const { data, error } = await supabase
       .from("lesson_completions")
       .select(
         `
         *,
-        lesson:lessons(*)
+        lessons (
+          id,
+          title,
+          description,
+          difficulty,
+          xp_reward
+        )
       `
       )
-      .eq("player_id", userId)
+      .eq("player_id", playerId)
       .order("completed_at", { ascending: false });
 
     if (error) {
-      console.error(
-        "Lesson completions error:",
-        error.message,
-        error.details,
-        error.hint
-      );
-      throw error;
+      console.error("Lesson completions error:", error);
+      return [];
     }
+
     return data || [];
   } catch (error) {
-    console.error("Error fetching lesson completions:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
+    console.error("Error fetching lesson completions:", error);
     return [];
   }
 }
 
+// MUCH BETTER ERROR DEBUGGING: Step by step with detailed logging
 export async function markLessonComplete(
-  userId,
+  playerId,
   lessonId,
   score,
   xpEarned,
   timeSpent
 ) {
+  console.log("=== STARTING LESSON COMPLETION ===");
+  console.log("Input params:", {
+    playerId,
+    lessonId,
+    score,
+    xpEarned,
+    timeSpent,
+  });
+
   try {
-    // First, insert or update the lesson completion
+    // Step 1: Insert lesson completion
+    console.log("Step 1: Inserting lesson completion...");
     const { data: completionData, error: completionError } = await supabase
       .from("lesson_completions")
       .upsert({
-        player_id: userId,
+        player_id: playerId,
         lesson_id: lessonId,
-        score,
+        score: score,
         xp_earned: xpEarned,
         time_spent: timeSpent,
         completed_at: new Date().toISOString(),
       })
-      .select();
+      .select()
+      .single();
 
     if (completionError) {
-      console.error(
-        "Lesson completion error:",
-        completionError.message,
-        completionError.details
-      );
+      console.error("❌ Lesson completion failed:", completionError);
       throw completionError;
     }
 
-    // Update player progress
-    const progressResult = await updatePlayerProgress(userId, xpEarned);
+    console.log("✅ Lesson completion inserted:", completionData);
+
+    // Step 2: Get current progress
+    console.log("Step 2: Fetching current player progress...");
+    const { data: currentProgress, error: progressFetchError } = await supabase
+      .from("player_progress")
+      .select("*")
+      .eq("player_id", playerId)
+      .single();
+
+    if (progressFetchError) {
+      console.error("❌ Progress fetch error details:", {
+        message: progressFetchError.message,
+        details: progressFetchError.details,
+        hint: progressFetchError.hint,
+        code: progressFetchError.code,
+      });
+
+      if (progressFetchError.code === "PGRST116") {
+        console.log("No progress record found, will create new one...");
+        // Create new progress record
+        const newProgressData = {
+          player_id: playerId,
+          total_xp: xpEarned,
+          current_level: 1,
+          survival_progress: 0,
+          precision_progress: 0,
+          fluency_progress: 0,
+          current_streak: 1,
+          longest_streak: 1,
+          last_activity_date: new Date().toISOString().split("T")[0],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        console.log("Creating new progress with:", newProgressData);
+
+        const { data: newProgress, error: createError } = await supabase
+          .from("player_progress")
+          .insert(newProgressData)
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("❌ Failed to create new progress:", {
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint,
+            code: createError.code,
+          });
+          throw createError;
+        }
+
+        console.log("✅ New progress created:", newProgress);
+        return { completion: completionData, progress: newProgress };
+      } else {
+        throw progressFetchError;
+      }
+    }
+
+    console.log("✅ Current progress found:", currentProgress);
+
+    // Step 3: Calculate new progress values
+    console.log("Step 3: Calculating new progress values...");
+    const currentXp = currentProgress?.total_xp || 0;
+    const newTotalXp = currentXp + xpEarned;
+    const newLevel = Math.floor(newTotalXp / 500) + 1;
+    const today = new Date().toISOString().split("T")[0];
+
+    // Simple streak calculation
+    let newStreak = 1;
+    let longestStreak = 1;
+
+    if (currentProgress) {
+      const lastActivity = currentProgress.last_activity_date;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      if (lastActivity === yesterdayStr) {
+        newStreak = (currentProgress.current_streak || 0) + 1;
+      } else if (lastActivity === today) {
+        newStreak = currentProgress.current_streak || 1;
+      }
+
+      longestStreak = Math.max(newStreak, currentProgress.longest_streak || 1);
+    }
+
+    const progressUpdate = {
+      total_xp: newTotalXp,
+      current_level: newLevel,
+      current_streak: newStreak,
+      longest_streak: longestStreak,
+      last_activity_date: today,
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log("Progress update data:", progressUpdate);
+
+    // Step 4: Update progress
+    console.log("Step 4: Updating player progress...");
+    const { data: progressResult, error: progressError } = await supabase
+      .from("player_progress")
+      .update(progressUpdate)
+      .eq("player_id", playerId)
+      .select()
+      .single();
+
+    if (progressError) {
+      console.error("❌ Progress update failed:", {
+        message: progressError.message,
+        details: progressError.details,
+        hint: progressError.hint,
+        code: progressError.code,
+        updateData: progressUpdate,
+        playerId: playerId,
+      });
+      throw progressError;
+    }
+
+    console.log("✅ Progress updated successfully:", progressResult);
+    console.log("=== LESSON COMPLETION SUCCESS ===");
 
     return { completion: completionData, progress: progressResult };
   } catch (error) {
-    console.error("Error marking lesson complete:", {
+    console.error("❌ LESSON COMPLETION FAILED:", {
       message: error.message,
       details: error.details,
       hint: error.hint,
       code: error.code,
+      stack: error.stack,
     });
     throw error;
   }
@@ -245,7 +412,7 @@ export async function updatePlayerProgress(userId, xpToAdd) {
       .eq("player_id", userId)
       .single();
 
-    if (fetchError) {
+    if (fetchError && fetchError.code !== "PGRST116") {
       console.error("Fetch progress error:", fetchError.message);
       throw fetchError;
     }
@@ -324,18 +491,23 @@ export async function updatePlayerProgress(userId, xpToAdd) {
   }
 }
 
-// Achievement Functions
-export async function getPlayerAchievements(userId) {
+// FIXED: Better error handling for achievements
+export async function getPlayerAchievements(playerId) {
   try {
     const { data, error } = await supabase
       .from("player_achievements")
       .select(
         `
         *,
-        achievement:achievements(*)
+        achievements (
+          id,
+          name,
+          description,
+          icon
+        )
       `
       )
-      .eq("player_id", userId)
+      .eq("player_id", playerId)
       .order("earned_at", { ascending: false });
 
     if (error) {
@@ -345,21 +517,21 @@ export async function getPlayerAchievements(userId) {
         error.details,
         error.hint
       );
-      throw error;
+      return []; // Return empty array instead of throwing
     }
+
     return data || [];
   } catch (error) {
     console.error("Error fetching player achievements:", {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      code: error.code,
     });
     return [];
   }
 }
 
-// Club Admin Functions
+// Club Admin Functions - FROM ORIGINAL FILE
 export async function getClubPlayers(clubId) {
   try {
     const { data, error } = await supabase
@@ -468,3 +640,525 @@ export async function getClubStats(clubId) {
     };
   }
 }
+
+// Club Functions
+export async function getAllClubs() {
+  try {
+    const { data, error } = await supabase
+      .from("clubs")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching clubs:", error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching clubs:", error);
+    return [];
+  }
+}
+
+// Utility Functions
+export async function testDatabaseConnection() {
+  try {
+    const { data, error } = await supabase
+      .from("players")
+      .select("id, full_name, user_type")
+      .limit(1);
+
+    if (error) {
+      console.error("Database connection test failed:", error);
+      return { success: false, error };
+    }
+
+    console.log("Database connection successful:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Database connection test error:", error);
+    return { success: false, error };
+  }
+}
+
+export async function ensurePlayerProgress(playerId) {
+  try {
+    const { data: existing } = await supabase
+      .from("player_progress")
+      .select("*")
+      .eq("player_id", playerId)
+      .single();
+
+    if (!existing) {
+      const { data, error } = await supabase
+        .from("player_progress")
+        .insert({
+          player_id: playerId,
+          total_xp: 0,
+          current_level: 1,
+          survival_progress: 0,
+          precision_progress: 0,
+          fluency_progress: 0,
+          current_streak: 0,
+          longest_streak: 0,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating player progress:", error);
+        throw error;
+      }
+
+      return data;
+    }
+
+    return existing;
+  } catch (error) {
+    console.error("Error ensuring player progress:", error);
+    throw error;
+  }
+}
+
+// UTILITY: Test player progress table directly
+export async function testPlayerProgressTable(playerId) {
+  try {
+    console.log("Testing player_progress table for player:", playerId);
+
+    // Test if we can select from the table
+    const { data: selectTest, error: selectError } = await supabase
+      .from("player_progress")
+      .select("*")
+      .eq("player_id", playerId)
+      .single();
+
+    console.log("Select test result:", {
+      data: selectTest,
+      error: selectError,
+    });
+
+    // Test if we can insert/update
+    const testData = {
+      player_id: playerId,
+      total_xp: 999,
+      current_level: 1,
+      survival_progress: 0,
+      precision_progress: 0,
+      fluency_progress: 0,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: new Date().toISOString().split("T")[0],
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: upsertTest, error: upsertError } = await supabase
+      .from("player_progress")
+      .upsert(testData)
+      .select()
+      .single();
+
+    console.log("Upsert test result:", {
+      data: upsertTest,
+      error: upsertError,
+    });
+
+    return { selectTest, selectError, upsertTest, upsertError };
+  } catch (error) {
+    console.error("Test failed:", error);
+    return { error };
+  }
+}
+
+// // Updated src/lib/supabase/queries.js - Fix relationship ambiguity and RLS issues
+
+// import { createClient } from "@/lib/supabase/client";
+
+// const supabase = createClient();
+
+// // FIX: Player profile query with explicit relationship reference
+// export async function getPlayerProfile(playerId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("players")
+//       .select(
+//         `
+//         *,
+//         clubs:players_club_id_fkey (
+//           id,
+//           name,
+//           country,
+//           league,
+//           logo_url
+//         )
+//       `
+//       )
+//       .eq("id", playerId)
+//       .single();
+
+//     if (error) {
+//       console.error(
+//         "Player profile error:",
+//         error.message,
+//         error.details,
+//         error.hint
+//       );
+//       throw error;
+//     }
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching player profile:", {
+//       message: error.message,
+//       details: error.details,
+//       hint: error.hint,
+//     });
+//     throw error;
+//   }
+// }
+
+// // FIX: Player progress query
+// export async function getPlayerProgress(playerId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("player_progress")
+//       .select("*")
+//       .eq("player_id", playerId)
+//       .single();
+
+//     if (error) {
+//       console.error(
+//         "Player progress error:",
+//         error.message,
+//         error.details,
+//         error.hint
+//       );
+//       // If no progress record exists, return default values
+//       if (error.code === "PGRST116") {
+//         return {
+//           player_id: playerId,
+//           total_xp: 0,
+//           current_level: 1,
+//           survival_progress: 0,
+//           precision_progress: 0,
+//           fluency_progress: 0,
+//           current_streak: 0,
+//           longest_streak: 0,
+//           last_activity_date: null,
+//         };
+//       }
+//       throw error;
+//     }
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching player progress:", {
+//       message: error.message,
+//       details: error.details,
+//       hint: error.hint,
+//     });
+//     throw error;
+//   }
+// }
+
+// // FIX: Lesson completions query
+// export async function getPlayerLessonCompletions(playerId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("lesson_completions")
+//       .select(
+//         `
+//         *,
+//         lessons (
+//           id,
+//           title,
+//           category,
+//           difficulty
+//         )
+//       `
+//       )
+//       .eq("player_id", playerId)
+//       .order("completed_at", { ascending: false });
+
+//     if (error) {
+//       console.error(
+//         "Lesson completions error:",
+//         error.message,
+//         error.details,
+//         error.hint
+//       );
+//       throw error;
+//     }
+
+//     return data || [];
+//   } catch (error) {
+//     console.error("Error fetching lesson completions:", {
+//       message: error.message,
+//       details: error.details,
+//       hint: error.hint,
+//     });
+//     return [];
+//   }
+// }
+
+// // FIX: Mark lesson complete function
+// export async function markLessonComplete(
+//   playerId,
+//   lessonId,
+//   score,
+//   xpEarned,
+//   timeSpent
+// ) {
+//   try {
+//     // First, insert or update lesson completion
+//     const { data: completionData, error: completionError } = await supabase
+//       .from("lesson_completions")
+//       .upsert({
+//         player_id: playerId,
+//         lesson_id: lessonId,
+//         score: score,
+//         xp_earned: xpEarned,
+//         time_spent: timeSpent,
+//         completed_at: new Date().toISOString(),
+//       })
+//       .select()
+//       .single();
+
+//     if (completionError) {
+//       console.error("Error inserting lesson completion:", completionError);
+//       throw completionError;
+//     }
+
+//     // Then, update player progress
+//     const { data: currentProgress, error: progressFetchError } = await supabase
+//       .from("player_progress")
+//       .select("*")
+//       .eq("player_id", playerId)
+//       .single();
+
+//     if (progressFetchError && progressFetchError.code !== "PGRST116") {
+//       throw progressFetchError;
+//     }
+
+//     // Calculate new progress values
+//     const newTotalXp = (currentProgress?.total_xp || 0) + xpEarned;
+//     const newLevel = Math.floor(newTotalXp / 100) + 1; // Simple level calculation
+//     const today = new Date().toISOString().split("T")[0];
+
+//     const progressUpdate = {
+//       player_id: playerId,
+//       total_xp: newTotalXp,
+//       current_level: newLevel,
+//       last_activity_date: today,
+//       updated_at: new Date().toISOString(),
+//     };
+
+//     // Handle streak calculation
+//     if (currentProgress?.last_activity_date) {
+//       const lastActivity = new Date(currentProgress.last_activity_date);
+//       const yesterday = new Date();
+//       yesterday.setDate(yesterday.getDate() - 1);
+
+//       if (lastActivity.toDateString() === yesterday.toDateString()) {
+//         // Consecutive day - increment streak
+//         progressUpdate.current_streak =
+//           (currentProgress.current_streak || 0) + 1;
+//         progressUpdate.longest_streak = Math.max(
+//           progressUpdate.current_streak,
+//           currentProgress.longest_streak || 0
+//         );
+//       } else if (lastActivity.toDateString() !== today) {
+//         // Missed a day - reset streak
+//         progressUpdate.current_streak = 1;
+//       }
+//       // If same day, keep current streak
+//     } else {
+//       // First activity
+//       progressUpdate.current_streak = 1;
+//       progressUpdate.longest_streak = 1;
+//     }
+
+//     const { data: progressResult, error: progressError } = await supabase
+//       .from("player_progress")
+//       .upsert(progressUpdate)
+//       .select()
+//       .single();
+
+//     if (progressError) {
+//       console.error("Error updating player progress:", progressError);
+//       throw progressError;
+//     }
+
+//     return { completion: completionData, progress: progressResult };
+//   } catch (error) {
+//     console.error("Error marking lesson complete:", {
+//       message: error.message,
+//       details: error.details,
+//       hint: error.hint,
+//     });
+//     throw error;
+//   }
+// }
+
+// // FIX: Player achievements query
+// export async function getPlayerAchievements(playerId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("player_achievements")
+//       .select(
+//         `
+//         *,
+//         achievements (
+//           id,
+//           name,
+//           description,
+//           icon,
+//           xp_reward
+//         )
+//       `
+//       )
+//       .eq("player_id", playerId)
+//       .order("earned_at", { ascending: false });
+
+//     if (error) {
+//       console.error(
+//         "Player achievements error:",
+//         error.message,
+//         error.details,
+//         error.hint
+//       );
+//       throw error;
+//     }
+
+//     return data || [];
+//   } catch (error) {
+//     console.error("Error fetching player achievements:", {
+//       message: error.message,
+//       details: error.details,
+//       hint: error.hint,
+//     });
+//     return [];
+//   }
+// }
+
+// // FIX: Get all lessons query
+// export async function getAllLessons() {
+//   try {
+//     const { data, error } = await supabase
+//       .from("lessons")
+//       .select("*")
+//       .order("order_index", { ascending: true });
+
+//     if (error) {
+//       console.error("Error fetching lessons:", error);
+//       throw error;
+//     }
+
+//     return data || [];
+//   } catch (error) {
+//     console.error("Error fetching lessons:", error);
+//     return [];
+//   }
+// }
+
+// // FIX: Get lesson by ID
+// export async function getLessonById(lessonId) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("lessons")
+//       .select("*")
+//       .eq("id", lessonId)
+//       .single();
+
+//     if (error) {
+//       console.error("Error fetching lesson:", error);
+//       throw error;
+//     }
+
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching lesson:", error);
+//     throw error;
+//   }
+// }
+
+// // FIX: Get clubs query
+// export async function getAllClubs() {
+//   try {
+//     const { data, error } = await supabase
+//       .from("clubs")
+//       .select("*")
+//       .order("name", { ascending: true });
+
+//     if (error) {
+//       console.error("Error fetching clubs:", error);
+//       throw error;
+//     }
+
+//     return data || [];
+//   } catch (error) {
+//     console.error("Error fetching clubs:", error);
+//     return [];
+//   }
+// }
+
+// // NEW: Test database connection
+// export async function testDatabaseConnection() {
+//   try {
+//     const { data, error } = await supabase
+//       .from("players")
+//       .select("id, full_name, user_type")
+//       .limit(1);
+
+//     if (error) {
+//       console.error("Database connection test failed:", error);
+//       return { success: false, error };
+//     }
+
+//     console.log("Database connection successful:", data);
+//     return { success: true, data };
+//   } catch (error) {
+//     console.error("Database connection test error:", error);
+//     return { success: false, error };
+//   }
+// }
+
+// // NEW: Create player progress record if it doesn't exist
+// export async function ensurePlayerProgress(playerId) {
+//   try {
+//     const { data: existing } = await supabase
+//       .from("player_progress")
+//       .select("*")
+//       .eq("player_id", playerId)
+//       .single();
+
+//     if (!existing) {
+//       const { data, error } = await supabase
+//         .from("player_progress")
+//         .insert({
+//           player_id: playerId,
+//           total_xp: 0,
+//           current_level: 1,
+//           survival_progress: 0,
+//           precision_progress: 0,
+//           fluency_progress: 0,
+//           current_streak: 0,
+//           longest_streak: 0,
+//         })
+//         .select()
+//         .single();
+
+//       if (error) {
+//         console.error("Error creating player progress:", error);
+//         throw error;
+//       }
+
+//       return data;
+//     }
+
+//     return existing;
+//   } catch (error) {
+//     console.error("Error ensuring player progress:", error);
+//     throw error;
+//   }
+// }

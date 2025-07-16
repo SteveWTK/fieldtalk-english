@@ -53,6 +53,8 @@ function DynamicLessonContent() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
   const [startTime] = useState(Date.now());
+  const [completing, setCompleting] = useState(false);
+
   const audioRef = useRef(null);
 
   // Fetch lesson data
@@ -81,11 +83,15 @@ function DynamicLessonContent() {
     }
   }, [lessonId]);
 
-  // Loading state
+  // FIXED: Better error boundaries and loading states
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto p-6 min-h-screen">
         <div className="animate-pulse">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="h-6 bg-gray-200 rounded w-24"></div>
+            <div className="h-4 bg-gray-200 rounded w-16"></div>
+          </div>
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
           <div className="h-64 bg-gray-200 rounded mb-8"></div>
@@ -95,7 +101,7 @@ function DynamicLessonContent() {
     );
   }
 
-  // Error state
+  // FIXED: Error state with better navigation
   if (error || !lesson) {
     return (
       <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
@@ -106,16 +112,60 @@ function DynamicLessonContent() {
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             {error || "The lesson you're looking for doesn't exist."}
           </p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Back to Dashboard
-          </button>
+          <div className="space-x-4">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Back to Dashboard
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Reload Page
+            </button>
+          </div>
         </div>
       </div>
     );
   }
+
+  // Loading state
+  // if (loading) {
+  //   return (
+  //     <div className="max-w-4xl mx-auto p-6 min-h-screen">
+  //       <div className="animate-pulse">
+  //         <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+  //         <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+  //         <div className="h-64 bg-gray-200 rounded mb-8"></div>
+  //         <div className="h-12 bg-gray-200 rounded"></div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // Error state
+  // if (error || !lesson) {
+  //   return (
+  //     <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+  //           Lesson Not Found
+  //         </h1>
+  //         <p className="text-gray-600 dark:text-gray-300 mb-6">
+  //           {error || "The lesson you're looking for doesn't exist."}
+  //         </p>
+  //         <button
+  //           onClick={() => router.push("/dashboard")}
+  //           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+  //         >
+  //           Back to Dashboard
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const lessonContent = lesson.content;
   const steps = lessonContent?.steps || [];
@@ -204,20 +254,39 @@ function DynamicLessonContent() {
   };
 
   const handleLessonComplete = async () => {
-    if (user) {
-      try {
-        await markLessonComplete(
-          user.id,
-          lesson.id,
-          Math.round((completedSteps.size / steps.length) * 100),
-          xpEarned,
-          Date.now() - startTime
-        );
-      } catch (error) {
-        console.error("Error marking lesson complete:", error);
-      }
+    if (!user) {
+      router.push("/dashboard");
+      return;
     }
-    router.push("/dashboard");
+
+    setCompleting(true);
+
+    try {
+      console.log("🏁 Starting lesson completion process...");
+
+      await markLessonComplete(
+        user.id,
+        lesson.id,
+        Math.round((completedSteps.size / steps.length) * 100),
+        xpEarned,
+        Date.now() - startTime
+      );
+
+      console.log(
+        "✅ Lesson completion successful, navigating to dashboard..."
+      );
+
+      // Small delay to ensure database operations complete
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
+    } catch (error) {
+      console.error("❌ Error marking lesson complete:", error);
+      setCompleting(false);
+
+      // Even if completion fails, still allow navigation
+      router.push("/dashboard");
+    }
   };
 
   const toggleAudio = () => {
@@ -268,7 +337,7 @@ function DynamicLessonContent() {
     };
 
     const IconComponent = iconMap[stepType] || Book;
-    return <IconComponent className="w-5 h-5" />;
+    return <IconComponent className="w-5 h-5 dark:text-white" />;
   };
 
   const renderStepContent = () => {
@@ -289,7 +358,7 @@ function DynamicLessonContent() {
                   }}
                 />
               )}
-              <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
                 {currentStepData.content}
               </p>
               {currentStepData.cultural_context && (
@@ -301,7 +370,7 @@ function DynamicLessonContent() {
                 </div>
               )}
               {currentStepData.reflection_questions && (
-                <div className="mt-4 text-left">
+                <div className="mt-4 text-left text-gray-700 dark:text-gray-300 ">
                   <h4 className="font-semibold mb-2">Reflection Questions:</h4>
                   <ul className="text-sm space-y-1">
                     {currentStepData.reflection_questions.map(
@@ -371,7 +440,7 @@ function DynamicLessonContent() {
                       </p>
                     )}
                     {item.tip && (
-                      <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded text-sm">
+                      <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 text-black dark:text-gray-200 rounded text-sm">
                         <strong>Tip:</strong> {item.tip}
                       </div>
                     )}
@@ -421,7 +490,7 @@ function DynamicLessonContent() {
                     </button>
                   </div>
                   {phrase.confidence_tips && (
-                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded text-sm">
+                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-50 rounded text-sm">
                       <strong>Confidence Tip:</strong> {phrase.confidence_tips}
                     </div>
                   )}
@@ -497,7 +566,6 @@ function DynamicLessonContent() {
           </div>
         );
 
-      // REPLACE the gap_fill case with this fixed version:
       case "gap_fill":
       case "gap_fill_advanced":
         return (
@@ -517,10 +585,12 @@ function DynamicLessonContent() {
                   return (
                     <div
                       key={scenarioIndex}
-                      className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl"
+                      className="bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white p-6 rounded-xl"
                     >
-                      <h4 className="font-semibold mb-3">{scenario.context}</h4>
-                      <div className="text-lg leading-relaxed mb-4">
+                      <h4 className="font-semibold mb-3 text-gray-900 dark:text-white">
+                        {scenario.context}
+                      </h4>
+                      <div className="text-lg leading-9 mb-4">
                         {textParts.map((part, partIndex) => (
                           <span key={partIndex}>
                             {part}
@@ -538,7 +608,7 @@ function DynamicLessonContent() {
                                       e.target.value,
                                   }))
                                 }
-                                className="mx-2 px-3 py-1 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
+                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
                                 disabled={showFeedback}
                               >
                                 <option value="">Choose...</option>
@@ -585,7 +655,7 @@ function DynamicLessonContent() {
                                 onChange={(e) =>
                                   setSelectedAnswer(e.target.value)
                                 }
-                                className="mx-2 px-3 py-1 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
+                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
                                 disabled={showFeedback}
                               >
                                 <option value="">Choose...</option>
@@ -613,7 +683,7 @@ function DynamicLessonContent() {
                                 onChange={(e) =>
                                   setSelectedAnswer(e.target.value)
                                 }
-                                className="mx-2 px-3 py-1 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
+                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
                                 disabled={showFeedback}
                               >
                                 <option value="">Choose...</option>
@@ -698,8 +768,8 @@ function DynamicLessonContent() {
                           onClick={() => setSelectedAnswer(option)}
                           className={`w-full p-4 text-left rounded-lg border transition-colors ${
                             selectedAnswer === option
-                              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                              : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                              ? "text-gray-900 dark:text-white border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                              : "text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300"
                           }`}
                           disabled={showFeedback}
                         >
@@ -903,10 +973,15 @@ function DynamicLessonContent() {
                   </p>
                   {insight.practical_tips && (
                     <div>
-                      <h5 className="font-semibold mb-2">Practical Tips:</h5>
+                      <h5 className="font-semibold mb-2 text-gray-900 dark:text-white">
+                        Practical Tips:
+                      </h5>
                       <ul className="text-sm space-y-1">
                         {insight.practical_tips.map((tip, tipIndex) => (
-                          <li key={tipIndex} className="flex items-start">
+                          <li
+                            key={tipIndex}
+                            className="flex items-start text-gray-700 dark:text-gray-300"
+                          >
                             <span className="text-blue-600 mr-2">•</span>
                             {tip}
                           </li>
@@ -1016,7 +1091,7 @@ function DynamicLessonContent() {
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
                     style={{
                       left: element.x || `${20 + index * 15}%`,
-                      top: element.y || `${30 + index * 10}%`,
+                      top: element.y || `${30 + index * 15}%`,
                     }}
                     onClick={() => {
                       // Handle click - show popup or info
@@ -1024,7 +1099,7 @@ function DynamicLessonContent() {
                     }}
                   >
                     <div className="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-blue-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       {element.popup || element.area}
                     </div>
                   </div>
@@ -1043,7 +1118,9 @@ function DynamicLessonContent() {
             {/* Vocabulary Review */}
             {currentStepData.interactive_elements && (
               <div className="mt-6">
-                <h4 className="font-semibold mb-3">Areas to Explore:</h4>
+                <h4 className="font-semibold mb-3 text-black dark:text-white">
+                  Areas to Explore:
+                </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {currentStepData.interactive_elements.map(
                     (element, index) => (
@@ -1051,7 +1128,9 @@ function DynamicLessonContent() {
                         key={index}
                         className="p-3 bg-white dark:bg-gray-800 rounded border"
                       >
-                        <h5 className="font-medium">{element.area}</h5>
+                        <h5 className="collapse font-medium text-black dark:text-gray-300">
+                          {element.area}
+                        </h5>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           {element.popup}
                         </p>
@@ -1100,7 +1179,9 @@ function DynamicLessonContent() {
 
                       {strategy.examples && (
                         <div className="mb-4">
-                          <h4 className="font-medium mb-2">Examples:</h4>
+                          <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
+                            Examples:
+                          </h4>
                           <ul className="space-y-1">
                             {strategy.examples.map((example, exIndex) => (
                               <li
@@ -1118,7 +1199,9 @@ function DynamicLessonContent() {
 
                       {strategy.tips && (
                         <div className="bg-white dark:bg-gray-800 p-3 rounded border-l-4 border-green-500">
-                          <h4 className="font-medium mb-1">Tips:</h4>
+                          <h4 className="font-medium mb-1 text-gray-900 dark:text-white">
+                            Tips:
+                          </h4>
                           <ul className="text-sm space-y-1">
                             {strategy.tips.map((tip, tipIndex) => (
                               <li
@@ -1443,6 +1526,7 @@ function DynamicLessonContent() {
           </div>
         );
 
+      // FIXED: Completion step with better button handling
       case "completion":
         return (
           <div className="text-center">
@@ -1482,9 +1566,17 @@ function DynamicLessonContent() {
 
               <button
                 onClick={handleLessonComplete}
-                className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                disabled={completing}
+                className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Return to Dashboard
+                {completing ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Saving Progress...</span>
+                  </div>
+                ) : (
+                  "Return to Dashboard"
+                )}
               </button>
             </div>
           </div>
@@ -1593,7 +1685,7 @@ function DynamicLessonContent() {
       <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={handlePrevious}
-          disabled={currentStep === 0}
+          disabled={currentStep === 0 || completing}
           className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -1604,6 +1696,9 @@ function DynamicLessonContent() {
           <p className="text-sm text-gray-600 dark:text-gray-300">
             {completedSteps.size} of {steps.length - 1} steps completed
           </p>
+          {completing && (
+            <p className="text-xs text-blue-600 mt-1">Saving progress...</p>
+          )}
         </div>
 
         <button
@@ -1611,15 +1706,27 @@ function DynamicLessonContent() {
             currentStep === steps.length - 1 ? handleLessonComplete : handleNext
           }
           disabled={
-            currentStep === steps.length - 1 &&
-            currentStepData?.type !== "completion"
+            completing ||
+            (currentStep === steps.length - 1 &&
+              currentStepData?.type !== "completion")
           }
           className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <span>
-            {currentStep === steps.length - 1 ? "Complete Lesson" : "Continue"}
-          </span>
-          <ArrowRight className="w-4 h-4" />
+          {completing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Completing...</span>
+            </>
+          ) : (
+            <>
+              <span>
+                {currentStep === steps.length - 1
+                  ? "Complete Lesson"
+                  : "Continue"}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </div>
     </div>
