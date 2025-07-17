@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/app/(site)/lesson/[id]/page.js - Updated with all step types
 "use client";
 
@@ -172,10 +173,14 @@ function DynamicLessonContent() {
   const currentStepData = steps[currentStep];
   const progress = ((currentStep + 1) / steps.length) * 100;
 
+  // Updated handleAnswerSubmit function
+  // Updated handleAnswerSubmit function
   const handleAnswerSubmit = () => {
     if (!selectedAnswer && Object.keys(selectedAnswers).length === 0) return;
 
     let correct = false;
+    let totalCorrect = 0;
+    let totalQuestions = 0;
 
     // Handle different question types
     if (
@@ -183,55 +188,112 @@ function DynamicLessonContent() {
       currentStepData.type === "gap_fill_advanced"
     ) {
       if (currentStepData.scenarios) {
-        // Multiple scenario gap fill - check all scenarios
-        const allCorrect = currentStepData.scenarios.every(
-          (scenario, scenarioIndex) => {
-            const correctAnswers = scenario.correct_answers || [];
-            const userAnswers = [];
+        // Multiple scenario gap fill - check all scenarios and gaps
+        let allCorrect = 0;
+        let totalGaps = 0;
 
-            // Collect user answers for this scenario
-            for (let i = 0; i < correctAnswers.length; i++) {
-              userAnswers.push(selectedAnswers[`${scenarioIndex}-${i}`] || "");
+        currentStepData.scenarios.forEach((scenario, scenarioIndex) => {
+          scenario.gaps.forEach((gap, gapIndex) => {
+            totalGaps++;
+            const userAnswer = selectedAnswers[`${scenarioIndex}-${gapIndex}`];
+            if (userAnswer === gap.correct_answer) {
+              allCorrect++;
             }
+          });
+        });
 
-            // Check if all answers match
-            return (
-              userAnswers.length === correctAnswers.length &&
-              userAnswers.every(
-                (answer, index) => answer === correctAnswers[index]
-              )
-            );
+        totalCorrect = allCorrect;
+        totalQuestions = totalGaps;
+        correct = allCorrect === totalGaps; // Only true if ALL answers are correct
+      } else if (currentStepData.gaps) {
+        // Single gap fill with new structure
+        let correctGaps = 0;
+        const totalGaps = currentStepData.gaps.length;
+
+        currentStepData.gaps.forEach((gap, gapIndex) => {
+          const userAnswer = selectedAnswers[`gap-${gapIndex}`];
+          if (userAnswer === gap.correct_answer) {
+            correctGaps++;
           }
-        );
-        correct = allCorrect;
+        });
+
+        totalCorrect = correctGaps;
+        totalQuestions = totalGaps;
+        correct = correctGaps === totalGaps;
       } else {
-        // Single gap fill
+        // Fallback for old structure (backwards compatibility)
         correct =
           currentStepData.correct_answers?.includes(selectedAnswer) ||
           currentStepData.correctAnswers?.includes(selectedAnswer);
+        totalCorrect = correct ? 1 : 0;
+        totalQuestions = 1;
       }
     } else if (
       currentStepData.type === "situational" ||
       currentStepData.type === "situational_challenges"
     ) {
       if (currentStepData.challenges) {
-        // Handle challenges format
-        const challenge = currentStepData.challenges[0]; // For now, handle first challenge
-        correct = selectedAnswer === challenge.correct_answer;
+        // Handle multiple challenges format
+        let correctChallenges = 0;
+        const totalChallenges = currentStepData.challenges.length;
+
+        currentStepData.challenges.forEach((challenge, challengeIndex) => {
+          const userAnswer = selectedAnswers[`challenge-${challengeIndex}`];
+          if (userAnswer === challenge.correct_answer) {
+            correctChallenges++;
+          }
+        });
+
+        totalCorrect = correctChallenges;
+        totalQuestions = totalChallenges;
+        correct = correctChallenges === totalChallenges; // Only true if ALL challenges are correct
       } else {
         // Handle standard situational
         correct =
           selectedAnswer === currentStepData.correct_answer ||
           selectedAnswer === currentStepData.correctAnswer;
+        totalCorrect = correct ? 1 : 0;
+        totalQuestions = 1;
       }
     }
 
     setIsCorrect(correct);
     setShowFeedback(true);
 
-    if (correct && !completedSteps.has(currentStep)) {
+    // Award XP based on performance
+    if (!completedSteps.has(currentStep)) {
+      let xpToAward = 0;
+
+      if (
+        currentStepData.type === "gap_fill" ||
+        currentStepData.type === "gap_fill_advanced"
+      ) {
+        // Award XP based on number of correct answers (partial credit)
+        xpToAward = totalCorrect * 10; // 10 XP per correct gap
+        if (correct) {
+          xpToAward += 10; // Bonus 10 XP for perfect score
+        }
+      } else if (
+        currentStepData.type === "situational" ||
+        currentStepData.type === "situational_challenges"
+      ) {
+        if (currentStepData.challenges) {
+          // Award XP based on number of correct challenges (partial credit)
+          xpToAward = totalCorrect * 15; // 15 XP per correct challenge
+          if (correct) {
+            xpToAward += 10; // Bonus 10 XP for perfect score
+          }
+        } else {
+          // Standard 20 XP for single situational
+          xpToAward = correct ? 20 : 0;
+        }
+      } else {
+        // Standard 20 XP for other question types
+        xpToAward = correct ? 20 : 0;
+      }
+
       setCompletedSteps((prev) => new Set([...prev, currentStep]));
-      setXpEarned((prev) => prev + 20);
+      setXpEarned((prev) => prev + xpToAward);
     }
   };
 
@@ -566,6 +628,9 @@ function DynamicLessonContent() {
           </div>
         );
 
+      // Updated gap_fill and gap_fill_advanced case in the switch statement
+
+      // Updated gap_fill case with better layout handling
       case "gap_fill":
       case "gap_fill_advanced":
         return (
@@ -593,7 +658,13 @@ function DynamicLessonContent() {
                       <div className="text-lg leading-9 mb-4">
                         {textParts.map((part, partIndex) => (
                           <span key={partIndex}>
-                            {part}
+                            {/* Handle line breaks in text */}
+                            {part.split("\n").map((line, lineIndex, lines) => (
+                              <span key={lineIndex}>
+                                {line}
+                                {lineIndex < lines.length - 1 && <br />}
+                              </span>
+                            ))}
                             {partIndex < totalGaps && (
                               <select
                                 value={
@@ -608,29 +679,83 @@ function DynamicLessonContent() {
                                       e.target.value,
                                   }))
                                 }
-                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
+                                className={`mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px] ${
+                                  showFeedback
+                                    ? selectedAnswers[
+                                        `${scenarioIndex}-${partIndex}`
+                                      ] ===
+                                      scenario.gaps[partIndex]?.correct_answer
+                                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                      : "border-red-500 bg-red-50 dark:bg-red-900/20"
+                                    : "border-gray-300 dark:border-gray-600"
+                                }`}
                                 disabled={showFeedback}
                               >
                                 <option value="">Choose...</option>
-                                {scenario.options?.map((option, optIndex) => (
-                                  <option key={optIndex} value={option}>
-                                    {option}
-                                  </option>
-                                ))}
+                                {scenario.gaps[partIndex]?.options?.map(
+                                  (option, optIndex) => (
+                                    <option key={optIndex} value={option}>
+                                      {option}
+                                    </option>
+                                  )
+                                )}
                               </select>
                             )}
                           </span>
                         ))}
                       </div>
-                      {scenario.feedback && showFeedback && (
-                        <div
-                          className={`mt-3 p-3 rounded text-sm ${
-                            isCorrect
-                              ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
-                              : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200"
-                          }`}
-                        >
-                          {scenario.feedback}
+
+                      {/* Show individual gap feedback after submission */}
+                      {showFeedback && (
+                        <div className="mt-4 space-y-2">
+                          {scenario.gaps.map((gap, gapIndex) => {
+                            const userAnswer =
+                              selectedAnswers[`${scenarioIndex}-${gapIndex}`];
+                            const isGapCorrect =
+                              userAnswer === gap.correct_answer;
+
+                            return (
+                              <div
+                                key={gapIndex}
+                                className={`p-3 rounded text-sm ${
+                                  isGapCorrect
+                                    ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
+                                    : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
+                                }`}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  {isGapCorrect ? (
+                                    <CheckCircle className="w-4 h-4" />
+                                  ) : (
+                                    <X className="w-4 h-4" />
+                                  )}
+                                  <span className="font-medium">
+                                    Gap {gapIndex + 1}:{" "}
+                                    {isGapCorrect ? "Correct!" : "Incorrect"}
+                                  </span>
+                                </div>
+                                {!isGapCorrect && (
+                                  <div className="mt-1 text-xs">
+                                    You chose: &quot;{userAnswer || "nothing"}
+                                    &quot; | Correct answer: &quot;
+                                    {gap.correct_answer}&quot;
+                                    {gap.explanation && (
+                                      <div className="mt-1">
+                                        💡 {gap.explanation}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {/* Overall scenario feedback */}
+                          {scenario.feedback && (
+                            <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded text-sm">
+                              <strong>Feedback:</strong> {scenario.feedback}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -638,67 +763,112 @@ function DynamicLessonContent() {
                 })}
               </div>
             ) : (
-              // Handle standard gap fill - also fix this
+              // Handle standard gap fill - same line break logic
               <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl mb-6">
                 <div className="text-xl leading-relaxed">
                   {currentStepData.text
-                    ? // Handle underscore-based gaps
-                      currentStepData.text.split("_____").map((part, index) => {
-                        const totalGaps =
-                          currentStepData.text.split("_____").length - 1;
-                        return (
-                          <span key={index}>
-                            {part}
-                            {index < totalGaps && (
-                              <select
-                                value={selectedAnswer}
-                                onChange={(e) =>
-                                  setSelectedAnswer(e.target.value)
-                                }
-                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
-                                disabled={showFeedback}
-                              >
-                                <option value="">Choose...</option>
-                                {currentStepData.options?.map(
-                                  (option, optIndex) => (
+                    ? currentStepData.text
+                        .split("_____")
+                        .map((part, partIndex) => {
+                          const totalGaps =
+                            currentStepData.text.split("_____").length - 1;
+                          return (
+                            <span key={partIndex}>
+                              {/* Handle line breaks in text */}
+                              {part
+                                .split("\n")
+                                .map((line, lineIndex, lines) => (
+                                  <span key={lineIndex}>
+                                    {line}
+                                    {lineIndex < lines.length - 1 && <br />}
+                                  </span>
+                                ))}
+                              {partIndex < totalGaps && (
+                                <select
+                                  value={
+                                    selectedAnswers[`gap-${partIndex}`] || ""
+                                  }
+                                  onChange={(e) =>
+                                    setSelectedAnswers((prev) => ({
+                                      ...prev,
+                                      [`gap-${partIndex}`]: e.target.value,
+                                    }))
+                                  }
+                                  className={`mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px] ${
+                                    showFeedback
+                                      ? selectedAnswers[`gap-${partIndex}`] ===
+                                        currentStepData.gaps[partIndex]
+                                          ?.correct_answer
+                                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                        : "border-red-500 bg-red-50 dark:bg-red-900/20"
+                                      : "border-gray-300 dark:border-gray-600"
+                                  }`}
+                                  disabled={showFeedback}
+                                >
+                                  <option value="">Choose...</option>
+                                  {currentStepData.gaps[
+                                    partIndex
+                                  ]?.options?.map((option, optIndex) => (
                                     <option key={optIndex} value={option}>
                                       {option}
                                     </option>
-                                  )
-                                )}
-                              </select>
-                            )}
-                          </span>
-                        );
-                      })
-                    : // Fallback for curly brace format
-                      currentStepData.template
-                        ?.split("{}")
-                        .map((part, index) => (
-                          <span key={index}>
-                            {part}
-                            {index < (currentStepData.gaps || 1) && (
-                              <select
-                                value={selectedAnswer}
-                                onChange={(e) =>
-                                  setSelectedAnswer(e.target.value)
-                                }
-                                className="mx-2 px-3 py-1 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[120px]"
-                                disabled={showFeedback}
-                              >
-                                <option value="">Choose...</option>
-                                {currentStepData.options?.map(
-                                  (option, optIndex) => (
-                                    <option key={optIndex} value={option}>
-                                      {option}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            )}
-                          </span>
-                        ))}
+                                  ))}
+                                </select>
+                              )}
+                            </span>
+                          );
+                        })
+                    : null}
                 </div>
+
+                {/* Show feedback for standard gap fill */}
+                {showFeedback && currentStepData.gaps && (
+                  <div className="mt-4 space-y-2">
+                    {currentStepData.gaps.map((gap, gapIndex) => {
+                      const userAnswer = selectedAnswers[`gap-${gapIndex}`];
+                      const isGapCorrect = userAnswer === gap.correct_answer;
+
+                      return (
+                        <div
+                          key={gapIndex}
+                          className={`p-3 rounded text-sm ${
+                            isGapCorrect
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
+                              : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            {isGapCorrect ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                            <span className="font-medium">
+                              Gap {gapIndex + 1}:{" "}
+                              {isGapCorrect ? "Correct!" : "Incorrect"}
+                            </span>
+                          </div>
+                          {!isGapCorrect && (
+                            <div className="mt-1 text-xs">
+                              You chose: &quot;{userAnswer || "nothing"}&quot; |
+                              Correct answer: &quot;{gap.correct_answer}&quot;
+                              {gap.explanation && (
+                                <div className="mt-1">💡 {gap.explanation}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Overall feedback */}
+                    {currentStepData.feedback && (
+                      <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded text-sm">
+                        <strong>Feedback:</strong> {currentStepData.feedback}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -706,34 +876,49 @@ function DynamicLessonContent() {
               <button
                 onClick={handleAnswerSubmit}
                 disabled={
-                  !selectedAnswer && Object.keys(selectedAnswers).length === 0
+                  // Check if any gaps are empty
+                  currentStepData.scenarios
+                    ? currentStepData.scenarios.some(
+                        (scenario, scenarioIndex) =>
+                          scenario.gaps.some(
+                            (_, gapIndex) =>
+                              !selectedAnswers[`${scenarioIndex}-${gapIndex}`]
+                          )
+                      )
+                    : currentStepData.gaps?.some(
+                        (_, gapIndex) => !selectedAnswers[`gap-${gapIndex}`]
+                      )
                 }
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Check Answer
+                Check Answers
               </button>
             )}
+
             {showFeedback && (
-              <div
-                className={`p-4 rounded-lg mb-4 ${isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-              >
-                <div className="flex items-center space-x-2">
-                  {isCorrect ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    <X className="w-5 h-5" />
-                  )}
-                  <span className="font-semibold">
-                    {isCorrect
-                      ? "Correct! +20 XP"
-                      : "Not quite right. Try again!"}
-                  </span>
+              <div className="mt-4">
+                <div
+                  className={`p-4 rounded-lg ${isCorrect ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
+                >
+                  <div className="flex items-center space-x-2">
+                    {isCorrect ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5" />
+                    )}
+                    <span className="font-semibold">
+                      {isCorrect
+                        ? `Perfect! All answers correct. +${20 * (currentStepData.scenarios?.reduce((total, scenario) => total + scenario.gaps.length, 0) || currentStepData.gaps?.length || 1)} XP`
+                        : "Some answers need work. Review the feedback above and try to remember the correct answers!"}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         );
 
+      // Updated situational_challenges case
       case "situational":
       case "situational_challenges":
         return (
@@ -745,14 +930,14 @@ function DynamicLessonContent() {
             {currentStepData.challenges ? (
               // Handle challenges format
               <div className="space-y-6">
-                {currentStepData.challenges.map((challenge, index) => (
+                {currentStepData.challenges.map((challenge, challengeIndex) => (
                   <div
-                    key={index}
+                    key={challengeIndex}
                     className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-xl"
                   >
                     <div className="mb-4">
                       <p className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Situation:
+                        Situation {challengeIndex + 1}:
                       </p>
                       <p className="text-lg italic text-gray-700 dark:text-gray-300 mb-4">
                         &quot;{challenge.scenario}&quot;
@@ -761,14 +946,25 @@ function DynamicLessonContent() {
                         {challenge.challenge}
                       </p>
                     </div>
+
                     <div className="space-y-3 mb-6">
                       {challenge.options?.map((option, optIndex) => (
                         <button
                           key={optIndex}
-                          onClick={() => setSelectedAnswer(option)}
+                          onClick={() =>
+                            setSelectedAnswers((prev) => ({
+                              ...prev,
+                              [`challenge-${challengeIndex}`]: option,
+                            }))
+                          }
                           className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                            selectedAnswer === option
-                              ? "text-gray-900 dark:text-white border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            selectedAnswers[`challenge-${challengeIndex}`] ===
+                            option
+                              ? showFeedback
+                                ? option === challenge.correct_answer
+                                  ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200"
+                                  : "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200"
+                                : "text-gray-900 dark:text-white border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                               : "text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-gray-300"
                           }`}
                           disabled={showFeedback}
@@ -777,17 +973,64 @@ function DynamicLessonContent() {
                         </button>
                       ))}
                     </div>
-                    {showFeedback && challenge.explanation && (
-                      <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                        <p className="font-semibold mb-2">Explanation:</p>
-                        <p className="text-sm">{challenge.explanation}</p>
+
+                    {/* Individual challenge feedback */}
+                    {showFeedback && (
+                      <div className="space-y-3">
+                        <div
+                          className={`p-4 rounded-lg ${
+                            selectedAnswers[`challenge-${challengeIndex}`] ===
+                            challenge.correct_answer
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
+                              : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2 mb-2">
+                            {selectedAnswers[`challenge-${challengeIndex}`] ===
+                            challenge.correct_answer ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <X className="w-5 h-5" />
+                            )}
+                            <span className="font-semibold">
+                              {selectedAnswers[
+                                `challenge-${challengeIndex}`
+                              ] === challenge.correct_answer
+                                ? "Correct! Excellent choice!"
+                                : "Not quite right"}
+                            </span>
+                          </div>
+
+                          {selectedAnswers[`challenge-${challengeIndex}`] !==
+                            challenge.correct_answer && (
+                            <div className="text-sm mb-2">
+                              <strong>You chose:</strong> &quot;
+                              {selectedAnswers[`challenge-${challengeIndex}`] ||
+                                "nothing"}
+                              &quot;
+                              <br />
+                              <strong>Correct answer:</strong> &quot;
+                              {challenge.correct_answer}&quot;
+                            </div>
+                          )}
+
+                          {challenge.explanation && (
+                            <div className="text-sm">
+                              <strong>Explanation:</strong>{" "}
+                              {challenge.explanation}
+                            </div>
+                          )}
+                        </div>
+
                         {challenge.follow_up_tips && (
-                          <div className="mt-3">
-                            <p className="font-semibold mb-1">Tips:</p>
-                            <ul className="text-sm space-y-1">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                            <p className="font-semibold mb-1 text-blue-800 dark:text-blue-200">
+                              Tips for next time:
+                            </p>
+                            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                               {challenge.follow_up_tips.map((tip, tipIndex) => (
                                 <li key={tipIndex} className="flex items-start">
-                                  <span className="text-green-600 mr-2">•</span>
+                                  <span className="text-blue-600 mr-2">•</span>
                                   {tip}
                                 </li>
                               ))}
@@ -800,7 +1043,7 @@ function DynamicLessonContent() {
                 ))}
               </div>
             ) : (
-              // Handle standard situational
+              // Handle standard situational format (backwards compatibility)
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-xl mb-6">
                 <p className="font-semibold text-gray-900 dark:text-white mb-4">
                   Situation:
@@ -867,14 +1110,49 @@ function DynamicLessonContent() {
               </>
             )}
 
-            {!showFeedback && currentStepData.challenges && (
+            {/* Submit button for challenges */}
+            {currentStepData.challenges && !showFeedback && (
               <button
                 onClick={handleAnswerSubmit}
-                disabled={!selectedAnswer}
+                disabled={
+                  // Check if all challenges have been answered
+                  currentStepData.challenges.some(
+                    (_, challengeIndex) =>
+                      !selectedAnswers[`challenge-${challengeIndex}`]
+                  )
+                }
                 className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Submit Answer
+                Submit Answers
               </button>
+            )}
+
+            {/* Overall feedback for challenges */}
+            {currentStepData.challenges && showFeedback && (
+              <div className="mt-6">
+                <div
+                  className={`p-4 rounded-lg ${isCorrect ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
+                >
+                  <div className="flex items-center space-x-2">
+                    {isCorrect ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5" />
+                    )}
+                    <span className="font-semibold">
+                      {isCorrect
+                        ? `Perfect! All situations handled correctly. +${20 * currentStepData.challenges.length} XP`
+                        : `You got ${
+                            currentStepData.challenges.filter(
+                              (challenge, index) =>
+                                selectedAnswers[`challenge-${index}`] ===
+                                challenge.correct_answer
+                            ).length
+                          } out of ${currentStepData.challenges.length} correct. Keep practicing!`}
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         );
