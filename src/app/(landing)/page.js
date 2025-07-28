@@ -1,3 +1,5 @@
+// src/app/(landing)/page-clubs.js
+
 // src/app/(landing)/page.js
 "use client";
 
