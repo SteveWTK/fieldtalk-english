@@ -27,7 +27,7 @@ export default function PlayerJourney() {
       pillar: "survival",
       pillarName: "Survival English",
       story:
-        "João arrived at Watford training ground feeling anxious. He could barely ask where the changing room was.",
+        "João arrived at the training ground feeling anxious. He could barely ask where the changing room was.",
       quote:
         "I was so nervous, I couldn't even say 'good morning' properly to my new teammates.",
       metrics: {
@@ -36,7 +36,7 @@ export default function PlayerJourney() {
         fluency: 0,
         confidence: 2,
       },
-      image: "/images/week1-nervous.jpg",
+      image: "/images/journey/week1-training-ground.png",
       achievement: null,
     },
     {
@@ -54,7 +54,7 @@ export default function PlayerJourney() {
         fluency: 5,
         confidence: 4,
       },
-      image: "/images/week4-lunch.jpg",
+      image: "/images/week4-lunch.jpeg",
       achievement: "First Conversation Master",
     },
     {
@@ -72,7 +72,7 @@ export default function PlayerJourney() {
         fluency: 15,
         confidence: 6,
       },
-      image: "/images/week8-tactics.jpg",
+      image: "/images/week8-tactics.jpeg",
       achievement: "Tactical Understanding",
     },
     {
@@ -90,7 +90,7 @@ export default function PlayerJourney() {
         fluency: 25,
         confidence: 8,
       },
-      image: "/images/week16-goal.jpg",
+      image: "/images/week16-goal.webp",
       achievement: "Match Communication Expert",
     },
     {
@@ -171,7 +171,7 @@ export default function PlayerJourney() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            João&apos;s Journey at Watford FC
+            João&apos;s Journey at a Professional Club
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
             From nervous newcomer to confident team leader in 32 weeks

@@ -183,7 +183,7 @@ export default function FieldTalkPresentation() {
     {
       id: "journey",
       title: "Real Player Success Story",
-      subtitle: "João's 32-Week Transformation at Watford FC",
+      subtitle: "João's 32-Week Transformation",
       milestones: [
         {
           week: "Week 1",

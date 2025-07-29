@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import PlayerJourney from "@/components/PlayerJourney";
 // import TestimonialCard from "@/components/TestimonialCard";
-import PhotoGallery from "@/components/PhotoGallery";
+// import PhotoGallery from "@/components/PhotoGallery";
 import Link from "next/link";
 
 export default function EnhancedClubLandingPage() {
@@ -91,14 +91,14 @@ export default function EnhancedClubLandingPage() {
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='180' text-anchor='middle' fill='%236b7280' font-size='18'%3EProfessional Training%3C/text%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='18'%3ESession Integration%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='%236b7280' font-size='14'%3EFieldTalk English%3C/text%3E%3C/svg%3E";
                 }}
               />
-              <div className="absolute -bottom-6 -left-6 text-gray-950 dark:text-white bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+              {/* <div className="absolute -bottom-6 -left-6 text-gray-950 dark:text-white bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium">
                     200+ Players Trained
                   </span>
                 </div>
-              </div>
+              </div> */}
               <div className="absolute -top-6 -right-6 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">15%</div>
@@ -203,9 +203,9 @@ export default function EnhancedClubLandingPage() {
                   </li>
                 </ul>
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <span className="text-sm font-medium text-red-600">
+                  {/* <span className="text-sm font-medium text-red-600">
                     Target: First 30 days
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </div>
@@ -242,9 +242,9 @@ export default function EnhancedClubLandingPage() {
                   </li>
                 </ul>
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <span className="text-sm font-medium text-blue-600">
+                  {/* <span className="text-sm font-medium text-blue-600">
                     Target: First 3 months
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </div>
@@ -281,9 +281,9 @@ export default function EnhancedClubLandingPage() {
                   </li>
                 </ul>
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  <span className="text-sm font-medium text-green-600">
+                  {/* <span className="text-sm font-medium text-green-600">
                     Target: 6+ months
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </div>
@@ -348,7 +348,7 @@ export default function EnhancedClubLandingPage() {
       </section>
 
       {/* Photo Gallery - Club Context */}
-      <section className="py-16 bg-white dark:bg-gray-900">
+      {/* <section className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -361,7 +361,7 @@ export default function EnhancedClubLandingPage() {
           </div>
           <PhotoGallery clubContext={true} />
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials - Club Officials & Players */}
       {/* <section className="py-16 bg-gray-50 dark:bg-gray-800">
@@ -442,11 +442,11 @@ export default function EnhancedClubLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Real Player Success Stories
+              Sample Player Success Stories
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              See how our three-pillar system transforms international players
-              from nervous newcomers to confident team leaders
+              See how our three-pillar system can transform international
+              players from nervous newcomers to confident team leaders
             </p>
           </div>
 
@@ -485,7 +485,7 @@ export default function EnhancedClubLandingPage() {
                   Academy Focus
                 </h3>
                 <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  £2,500
+                  £x,xxx
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
                   per month
@@ -534,7 +534,7 @@ export default function EnhancedClubLandingPage() {
                   First Team
                 </h3>
                 <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  £8,500
+                  £x,xxx
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
                   per month
