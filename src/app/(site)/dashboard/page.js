@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/app/(site)/dashboard/page.js - Fixed version with real user data
+// src/app/(site)/dashboard/page.js
 "use client";
 
 import React, { useState } from "react";
