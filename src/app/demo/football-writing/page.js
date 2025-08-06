@@ -106,7 +106,7 @@ export default function FootballWritingDemo() {
                   Real Football Scenarios
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Practice writing about situations you'll face at your UK club
+                  Practice writing about situations you&apos;ll face at your UK club
                 </p>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function FootballWritingDemo() {
                 <strong>Use the PT/EN toggle:</strong> Start with Portuguese instructions, switch to English as you improve
               </p>
               <p className="mb-2">
-                <strong>Don't translate directly from Portuguese!</strong> English has different structures.
+                <strong>Don&apos;t translate directly from Portuguese!</strong> English has different structures.
               </p>
               <p>
                 <strong>Practice daily:</strong> 10 minutes of writing = rapid improvement
@@ -157,7 +157,7 @@ export default function FootballWritingDemo() {
             </div>
             <div>
               <p className="mb-2">
-                <strong>Learn football phrases:</strong> "man on", "time", "switch play"
+                <strong>Learn football phrases:</strong> &quot;man on&quot;, &quot;time&quot;, &quot;switch play&quot;
               </p>
               <p>
                 <strong>Ask teammates for help:</strong> British players appreciate the effort

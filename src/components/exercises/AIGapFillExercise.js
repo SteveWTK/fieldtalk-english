@@ -398,7 +398,6 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
 
   const getPerformanceMessage = () => {
     const totalHints = getTotalHintsUsed();
-    const totalAttempts = Object.values(attempts).reduce((a, b) => a + b, 0);
 
     if (totalHints === 0) {
       return "Amazing! You completed everything without using any hints! 🏆";

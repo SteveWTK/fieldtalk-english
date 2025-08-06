@@ -19,8 +19,6 @@ import {
 
 export default function AIWritingExercise({
   prompt,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  context,
   lessonId,
   onComplete,
   minWords = 50,

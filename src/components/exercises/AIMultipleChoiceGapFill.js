@@ -11,7 +11,6 @@ import {
   Target,
   AlertTriangle,
   Zap,
-  Volume2,
   Play,
   Pause,
 } from "lucide-react";
@@ -284,7 +283,7 @@ export default function AIMultipleChoiceGapFill({
       } else {
         throw new Error("TTS API not available");
       }
-    } catch (error) {
+    } catch {
       // Fallback to browser TTS
       console.log("Using browser TTS fallback");
 

@@ -29,7 +29,7 @@ export function useDarkMode(defaultValue = false) {
 
     // Apply immediately to document
     applyTheme(initialDarkMode);
-  }, []);
+  }, [defaultValue]);
 
   const applyTheme = (isDark) => {
     if (isDark) {
@@ -55,15 +55,15 @@ export function useDarkMode(defaultValue = false) {
   return { darkMode, setDarkMode: toggleDarkMode, isLoaded };
 }
 
+const languageOptions = {
+  en: { label: "English", flag: "🇬🇧" },
+  pt: { label: "Português", flag: "🇧🇷" },
+  es: { label: "Español", flag: "🇪🇸" },
+  fr: { label: "Français", flag: "🇫🇷" },
+};
+
 export function useLanguage(defaultLang = "en") {
   const [lang, setLang] = useState(defaultLang);
-
-  const languageOptions = {
-    en: { label: "English", flag: "🇬🇧" },
-    pt: { label: "Português", flag: "🇧🇷" },
-    es: { label: "Español", flag: "🇪🇸" },
-    fr: { label: "Français", flag: "🇫🇷" },
-  };
 
   useEffect(() => {
     const stored = localStorage.getItem("fieldtalk-lang");

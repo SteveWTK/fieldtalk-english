@@ -290,7 +290,7 @@ export default function AIFootballWritingExercise({
             typeof data.analysis === "string"
               ? JSON.parse(data.analysis)
               : data.analysis;
-        } catch (e) {
+        } catch {
           analysis = { 
             score: 7, 
             feedback: data.feedback,

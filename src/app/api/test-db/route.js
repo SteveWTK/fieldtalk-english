@@ -29,7 +29,7 @@ export async function GET() {
     console.log('✅ User authenticated:', user.id);
     
     // Test 3: Query players table structure
-    const { data: tableInfo, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('players')
       .select('*')
       .limit(0);

@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { Volume2 } from 'lucide-react';
 
-export default function VocabularyItem({ item, playAudio, englishVariant = 'british', voiceGender = 'male' }) {
+export default function VocabularyItem({ item, englishVariant = 'british', voiceGender = 'male' }) {
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(item.audio_url || null);
   

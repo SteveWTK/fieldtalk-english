@@ -21,34 +21,34 @@ function SettingsContent() {
 
   // Load user settings
   useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('players')
+          .select('english_variant, preferred_language, voice_gender')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error loading settings:', error);
+        } else if (data) {
+          setSettings({
+            english_variant: data.english_variant || 'british',
+            preferred_language: data.preferred_language || 'en',
+            voice_gender: data.voice_gender || 'male',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (user?.id) {
       loadSettings();
     }
   }, [user]);
-
-  const loadSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('players')
-        .select('english_variant, preferred_language, voice_gender')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error loading settings:', error);
-      } else if (data) {
-        setSettings({
-          english_variant: data.english_variant || 'british',
-          preferred_language: data.preferred_language || 'en',
-          voice_gender: data.voice_gender || 'male',
-        });
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const saveSettings = async () => {
     setSaving(true);

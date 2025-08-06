@@ -17,7 +17,6 @@ import {
 
 export default function AIConversationPractice({
   scenario,
-  context,
   lessonId,
   onComplete,
   maxTurns = 6,
@@ -153,7 +152,7 @@ export default function AIConversationPractice({
     }
   };
 
-  const speakMessage = async (text, messageId) => {
+  const speakMessage = async (text) => {
     try {
       // Try OpenAI TTS first (if available)
       const response = await fetch("/api/tts", {
@@ -175,7 +174,7 @@ export default function AIConversationPractice({
       } else {
         throw new Error("TTS API not available");
       }
-    } catch (error) {
+    } catch {
       // Fallback to browser TTS
       console.log("Using browser TTS fallback");
 
