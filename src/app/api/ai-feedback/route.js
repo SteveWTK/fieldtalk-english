@@ -1,21 +1,21 @@
 // src/app/api/ai-feedback/route.js
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Initialize OpenAI (we'll use the API key from environment variables)
 async function callOpenAI(messages, temperature = 0.7) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured');
+    throw new Error("OPENAI_API_KEY is not configured");
   }
-  
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4-turbo-preview',
+      model: "gpt-4-turbo-preview",
       messages,
       temperature,
       max_tokens: 1000,
@@ -24,8 +24,10 @@ async function callOpenAI(messages, temperature = 0.7) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('OpenAI API error:', response.status, errorText);
-    throw new Error(`OpenAI API error: ${response.status} - ${response.statusText}`);
+    console.error("OpenAI API error:", response.status, errorText);
+    throw new Error(
+      `OpenAI API error: ${response.status} - ${response.statusText}`
+    );
   }
 
   const data = await response.json();
@@ -34,7 +36,7 @@ async function callOpenAI(messages, temperature = 0.7) {
 
 // Language-specific prompts
 const LANGUAGE_PROMPTS = {
-  'pt-BR': {
+  "pt-BR": {
     context: `Você é um tutor de inglês especializado em inglês britânico para futebol/football. 
       Você está ajudando jovens jogadores brasileiros a melhorar seu inglês para contextos profissionais do futebol.
       Foque na comunicação prática que eles precisarão nos treinos, com companheiros de equipe e em situações de jogo.
@@ -66,9 +68,9 @@ const LANGUAGE_PROMPTS = {
       Contexto: {context}`,
     gapFillHint: `O aluno está com dificuldade em um exercício de preencher lacunas. 
       Forneça uma dica útil em PORTUGUÊS BRASILEIRO sem dar a resposta diretamente.
-      Contexto: {context}`
+      Contexto: {context}`,
   },
-  'es': {
+  es: {
     context: `Eres un tutor de inglés especializado en inglés británico para fútbol. 
       Estás ayudando a jóvenes futbolistas hispanohablantes a mejorar su inglés para contextos profesionales del fútbol.
       Enfócate en la comunicación práctica que necesitarán en entrenamientos, con compañeros de equipo y en situaciones de partido.
@@ -100,9 +102,9 @@ const LANGUAGE_PROMPTS = {
       Contexto: {context}`,
     gapFillHint: `El estudiante tiene dificultad con un ejercicio de llenar espacios. 
       Proporciona una pista útil en ESPAÑOL sin dar la respuesta directamente.
-      Contexto: {context}`
+      Contexto: {context}`,
   },
-  'fr': {
+  fr: {
     context: `Vous êtes un tuteur d'anglais spécialisé dans l'anglais pour le football. 
       Vous aidez de jeunes footballeurs francophones à améliorer leur anglais pour des contextes professionnels du football.
       Concentrez-vous sur la communication pratique dont ils auront besoin à l'entraînement, avec leurs coéquipiers et dans les situations de match.
@@ -134,9 +136,9 @@ const LANGUAGE_PROMPTS = {
       Contexte: {context}`,
     gapFillHint: `L'étudiant a des difficultés avec un exercice à trous. 
       Fournissez un indice utile en FRANÇAIS sans donner directement la réponse.
-      Contexte: {context}`
+      Contexte: {context}`,
   },
-  'en': {
+  en: {
     context: `You are an English language tutor specializing in British English for football/soccer. 
       You're helping young footballers improve their English for professional football contexts in the UK and Europe.
       Focus on practical communication they'll need at training, with teammates, and in match situations.
@@ -165,52 +167,63 @@ const LANGUAGE_PROMPTS = {
       Context: {context}`,
     gapFillHint: `The student is struggling with a gap fill exercise. 
       Provide a helpful hint without giving the answer directly.
-      Context: {context}`
-  }
+      Context: {context}`,
+  },
 };
 
 // Get language prompt with fallback to pt-BR
-function getLanguagePrompt(language = 'pt-BR') {
-  return LANGUAGE_PROMPTS[language] || LANGUAGE_PROMPTS['pt-BR'];
+function getLanguagePrompt(language = "pt-BR") {
+  return LANGUAGE_PROMPTS[language] || LANGUAGE_PROMPTS["pt-BR"];
 }
 
 export async function POST(request) {
   try {
-    console.log('AI Feedback endpoint called');
-    
+    console.log("AI Feedback endpoint called");
+
     // Create Supabase client
     const supabase = await createClient();
-    console.log('Supabase client created');
-    
+    console.log("Supabase client created");
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
-      console.error('Auth error:', authError);
-      return NextResponse.json({ error: 'Unauthorized', details: authError?.message }, { status: 401 });
+      console.error("Auth error:", authError);
+      return NextResponse.json(
+        { error: "Unauthorized", details: authError?.message },
+        { status: 401 }
+      );
     }
-    console.log('User authenticated:', user.id);
+    console.log("User authenticated:", user.id);
 
     // Get player's preferred language and English variant
-    let userLanguage = 'pt-BR'; // Default
-    let englishVariant = 'british'; // Default
-    
+    let userLanguage = "pt-BR"; // Default
+    let englishVariant = "british"; // Default
+
     try {
       const { data: playerData, error: playerError } = await supabase
-        .from('players')
-        .select('preferred_language, english_variant')
-        .eq('id', user.id)
+        .from("players")
+        .select("preferred_language, english_variant")
+        .eq("id", user.id)
         .single();
 
       if (playerError) {
-        console.error('Error fetching player preferences:', playerError);
+        console.error("Error fetching player preferences:", playerError);
         // Continue with default settings instead of failing
       } else if (playerData) {
-        userLanguage = playerData.preferred_language || 'en';
-        englishVariant = playerData.english_variant || 'british';
-        console.log('User language set to:', userLanguage, 'English variant:', englishVariant);
+        userLanguage = playerData.preferred_language || "en";
+        englishVariant = playerData.english_variant || "british";
+        console.log(
+          "User language set to:",
+          userLanguage,
+          "English variant:",
+          englishVariant
+        );
       }
     } catch (dbError) {
-      console.error('Database query error:', dbError);
+      console.error("Database query error:", dbError);
       // Continue with default settings
     }
     const langPrompts = getLanguagePrompt(userLanguage);
@@ -218,53 +231,63 @@ export async function POST(request) {
     const body = await request.json();
     const { type, content, context, lessonId } = body;
 
-    let feedback = '';
+    let feedback = "";
     let analysis = {};
 
     switch (type) {
-      case 'writing':
+      case "writing":
         // Analyze writing exercise with language-specific prompt
         const writingMessages = [
           {
-            role: 'system',
-            content: langPrompts.context + '\n\n' + langPrompts.writingPrompt.replace('{context}', context || 'General football English'),
+            role: "system",
+            content:
+              langPrompts.context +
+              "\n\n" +
+              langPrompts.writingPrompt.replace(
+                "{context}",
+                context || "General football English"
+              ),
           },
           {
-            role: 'user',
+            role: "user",
             content: `Please analyze this writing: "${content}"`,
           },
         ];
 
         const writingResponse = await callOpenAI(writingMessages, 0.3);
-        console.log('OpenAI Raw Response:', writingResponse);
-        
+        console.log("OpenAI Raw Response:", writingResponse);
+
         try {
           // Try to parse as JSON first
           const parsedAnalysis = JSON.parse(writingResponse);
-          console.log('Successfully parsed as JSON:', parsedAnalysis);
+          console.log("Successfully parsed as JSON:", parsedAnalysis);
           analysis = parsedAnalysis;
           feedback = writingResponse; // Keep raw response for storage
         } catch (e) {
-          console.log('Failed to parse OpenAI response as JSON, using fallback:', e.message);
-          console.log('Raw response that failed to parse:', writingResponse);
+          console.log(
+            "Failed to parse OpenAI response as JSON, using fallback:",
+            e.message
+          );
+          console.log("Raw response that failed to parse:", writingResponse);
           // Fallback if JSON parsing fails - create structured response
           feedback = writingResponse;
-          analysis = { 
-            score: 7, 
+          analysis = {
+            score: 7,
             feedback: writingResponse,
             clarity: writingResponse,
             grammar: [],
             vocabulary: [],
             improvements: ["Continue practicing writing in English"],
-            encouragement: "Great effort! Keep practicing to improve your English skills."
+            encouragement:
+              "Great effort! Keep practicing to improve your English skills.",
           };
         }
 
         // Store in database
-        await supabase.from('ai_feedback_history').insert({
+        await supabase.from("ai_feedback_history").insert({
           user_id: user.id,
           lesson_id: lessonId,
-          type: 'writing',
+          type: "writing",
           content: content,
           feedback: feedback,
           score: analysis.score || null,
@@ -273,15 +296,21 @@ export async function POST(request) {
         });
         break;
 
-      case 'gap_fill':
+      case "gap_fill":
         // Provide hints for gap fill exercises
         const gapFillMessages = [
           {
-            role: 'system',
-            content: langPrompts.context + '\n\n' + langPrompts.gapFillHint.replace('{context}', context || 'Football vocabulary'),
+            role: "system",
+            content:
+              langPrompts.context +
+              "\n\n" +
+              langPrompts.gapFillHint.replace(
+                "{context}",
+                context || "Football vocabulary"
+              ),
           },
           {
-            role: 'user',
+            role: "user",
             content: `The sentence is: "${content}". Give a hint for the missing word.`,
           },
         ];
@@ -289,54 +318,56 @@ export async function POST(request) {
         feedback = await callOpenAI(gapFillMessages, 0.5);
         break;
 
-      case 'conversation':
+      case "conversation":
         // Coach response - respects user's English variant preference
         const coachMessages = [
           {
-            role: 'system',
-            content: englishVariant === 'american' 
-              ? `You are a friendly American soccer coach having a conversation in English. 
+            role: "system",
+            content:
+              englishVariant === "american"
+                ? `You are a friendly American soccer coach having a conversation in English. 
                 Respond naturally and conversationally IN AMERICAN ENGLISH ONLY, as if you're helping a young player practice English.
                 Keep responses short (2-3 sentences max) and encouraging. Use simple, clear American English.
                 Use American soccer terminology (field, uniform, cleats, etc.) and American spelling (color, realize, center).
-                Context: ${context || 'Training ground conversation'}
+                Context: ${context || "Training ground conversation"}
                 IMPORTANT: Your response must be in American English regardless of the language the student uses.`
-              : `You are a friendly British football coach having a conversation in English. 
+                : `You are a friendly British football coach having a conversation in English. 
                 Respond naturally and conversationally IN BRITISH ENGLISH ONLY, as if you're helping a young player practice English.
                 Keep responses short (2-3 sentences max) and encouraging. Use simple, clear British English.
                 Use British football terminology (pitch, kit, boots, etc.) and British spelling (colour, realise, centre).
-                Context: ${context || 'Training ground conversation'}
+                Context: ${context || "Training ground conversation"}
                 IMPORTANT: Your response must be in British English regardless of the language the student uses.`,
           },
           {
-            role: 'user',
+            role: "user",
             content: content,
           },
         ];
 
         const coachResponse = await callOpenAI(coachMessages, 0.8);
-        
+
         // Error analysis - in user's preferred language
         const analysisMessages = [
           {
-            role: 'system',
-            content: userLanguage === 'en' 
-              ? 'Briefly identify any grammar or vocabulary errors in this sentence, if any. Be constructive and encouraging. Keep it short (1-2 sentences).'
-              : `Briefly identify any grammar or vocabulary errors in this sentence, if any. Be constructive and encouraging. Keep it short (1-2 sentences). Respond in ${userLanguage === 'pt-BR' ? 'Portuguese' : userLanguage === 'es' ? 'Spanish' : userLanguage === 'fr' ? 'French' : 'the user\'s language'}.`,
+            role: "system",
+            content:
+              userLanguage === "en"
+                ? "Briefly identify any grammar or vocabulary errors in this sentence, if any. Be constructive and encouraging. Keep it short (1-2 sentences)."
+                : `Briefly identify any grammar or vocabulary errors in this sentence, if any. Be constructive and encouraging. Keep it short (1-2 sentences). Respond in ${userLanguage === "pt-BR" ? "Portuguese" : userLanguage === "es" ? "Spanish" : userLanguage === "fr" ? "French" : "the user's language"}.`,
           },
           {
-            role: 'user',
+            role: "user",
             content: content,
           },
         ];
-        
+
         const errorAnalysis = await callOpenAI(analysisMessages, 0.3);
-        
+
         feedback = coachResponse;
         analysis = { errors: errorAnalysis };
-        
+
         // Store conversation turn
-        await supabase.from('ai_conversation_history').insert({
+        await supabase.from("ai_conversation_history").insert({
           user_id: user.id,
           lesson_id: lessonId,
           user_message: content,
@@ -348,7 +379,10 @@ export async function POST(request) {
         break;
 
       default:
-        return NextResponse.json({ error: 'Invalid feedback type' }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid feedback type" },
+          { status: 400 }
+        );
     }
 
     const responseData = {
@@ -358,25 +392,27 @@ export async function POST(request) {
       language: userLanguage,
       timestamp: new Date().toISOString(),
     };
-    
-    console.log('API Response being sent:', JSON.stringify(responseData, null, 2));
-    
-    return NextResponse.json(responseData);
 
+    console.log(
+      "API Response being sent:",
+      JSON.stringify(responseData, null, 2)
+    );
+
+    return NextResponse.json(responseData);
   } catch (error) {
-    console.error('AI Feedback error:', {
+    console.error("AI Feedback error:", {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
     });
-    
+
     // Return more detailed error for debugging
     return NextResponse.json(
-      { 
-        error: 'Failed to generate feedback', 
+      {
+        error: "Failed to generate feedback",
         details: error.message,
         type: error.name,
-        hint: 'Check server logs for more details'
+        hint: "Check server logs for more details",
       },
       { status: 500 }
     );

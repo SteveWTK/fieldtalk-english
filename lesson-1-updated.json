@@ -1,0 +1,340 @@
+{
+  "type": "multi_step",
+  "steps": [
+    {
+      "id": "step-1",
+      "type": "scenario",
+      "title": "Welcome to the Academy",
+      "content": "You've just been accepted to a football academy! Today you meet your new teammates and coach. This is your dream coming true.",
+      "audio_url": "/audio/scenario/academy-welcome.mp3",
+      "image_url": "/images/academy-entrance.jpg",
+      "cultural_context": "Brazilian players often feel nervous about speaking English at first. Remember, everyone wants to help you succeed!",
+      "reflection_questions": [
+        "How do you feel about joining a new academy?",
+        "What would you most want to tell your new teammates?",
+        "What questions would you ask your coach?"
+      ],
+      "translation_available": true
+    },
+    {
+      "id": "step-2",
+      "type": "vocabulary",
+      "title": "Essential Personal Introduction",
+      "content": "Learn the key phrases to introduce yourself to anyone at the academy.",
+      "vocabulary": [
+        {
+          "english": "Hi, I'm",
+          "example": "Hi, I'm João.",
+          "audio_url": "/audio/vocab/hi-im.mp3",
+          "usage_tip": "Always start with a greeting and your name",
+          "translation": "Oi, eu sou",
+          "pronunciation": "/haɪ aɪm/"
+        },
+        {
+          "english": "I'm from",
+          "example": "I'm from São Paulo.",
+          "audio_url": "/audio/vocab/im-from.mp3",
+          "usage_tip": "Tell people your city or state",
+          "translation": "Eu sou de",
+          "pronunciation": "/aɪm frɒm/"
+        },
+        {
+          "english": "I play",
+          "example": "I play midfielder.",
+          "audio_url": "/audio/vocab/i-play.mp3",
+          "usage_tip": "Your position is part of your football identity",
+          "translation": "Eu jogo",
+          "pronunciation": "/aɪ pleɪ/"
+        },
+        {
+          "english": "midfielder",
+          "example": "I'm a creative midfielder.",
+          "audio_url": "/audio/vocab/midfielder.mp3",
+          "translation": "meio-campista",
+          "pronunciation": "/ˈmɪdˌfiːldər/"
+        },
+        {
+          "english": "striker",
+          "example": "The striker scored three goals.",
+          "audio_url": "/audio/vocab/striker.mp3",
+          "translation": "atacante",
+          "pronunciation": "/ˈstraɪkər/"
+        },
+        {
+          "english": "defender",
+          "example": "The defender cleared the ball.",
+          "audio_url": "/audio/vocab/defender.mp3",
+          "translation": "defensor/zagueiro",
+          "pronunciation": "/dɪˈfendər/"
+        },
+        {
+          "english": "goalkeeper",
+          "example": "The goalkeeper made a great save.",
+          "audio_url": "/audio/vocab/goalkeeper.mp3",
+          "translation": "goleiro",
+          "pronunciation": "/ˈɡəʊlˌkiːpər/"
+        }
+      ]
+    },
+    {
+      "id": "step-3",
+      "type": "interactive_pitch",
+      "title": "Learn the Positions",
+      "content": "Click on each position to learn where players play and what they do.",
+      "interactive_config": {
+        "pitch_type": "positions",
+        "instruction": "Explore the football pitch! Click on each highlighted position to hear its name and learn what that player does.",
+        "click_areas": [
+          {
+            "x": "50%",
+            "y": "95%",
+            "id": "goalkeeper",
+            "label": "Goalkeeper",
+            "audio_url": "/audio/positions/goalkeeper.mp3",
+            "description": "The goalkeeper protects the goal and stops shots. The only player who can use hands in the penalty area.",
+            "translation": "Goleiro"
+          },
+          {
+            "x": "50%",
+            "y": "80%",
+            "id": "center-back",
+            "label": "Center Back",
+            "audio_url": "/audio/positions/center-back.mp3",
+            "description": "Center backs defend and organize the defense. They must be strong in the air and good at tackling.",
+            "translation": "Zagueiro central"
+          },
+          {
+            "x": "20%",
+            "y": "75%",
+            "id": "left-back",
+            "label": "Left Back",
+            "audio_url": "/audio/positions/left-back.mp3",
+            "description": "The left back defends the left side and supports attacks with overlapping runs.",
+            "translation": "Lateral esquerdo"
+          },
+          {
+            "x": "80%",
+            "y": "75%",
+            "id": "right-back",
+            "label": "Right Back",
+            "audio_url": "/audio/positions/right-back.mp3",
+            "description": "The right back defends the right side and makes overlapping runs to support the attack.",
+            "translation": "Lateral direito"
+          },
+          {
+            "x": "50%",
+            "y": "50%",
+            "id": "midfielder",
+            "label": "Midfielder",
+            "audio_url": "/audio/positions/midfielder.mp3",
+            "description": "Midfielders control the game and link defense to attack. They need vision and passing skills.",
+            "translation": "Meio-campista"
+          },
+          {
+            "x": "50%",
+            "y": "20%",
+            "id": "striker",
+            "label": "Striker",
+            "audio_url": "/audio/positions/striker.mp3",
+            "description": "The striker's job is to score goals. They must have good finishing and positioning.",
+            "translation": "Atacante"
+          }
+        ]
+      }
+    },
+    {
+      "id": "step-4",
+      "type": "ai_gap_fill",
+      "title": "Complete Your Introduction",
+      "content": "Use what you've learned to complete these introductions.",
+      "sentences": [
+        {
+          "id": "intro-1",
+          "text": "Hi, I'm ___. I'm from Brazil.",
+          "context": "Introducing your name",
+          "options": [
+            "João",
+            "Pedro",
+            "Carlos",
+            "Lucas"
+          ],
+          "hint_context": "Your name is what people will call you",
+          "correct_answers": [
+            "João"
+          ]
+        },
+        {
+          "id": "intro-2",
+          "text": "I ___ midfielder for my local team.",
+          "context": "Talking about your position",
+          "options": [
+            "play",
+            "am",
+            "like",
+            "want"
+          ],
+          "hint_context": "This is the verb for what you do on the football field",
+          "correct_answers": [
+            "play"
+          ]
+        },
+        {
+          "id": "intro-3",
+          "text": "I'm ___ São Paulo, Brazil.",
+          "context": "Telling people your hometown",
+          "options": [
+            "in",
+            "from",
+            "at",
+            "to"
+          ],
+          "hint_context": "This preposition shows your origin or where you come from",
+          "correct_answers": [
+            "from"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "step-5",
+      "type": "interactive_pitch",
+      "title": "Pitch Geography - Areas of the Field",
+      "content": "Now learn the different areas of the football pitch.",
+      "interactive_config": {
+        "pitch_type": "areas",
+        "instruction": "Click on each highlighted area to learn the names of different parts of the football pitch.",
+        "click_areas": [
+          {
+            "x": "50%",
+            "y": "90%",
+            "id": "penalty-area",
+            "label": "Penalty Area",
+            "audio_url": "/audio/areas/penalty-area.mp3",
+            "description": "The penalty area is where penalty kicks are awarded for fouls. Also called 'the box'.",
+            "translation": "Área do pênalti"
+          },
+          {
+            "x": "50%",
+            "y": "50%",
+            "id": "center-circle",
+            "label": "Center Circle",
+            "audio_url": "/audio/areas/center-circle.mp3",
+            "description": "The center circle is where kick-offs happen. Opponents must stay outside during kick-off.",
+            "translation": "Círculo central"
+          },
+          {
+            "x": "50%",
+            "y": "97%",
+            "id": "goal",
+            "label": "Goal",
+            "audio_url": "/audio/areas/goal.mp3",
+            "description": "The goal is where you score points. The ball must completely cross the line.",
+            "translation": "Gol"
+          },
+          {
+            "x": "10%",
+            "y": "95%",
+            "id": "corner",
+            "label": "Corner",
+            "audio_url": "/audio/areas/corner.mp3",
+            "description": "Corner kicks are taken from the corner of the pitch when the defense touches the ball last.",
+            "translation": "Escanteio"
+          }
+        ]
+      }
+    },
+    {
+      "id": "step-6",
+      "type": "ai_writing",
+      "title": "Write Your Introduction",
+      "prompt": "Write one sentence introducing yourself. Include your name, where you're from, and what position you play.",
+      "content": "Now write one sentence introducing yourself to your new teammates.",
+      "context": "Team introduction",
+      "example": "Hi, I'm João, I'm from São Paulo and I play midfielder.",
+      "maxWords": 15,
+      "minWords": 8,
+      "language_instructions": {
+        "en": "Write one sentence introducing yourself. Include your name, where you're from, and what position you play.",
+        "pt": "Escreva uma frase se apresentando. Inclua seu nome, de onde você é e que posição joga."
+      }
+    },
+    {
+      "id": "step-7",
+      "type": "interactive_game",
+      "title": "Follow the Ball - Simple Commands",
+      "content": "Listen to the command and click where the ball should go!",
+      "game_config": {
+        "type": "ball_following",
+        "commands": [
+          {
+            "text": "Pass to the striker",
+            "target": "striker",
+            "audio_url": "/audio/commands/pass-to-striker.mp3",
+            "translation": "Passe para o atacante",
+            "success_message": "Great pass!"
+          },
+          {
+            "text": "Pass to the goalkeeper",
+            "target": "goalkeeper",
+            "audio_url": "/audio/commands/pass-to-goalkeeper.mp3",
+            "translation": "Passe para o goleiro",
+            "success_message": "Safe pass back!"
+          },
+          {
+            "text": "Pass to the midfielder",
+            "target": "midfielder",
+            "audio_url": "/audio/commands/pass-to-midfielder.mp3",
+            "translation": "Passe para o meio-campista",
+            "success_message": "Perfect!"
+          },
+          {
+            "text": "Pass to the left back",
+            "target": "left-back",
+            "audio_url": "/audio/commands/pass-to-left-back.mp3",
+            "translation": "Passe para o lateral esquerdo",
+            "success_message": "Good switch!"
+          },
+          {
+            "text": "Pass to the right back",
+            "target": "right-back",
+            "audio_url": "/audio/commands/pass-to-right-back.mp3",
+            "translation": "Passe para o lateral direito",
+            "success_message": "Nice pass!"
+          },
+          {
+            "text": "Pass to the center back",
+            "target": "center-back",
+            "audio_url": "/audio/commands/pass-to-center-back.mp3",
+            "translation": "Passe para o zagueiro",
+            "success_message": "Safe choice!"
+          },
+          {
+            "text": "Kick to the goal",
+            "target": "goal",
+            "audio_url": "/audio/commands/kick-to-goal.mp3",
+            "translation": "Chute no gol",
+            "success_message": "Good shot!"
+          }
+        ],
+        "background_audio": "/audio/crowd-cheer.mp3",
+        "success_animation": "goal_celebration"
+      }
+    },
+    {
+      "id": "step-8",
+      "type": "completion",
+      "title": "Welcome to Your Team!",
+      "content": "Congratulations! You can now introduce yourself and understand basic football positions. You're ready for your next challenge!",
+      "xp_reward": 150,
+      "achievements": [
+        "✅ Learned essential introduction phrases",
+        "✅ Mastered football positions",
+        "✅ Understood pitch geography",
+        "✅ Completed your first interactive game"
+      ],
+      "badge_unlocked": "Team Member",
+      "next_lesson_preview": "Next: Learn to talk to your coach and get feedback on your speaking!",
+      "translation_available": true
+    }
+  ]
+}

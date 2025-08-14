@@ -1,31 +1,35 @@
 // src/components/VocabularyItem.js
 "use client";
 
-import React, { useState } from 'react';
-import { Volume2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Volume2 } from "lucide-react";
 
-export default function VocabularyItem({ item, englishVariant = 'british', voiceGender = 'male' }) {
+export default function VocabularyItem({
+  item,
+  englishVariant = "british",
+  voiceGender = "male",
+}) {
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(item.audio_url || null);
-  
+
   const generateAudio = async (text) => {
     setAudioLoading(true);
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: text,
           englishVariant: englishVariant,
-          voiceGender: voiceGender
-        })
+          voiceGender: voiceGender,
+        }),
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
-        
+
         // Create and play audio directly
         const audio = new Audio(url);
         audio.onended = () => {
@@ -34,19 +38,19 @@ export default function VocabularyItem({ item, englishVariant = 'british', voice
         await audio.play();
       }
     } catch (error) {
-      console.error('Error generating audio:', error);
+      console.error("Error generating audio:", error);
     } finally {
       setAudioLoading(false);
     }
   };
-  
+
   const playStoredAudio = (url) => {
     const audio = new Audio(url);
-    audio.play().catch(error => {
-      console.error('Error playing audio:', error);
+    audio.play().catch((error) => {
+      console.error("Error playing audio:", error);
     });
   };
-  
+
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between mb-2">
@@ -54,11 +58,11 @@ export default function VocabularyItem({ item, englishVariant = 'british', voice
           <span className="font-semibold text-gray-900 dark:text-white text-lg">
             {item.word || item.english}
           </span>
-          {item.pronunciation && (
+          {/* {item.pronunciation && (
             <span className="text-gray-500 dark:text-gray-400 ml-2 text-sm">
               {item.pronunciation}
             </span>
-          )}
+          )} */}
         </div>
         <button
           className="text-blue-600 hover:text-blue-700 disabled:opacity-50"
