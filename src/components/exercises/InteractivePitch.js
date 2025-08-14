@@ -284,7 +284,7 @@ async function generateOrFetchAudio(audioUrl, text) {
       if (response.ok) {
         return audioUrl;
       }
-    } catch (error) {
+    } catch {
       console.log("Pre-recorded audio not found, falling back to TTS");
     }
   }

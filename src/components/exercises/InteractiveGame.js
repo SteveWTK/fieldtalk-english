@@ -2,7 +2,7 @@
 import React, { useState, useRef } from "react";
 import { Play, RotateCcw, Volume2, CheckCircle } from "lucide-react";
 
-export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
+export default function InteractiveGame({ gameConfig, onComplete }) {
   const [currentCommand, setCurrentCommand] = useState(0);
   const [score, setScore] = useState(0);
   const [gameState, setGameState] = useState("ready"); // ready, playing, completed
@@ -479,7 +479,7 @@ async function generateCommandAudio(command) {
       if (response.ok) {
         return command.audio_url;
       }
-    } catch (error) {
+    } catch {
       console.log("Pre-recorded audio not found, falling back to TTS");
     }
   }
