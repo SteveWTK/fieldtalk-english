@@ -44,11 +44,33 @@ export default function VocabularyItem({
     }
   };
 
-  const playStoredAudio = (url) => {
-    const audio = new Audio(url);
-    audio.play().catch((error) => {
-      console.error("Error playing audio:", error);
-    });
+  const playStoredAudio = async (url) => {
+    if (!url) {
+      console.warn("No audio URL provided");
+      return;
+    }
+
+    try {
+      // First check if the URL is valid and accessible
+      if (url.startsWith("/audio/")) {
+        const checkResponse = await fetch(url, { method: "HEAD" });
+        if (!checkResponse.ok) {
+          console.warn(`Audio file not found at ${url}, falling back to TTS`);
+          // Fall back to TTS generation
+          const wordText = item.word || item.english;
+          await generateAudio(wordText);
+          return;
+        }
+      }
+
+      const audio = new Audio(url);
+      await audio.play();
+    } catch (error) {
+      console.error("Error playing stored audio:", error);
+      // Fall back to TTS generation
+      const wordText = item.word || item.english;
+      await generateAudio(wordText);
+    }
   };
 
   return (
@@ -66,12 +88,12 @@ export default function VocabularyItem({
         </div>
         <button
           className="text-blue-600 hover:text-blue-700 disabled:opacity-50"
-          onClick={() => {
+          onClick={async () => {
             const wordText = item.word || item.english;
             if (audioUrl) {
-              playStoredAudio(audioUrl);
+              await playStoredAudio(audioUrl);
             } else {
-              generateAudio(wordText);
+              await generateAudio(wordText);
             }
           }}
           disabled={audioLoading}

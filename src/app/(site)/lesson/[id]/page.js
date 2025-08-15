@@ -376,15 +376,65 @@ function DynamicLessonContent() {
     }
   };
 
-  const toggleAudio = () => {
+  const toggleAudio = async () => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+      setIsPlaying(false);
+      return;
     }
-    setIsPlaying(!isPlaying);
+
+    // Check if we have an audio URL
+    if (!currentStepData.audio_url) {
+      console.warn("No audio URL provided for scenario");
+      return;
+    }
+
+    try {
+      // If audio_url starts with "/audio/", try to play it directly
+      if (currentStepData.audio_url.startsWith("/audio/")) {
+        // Check if file exists first
+        const checkResponse = await fetch(currentStepData.audio_url, { method: "HEAD" });
+        if (checkResponse.ok) {
+          audioRef.current.src = currentStepData.audio_url;
+          await audioRef.current.play();
+          setIsPlaying(true);
+          return;
+        }
+      }
+
+      // Fallback to TTS generation
+      console.log("Generating TTS audio for scenario");
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: currentStepData.content,
+          englishVariant: userEnglishVariant,
+          voiceGender: userVoiceGender,
+        }),
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+        setIsPlaying(true);
+
+        // Clean up when audio ends
+        audioRef.current.onended = () => {
+          setIsPlaying(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+      } else {
+        console.error("Failed to generate TTS audio:", response.status);
+      }
+    } catch (error) {
+      console.error("Error playing scenario audio:", error);
+      setIsPlaying(false);
+    }
   };
 
   const playAudio = (audioUrl) => {
@@ -549,15 +599,24 @@ function DynamicLessonContent() {
                 </>
               )}
             </div>
-            {currentStepData.audio_url && (
-              <button
-                onClick={toggleAudio}
-                className="flex items-center space-x-2 mx-auto bg-fieldtalk-600 text-white px-4 py-2 rounded-lg hover:bg-fieldtalk-700 transition-colors"
-              >
-                <Volume2 className="w-4 h-4" />
-                <span>Listen to Scenario</span>
-              </button>
-            )}
+            <button
+              onClick={toggleAudio}
+              className="flex items-center space-x-2 mx-auto bg-fieldtalk-600 text-white px-4 py-2 rounded-lg hover:bg-fieldtalk-700 transition-colors"
+              disabled={!currentStepData.content}
+              title={!currentStepData.content ? "No content available for audio" : "Listen to scenario"}
+            >
+              {isPlaying ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Playing...</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4" />
+                  <span>Listen to Scenario</span>
+                </>
+              )}
+            </button>
             <audio ref={audioRef} style={{ display: "none" }} />
           </div>
         );
@@ -655,7 +714,6 @@ function DynamicLessonContent() {
                   <VocabularyItem
                     key={index}
                     item={item}
-                    playAudio={playAudio}
                     englishVariant={userEnglishVariant}
                     voiceGender={userVoiceGender}
                   />
