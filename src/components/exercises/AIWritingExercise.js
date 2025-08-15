@@ -103,73 +103,81 @@ export default function AIWritingExercise({
       if (data.success) {
         let analysis;
         
-        console.log("Raw API response:", data); // Debug log
+        console.log("=== AI FEEDBACK DEBUG ===");
+        console.log("Raw API response:", JSON.stringify(data, null, 2));
+        console.log("data.analysis type:", typeof data.analysis);
+        console.log("data.analysis content:", data.analysis);
+        console.log("data.feedback type:", typeof data.feedback);
+        console.log("data.feedback content:", data.feedback);
         
         try {
-          // First priority: check if data.analysis exists and is already an object
+          // The API should return the parsed object in data.analysis
           if (data.analysis && typeof data.analysis === 'object' && !Array.isArray(data.analysis)) {
-            console.log("Using data.analysis object:", data.analysis);
+            console.log("✅ Using data.analysis object (preferred path):", data.analysis);
             analysis = data.analysis;
           }
-          // Second priority: if data.analysis is a string, try to parse it
-          else if (data.analysis && typeof data.analysis === 'string') {
-            console.log("Parsing data.analysis string:", data.analysis);
+          // If analysis is missing or not an object, try to parse feedback
+          else if (data.feedback && typeof data.feedback === 'string') {
+            console.log("⚠️  data.analysis not available, trying to parse data.feedback");
             try {
-              analysis = JSON.parse(data.analysis);
+              analysis = JSON.parse(data.feedback);
+              console.log("✅ Successfully parsed data.feedback as JSON:", analysis);
             } catch (parseError) {
-              console.log("Failed to parse data.analysis, treating as text");
+              console.log("❌ data.feedback is not valid JSON:", parseError.message);
+              console.log("Raw feedback string:", data.feedback);
+              // Create structured fallback from raw text
               analysis = { 
                 score: 7, 
-                feedback: data.analysis,
-                clarity: data.analysis
+                feedback: data.feedback,
+                clarity: data.feedback,
+                grammar: [],
+                vocabulary: [],
+                improvements: ["Continue practicing writing in English"],
+                encouragement: "Great effort! Keep practicing to improve your English skills."
               };
             }
           }
-          // Third priority: check data.feedback
-          else if (data.feedback) {
-            console.log("Using data.feedback:", typeof data.feedback, data.feedback);
-            if (typeof data.feedback === 'object' && !Array.isArray(data.feedback)) {
-              analysis = data.feedback;
-            } else if (typeof data.feedback === 'string') {
-              // Try parsing as JSON first
-              try {
-                analysis = JSON.parse(data.feedback);
-                console.log("Successfully parsed data.feedback as JSON:", analysis);
-              } catch (parseError) {
-                console.log("data.feedback is not JSON, treating as text feedback");
-                analysis = { 
-                  score: 7, 
-                  feedback: data.feedback,
-                  clarity: data.feedback
-                };
-              }
-            }
+          // If we have a feedback object (unlikely but possible)
+          else if (data.feedback && typeof data.feedback === 'object') {
+            console.log("✅ Using data.feedback object:", data.feedback);
+            analysis = data.feedback;
           }
           // Final fallback
           else {
-            console.log("Using final fallback");
+            console.log("❌ No valid analysis or feedback found, using fallback");
             analysis = { 
               score: 7, 
-              feedback: "Good work!",
-              clarity: "Your writing shows good understanding."
+              feedback: "Good work! Your writing shows understanding of the topic.",
+              clarity: "Your writing demonstrates good comprehension.",
+              grammar: [],
+              vocabulary: [],
+              improvements: ["Continue practicing writing in English"],
+              encouragement: "Great effort! Keep practicing to improve your English skills."
             };
           }
 
-          // Ensure we have a score
-          if (typeof analysis.score !== 'number') {
+          // Ensure we have a valid score
+          if (typeof analysis.score !== 'number' || analysis.score < 1 || analysis.score > 10) {
+            console.log("⚠️  Invalid score, setting to 7");
             analysis.score = 7;
           }
 
         } catch (e) {
-          console.error("Error processing AI response:", e);
+          console.error("❌ Error processing AI response:", e);
           analysis = { 
             score: 7, 
-            feedback: data.feedback || data.analysis || "Good work!",
-            clarity: data.feedback || data.analysis || "Your writing shows good understanding."
+            feedback: data.feedback || "Good work!",
+            clarity: "Your writing shows good understanding.",
+            grammar: [],
+            vocabulary: [],
+            improvements: ["Continue practicing writing in English"],
+            encouragement: "Great effort! Keep practicing to improve your English skills."
           };
         }
 
-        console.log("Parsed analysis:", analysis); // Debug log
+        console.log("✅ Final parsed analysis:", JSON.stringify(analysis, null, 2));
+        console.log("=== END DEBUG ===");
+        
         setFeedback(analysis);
         setShowFeedback(true);
 
@@ -505,29 +513,42 @@ export default function AIWritingExercise({
             )}
 
             {/* Fallback display for simple feedback */}
-            {!feedback.grammar &&
-              !feedback.vocabulary &&
+            {(!feedback.grammar || !Array.isArray(feedback.grammar) || feedback.grammar.length === 0) &&
+              (!feedback.vocabulary || !Array.isArray(feedback.vocabulary) || feedback.vocabulary.length === 0) &&
               !feedback.clarity &&
-              !feedback.improvements &&
+              (!feedback.improvements || !Array.isArray(feedback.improvements) || feedback.improvements.length === 0) &&
               !feedback.encouragement && (
                 <div className="text-gray-700 dark:text-gray-300">
                   {typeof feedback === "string" ? (
                     <div className="whitespace-pre-wrap">{feedback}</div>
                   ) : feedback.feedback ? (
-                    <div className="whitespace-pre-wrap">{feedback.feedback}</div>
-                  ) : (
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                       <h5 className="font-medium text-gray-900 dark:text-white mb-2">
                         AI Feedback
                       </h5>
                       <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                        {feedback.feedback}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                        🔍 Debug: Raw AI Response
+                      </h5>
+                      <div className="text-xs text-gray-700 dark:text-gray-300 font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded max-h-40 overflow-y-auto">
                         {Object.entries(feedback).map(([key, value]) => (
-                          <div key={key} className="mb-2">
-                            <strong className="capitalize">{key.replace('_', ' ')}:</strong>{' '}
-                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
+                          <div key={key} className="mb-1">
+                            <strong className="text-blue-600">{key}:</strong>{' '}
+                            {typeof value === 'object' 
+                              ? <pre className="inline whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre>
+                              : <span className="text-green-600">{String(value)}</span>
+                            }
                           </div>
                         ))}
                       </div>
+                      <p className="text-xs text-yellow-800 dark:text-yellow-300 mt-2">
+                        This is debug output. The AI response structure needs to be fixed.
+                      </p>
                     </div>
                   )}
                 </div>

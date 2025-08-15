@@ -1,17 +1,97 @@
 // components/exercises/InteractiveGame.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Play, RotateCcw, Volume2, CheckCircle } from "lucide-react";
 
-export default function InteractiveGame({ gameConfig, onComplete }) {
-  const [currentCommand, setCurrentCommand] = useState(0);
-  const [score, setScore] = useState(0);
-  const [gameState, setGameState] = useState("ready"); // ready, playing, completed
-  const [ballPosition, setBallPosition] = useState({ x: 200, y: 350 });
+export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
+  // Create unique localStorage key for this lesson and component
+  const STORAGE_KEY = `lesson-${lessonId}-interactiveGame-progress`;
+
+  // Initialize state with localStorage data if available
+  const [currentCommand, setCurrentCommand] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.currentCommand || 0;
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+        }
+      }
+    }
+    return 0;
+  });
+
+  const [score, setScore] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.score || 0;
+        } catch (e) {}
+      }
+    }
+    return 0;
+  });
+
+  const [gameState, setGameState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.gameState || "ready";
+        } catch (e) {}
+      }
+    }
+    return "ready";
+  });
+
+  const [ballPosition, setBallPosition] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.ballPosition || { x: 200, y: 350 };
+        } catch (e) {}
+      }
+    }
+    return { x: 200, y: 350 };
+  });
+
   const [showTranslation, setShowTranslation] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [lastClickCorrect, setLastClickCorrect] = useState(false);
   const audioRef = useRef(null);
+
+  // Save progress to localStorage whenever relevant state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && gameState !== "completed") {
+      const progressData = {
+        currentCommand,
+        score,
+        gameState,
+        ballPosition,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
+    }
+  }, [currentCommand, score, gameState, ballPosition, STORAGE_KEY]);
+
+  // Clear localStorage when game is completed or reset
+  useEffect(() => {
+    if (gameState === "completed") {
+      if (typeof window !== 'undefined') {
+        // Delay clearing to allow final state to be saved
+        setTimeout(() => {
+          localStorage.removeItem(STORAGE_KEY);
+        }, 2000);
+      }
+    }
+  }, [gameState, STORAGE_KEY]);
 
   const commands = gameConfig.commands || [];
   const currentCmd = commands[currentCommand];
@@ -87,6 +167,10 @@ export default function InteractiveGame({ gameConfig, onComplete }) {
   };
 
   const resetGame = () => {
+    // Clear localStorage when resetting
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
     setCurrentCommand(0);
     setScore(0);
     setGameState("ready");
@@ -100,9 +184,9 @@ export default function InteractiveGame({ gameConfig, onComplete }) {
       <div className="game-header mb-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Follow the Ball Game
-            </h3>
+            {/* <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Pass the Ball Game
+            </h3> */}
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Command {currentCommand + 1} of {commands.length}
             </p>

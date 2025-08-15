@@ -19,11 +19,41 @@ export default function AIMultipleChoiceGapFill({
   sentences,
   lessonId,
   onComplete,
-  englishVariant = 'british',
-  voiceGender = 'male',
+  englishVariant = "british",
+  voiceGender = "male",
 }) {
-  const [answers, setAnswers] = useState({});
-  const [showFeedback, setShowFeedback] = useState({});
+  // Create unique localStorage key for this lesson and component
+  const STORAGE_KEY = `lesson-${lessonId}-aiGapFill-progress`;
+
+  // Initialize state with localStorage data if available
+  const [answers, setAnswers] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.answers || {};
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+        }
+      }
+    }
+    return {};
+  });
+
+  const [showFeedback, setShowFeedback] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.showFeedback || {};
+        } catch (e) {}
+      }
+    }
+    return {};
+  });
+
   const [hints, setHints] = useState({});
   const [loadingHint, setLoadingHint] = useState({});
   const [attempts, setAttempts] = useState({});
@@ -31,9 +61,43 @@ export default function AIMultipleChoiceGapFill({
   const [playingAudio, setPlayingAudio] = useState({});
 
   // Enhanced hint tracking
-  const [hintUsage, setHintUsage] = useState({}); // Track hint count per gap
+  const [hintUsage, setHintUsage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.hintUsage || {};
+        } catch (e) {}
+      }
+    }
+    return {};
+  });
   const [hintHistory, setHintHistory] = useState({}); // Store all hints per gap
   const MAX_HINTS_PER_GAP = 2;
+
+  // Save progress to localStorage whenever relevant state changes
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && !completed) {
+      const progressData = {
+        answers,
+        showFeedback,
+        hintUsage,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
+    }
+  }, [answers, showFeedback, hintUsage, STORAGE_KEY, completed]);
+
+  // Clear localStorage when component unmounts or step is completed
+  React.useEffect(() => {
+    if (completed) {
+      // Clear progress when completed
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [completed, STORAGE_KEY]);
 
   // Get options for each sentence
   const getOptions = (sentence) => {
@@ -42,7 +106,7 @@ export default function AIMultipleChoiceGapFill({
       // Shuffle the provided options to randomize order
       return [...sentence.options].sort(() => Math.random() - 0.5);
     }
-    
+
     // Fallback for old structure (backward compatibility)
     if (sentence.correct_answers && sentence.correct_answers.length > 0) {
       const correctAnswers = sentence.correct_answers;
@@ -113,7 +177,7 @@ export default function AIMultipleChoiceGapFill({
 
   const checkAnswer = (sentenceId, sentence) => {
     const userAnswer = answers[sentenceId]?.trim().toLowerCase() || "";
-    
+
     // For new structure, use correct_answer (single string)
     // For old structure, use correct_answers array
     let correctAnswers;
@@ -124,7 +188,7 @@ export default function AIMultipleChoiceGapFill({
     } else {
       correctAnswers = [];
     }
-    
+
     const isCorrect = correctAnswers.some(
       (answer) => answer.toLowerCase() === userAnswer
     );
@@ -358,14 +422,14 @@ export default function AIMultipleChoiceGapFill({
                 sentenceId
               )
             }
-            className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 
+            className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-fieldtalk-900/30 dark:hover:bg-fieldtalk-900/50 
                      rounded-lg transition-colors flex items-center space-x-1"
             title="Listen to sentence"
           >
             {playingAudio[sentenceId] ? (
-              <Pause className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Pause className="w-4 h-4 text-fieldtalk-600 dark:text-fieldtalk-400" />
             ) : (
-              <Play className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Play className="w-4 h-4 text-fieldtalk-600 dark:text-fieldtalk-400" />
             )}
           </button>
 
@@ -388,14 +452,14 @@ export default function AIMultipleChoiceGapFill({
         <div className="text-lg text-gray-900 dark:text-white leading-relaxed mb-4">
           {parts[0]}
           <span
-            className={`mx-2 px-3 py-1 rounded border-2 transition-colors min-w-[120px] inline-block text-center
+            className={`mx-2 px-3 py-1 rounded-xl border-2 transition-colors min-w-[120px] inline-block text-center
             ${
               feedback?.isCorrect
-                ? "border-green-500 bg-green-100 text-green-700"
+                ? "border-growth-500 bg-green-100 text-growth-700"
                 : feedback?.isCorrect === false
                   ? "border-red-500 bg-red-100 text-red-700"
                   : selectedOption
-                    ? "border-blue-400 bg-blue-50 text-blue-700"
+                    ? "border-fieldtalk-400 bg-blue-50 text-fieldtalk-700"
                     : "border-gray-300 bg-gray-50 text-gray-500"
             }`}
           >
@@ -411,11 +475,11 @@ export default function AIMultipleChoiceGapFill({
               <button
                 key={index}
                 onClick={() => handleOptionSelect(sentenceId, option)}
-                className={`p-3 rounded-lg border-2 transition-all text-left
+                className={`p-3 rounded-xl border-2 transition-all text-left
                   ${
                     selectedOption === option
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700"
+                      ? "border-fieldtalk-400 bg-blue-50 dark:bg-fieldtalk-900/20 text-fieldtalk-700 dark:text-fieldtalk-300"
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 dark:text-white"
                   }`}
               >
                 <span className="font-medium">{option}</span>
@@ -429,10 +493,8 @@ export default function AIMultipleChoiceGapFill({
           <div className="flex items-center space-x-2">
             {!feedback?.isCorrect && selectedOption && (
               <button
-                onClick={() =>
-                  checkAnswer(sentenceId, sentence)
-                }
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                onClick={() => checkAnswer(sentenceId, sentence)}
+                className="px-4 py-2 bg-fieldtalk-600 text-white rounded-xl hover:bg-fieldtalk-700 transition-colors font-medium"
               >
                 Check Answer
               </button>
@@ -498,7 +560,7 @@ export default function AIMultipleChoiceGapFill({
         {/* AI Hint Display */}
         {hints[sentenceId] && (
           <div
-            className={`mt-3 p-3 rounded border ${
+            className={`mt-3 p-3 rounded-xl border ${
               usedHints === 1
                 ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
                 : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"

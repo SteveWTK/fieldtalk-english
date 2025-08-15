@@ -552,7 +552,7 @@ function DynamicLessonContent() {
             {currentStepData.audio_url && (
               <button
                 onClick={toggleAudio}
-                className="flex items-center space-x-2 mx-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center space-x-2 mx-auto bg-fieldtalk-600 text-white px-4 py-2 rounded-lg hover:bg-fieldtalk-700 transition-colors"
               >
                 <Volume2 className="w-4 h-4" />
                 <span>Listen to Scenario</span>
@@ -2196,12 +2196,12 @@ function DynamicLessonContent() {
           className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Previous</span>
+          <span>Previous Activity</span>
         </button>
 
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            {completedSteps.size} of {steps.length - 1} steps completed
+            {completedSteps.size} of {steps.length - 1} activities completed
           </p>
           {completing && (
             <p className="text-xs text-blue-600 mt-1">Saving progress...</p>
@@ -2217,7 +2217,7 @@ function DynamicLessonContent() {
             (currentStep === steps.length - 1 &&
               currentStepData?.type !== "completion")
           }
-          className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center space-x-2 px-6 py-2 bg-fieldtalk-600 text-white rounded-lg hover:bg-fieldtalk-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {completing ? (
             <>
@@ -2229,7 +2229,7 @@ function DynamicLessonContent() {
               <span>
                 {currentStep === steps.length - 1
                   ? "Complete Lesson"
-                  : "Continue"}
+                  : "Next Activity"}
               </span>
               <ArrowRight className="w-4 h-4" />
             </>

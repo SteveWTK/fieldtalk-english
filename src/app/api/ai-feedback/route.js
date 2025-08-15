@@ -54,13 +54,17 @@ const LANGUAGE_PROMPTS = {
       
       Contexto: {context}
       
-      Formate sua resposta como JSON com estes campos:
-      - score: número (1-10)
-      - grammar: array de {error, correction, explanation} (explicação em português, correção em inglês)
-      - vocabulary: array de {original, suggestion, reason} (razão em português)
-      - clarity: string (feedback em português sobre clareza geral)
-      - improvements: array de itens de ação específicos (em português)
-      - encouragement: mensagem positiva (em português, mencionando a importância do inglês no futebol)`,
+      IMPORTANTE: Retorne APENAS um objeto JSON válido, sem texto adicional, markdown ou formatação.
+      
+      Formate sua resposta exatamente como este JSON:
+      {
+        "score": 8,
+        "grammar": [{"error": "texto incorreto", "correction": "correct text", "explanation": "explicação em português"}],
+        "vocabulary": [{"original": "palavra", "suggestion": "melhor palavra", "reason": "motivo em português"}],
+        "clarity": "feedback em português sobre clareza geral",
+        "improvements": ["melhoria 1", "melhoria 2"],
+        "encouragement": "mensagem positiva em português sobre futebol e inglês"
+      }`,
     conversationContext: `Você está conversando com um jovem jogador de futebol brasileiro aprendendo inglês.
       Responda em PORTUGUÊS BRASILEIRO, mas sempre inclua a versão em inglês também.
       Corrija erros importantes gentilmente, mostrando a forma correta.
@@ -88,13 +92,17 @@ const LANGUAGE_PROMPTS = {
       
       Contexto: {context}
       
-      Formatea tu respuesta como JSON con estos campos:
-      - score: número (1-10)
-      - grammar: array de {error, correction, explanation} (explicación en español, corrección en inglés)
-      - vocabulary: array de {original, suggestion, reason} (razón en español)
-      - clarity: string (retroalimentación en español sobre claridad general)
-      - improvements: array de elementos de acción específicos (en español)
-      - encouragement: mensaje positivo (en español, mencionando la importancia del inglés en el fútbol)`,
+      IMPORTANTE: Retorna SOLO un objeto JSON válido, sin texto adicional, markdown o formateo.
+      
+      Formatea tu respuesta exactamente como este JSON:
+      {
+        "score": 8,
+        "grammar": [{"error": "texto incorrecto", "correction": "correct text", "explanation": "explicación en español"}],
+        "vocabulary": [{"original": "palabra", "suggestion": "mejor palabra", "reason": "razón en español"}],
+        "clarity": "retroalimentación en español sobre claridad general",
+        "improvements": ["mejora 1", "mejora 2"],
+        "encouragement": "mensaje positivo en español sobre fútbol e inglés"
+      }`,
     conversationContext: `Estás conversando con un joven futbolista hispanohablante aprendiendo inglés.
       Responde en ESPAÑOL, pero siempre incluye la versión en inglés también.
       Corrige errores importantes gentilmente, mostrando la forma correcta.
@@ -122,13 +130,17 @@ const LANGUAGE_PROMPTS = {
       
       Contexte: {context}
       
-      Formatez votre réponse en JSON avec ces champs:
-      - score: nombre (1-10)
-      - grammar: tableau de {error, correction, explanation} (explication en français, correction en anglais)
-      - vocabulary: tableau de {original, suggestion, reason} (raison en français)
-      - clarity: string (commentaire en français sur la clarté générale)
-      - improvements: tableau d'éléments d'action spécifiques (en français)
-      - encouragement: message positif (en français, mentionnant l'importance de l'anglais dans le football)`,
+      IMPORTANT: Retournez SEULEMENT un objet JSON valide, sans texte supplémentaire, markdown ou formatage.
+      
+      Formatez votre réponse exactement comme ce JSON:
+      {
+        "score": 8,
+        "grammar": [{"error": "texte incorrect", "correction": "correct text", "explanation": "explication en français"}],
+        "vocabulary": [{"original": "mot", "suggestion": "meilleur mot", "reason": "raison en français"}],
+        "clarity": "commentaire en français sur la clarté générale",
+        "improvements": ["amélioration 1", "amélioration 2"],
+        "encouragement": "message positif en français sur le football et l'anglais"
+      }`,
     conversationContext: `Vous conversez avec un jeune footballeur francophone apprenant l'anglais.
       Répondez en FRANÇAIS, mais incluez toujours la version anglaise aussi.
       Corrigez les erreurs importantes gentiment, en montrant la forme correcte.
@@ -153,13 +165,17 @@ const LANGUAGE_PROMPTS = {
       
       Context: {context}
       
-      Format your response as JSON with these fields:
-      - score: number (1-10)
-      - grammar: array of {error, correction, explanation}
-      - vocabulary: array of {original, suggestion, reason}
-      - clarity: string (feedback on overall clarity)
-      - improvements: array of specific action items
-      - encouragement: positive message`,
+      IMPORTANT: Return ONLY a valid JSON object, no additional text, markdown, or formatting.
+      
+      Format your response exactly like this JSON:
+      {
+        "score": 8,
+        "grammar": [{"error": "incorrect text", "correction": "correct text", "explanation": "explanation in English"}],
+        "vocabulary": [{"original": "word", "suggestion": "better word", "reason": "reason in English"}],
+        "clarity": "feedback on overall clarity in English",
+        "improvements": ["improvement 1", "improvement 2"],
+        "encouragement": "positive message about football and English learning"
+      }`,
     conversationContext: `You're having a conversation with a young footballer learning English.
       Respond naturally but simply, using football contexts when relevant.
       Correct major errors gently by rephrasing correctly in your response.
@@ -255,31 +271,55 @@ export async function POST(request) {
         ];
 
         const writingResponse = await callOpenAI(writingMessages, 0.3);
-        console.log("OpenAI Raw Response:", writingResponse);
+        console.log("=== API DEBUG: OpenAI Raw Response ===");
+        console.log("Type:", typeof writingResponse);
+        console.log("Content:", writingResponse);
+        console.log("First 200 chars:", writingResponse.substring(0, 200));
+        console.log("Last 200 chars:", writingResponse.substring(writingResponse.length - 200));
+
+        // Clean up the response - remove any markdown formatting and extra text
+        let cleanedResponse = writingResponse.trim();
+        
+        // Remove markdown code blocks if present
+        cleanedResponse = cleanedResponse.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+        
+        // Find JSON content between first { and last }
+        const firstBrace = cleanedResponse.indexOf('{');
+        const lastBrace = cleanedResponse.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1 && firstBrace < lastBrace) {
+          cleanedResponse = cleanedResponse.substring(firstBrace, lastBrace + 1);
+        }
+        
+        console.log("Cleaned response:", cleanedResponse);
 
         try {
           // Try to parse as JSON first
-          const parsedAnalysis = JSON.parse(writingResponse);
-          console.log("Successfully parsed as JSON:", parsedAnalysis);
+          const parsedAnalysis = JSON.parse(cleanedResponse);
+          console.log("✅ Successfully parsed as JSON:", parsedAnalysis);
+          
+          // Validate required fields
+          if (typeof parsedAnalysis.score !== 'number') {
+            parsedAnalysis.score = 7;
+          }
+          
           analysis = parsedAnalysis;
-          feedback = writingResponse; // Keep raw response for storage
+          feedback = writingResponse; // Keep original raw response for storage
         } catch (e) {
-          console.log(
-            "Failed to parse OpenAI response as JSON, using fallback:",
-            e.message
-          );
+          console.log("❌ Failed to parse OpenAI response as JSON:", e.message);
           console.log("Raw response that failed to parse:", writingResponse);
+          console.log("Cleaned response that failed:", cleanedResponse);
+          
           // Fallback if JSON parsing fails - create structured response
           feedback = writingResponse;
           analysis = {
             score: 7,
             feedback: writingResponse,
-            clarity: writingResponse,
+            clarity: writingResponse.includes('clarity') ? writingResponse : "Your writing demonstrates good understanding of the topic.",
             grammar: [],
             vocabulary: [],
-            improvements: ["Continue practicing writing in English"],
-            encouragement:
-              "Great effort! Keep practicing to improve your English skills.",
+            improvements: ["Continue practicing writing in English", "Focus on clear sentence structure"],
+            encouragement: "Great effort! Keep practicing to improve your English skills.",
           };
         }
 

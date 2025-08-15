@@ -1,14 +1,79 @@
 // components/exercises/InteractivePitch.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Volume2, MapPin, Info } from "lucide-react";
 
-export default function InteractivePitch({ interactiveConfig, onComplete }) {
-  const [clickedAreas, setClickedAreas] = useState(new Set());
-  const [currentArea, setCurrentArea] = useState(null);
-  const [showTranslations, setShowTranslations] = useState(false);
+export default function InteractivePitch({ interactiveConfig, lessonId, onComplete }) {
+  // Create unique localStorage key for this lesson and component
+  const STORAGE_KEY = `lesson-${lessonId}-interactivePitch-progress`;
+
+  // Initialize state with localStorage data if available
+  const [clickedAreas, setClickedAreas] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return new Set(data.clickedAreas || []);
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+        }
+      }
+    }
+    return new Set();
+  });
+
+  const [currentArea, setCurrentArea] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.currentArea || null;
+        } catch (e) {}
+      }
+    }
+    return null;
+  });
+
+  const [showTranslations, setShowTranslations] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          return data.showTranslations || false;
+        } catch (e) {}
+      }
+    }
+    return false;
+  });
+
   const [audioLoading, setAudioLoading] = useState(false);
   const [hoveredArea, setHoveredArea] = useState(null);
+  const [isCompleted, setIsCompleted] = useState(false);
   const audioRef = useRef(null);
+
+  // Save progress to localStorage whenever relevant state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isCompleted) {
+      const progressData = {
+        clickedAreas: Array.from(clickedAreas),
+        currentArea,
+        showTranslations,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
+    }
+  }, [clickedAreas, currentArea, showTranslations, STORAGE_KEY, isCompleted]);
+
+  // Clear localStorage when component completes
+  useEffect(() => {
+    if (isCompleted) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [isCompleted, STORAGE_KEY]);
 
   const handleAreaClick = async (area) => {
     // Mark as clicked
@@ -22,6 +87,7 @@ export default function InteractivePitch({ interactiveConfig, onComplete }) {
 
     // Check completion
     if (clickedAreas.size + 1 >= interactiveConfig.click_areas.length) {
+      setIsCompleted(true);
       setTimeout(() => {
         if (onComplete) onComplete(20); // 20 XP for completion
       }, 1000);
@@ -160,7 +226,7 @@ export default function InteractivePitch({ interactiveConfig, onComplete }) {
                   cx={x}
                   cy={y}
                   r="15"
-                  fill={isClicked ? "#22c55e" : "#14438e"}
+                  fill={isClicked ? "#22c55e" : "#0284c7"}
                   stroke="white"
                   strokeWidth="2"
                   transform={isHovered ? `scale(1.1)` : "scale(1)"}

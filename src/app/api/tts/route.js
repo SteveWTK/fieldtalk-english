@@ -15,7 +15,7 @@ export async function POST(request) {
 
     // Select voice based on English variant and gender preference
     let selectedVoice = voice;
-    
+
     if (!selectedVoice) {
       // Voice mapping based on variant and gender
       // Valid voices: nova, shimmer, echo, onyx, fable, alloy, ash, sage, coral
@@ -23,7 +23,7 @@ export async function POST(request) {
         selectedVoice = voiceGender === "female" ? "nova" : "echo"; // Female: Nova, Male: Echo
       } else {
         // British voices
-        selectedVoice = voiceGender === "female" ? "fable" : "onyx"; // Female: Fable, Male: Onyx
+        selectedVoice = voiceGender === "female" ? "fable" : "fable"; // Female: Fable, Male: Onyx
       }
     }
 
