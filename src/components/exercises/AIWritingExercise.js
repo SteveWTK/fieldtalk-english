@@ -16,6 +16,8 @@ import {
   Play,
   Pause,
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function AIWritingExercise({
   prompt,
@@ -26,6 +28,8 @@ export default function AIWritingExercise({
   englishVariant = "british",
   voiceGender = "male",
 }) {
+  const { user } = useAuth();
+  const { t } = useTranslation(user);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -276,11 +280,11 @@ export default function AIWritingExercise({
             <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Writing Task
+                {t('writing_task')}
               </h3>
               <p className="text-gray-700 dark:text-gray-300">{prompt}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Write {minWords}-{maxWords} words
+                {t('write_words')} {minWords}-{maxWords} {t('words')}
               </p>
             </div>
           </div>
@@ -305,7 +309,7 @@ export default function AIWritingExercise({
           <textarea
             value={text}
             onChange={handleTextChange}
-            placeholder="Start writing here..."
+            placeholder={t('start_writing')}
             className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg 
                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -321,7 +325,7 @@ export default function AIWritingExercise({
           <div className="text-sm text-gray-600 dark:text-gray-400">
             {wordCount < minWords && (
               <span className="text-orange-600">
-                Need {minWords - wordCount} more words
+                {t('need_more_words')} {minWords - wordCount} {t('words')}
               </span>
             )}
           </div>
@@ -334,7 +338,7 @@ export default function AIWritingExercise({
                          flex items-center space-x-2"
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>Try Again</span>
+                <span>{t('try_again')}</span>
               </button>
             ) : (
               <button
@@ -350,12 +354,12 @@ export default function AIWritingExercise({
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Analyzing...</span>
+                    <span>{t('analyzing')}</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Submit for Feedback</span>
+                    <span>{t('submit_for_feedback')}</span>
                   </>
                 )}
               </button>
@@ -372,7 +376,7 @@ export default function AIWritingExercise({
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-yellow-500" />
-                <span>AI Feedback</span>
+                <span>{t('ai_feedback')}</span>
               </h4>
               {feedback.score && (
                 <div
@@ -390,7 +394,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <AlertCircle className="w-4 h-4 text-orange-500" />
-                    <span>Grammar Notes</span>
+                    <span>{t('grammar_notes')}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.grammar.map((item, idx) => (
@@ -433,7 +437,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <BookOpen className="w-4 h-4 text-blue-500" />
-                    <span>Vocabulary Suggestions</span>
+                    <span>{t('vocabulary_suggestions')}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.vocabulary.map((item, idx) => (
@@ -471,7 +475,7 @@ export default function AIWritingExercise({
             {feedback.clarity && (
               <div className="mb-4">
                 <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                  Overall Clarity
+  {t('overall_clarity')}
                 </h5>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {feedback.clarity}
@@ -486,7 +490,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <Target className="w-4 h-4 text-purple-500" />
-                    <span>Next Steps</span>
+                    <span>{t('next_steps')}</span>
                   </h5>
                   <ul className="space-y-1">
                     {feedback.improvements.map((item, idx) => (
@@ -560,7 +564,7 @@ export default function AIWritingExercise({
             {feedback.score && feedback.score >= 7 ? (
               <div className="text-center space-y-4">
                 <p className="text-green-600 dark:text-green-400 font-medium">
-                  Great work! You&apos;ve demonstrated excellent English skills.
+                  {t('you_demonstrated_excellent')}
                 </p>
                 <button
                   onClick={() => {
@@ -577,7 +581,7 @@ export default function AIWritingExercise({
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 mx-auto"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Continue</span>
+                  <span>{t('continue')}</span>
                 </button>
               </div>
             ) : (
@@ -587,7 +591,7 @@ export default function AIWritingExercise({
                   className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>Try Again</span>
+                  <span>{t('try_again')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -604,7 +608,7 @@ export default function AIWritingExercise({
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Continue Anyway</span>
+                  <span>{t('continue_anyway')}</span>
                 </button>
               </div>
             )}

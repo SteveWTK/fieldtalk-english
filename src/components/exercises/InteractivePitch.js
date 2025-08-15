@@ -1,12 +1,16 @@
 // components/exercises/InteractivePitch.js
 import React, { useState, useRef, useEffect } from "react";
 import { Volume2, MapPin, Info } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function InteractivePitch({
   interactiveConfig,
   lessonId,
   onComplete,
 }) {
+  const { user } = useAuth();
+  const { t } = useTranslation(user);
   // Create unique localStorage key for this lesson and component
   const STORAGE_KEY = `lesson-${lessonId}-interactivePitch-progress`;
 
@@ -124,7 +128,7 @@ export default function InteractivePitch({
       <div className="mb-4">
         <p className="text-lg text-gray-700 dark:text-gray-300">
           {interactiveConfig.instruction ||
-            "Click on each highlighted area to learn more about the football pitch."}
+            t('click_areas_to_learn')}
         </p>
       </div>
 
@@ -284,7 +288,7 @@ export default function InteractivePitch({
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1"
             >
               <Info className="w-4 h-4" />
-              <span>{showTranslations ? "Hide" : "Show"} Translation</span>
+              <span>{showTranslations ? t('hide_translation') : t('show_translation')}</span>
             </button>
           </div>
 
@@ -313,7 +317,7 @@ export default function InteractivePitch({
             ) : (
               <Volume2 className="w-4 h-4" />
             )}
-            <span>{audioLoading ? "Loading..." : "Play Audio Again"}</span>
+            <span>{audioLoading ? t('loading') : t('play_audio_again')}</span>
           </button>
         </div>
       )}
@@ -321,8 +325,8 @@ export default function InteractivePitch({
       {/* Progress indicator */}
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Explored: {clickedAreas.size} /{" "}
-          {interactiveConfig.click_areas?.length || 0} areas
+          {t('explored')}: {clickedAreas.size} /{" "}
+          {interactiveConfig.click_areas?.length || 0} {t('areas')}
         </p>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
           <div
@@ -335,7 +339,7 @@ export default function InteractivePitch({
 
         {clickedAreas.size === interactiveConfig.click_areas?.length && (
           <div className="mt-3 p-3 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-lg">
-            <p className="font-semibold">🎉 All areas explored! Well done!</p>
+            <p className="font-semibold">{t('all_areas_explored')}</p>
           </div>
         )}
       </div>

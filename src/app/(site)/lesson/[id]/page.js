@@ -42,6 +42,7 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 import AIWritingExercise from "@/components/exercises/AIWritingExercise";
 import AIConversationPractice from "@/components/exercises/AIConversationPractice";
 import AIGapFillExercise from "@/components/exercises/AIGapFillExercise";
@@ -54,6 +55,7 @@ function DynamicLessonContent() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { t, userLanguage } = useTranslation(user);
   const lessonId = params.id;
 
   const [lesson, setLesson] = useState(null);
@@ -76,6 +78,7 @@ function DynamicLessonContent() {
   const [userEnglishVariant, setUserEnglishVariant] = useState("british");
   const [userVoiceGender, setUserVoiceGender] = useState("male");
   const [stepCompleted, setStepCompleted] = useState(false);
+  const [autoTranslating, setAutoTranslating] = useState(false);
 
   const audioRef = useRef(null);
 
@@ -127,6 +130,163 @@ function DynamicLessonContent() {
     }
   }, [lessonId, user]);
 
+  // Translation utility function
+  const translateContent = async (content, key) => {
+    // Don't translate if already in English or no preferred language
+    if (userPreferredLanguage === "en" || !content) return content;
+
+    // Check if already translated
+    if (translations[key]) {
+      return translations[key];
+    }
+
+    try {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: content,
+          targetLanguage: userPreferredLanguage,
+          context: "Football/soccer training lesson for young players",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTranslations((prev) => ({ ...prev, [key]: data.translatedText }));
+        return data.translatedText;
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+    }
+    return content; // Return original if translation fails
+  };
+
+  // Auto-translate content when step changes or language preference is loaded
+  const autoTranslateStepContent = async () => {
+    if (userPreferredLanguage === "en" || !lesson?.content?.steps) return;
+    
+    const steps = lesson.content.steps || [];
+    const stepData = steps[currentStep];
+    if (!stepData) return;
+    
+    setAutoTranslating(true);
+    const translationPromises = [];
+    
+    // Translate scenario content
+    if (stepData.type === "scenario" && stepData.content) {
+      translationPromises.push(
+        translateContent(stepData.content, `scenario-${currentStep}`)
+      );
+      
+      if (stepData.cultural_context) {
+        translationPromises.push(
+          translateContent(stepData.cultural_context, `cultural-${currentStep}`)
+        );
+      }
+      
+      if (stepData.reflection_questions) {
+        stepData.reflection_questions.forEach((q, idx) => {
+          translationPromises.push(
+            translateContent(q, `reflection-${currentStep}-${idx}`)
+          );
+        });
+      }
+    }
+    
+    // Translate completion achievements
+    if (stepData.type === "completion" && stepData.achievements) {
+      stepData.achievements.forEach((achievement, idx) => {
+        translationPromises.push(
+          translateContent(achievement, `achievement-${currentStep}-${idx}`)
+        );
+      });
+    }
+
+    // Translate vocabulary tips and cultural notes (keep words in English)
+    if (stepData.type === "vocabulary") {
+      const items = stepData.vocabulary || stepData.words || [];
+      items.forEach((item, idx) => {
+        if (item.tip) {
+          translationPromises.push(
+            translateContent(item.tip, `vocab-tip-${currentStep}-${idx}`)
+          );
+        }
+        if (item.cultural_note) {
+          translationPromises.push(
+            translateContent(item.cultural_note, `vocab-note-${currentStep}-${idx}`)
+          );
+        }
+      });
+    }
+
+    // Translate interactive pitch instructions and descriptions
+    if (stepData.type === "interactive_pitch") {
+      const config = stepData.interactive_config;
+      if (config?.instruction) {
+        translationPromises.push(
+          translateContent(config.instruction, `pitch-instruction-${currentStep}`)
+        );
+      }
+      if (config?.click_areas) {
+        config.click_areas.forEach((area, idx) => {
+          if (area.description) {
+            translationPromises.push(
+              translateContent(area.description, `pitch-area-desc-${currentStep}-${idx}`)
+            );
+          }
+        });
+      }
+    }
+
+    // Translate interactive game instructions
+    if (stepData.type === "interactive_game") {
+      const config = stepData.game_config;
+      if (config?.instruction) {
+        translationPromises.push(
+          translateContent(config.instruction, `game-instruction-${currentStep}`)
+        );
+      }
+      if (config?.commands) {
+        config.commands.forEach((cmd, idx) => {
+          if (cmd.success_message) {
+            translationPromises.push(
+              translateContent(cmd.success_message, `game-success-${currentStep}-${idx}`)
+            );
+          }
+        });
+      }
+    }
+
+    // Translate writing prompts
+    if (stepData.type === "ai_writing" && stepData.prompt) {
+      translationPromises.push(
+        translateContent(stepData.prompt, `writing-prompt-${currentStep}`)
+      );
+    }
+
+    // Translate any generic content field
+    if (stepData.content && !["scenario", "vocabulary"].includes(stepData.type)) {
+      translationPromises.push(
+        translateContent(stepData.content, `content-${currentStep}`)
+      );
+    }
+
+    await Promise.all(translationPromises);
+    setAutoTranslating(false);
+  };
+
+  // Auto-translate content when step changes or language preference changes
+  useEffect(() => {
+    if (lesson && lesson.content?.steps && userPreferredLanguage !== "en") {
+      const steps = lesson.content.steps || [];
+      const stepData = steps[currentStep];
+      if (stepData) {
+        autoTranslateStepContent();
+      }
+    }
+  }, [currentStep, userPreferredLanguage, lesson]);
+
   // FIXED: Better error boundaries and loading states
   if (loading) {
     return (
@@ -141,6 +301,9 @@ function DynamicLessonContent() {
           <div className="h-64 bg-gray-200 rounded mb-8"></div>
           <div className="h-12 bg-gray-200 rounded"></div>
         </div>
+        <div className="text-center mt-4">
+          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
+        </div>
       </div>
     );
   }
@@ -151,23 +314,23 @@ function DynamicLessonContent() {
       <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Lesson Not Found
+            {t('lesson_not_found')}
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {error || "The lesson you're looking for doesn't exist."}
+            {error || t('lesson_doesnt_exist')}
           </p>
           <div className="space-x-4">
             <button
               onClick={() => router.push("/dashboard")}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Back to Dashboard
+              {t('back_to_dashboard')}
             </button>
             <button
               onClick={() => window.location.reload()}
               className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             >
-              Reload Page
+              {t('reload_page')}
             </button>
           </div>
         </div>
@@ -175,10 +338,22 @@ function DynamicLessonContent() {
     );
   }
 
-  const lessonContent = lesson.content;
+  const lessonContent = lesson?.content;
   const steps = lessonContent?.steps || [];
-  const currentStepData = steps[currentStep];
-  const progress = ((currentStep + 1) / steps.length) * 100;
+  const currentStepData = steps?.[currentStep];
+  const progress = steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
+
+  // Don't render if lesson data is not properly loaded
+  if (!lesson || !currentStepData) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   // Updated handleAnswerSubmit function
   // Updated handleAnswerSubmit function
@@ -444,40 +619,6 @@ function DynamicLessonContent() {
     }
   };
 
-  const translateContent = async (content, key) => {
-    // Don't translate if already in English or no preferred language
-    if (userPreferredLanguage === "en" || !content) return;
-
-    // Check if already translated
-    if (translations[key]) {
-      setShowTranslation(!showTranslation);
-      return;
-    }
-
-    setTranslating(true);
-    try {
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: content,
-          targetLanguage: userPreferredLanguage,
-          context: "Football/soccer training lesson for young players",
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTranslations((prev) => ({ ...prev, [key]: data.translatedText }));
-        setShowTranslation(true);
-      }
-    } catch (error) {
-      console.error("Translation error:", error);
-    } finally {
-      setTranslating(false);
-    }
-  };
-
   const getStepIcon = (stepType) => {
     const iconMap = {
       ai_writing: BookOpen,
@@ -556,47 +697,36 @@ function DynamicLessonContent() {
                 />
               )}
 
-              {/* Show translated or original content */}
-              {showTranslation && translations[`scenario-${currentStep}`] ? (
-                <div className="space-y-4">
-                  <p className="text-lg text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                    {translations[`scenario-${currentStep}`]}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                    (Translated to {userPreferredLanguage})
+              {/* Auto-translated content */}
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
+                {translations[`scenario-${currentStep}`] || currentStepData.content}
+              </p>
+              
+              {currentStepData.cultural_context && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg mt-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>{t('cultural_context')}:</strong>{" "}
+                    {translations[`cultural-${currentStep}`] || currentStepData.cultural_context}
                   </p>
                 </div>
-              ) : (
-                <>
-                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    {currentStepData.content}
-                  </p>
-                  {currentStepData.cultural_context && (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg mt-4">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        <strong>Cultural Context:</strong>{" "}
-                        {currentStepData.cultural_context}
-                      </p>
-                    </div>
-                  )}
-                  {currentStepData.reflection_questions && (
-                    <div className="mt-4 text-left text-gray-700 dark:text-gray-300 ">
-                      <h4 className="font-semibold mb-2">
-                        Reflection Questions:
-                      </h4>
-                      <ul className="text-sm space-y-1">
-                        {currentStepData.reflection_questions.map(
-                          (question, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-blue-600 mr-2">•</span>
-                              {question}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </>
+              )}
+              
+              {currentStepData.reflection_questions && (
+                <div className="mt-4 text-left text-gray-700 dark:text-gray-300 ">
+                  <h4 className="font-semibold mb-2">
+                    {t('reflection_questions')}:
+                  </h4>
+                  <ul className="text-sm space-y-1">
+                    {currentStepData.reflection_questions.map(
+                      (question, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-blue-600 mr-2">•</span>
+                          {translations[`reflection-${currentStep}-${index}`] || question}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
               )}
             </div>
             <button
@@ -608,12 +738,12 @@ function DynamicLessonContent() {
               {isPlaying ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Playing...</span>
+                  <span>{t('playing')}</span>
                 </>
               ) : (
                 <>
                   <Volume2 className="w-4 h-4" />
-                  <span>Listen to Scenario</span>
+                  <span>{t('listen_to_scenario')}</span>
                 </>
               )}
             </button>
@@ -624,7 +754,7 @@ function DynamicLessonContent() {
       case "ai_writing":
         return (
           <AIWritingExercise
-            prompt={currentStepData.prompt}
+            prompt={translations[`writing-prompt-${currentStep}`] || currentStepData.prompt}
             context={currentStepData.context}
             lessonId={lessonId}
             englishVariant={userEnglishVariant}
@@ -706,36 +836,61 @@ function DynamicLessonContent() {
         return (
           <div className="space-y-4">
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-              {currentStepData.content || "Learn these essential words:"}
+              {currentStepData.content || t('learn_essential_words')}
             </p>
             <div className="grid gap-4">
               {(currentStepData.vocabulary || currentStepData.words || []).map(
-                (item, index) => (
-                  <VocabularyItem
-                    key={index}
-                    item={item}
-                    englishVariant={userEnglishVariant}
-                    voiceGender={userVoiceGender}
-                  />
-                )
+                (item, index) => {
+                  // Pass translated tips and notes to the component
+                  const translatedItem = {
+                    ...item,
+                    tip: translations[`vocab-tip-${currentStep}-${index}`] || item.tip,
+                    cultural_note: translations[`vocab-note-${currentStep}-${index}`] || item.cultural_note
+                  };
+                  return (
+                    <VocabularyItem
+                      key={index}
+                      item={translatedItem}
+                      englishVariant={userEnglishVariant}
+                      voiceGender={userVoiceGender}
+                      userLanguage={userLanguage}
+                    />
+                  );
+                }
               )}
             </div>
           </div>
         );
 
       case "interactive_pitch":
+        const pitchConfig = {
+          ...currentStepData.interactive_config,
+          instruction: translations[`pitch-instruction-${currentStep}`] || currentStepData.interactive_config?.instruction,
+          click_areas: currentStepData.interactive_config?.click_areas?.map((area, idx) => ({
+            ...area,
+            description: translations[`pitch-area-desc-${currentStep}-${idx}`] || area.description
+          }))
+        };
         return (
           <InteractivePitch
-            interactiveConfig={currentStepData.interactive_config}
+            interactiveConfig={pitchConfig}
             lessonId={lessonId}
             onComplete={handleStepComplete}
           />
         );
 
       case "interactive_game":
+        const gameConfig = {
+          ...currentStepData.game_config,
+          instruction: translations[`game-instruction-${currentStep}`] || currentStepData.game_config?.instruction,
+          commands: currentStepData.game_config?.commands?.map((cmd, idx) => ({
+            ...cmd,
+            success_message: translations[`game-success-${currentStep}-${idx}`] || cmd.success_message
+          }))
+        };
         return (
           <InteractiveGame
-            gameConfig={currentStepData.game_config}
+            gameConfig={gameConfig}
             lessonId={lessonId}
             onComplete={handleStepComplete}
           />
@@ -2077,16 +2232,16 @@ function DynamicLessonContent() {
               ) : (
                 <>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    Lesson Complete!
+                    {t('lesson_complete')}
                   </h3>
                   <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    Great job! You&apos;ve completed &quot;{lesson.title}&quot;
+                    {t('great_job')} {t('you_completed_lesson')} &quot;{lesson.title}&quot;
                   </p>
 
                   {currentStepData.achievements && (
                     <div className="text-left max-w-md mx-auto space-y-2 mb-6">
                       <h4 className="font-semibold text-center mb-3">
-                        Achievements:
+                        {t('achievements')}:
                       </h4>
                       {currentStepData.achievements.map(
                         (achievement, index) => (
@@ -2094,7 +2249,7 @@ function DynamicLessonContent() {
                             key={index}
                             className="text-gray-700 dark:text-gray-300 text-sm"
                           >
-                            {achievement}
+                            {translations[`achievement-${currentStep}-${index}`] || achievement}
                           </p>
                         )
                       )}
@@ -2105,7 +2260,7 @@ function DynamicLessonContent() {
 
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg inline-block mb-6">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Total XP Earned
+                  {t('total_xp_earned')}
                 </p>
                 <p className="text-3xl font-bold text-green-600">
                   {xpEarned} XP
@@ -2120,10 +2275,10 @@ function DynamicLessonContent() {
                 {completing ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving Progress...</span>
+                    <span>{t('saving_progress')}</span>
                   </div>
                 ) : (
-                  "Return to Dashboard"
+                  t('return_to_dashboard')
                 )}
               </button>
             </div>
@@ -2232,13 +2387,7 @@ function DynamicLessonContent() {
           <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-lg flex items-center space-x-2">
             <CheckCircle className="w-5 h-5" />
             <span className="font-semibold">
-              {userPreferredLanguage === "pt-BR"
-                ? "Etapa Concluída! Muito bem!"
-                : userPreferredLanguage === "es"
-                  ? "¡Paso Completado! ¡Muy bien!"
-                  : userPreferredLanguage === "fr"
-                    ? "Étape Terminée! Très bien!"
-                    : "Step Complete! Great job!"}
+              {t('step_complete')}
             </span>
           </div>
         )}

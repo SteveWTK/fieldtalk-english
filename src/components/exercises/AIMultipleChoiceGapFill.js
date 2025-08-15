@@ -14,6 +14,8 @@ import {
   Play,
   Pause,
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function AIMultipleChoiceGapFill({
   sentences,
@@ -22,6 +24,8 @@ export default function AIMultipleChoiceGapFill({
   englishVariant = "british",
   voiceGender = "male",
 }) {
+  const { user } = useAuth();
+  const { t } = useTranslation(user);
   // Create unique localStorage key for this lesson and component
   const STORAGE_KEY = `lesson-${lessonId}-aiGapFill-progress`;
 
@@ -410,7 +414,7 @@ export default function AIMultipleChoiceGapFill({
           <div className="flex items-center space-x-2">
             <Target className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Choose the best word
+              {t('choose_best_word')}
             </span>
           </div>
 
@@ -424,7 +428,7 @@ export default function AIMultipleChoiceGapFill({
             }
             className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-fieldtalk-900/30 dark:hover:bg-fieldtalk-900/50 
                      rounded-lg transition-colors flex items-center space-x-1"
-            title="Listen to sentence"
+            title={t('listen_to_sentence')}
           >
             {playingAudio[sentenceId] ? (
               <Pause className="w-4 h-4 text-fieldtalk-600 dark:text-fieldtalk-400" />
@@ -442,7 +446,7 @@ export default function AIMultipleChoiceGapFill({
               <span
                 className={`text-xs font-medium ${hasUsedAllHints ? "text-orange-600" : "text-yellow-600"}`}
               >
-                {usedHints}/{MAX_HINTS_PER_GAP} hints used
+                {usedHints}/{MAX_HINTS_PER_GAP} {t('hints_used')}
               </span>
             </div>
           )}
@@ -496,7 +500,7 @@ export default function AIMultipleChoiceGapFill({
                 onClick={() => checkAnswer(sentenceId, sentence)}
                 className="px-4 py-2 bg-fieldtalk-600 text-white rounded-xl hover:bg-fieldtalk-700 transition-colors font-medium"
               >
-                Check Answer
+                {t('check_answer')}
               </button>
             )}
 
@@ -532,7 +536,7 @@ export default function AIMultipleChoiceGapFill({
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-5 h-5 text-green-500" />
                   <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                    Correct!
+                    {t('correct')}
                   </span>
                   {usedHints > 0 && (
                     <span className="text-xs text-gray-500">
@@ -545,7 +549,7 @@ export default function AIMultipleChoiceGapFill({
                   <XCircle className="w-5 h-5 text-red-500" />
                   <div className="text-sm">
                     <span className="text-red-600 dark:text-red-400">
-                      Incorrect.{" "}
+                      {t('incorrect')}.{" "}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
                       Correct answer: <strong>{feedback.answer}</strong>
@@ -647,11 +651,10 @@ export default function AIMultipleChoiceGapFill({
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          Complete the Sentences - Multiple Choice
+          {t('complete_sentences_mc')}
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
-          Choose the best word for each blank. Click the audio button to hear
-          the sentence. Use hints if you need help!
+          {t('choose_best_word_instruction')}
         </p>
       </div>
 
@@ -662,7 +665,7 @@ export default function AIMultipleChoiceGapFill({
           <div className="flex items-center space-x-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <p className="text-green-800 dark:text-green-300 font-medium">
-              Excellent work! You&apos;ve completed all the sentences.
+              {t('excellent_work_completed')}
             </p>
           </div>
           <p className="text-sm text-green-700 dark:text-green-400">

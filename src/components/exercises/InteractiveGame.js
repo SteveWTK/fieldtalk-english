@@ -1,8 +1,12 @@
 // components/exercises/InteractiveGame.js
 import React, { useState, useRef, useEffect } from "react";
 import { Play, RotateCcw, Volume2, CheckCircle } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
+  const { user } = useAuth();
+  const { t } = useTranslation(user);
   // Create unique localStorage key for this lesson and component
   const STORAGE_KEY = `lesson-${lessonId}-interactiveGame-progress`;
 
@@ -214,10 +218,10 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               ) : (
                 <Play className="w-5 h-5" />
               )}
-              <span>{audioLoading ? "Loading..." : "Listen to Command"}</span>
+              <span>{audioLoading ? t('loading') : t('listen_to_command')}</span>
             </button>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              Click the button to hear where to pass the ball
+              {t('click_where_ball_should_go')}
             </p>
           </div>
         )}
@@ -257,8 +261,8 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               >
                 <p className="font-semibold">
                   {lastClickCorrect
-                    ? `✅ ${currentCmd.success_message || "Great pass!"}`
-                    : "❌ Try again! Listen carefully to the command."}
+                    ? `✅ ${currentCmd.success_message || t('great_pass')}`
+                    : `❌ ${t('try_again_listen')}`}
                 </p>
               </div>
             )}
@@ -273,8 +277,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                 Great Job! 🎉
               </h3>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
-                You completed {score} out of {commands.length} commands
-                correctly!
+                {t('you_completed')} {score} {t('out_of')} {commands.length} {t('commands_correctly')}
               </p>
               <div className="flex justify-center space-x-4">
                 <button
@@ -282,7 +285,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                   className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2 transition-colors"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Play Again</span>
+                  <span>{t('play_again')}</span>
                 </button>
               </div>
             </div>

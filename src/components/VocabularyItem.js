@@ -3,12 +3,15 @@
 
 import React, { useState } from "react";
 import { Volume2 } from "lucide-react";
+import { getTranslation } from "@/utils/translations";
 
 export default function VocabularyItem({
   item,
   englishVariant = "british",
   voiceGender = "male",
+  userLanguage = "en",
 }) {
+  const t = (key, fallback = '') => getTranslation(key, userLanguage, fallback);
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(item.audio_url || null);
 
@@ -110,17 +113,17 @@ export default function VocabularyItem({
       </p>
       {item.example && (
         <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-          Example: {item.example}
+          {t('example')}: {item.example}
         </p>
       )}
       {item.tip && (
         <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 text-black dark:text-gray-200 rounded text-sm">
-          <strong>Tip:</strong> {item.tip}
+          <strong>{t('tip')}:</strong> {item.tip}
         </div>
       )}
       {item.cultural_note && (
         <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
-          <strong>Cultural Note:</strong> {item.cultural_note}
+          <strong>{t('cultural_note')}:</strong> {item.cultural_note}
         </div>
       )}
     </div>
