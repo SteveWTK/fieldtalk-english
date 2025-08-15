@@ -27,14 +27,14 @@ export default function AIMultipleChoiceGapFill({
 
   // Initialize state with localStorage data if available
   const [answers, setAnswers] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.answers || {};
         } catch (e) {
-          console.error('Error loading saved progress:', e);
+          console.error("Error loading saved progress:", e);
         }
       }
     }
@@ -42,13 +42,13 @@ export default function AIMultipleChoiceGapFill({
   });
 
   const [showFeedback, setShowFeedback] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.showFeedback || {};
-        } catch (e) {}
+        } catch {}
       }
     }
     return {};
@@ -62,13 +62,13 @@ export default function AIMultipleChoiceGapFill({
 
   // Enhanced hint tracking
   const [hintUsage, setHintUsage] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.hintUsage || {};
-        } catch (e) {}
+        } catch {}
       }
     }
     return {};
@@ -78,12 +78,12 @@ export default function AIMultipleChoiceGapFill({
 
   // Save progress to localStorage whenever relevant state changes
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && !completed) {
+    if (typeof window !== "undefined" && !completed) {
       const progressData = {
         answers,
         showFeedback,
         hintUsage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
     }
@@ -93,7 +93,7 @@ export default function AIMultipleChoiceGapFill({
   React.useEffect(() => {
     if (completed) {
       // Clear progress when completed
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
