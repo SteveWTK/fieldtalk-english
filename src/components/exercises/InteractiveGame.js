@@ -8,14 +8,14 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
 
   // Initialize state with localStorage data if available
   const [currentCommand, setCurrentCommand] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.currentCommand || 0;
         } catch (e) {
-          console.error('Error loading saved progress:', e);
+          console.error("Error loading saved progress:", e);
         }
       }
     }
@@ -23,39 +23,39 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
   });
 
   const [score, setScore] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.score || 0;
-        } catch (e) {}
+        } catch {}
       }
     }
     return 0;
   });
 
   const [gameState, setGameState] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.gameState || "ready";
-        } catch (e) {}
+        } catch {}
       }
     }
     return "ready";
   });
 
   const [ballPosition, setBallPosition] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.ballPosition || { x: 200, y: 350 };
-        } catch (e) {}
+        } catch {}
       }
     }
     return { x: 200, y: 350 };
@@ -69,13 +69,13 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
 
   // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
-    if (typeof window !== 'undefined' && gameState !== "completed") {
+    if (typeof window !== "undefined" && gameState !== "completed") {
       const progressData = {
         currentCommand,
         score,
         gameState,
         ballPosition,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
     }
@@ -84,7 +84,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
   // Clear localStorage when game is completed or reset
   useEffect(() => {
     if (gameState === "completed") {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // Delay clearing to allow final state to be saved
         setTimeout(() => {
           localStorage.removeItem(STORAGE_KEY);
@@ -168,7 +168,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
 
   const resetGame = () => {
     // Clear localStorage when resetting
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
     }
     setCurrentCommand(0);

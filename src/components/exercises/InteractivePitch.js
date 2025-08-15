@@ -2,20 +2,24 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Volume2, MapPin, Info } from "lucide-react";
 
-export default function InteractivePitch({ interactiveConfig, lessonId, onComplete }) {
+export default function InteractivePitch({
+  interactiveConfig,
+  lessonId,
+  onComplete,
+}) {
   // Create unique localStorage key for this lesson and component
   const STORAGE_KEY = `lesson-${lessonId}-interactivePitch-progress`;
 
   // Initialize state with localStorage data if available
   const [clickedAreas, setClickedAreas] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return new Set(data.clickedAreas || []);
         } catch (e) {
-          console.error('Error loading saved progress:', e);
+          console.error("Error loading saved progress:", e);
         }
       }
     }
@@ -23,26 +27,26 @@ export default function InteractivePitch({ interactiveConfig, lessonId, onComple
   });
 
   const [currentArea, setCurrentArea] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.currentArea || null;
-        } catch (e) {}
+        } catch {}
       }
     }
     return null;
   });
 
   const [showTranslations, setShowTranslations] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const data = JSON.parse(saved);
           return data.showTranslations || false;
-        } catch (e) {}
+        } catch {}
       }
     }
     return false;
@@ -55,12 +59,12 @@ export default function InteractivePitch({ interactiveConfig, lessonId, onComple
 
   // Save progress to localStorage whenever relevant state changes
   useEffect(() => {
-    if (typeof window !== 'undefined' && !isCompleted) {
+    if (typeof window !== "undefined" && !isCompleted) {
       const progressData = {
         clickedAreas: Array.from(clickedAreas),
         currentArea,
         showTranslations,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
     }
@@ -69,7 +73,7 @@ export default function InteractivePitch({ interactiveConfig, lessonId, onComple
   // Clear localStorage when component completes
   useEffect(() => {
     if (isCompleted) {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
