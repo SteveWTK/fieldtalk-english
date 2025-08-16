@@ -50,6 +50,8 @@ import AIMultipleChoiceGapFill from "@/components/exercises/AIMultipleChoiceGapF
 import VocabularyItem from "@/components/VocabularyItem";
 import InteractivePitch from "@/components/exercises/InteractivePitch";
 import InteractiveGame from "@/components/exercises/InteractiveGame";
+import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
+import AISpeechPractice from "@/components/exercises/AISpeechPractice";
 
 function DynamicLessonContent() {
   const params = useParams();
@@ -173,6 +175,13 @@ function DynamicLessonContent() {
     setAutoTranslating(true);
     const translationPromises = [];
 
+    // Translate step title
+    if (stepData.title) {
+      translationPromises.push(
+        translateContent(stepData.title, `step-title-${currentStep}`)
+      );
+    }
+
     // Translate scenario content
     if (stepData.type === "scenario" && stepData.content) {
       translationPromises.push(
@@ -205,6 +214,13 @@ function DynamicLessonContent() {
 
     // Translate vocabulary tips and cultural notes (keep words in English)
     if (stepData.type === "vocabulary") {
+      // Translate vocabulary instructions/content
+      if (stepData.content) {
+        translationPromises.push(
+          translateContent(stepData.content, `vocab-content-${currentStep}`)
+        );
+      }
+
       const items = stepData.vocabulary || stepData.words || [];
       items.forEach((item, idx) => {
         if (item.tip) {
@@ -280,7 +296,45 @@ function DynamicLessonContent() {
       );
     }
 
-    // Translate any generic content field
+    // Translate listening challenge content and context
+    if (stepData.type === "ai_listening_challenge") {
+      if (stepData.content) {
+        translationPromises.push(
+          translateContent(stepData.content, `listening-content-${currentStep}`)
+        );
+      }
+
+      // Translate context hints for each audio clip (keep the actual audio in English)
+      if (stepData.audio_clips) {
+        stepData.audio_clips.forEach((clip, idx) => {
+          if (clip.context) {
+            translationPromises.push(
+              translateContent(
+                clip.context,
+                `listening-context-${currentStep}-${idx}`
+              )
+            );
+          }
+        });
+      }
+    }
+
+    // Translate speech practice instructions (keep expectedText in English)
+    if (stepData.type === "ai_speech_practice") {
+      if (stepData.prompt) {
+        translationPromises.push(
+          translateContent(stepData.prompt, `speech-prompt-${currentStep}`)
+        );
+      }
+
+      if (stepData.context) {
+        translationPromises.push(
+          translateContent(stepData.context, `speech-context-${currentStep}`)
+        );
+      }
+    }
+
+    // Translate any generic content field for other step types
     if (
       stepData.content &&
       !["scenario", "vocabulary"].includes(stepData.type)
@@ -645,6 +699,8 @@ function DynamicLessonContent() {
       ai_writing: BookOpen,
       ai_conversation: MessageSquare,
       ai_gap_fill: Target,
+      ai_listening_challenge: Headphones,
+      ai_speech_practice: Mic,
       scenario: Globe,
       vocabulary: Book,
       dialogue: MessageSquare,
@@ -833,6 +889,61 @@ function DynamicLessonContent() {
             }}
           />
         );
+
+      case "ai_listening_challenge":
+        // Prepare audio clips with translated context
+        const translatedAudioClips = (currentStepData.audio_clips || []).map(
+          (clip, idx) => ({
+            ...clip,
+            context:
+              translations[`listening-context-${currentStep}-${idx}`] ||
+              clip.context,
+          })
+        );
+
+        return (
+          <AIListeningChallenge
+            audioClips={translatedAudioClips}
+            content={
+              translations[`listening-content-${currentStep}`] ||
+              currentStepData.content
+            }
+            lessonId={lessonId}
+            englishVariant={userEnglishVariant}
+            voiceGender={userVoiceGender}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              // Auto-advance to next step after a short delay
+              setTimeout(() => handleNext(), 1000);
+            }}
+          />
+        );
+
+      case "ai_speech_practice":
+        return (
+          <AISpeechPractice
+            prompt={
+              translations[`speech-prompt-${currentStep}`] ||
+              currentStepData.prompt
+            }
+            expectedText={currentStepData.expectedText}
+            context={
+              translations[`speech-context-${currentStep}`] ||
+              currentStepData.context
+            }
+            lessonId={lessonId}
+            englishVariant={userEnglishVariant}
+            voiceGender={userVoiceGender}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              // Auto-advance to next step after a short delay
+              setTimeout(() => handleNext(), 1000);
+            }}
+          />
+        );
+
       // Use multiple choice for academy demos (beginners)
       // const isAcademyDemo =
       //   lesson?.title?.includes("Academy") ||
@@ -866,7 +977,9 @@ function DynamicLessonContent() {
         return (
           <div className="space-y-4">
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-              {currentStepData.content || t("learn_essential_words")}
+              {translations[`vocab-content-${currentStep}`] ||
+                currentStepData.content ||
+                t("learn_essential_words")}
             </p>
             <div className="grid gap-4">
               {(currentStepData.vocabulary || currentStepData.words || []).map(
@@ -2198,7 +2311,10 @@ function DynamicLessonContent() {
           <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl">
             <div className="flex items-center space-x-2 mb-4">
               {getStepIcon(currentStepData.type)}
-              <h3 className="text-lg font-semibold">{currentStepData.title}</h3>
+              <h3 className="text-lg font-semibold">
+                {translations[`step-title-${currentStep}`] ||
+                  currentStepData.title}
+              </h3>
             </div>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
               {currentStepData.content}
@@ -2385,23 +2501,23 @@ function DynamicLessonContent() {
               {lesson.title}
             </h1>
             <div className="flex items-center space-x-4 mt-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              {/* <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {lesson.pillar?.display_name || "Lesson"}
-              </span>
+              </span> */}
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
                 {lesson.difficulty}
               </span>
-              <span className="text-gray-600 dark:text-gray-300 text-sm">
+              {/* <span className="text-gray-600 dark:text-gray-300 text-sm">
                 {lesson.xp_reward} XP Available
-              </span>
+              </span> */}
             </div>
           </div>
-          <div className="text-right">
+          {/* <div className="text-right">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               XP Earned
             </p>
             <p className="text-2xl font-bold text-green-600">{xpEarned}</p>
-          </div>
+          </div> */}
         </div>
 
         {/* Progress Bar */}
@@ -2424,7 +2540,9 @@ function DynamicLessonContent() {
         <div className="flex items-center space-x-2 mb-4">
           {getStepIcon(currentStepData?.type)}
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {currentStepData?.title || `Step ${currentStep + 1}`}
+            {translations[`step-title-${currentStep}`] ||
+              currentStepData?.title ||
+              `Step ${currentStep + 1}`}
           </h2>
         </div>
 

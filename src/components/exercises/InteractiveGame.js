@@ -174,6 +174,8 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
       "left-back": { x: 100, y: 450 },
       "right-back": { x: 300, y: 450 },
       midfielder: { x: 200, y: 300 },
+      "left-winger": { x: 60, y: 240 },
+      "right-winger": { x: 340, y: 240 },
       striker: { x: 200, y: 120 },
       goal: { x: 200, y: 50 },
     };
@@ -484,6 +486,48 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               className="text-sm font-bold fill-white pointer-events-none"
             >
               MF
+            </text>
+          </g>
+
+          {/* Left Winger */}
+          <g onClick={() => handleTargetClick("left-winger")}>
+            <circle
+              cx="60"
+              cy="240"
+              r="25"
+              fill="#8b5cf6"
+              stroke="white"
+              strokeWidth="2"
+              className="cursor-pointer hover:fill-purple-400 transition-colors"
+            />
+            <text
+              x="60"
+              y="245"
+              textAnchor="middle"
+              className="text-sm font-bold fill-white pointer-events-none"
+            >
+              LW
+            </text>
+          </g>
+
+          {/* Right Winger */}
+          <g onClick={() => handleTargetClick("right-winger")}>
+            <circle
+              cx="340"
+              cy="240"
+              r="25"
+              fill="#8b5cf6"
+              stroke="white"
+              strokeWidth="2"
+              className="cursor-pointer hover:fill-purple-400 transition-colors"
+            />
+            <text
+              x="340"
+              y="245"
+              textAnchor="middle"
+              className="text-sm font-bold fill-white pointer-events-none"
+            >
+              RW
             </text>
           </g>
 
