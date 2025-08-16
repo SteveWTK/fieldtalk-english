@@ -69,6 +69,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
   const [audioLoading, setAudioLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [lastClickCorrect, setLastClickCorrect] = useState(false);
+  const [hasPlayedCommand, setHasPlayedCommand] = useState(false);
   const audioRef = useRef(null);
 
   // Save progress to localStorage whenever relevant state changes
@@ -84,6 +85,17 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
     }
   }, [currentCommand, score, gameState, ballPosition, STORAGE_KEY]);
+
+  // Auto-play next command after correct answer
+  useEffect(() => {
+    if (gameState === "ready" && currentCommand > 0 && !hasPlayedCommand) {
+      // Auto-play after a short delay when ready for next command
+      const timer = setTimeout(() => {
+        playCommand();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState, currentCommand, hasPlayedCommand]);
 
   // Clear localStorage when game is completed or reset
   useEffect(() => {
@@ -115,6 +127,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
     } finally {
       setAudioLoading(false);
       setGameState("playing");
+      setHasPlayedCommand(true);
     }
   };
 
@@ -134,6 +147,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
         setShowFeedback(false);
         if (currentCommand + 1 < commands.length) {
           setCurrentCommand((prev) => prev + 1);
+          setHasPlayedCommand(false); // Reset for next command
           setGameState("ready");
           // setBallPosition({ x: 200, y: 350 }); // Reset ball to center
         } else {
@@ -181,6 +195,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
     setBallPosition({ x: 200, y: 350 });
     setShowFeedback(false);
     setShowTranslation(false);
+    setHasPlayedCommand(false);
   };
 
   return (
@@ -211,6 +226,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
             <button
               onClick={playCommand}
               disabled={audioLoading}
+              data-autoplay-next={currentCommand > 0}
               className="bg-fieldtalk-800 text-white px-6 py-3 rounded-lg hover:bg-fieldtalk-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto transition-colors"
             >
               {audioLoading ? (
@@ -232,13 +248,26 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               <p className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 &quot;{currentCmd.text}&quot;
               </p>
-              <button
-                onClick={() => setShowTranslation(!showTranslation)}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1 mx-auto"
-              >
-                <Volume2 className="w-4 h-4" />
-                <span>{showTranslation ? "Hide" : "Show"} Portuguese</span>
-              </button>
+              <div className="flex justify-center space-x-3 mt-2">
+                <button
+                  onClick={playCommand}
+                  disabled={audioLoading}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  {audioLoading ? (
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                  <span>{audioLoading ? t('loading') : t('listen_again')}</span>
+                </button>
+                <button
+                  onClick={() => setShowTranslation(!showTranslation)}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  <span>{showTranslation ? "Hide" : "Show"} Portuguese</span>
+                </button>
+              </div>
               {showTranslation && (
                 <p className="text-blue-600 dark:text-blue-400 italic mt-2">
                   {currentCmd.translation}
@@ -253,7 +282,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
             {/* Feedback message */}
             {showFeedback && (
               <div
-                className={`mt-3 p-2 rounded-lg ${
+                className={`mt-3 p-3 rounded-lg ${
                   lastClickCorrect
                     ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
                     : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
@@ -264,6 +293,20 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                     ? `✅ ${currentCmd.success_message || t('great_pass')}`
                     : `❌ ${t('try_again_listen')}`}
                 </p>
+                {!lastClickCorrect && (
+                  <button
+                    onClick={playCommand}
+                    disabled={audioLoading}
+                    className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors flex items-center space-x-1 mx-auto"
+                  >
+                    {audioLoading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                    <span>{audioLoading ? t('loading') : t('listen_again')}</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
