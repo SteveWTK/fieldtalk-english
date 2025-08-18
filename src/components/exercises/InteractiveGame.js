@@ -177,7 +177,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
       "left-winger": { x: 60, y: 240 },
       "right-winger": { x: 340, y: 240 },
       striker: { x: 200, y: 120 },
-      goal: { x: 200, y: 50 },
+      goal: { x: 200, y: 10 },
     };
 
     const target = targetPositions[targetId];
@@ -236,10 +236,12 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               ) : (
                 <Play className="w-5 h-5" />
               )}
-              <span>{audioLoading ? t('loading') : t('listen_to_command')}</span>
+              <span>
+                {audioLoading ? t("loading") : t("listen_to_command")}
+              </span>
             </button>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              {t('click_where_ball_should_go')}
+              {t("click_where_ball_should_go")}
             </p>
           </div>
         )}
@@ -261,7 +263,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                   ) : (
                     <Volume2 className="w-4 h-4" />
                   )}
-                  <span>{audioLoading ? t('loading') : t('listen_again')}</span>
+                  <span>{audioLoading ? t("loading") : t("listen_again")}</span>
                 </button>
                 <button
                   onClick={() => setShowTranslation(!showTranslation)}
@@ -292,8 +294,8 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               >
                 <p className="font-semibold">
                   {lastClickCorrect
-                    ? `✅ ${currentCmd.success_message || t('great_pass')}`
-                    : `❌ ${t('try_again_listen')}`}
+                    ? `✅ ${currentCmd.success_message || t("great_pass")}`
+                    : `❌ ${t("try_again_listen")}`}
                 </p>
                 {!lastClickCorrect && (
                   <button
@@ -306,7 +308,9 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                     ) : (
                       <Volume2 className="w-4 h-4" />
                     )}
-                    <span>{audioLoading ? t('loading') : t('listen_again')}</span>
+                    <span>
+                      {audioLoading ? t("loading") : t("listen_again")}
+                    </span>
                   </button>
                 )}
               </div>
@@ -322,7 +326,8 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                 Great Job! 🎉
               </h3>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
-                {t('you_completed')} {score} {t('out_of')} {commands.length} {t('commands_correctly')}
+                {t("you_completed")} {score} {t("out_of")} {commands.length}{" "}
+                {t("commands_correctly")}
               </p>
               <div className="flex justify-center space-x-4">
                 <button
@@ -330,7 +335,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
                   className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2 transition-colors"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>{t('play_again')}</span>
+                  <span>{t("play_again")}</span>
                 </button>
               </div>
             </div>
@@ -429,7 +434,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
           <g onClick={() => handleTargetClick("goal")}>
             <rect
               x="160"
-              y="10"
+              y="0"
               width="80"
               height="30"
               fill="#fbbf24"
@@ -439,7 +444,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
             />
             <text
               x="200"
-              y="30"
+              y="20"
               textAnchor="middle"
               className="text-xs font-bold fill-black pointer-events-none"
             >
