@@ -739,7 +739,7 @@ function DynamicLessonContent() {
       case "scenario":
         return (
           <div className="text-center">
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-6">
+            <div className="bg-blue-50 dark:bg-primary-900/20 rounded-xl p-6 mb-6">
               {/* Translation button */}
               {/* {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
@@ -861,6 +861,7 @@ function DynamicLessonContent() {
           <AIConversationPractice
             scenario={currentStepData.scenario}
             context={currentStepData.context}
+            conversationStarters={currentStepData.conversation_starters}
             lessonId={lessonId}
             englishVariant={userEnglishVariant}
             voiceGender={userVoiceGender}
@@ -938,8 +939,8 @@ function DynamicLessonContent() {
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
               setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              // Auto-advance to next step after a short delay
-              setTimeout(() => handleNext(), 1000);
+              // For speech practice, user manually advances after reviewing feedback
+              handleNext();
             }}
           />
         );

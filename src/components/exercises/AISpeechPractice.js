@@ -1,6 +1,6 @@
 // components/exercises/AISpeechPractice.js
 import React, { useState, useRef } from "react";
-import { Mic, MicOff, Play, RotateCcw } from "lucide-react";
+import { Mic, MicOff, Play, RotateCcw, Pause, Volume2 } from "lucide-react";
 
 export default function AISpeechPractice({
   prompt,
@@ -10,6 +10,8 @@ export default function AISpeechPractice({
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,7 @@ export default function AISpeechPractice({
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
+  const audioRef = useRef(null);
 
   const startRecording = async () => {
     try {
@@ -36,6 +39,10 @@ export default function AISpeechPractice({
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
         setAudioBlob(audioBlob);
+        
+        // Create URL for audio playback
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
       };
 
       mediaRecorder.start();
@@ -61,6 +68,30 @@ export default function AISpeechPractice({
     }
   };
 
+  const playRecording = () => {
+    if (!audioUrl) return;
+
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } else {
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+      };
+      
+      audio.play();
+      setIsPlaying(true);
+    }
+  };
+
   const analyzeRecording = async () => {
     if (!audioBlob) return;
 
@@ -69,7 +100,7 @@ export default function AISpeechPractice({
     try {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.wav");
-      formData.append("lessonId", lessonId);
+      formData.append("lessonId", lessonId || "demo");
       formData.append("expectedText", expectedText);
       formData.append("language", "pt-BR"); // Get from user settings
 
@@ -78,27 +109,40 @@ export default function AISpeechPractice({
         body: formData,
       });
 
+      const result = await response.json();
+      
       if (!response.ok) {
-        throw new Error("Failed to analyze speech");
+        console.error("API Error Response:", result);
+        throw new Error(result.error || "Failed to analyze speech");
       }
 
-      const result = await response.json();
       setTranscript(result.transcript);
       setFeedback(result.feedback);
 
-      // Award XP based on performance
-      const xp = Math.max(20, result.feedback.overall_score);
-      onComplete(xp);
+      // Don't call onComplete here - wait for user to click "Continue" or "Practice Again"
+      // Store XP to award when user continues
+      // const xp = Math.max(20, result.feedback?.overall_score || 50);
     } catch (error) {
       console.error("Speech analysis failed:", error);
-      alert("Failed to analyze recording. Please try again.");
+      alert(`Failed to analyze recording: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const resetRecording = () => {
+    // Clean up audio resources
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    
     setAudioBlob(null);
+    setAudioUrl(null);
+    setIsPlaying(false);
     setTranscript("");
     setFeedback(null);
     setRecordingTime(0);
@@ -159,7 +203,19 @@ export default function AISpeechPractice({
 
         {audioBlob && !feedback && (
           <div>
-            <div className="flex justify-center space-x-4 mb-4">
+            <div className="flex justify-center space-x-3 mb-4">
+              <button
+                onClick={playRecording}
+                className="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+              >
+                {isPlaying ? (
+                  <Pause className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+                <span>{isPlaying ? "Pause" : "Play"}</span>
+              </button>
+
               <button
                 onClick={analyzeRecording}
                 disabled={loading}
@@ -183,8 +239,7 @@ export default function AISpeechPractice({
             </div>
 
             <p className="text-sm text-gray-600">
-              Recording ready! Click &quot;Get Feedback&quot; to analyze your
-              pronunciation.
+              Recording ready! Listen to review your pronunciation, then click &quot;Get Feedback&quot; for analysis.
             </p>
           </div>
         )}
@@ -297,13 +352,25 @@ export default function AISpeechPractice({
             )}
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 flex justify-center space-x-4">
             <button
               onClick={resetRecording}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
             >
               Practice Again
             </button>
+            {onComplete && (
+              <button
+                onClick={() => {
+                  // Award XP based on performance and move to next activity
+                  const xp = Math.max(20, feedback?.overall_score || 50);
+                  onComplete(xp);
+                }}
+                className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-semibold"
+              >
+                Continue to Next Activity →
+              </button>
+            )}
           </div>
         </div>
       )}

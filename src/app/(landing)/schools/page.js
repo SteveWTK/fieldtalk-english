@@ -28,23 +28,13 @@ export default function BrazilianLandingPage() {
   return (
     <>
       {/* Hero Section with Photo */}
-      <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-20 bg-gradient-to-br rom-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="flex items-center mb-6">
-                <img
-                  src="images/logos/cultura-inglesa-lion-nb.png"
-                  alt="Cultura Inglesa Lion"
-                  className="h-8 mr-1 rounded-full shadow-2xl"
-                />
-                <span className="text-sm font-medium text-gray-900 bg-green-50 px-3 py-1 rounded-full">
-                  Parceria exclusiva Cultura Inglesa
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
                 Inglês de Elite para
-                <span className="block bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Futuros Craques
                 </span>
               </h1>
@@ -56,25 +46,25 @@ export default function BrazilianLandingPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/demo"
-                  className="bg-gradient-to-r from-green-600 to-blue-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                  className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
                   Experimente Grátis <Play className="w-5 h-5 ml-2" />
                 </Link>
-                <button className="border-2 border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+                <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
                   Fale com a Cultura
                 </button>
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Método exclusivo
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Professores especializados
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Resultados garantidos
                 </div>
               </div>
@@ -97,7 +87,7 @@ export default function BrazilianLandingPage() {
                   </span>
                 </div>
               </div>
-              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl p-4 shadow-lg">
+              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">98%</div>
                   <div className="text-xs">Taxa de sucesso</div>
@@ -514,6 +504,16 @@ export default function BrazilianLandingPage() {
                   <Globe className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold">FieldTalk English</span>
+              </div>
+              <div className="flex items-start mb-6">
+                <span className="text-sm font-medium dark:text-white px-3 py-1 rounded-full">
+                  Com a Cultura Inglesa
+                </span>
+                <img
+                  src="images/logos/cultura-inglesa-lion-nb.png"
+                  alt="Cultura Inglesa Lion"
+                  className="h-8 mr-1 rounded-full shadow-2xl"
+                />
               </div>
               <p className="text-gray-400 mb-4">
                 Preparando jovens brasileiros para o sucesso internacional no

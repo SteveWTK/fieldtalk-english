@@ -25,18 +25,18 @@ export default function AcademyLandingPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-20 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="flex items-center mb-6">
-                <span className="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                  🇧🇷 Feito para Jovens Brasileiros
+              {/* <div className="flex items-center mb-6">
+                <span className="text-sm font-medium text-accent-600 bg-accent-50 px-3 py-1 rounded-full">
+                  Feito para Jovens Brasileiros
                 </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              </div> */}
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-900 dark:text-white mb-6">
                 Inglês que Abre Portas no
-                <span className="block bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Futebol Internacional
                 </span>
               </h1>
@@ -49,26 +49,26 @@ export default function AcademyLandingPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/presentation"
-                  className="bg-gradient-to-r from-green-600 to-blue-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                  className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
                   Ver Apresentação Completa
                   <Presentation className="w-5 h-5 ml-2" />
                 </Link>
-                <button className="border-2 border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+                <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
                   Agendar Demonstração
                 </button>
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Metodologia Comprovada
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Preços Acessíveis
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
                   Suporte em Português
                 </div>
               </div>
@@ -83,9 +83,9 @@ export default function AcademyLandingPage() {
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='180' text-anchor='middle' fill='%236b7280' font-size='18'%3EJovens Talentos%3C/text%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='18'%3EAprendendo Inglês%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='%236b7280' font-size='14'%3EFieldTalk Academy%3C/text%3E%3C/svg%3E";
                 }}
               />
-              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl p-4 shadow-lg">
+              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">92%</div>
+                  <div className="text-2xl font-bold">100%</div>
                   <div className="text-xs">Taxa de Sucesso</div>
                 </div>
               </div>

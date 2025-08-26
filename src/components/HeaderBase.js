@@ -22,56 +22,56 @@ function HeaderBase({
       en: [
         { href: "/", label: "Home" },
         { href: "/dashboard", label: "Dashboard" },
-        // { href: "/lesson", label: "Lessons" },
+        { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Presentation" },
+        // { href: "/presentation", label: "Presentation" },
       ],
       pt: [
         { href: "/", label: "Início" },
         { href: "/dashboard", label: "Painel" },
-        // { href: "/lesson", label: "Lições" },
+        { href: "/lesson", label: "lições" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Apresentação" },
+        // { href: "/presentation", label: "Apresentação" },
       ],
       es: [
         { href: "/", label: "Inicio" },
         { href: "/dashboard", label: "Panel" },
-        // { href: "/lesson", label: "Lecciones" },
+        { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Presentación" },
+        // { href: "/presentation", label: "Presentación" },
       ],
       fr: [
         { href: "/", label: "Accueil" },
         { href: "/dashboard", label: "Tableau de bord" },
-        // { href: "/lesson", label: "Leçons" },
+        { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Présentation" },
+        // { href: "/presentation", label: "Présentation" },
       ],
     },
     site: {
       en: [
         { href: "/dashboard", label: "Dashboard" },
-        // { href: "/lesson", label: "Lessons" },
+        { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Presentation" },
+        // { href: "/presentation", label: "Presentation" },
       ],
       pt: [
         { href: "/dashboard", label: "Painel" },
-        // { href: "/lesson", label: "Lições" },
+        { href: "/lesson", label: "Lições" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Apresentação" },
+        // { href: "/presentation", label: "Apresentação" },
       ],
       es: [
         { href: "/dashboard", label: "Panel" },
-        // { href: "/lesson", label: "Lecciones" },
+        { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Presentación" },
+        // { href: "/presentation", label: "Presentación" },
       ],
       fr: [
         { href: "/dashboard", label: "Tableau de bord" },
-        // { href: "/lesson", label: "Leçons" },
+        { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
-        { href: "/presentation", label: "Présentation" },
+        // { href: "/presentation", label: "Présentation" },
       ],
     },
   };
@@ -111,15 +111,15 @@ function HeaderBase({
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-primary-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
                 {/* <Globe className="w-5 h-5 text-white" /> */}
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent">
                 FieldTalk English
               </span>
             </Link>
@@ -130,7 +130,8 @@ function HeaderBase({
                 <Link
                   key={href}
                   href={href}
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-accent-50 dark:hover:text-accent-400 dark:hover:border-accent-400 gap-2 lg:gap-4"
+                  // className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
                 >
                   {label}
                 </Link>
@@ -144,7 +145,7 @@ function HeaderBase({
                 <div className="flex items-center space-x-3">
                   <Link
                     href="/dashboard"
-                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-primary-50 dark:hover:text-accent-400 dark:hover:border-accent-400 gap-2 lg:gap-4"
                   >
                     <User className="w-5 h-5" />
                     <span className="hidden lg:inline font-medium">
@@ -155,7 +156,7 @@ function HeaderBase({
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    className=" text-primary-900 dark:text-primary-50 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
                   >
                     {copy.signOut}
                   </button>
@@ -163,7 +164,7 @@ function HeaderBase({
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors font-medium"
                 >
                   {copy.signIn}
                 </Link>
@@ -174,22 +175,21 @@ function HeaderBase({
                 <select
                   value={lang}
                   onChange={(e) => setLang(e.target.value)}
-                  className="px-2 py-1 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm  transition-colors"
+                  className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-primary-50 dark:hover:text-accent-400 dark:hover:border-accent-400 dark:bg-primary-900 gap-2 lg:gap-4"
+                  // className="px-2 py-1 rounded-xl bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-300 text-sm  transition-colors"
                 >
-                  {Object.entries(languageOptions).map(
-                    ([code, { label, flag }]) => (
-                      <option key={code} value={code}>
-                        {flag} {label}
-                      </option>
-                    )
-                  )}
+                  {Object.entries(languageOptions).map(([code, { label }]) => (
+                    <option key={code} value={code}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               )}
 
               {/* Dark Mode Toggle */}
               <button
                 onClick={setDarkMode}
-                className="p-1 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="p-1 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-800 transition-colors"
               >
                 {darkMode ? (
                   <Sun className="w-5 h-5" />
@@ -232,7 +232,7 @@ function HeaderBase({
                   <Link
                     key={href}
                     href={href}
-                    className="block py-2 text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    className="block py-2 text-lg font-medium text-primary-900 dark:text-primary-50 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
                     onClick={closeMobileMenu}
                   >
                     {label}
@@ -266,7 +266,7 @@ function HeaderBase({
                 ) : (
                   <Link
                     href="/auth/signin"
-                    className="block py-2 text-lg font-medium text-blue-600 dark:text-blue-400"
+                    className="block py-2 text-lg font-medium text-primary-900 dark:text-primary-50"
                     onClick={closeMobileMenu}
                   >
                     {copy.signIn}

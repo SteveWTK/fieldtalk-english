@@ -17,19 +17,32 @@ import {
 
 export default function AIConversationPractice({
   scenario,
+  conversationStarters,
   lessonId,
   onComplete,
   maxTurns = 6,
   englishVariant = 'british',
   voiceGender = 'male',
 }) {
-  const [messages, setMessages] = useState([
+  // Initialize with a coach greeting if conversation starters are present
+  const initialMessages = [
     {
       role: "system",
       content: scenario,
       timestamp: new Date().toISOString(),
     },
-  ]);
+  ];
+  
+  // Add initial coach message if we have conversation starters
+  if (conversationStarters && conversationStarters.length > 0) {
+    initialMessages.push({
+      role: "assistant",
+      content: "Hello! I'm your academy coach. Let's have a conversation about your football journey. Feel free to use one of the conversation starters below, or start with your own introduction.",
+      timestamp: new Date().toISOString(),
+    });
+  }
+  
+  const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
@@ -226,13 +239,24 @@ export default function AIConversationPractice({
   };
 
   const resetConversation = () => {
-    setMessages([
+    // Reset to initial messages including coach greeting if applicable
+    const resetMessages = [
       {
         role: "system",
         content: scenario,
         timestamp: new Date().toISOString(),
       },
-    ]);
+    ];
+    
+    if (conversationStarters && conversationStarters.length > 0) {
+      resetMessages.push({
+        role: "assistant",
+        content: "Hello! I'm your academy coach. Let's have a conversation about your football journey. Feel free to use one of the conversation starters below, or start with your own introduction.",
+        timestamp: new Date().toISOString(),
+      });
+    }
+    
+    setMessages(resetMessages);
     setTurnCount(0);
     setErrors({});
     setInput("");
@@ -265,6 +289,39 @@ export default function AIConversationPractice({
           </div>
         </div>
       </div>
+
+      {/* Conversation Starters */}
+      {conversationStarters && conversationStarters.length > 0 && turnCount === 0 && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+            Conversation Starters - Click to use:
+          </h4>
+          <div className="space-y-2">
+            {conversationStarters.map((starter, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setInput(starter);
+                  // Auto-save the starter
+                  try {
+                    localStorage.setItem(storageKey, starter);
+                  } catch (error) {
+                    console.error('Error saving starter:', error);
+                  }
+                }}
+                className="block w-full text-left p-3 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+              >
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {index + 1}. {starter}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+            Choose a starter to begin the conversation, or type your own message below.
+          </p>
+        </div>
+      )}
 
       {/* Messages Area */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg h-96 overflow-y-auto mb-4 p-4">
