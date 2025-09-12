@@ -106,82 +106,109 @@ export default function AIWritingExercise({
 
       if (data.success) {
         let analysis;
-        
+
         console.log("=== AI FEEDBACK DEBUG ===");
         console.log("Raw API response:", JSON.stringify(data, null, 2));
         console.log("data.analysis type:", typeof data.analysis);
         console.log("data.analysis content:", data.analysis);
         console.log("data.feedback type:", typeof data.feedback);
         console.log("data.feedback content:", data.feedback);
-        
+
         try {
           // The API should return the parsed object in data.analysis
-          if (data.analysis && typeof data.analysis === 'object' && !Array.isArray(data.analysis)) {
-            console.log("✅ Using data.analysis object (preferred path):", data.analysis);
+          if (
+            data.analysis &&
+            typeof data.analysis === "object" &&
+            !Array.isArray(data.analysis)
+          ) {
+            console.log(
+              "✅ Using data.analysis object (preferred path):",
+              data.analysis
+            );
             analysis = data.analysis;
           }
           // If analysis is missing or not an object, try to parse feedback
-          else if (data.feedback && typeof data.feedback === 'string') {
-            console.log("⚠️  data.analysis not available, trying to parse data.feedback");
+          else if (data.feedback && typeof data.feedback === "string") {
+            console.log(
+              "⚠️  data.analysis not available, trying to parse data.feedback"
+            );
             try {
               analysis = JSON.parse(data.feedback);
-              console.log("✅ Successfully parsed data.feedback as JSON:", analysis);
+              console.log(
+                "✅ Successfully parsed data.feedback as JSON:",
+                analysis
+              );
             } catch (parseError) {
-              console.log("❌ data.feedback is not valid JSON:", parseError.message);
+              console.log(
+                "❌ data.feedback is not valid JSON:",
+                parseError.message
+              );
               console.log("Raw feedback string:", data.feedback);
               // Create structured fallback from raw text
-              analysis = { 
-                score: 7, 
+              analysis = {
+                score: 7,
                 feedback: data.feedback,
                 clarity: data.feedback,
                 grammar: [],
                 vocabulary: [],
                 improvements: ["Continue practicing writing in English"],
-                encouragement: "Great effort! Keep practicing to improve your English skills."
+                encouragement:
+                  "Great effort! Keep practicing to improve your English skills.",
               };
             }
           }
           // If we have a feedback object (unlikely but possible)
-          else if (data.feedback && typeof data.feedback === 'object') {
+          else if (data.feedback && typeof data.feedback === "object") {
             console.log("✅ Using data.feedback object:", data.feedback);
             analysis = data.feedback;
           }
           // Final fallback
           else {
-            console.log("❌ No valid analysis or feedback found, using fallback");
-            analysis = { 
-              score: 7, 
-              feedback: "Good work! Your writing shows understanding of the topic.",
+            console.log(
+              "❌ No valid analysis or feedback found, using fallback"
+            );
+            analysis = {
+              score: 7,
+              feedback:
+                "Good work! Your writing shows understanding of the topic.",
               clarity: "Your writing demonstrates good comprehension.",
               grammar: [],
               vocabulary: [],
               improvements: ["Continue practicing writing in English"],
-              encouragement: "Great effort! Keep practicing to improve your English skills."
+              encouragement:
+                "Great effort! Keep practicing to improve your English skills.",
             };
           }
 
           // Ensure we have a valid score
-          if (typeof analysis.score !== 'number' || analysis.score < 1 || analysis.score > 10) {
+          if (
+            typeof analysis.score !== "number" ||
+            analysis.score < 1 ||
+            analysis.score > 10
+          ) {
             console.log("⚠️  Invalid score, setting to 7");
             analysis.score = 7;
           }
-
         } catch (e) {
           console.error("❌ Error processing AI response:", e);
-          analysis = { 
-            score: 7, 
+          analysis = {
+            score: 7,
             feedback: data.feedback || "Good work!",
             clarity: "Your writing shows good understanding.",
             grammar: [],
             vocabulary: [],
             improvements: ["Continue practicing writing in English"],
-            encouragement: "Great effort! Keep practicing to improve your English skills."
+            encouragement:
+              "Great effort! Keep practicing to improve your English skills.",
           };
         }
 
-        console.log("✅ Final parsed analysis:", JSON.stringify(analysis, null, 2));
+        console.log(
+          "✅ Final parsed analysis:",
+          JSON.stringify(analysis, null, 2)
+        );
         console.log("=== END DEBUG ===");
-        
+
         setFeedback(analysis);
         setShowFeedback(true);
 
@@ -226,7 +253,11 @@ export default function AIWritingExercise({
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textToSpeak, englishVariant, voiceGender }),
+        body: JSON.stringify({
+          text: textToSpeak,
+          englishVariant,
+          voiceGender,
+        }),
       });
 
       if (response.ok) {
@@ -274,30 +305,30 @@ export default function AIWritingExercise({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Writing Prompt */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+      <div className="bg-primary-50 dark:bg-accent-900/20 border border-primary-200 dark:border-accent-800 rounded-lg p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
-            <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+            <BookOpen className="w-6 h-6 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {t('writing_task')}
+                {t("writing_task")}
               </h3>
               <p className="text-gray-700 dark:text-gray-300">{prompt}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {t('write_words')} {minWords}-{maxWords} {t('words')}
+                {t("write_words")} {minWords}-{maxWords} {t("words")}
               </p>
             </div>
           </div>
           <button
             onClick={() => speakText(prompt)}
-            className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 
+            className="p-2 bg-white hover:bg-accent-100 dark:bg-accent-900/30 dark:hover:bg-accent-900/50 
                      rounded-lg transition-colors flex items-center space-x-1 ml-4"
             title="Listen to prompt"
           >
             {playingAudio ? (
-              <Pause className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Pause className="w-4 h-4 text-accent-600 dark:text-accent-400" />
             ) : (
-              <Play className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Play className="w-4 h-4 text-accent-600 dark:text-accent-400" />
             )}
           </button>
         </div>
@@ -309,7 +340,7 @@ export default function AIWritingExercise({
           <textarea
             value={text}
             onChange={handleTextChange}
-            placeholder={t('start_writing')}
+            placeholder={t("start_writing")}
             className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg 
                      bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -325,7 +356,7 @@ export default function AIWritingExercise({
           <div className="text-sm text-gray-600 dark:text-gray-400">
             {wordCount < minWords && (
               <span className="text-orange-600">
-                {t('need_more_words')} {minWords - wordCount} {t('words')}
+                {t("need_more_words")} {minWords - wordCount} {t("words")}
               </span>
             )}
           </div>
@@ -338,7 +369,7 @@ export default function AIWritingExercise({
                          flex items-center space-x-2"
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>{t('try_again')}</span>
+                <span>{t("try_again")}</span>
               </button>
             ) : (
               <button
@@ -354,12 +385,12 @@ export default function AIWritingExercise({
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>{t('analyzing')}</span>
+                    <span>{t("analyzing")}</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>{t('submit_for_feedback')}</span>
+                    <span>{t("submit_for_feedback")}</span>
                   </>
                 )}
               </button>
@@ -376,7 +407,7 @@ export default function AIWritingExercise({
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-yellow-500" />
-                <span>{t('ai_feedback')}</span>
+                <span>{t("ai_feedback")}</span>
               </h4>
               {feedback.score && (
                 <div
@@ -394,7 +425,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <AlertCircle className="w-4 h-4 text-orange-500" />
-                    <span>{t('grammar_notes')}</span>
+                    <span>{t("grammar_notes")}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.grammar.map((item, idx) => (
@@ -437,7 +468,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <BookOpen className="w-4 h-4 text-blue-500" />
-                    <span>{t('vocabulary_suggestions')}</span>
+                    <span>{t("vocabulary_suggestions")}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.vocabulary.map((item, idx) => (
@@ -475,7 +506,7 @@ export default function AIWritingExercise({
             {feedback.clarity && (
               <div className="mb-4">
                 <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-  {t('overall_clarity')}
+                  {t("overall_clarity")}
                 </h5>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {feedback.clarity}
@@ -490,7 +521,7 @@ export default function AIWritingExercise({
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
                     <Target className="w-4 h-4 text-purple-500" />
-                    <span>{t('next_steps')}</span>
+                    <span>{t("next_steps")}</span>
                   </h5>
                   <ul className="space-y-1">
                     {feedback.improvements.map((item, idx) => (
@@ -517,10 +548,16 @@ export default function AIWritingExercise({
             )}
 
             {/* Fallback display for simple feedback */}
-            {(!feedback.grammar || !Array.isArray(feedback.grammar) || feedback.grammar.length === 0) &&
-              (!feedback.vocabulary || !Array.isArray(feedback.vocabulary) || feedback.vocabulary.length === 0) &&
+            {(!feedback.grammar ||
+              !Array.isArray(feedback.grammar) ||
+              feedback.grammar.length === 0) &&
+              (!feedback.vocabulary ||
+                !Array.isArray(feedback.vocabulary) ||
+                feedback.vocabulary.length === 0) &&
               !feedback.clarity &&
-              (!feedback.improvements || !Array.isArray(feedback.improvements) || feedback.improvements.length === 0) &&
+              (!feedback.improvements ||
+                !Array.isArray(feedback.improvements) ||
+                feedback.improvements.length === 0) &&
               !feedback.encouragement && (
                 <div className="text-gray-700 dark:text-gray-300">
                   {typeof feedback === "string" ? (
@@ -542,16 +579,22 @@ export default function AIWritingExercise({
                       <div className="text-xs text-gray-700 dark:text-gray-300 font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded max-h-40 overflow-y-auto">
                         {Object.entries(feedback).map(([key, value]) => (
                           <div key={key} className="mb-1">
-                            <strong className="text-blue-600">{key}:</strong>{' '}
-                            {typeof value === 'object' 
-                              ? <pre className="inline whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre>
-                              : <span className="text-green-600">{String(value)}</span>
-                            }
+                            <strong className="text-blue-600">{key}:</strong>{" "}
+                            {typeof value === "object" ? (
+                              <pre className="inline whitespace-pre-wrap">
+                                {JSON.stringify(value, null, 2)}
+                              </pre>
+                            ) : (
+                              <span className="text-green-600">
+                                {String(value)}
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>
                       <p className="text-xs text-yellow-800 dark:text-yellow-300 mt-2">
-                        This is debug output. The AI response structure needs to be fixed.
+                        This is debug output. The AI response structure needs to
+                        be fixed.
                       </p>
                     </div>
                   )}
@@ -564,7 +607,7 @@ export default function AIWritingExercise({
             {feedback.score && feedback.score >= 7 ? (
               <div className="text-center space-y-4">
                 <p className="text-green-600 dark:text-green-400 font-medium">
-                  {t('you_demonstrated_excellent')}
+                  {t("you_demonstrated_excellent")}
                 </p>
                 <button
                   onClick={() => {
@@ -581,7 +624,7 @@ export default function AIWritingExercise({
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 mx-auto"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>{t('continue')}</span>
+                  <span>{t("continue")}</span>
                 </button>
               </div>
             ) : (
@@ -591,7 +634,7 @@ export default function AIWritingExercise({
                   className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>{t('try_again')}</span>
+                  <span>{t("try_again")}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -608,7 +651,7 @@ export default function AIWritingExercise({
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>{t('continue_anyway')}</span>
+                  <span>{t("continue_anyway")}</span>
                 </button>
               </div>
             )}

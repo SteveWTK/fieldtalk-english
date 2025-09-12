@@ -21,37 +21,101 @@ export default function AIConversationPractice({
   lessonId,
   onComplete,
   maxTurns = 6,
-  englishVariant = 'british',
-  voiceGender = 'male',
+  englishVariant = "british",
+  voiceGender = "male",
 }) {
-  // Initialize with a coach greeting if conversation starters are present
-  const initialMessages = [
-    {
-      role: "system",
-      content: scenario,
-      timestamp: new Date().toISOString(),
-    },
-  ];
-  
-  // Add initial coach message if we have conversation starters
-  if (conversationStarters && conversationStarters.length > 0) {
-    initialMessages.push({
-      role: "assistant",
-      content: "Hello! I'm your academy coach. Let's have a conversation about your football journey. Feel free to use one of the conversation starters below, or start with your own introduction.",
-      timestamp: new Date().toISOString(),
-    });
-  }
-  
-  const [messages, setMessages] = useState(initialMessages);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [turnCount, setTurnCount] = useState(0);
-  const [isListening, setIsListening] = useState(false);
-  const [errors, setErrors] = useState({});
-  const messagesEndRef = useRef(null);
+  // Storage keys for persisting content
+  const storageKeyInput = `ai-conversation-${lessonId}-input`;
+  const storageKeyMessages = `ai-conversation-${lessonId}-messages`;
+  const storageKeyTurnCount = `ai-conversation-${lessonId}-turnCount`;
+  const storageKeyErrors = `ai-conversation-${lessonId}-errors`;
 
-  // Storage key for persisting content
-  const storageKey = `ai-conversation-${lessonId}-${scenario.substring(0, 50)}`;
+  // Function to create initial messages
+  const createInitialMessages = () => {
+    const initial = [
+      {
+        role: "system",
+        content: scenario,
+        timestamp: new Date().toISOString(),
+      },
+    ];
+
+    // Add initial coach message if we have conversation starters
+    if (conversationStarters && conversationStarters.length > 0) {
+      initial.push({
+        role: "assistant",
+        content:
+          "Hello! I'm your academy coach. Let's have a conversation about your football journey. Feel free to use one of the conversation starters below, or start with your own introduction.",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return initial;
+  };
+
+  // Initialize state with localStorage data if available
+  const [messages, setMessages] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(storageKeyMessages);
+      if (saved) {
+        try {
+          const parsedMessages = JSON.parse(saved);
+          // Validate that the saved messages match the current scenario
+          if (parsedMessages && Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+            // Check if the first system message matches the current scenario
+            const savedSystemMessage = parsedMessages.find(m => m.role === "system");
+            if (savedSystemMessage && savedSystemMessage.content === scenario) {
+              return parsedMessages;
+            }
+          }
+        } catch (error) {
+          console.error("Error loading saved messages:", error);
+        }
+      }
+    }
+    return createInitialMessages();
+  });
+
+  const [input, setInput] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(storageKeyInput);
+      return saved || "";
+    }
+    return "";
+  });
+
+  const [turnCount, setTurnCount] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(storageKeyTurnCount);
+      if (saved) {
+        try {
+          const count = parseInt(saved, 10);
+          return isNaN(count) ? 0 : count;
+        } catch (error) {
+          console.error("Error loading saved turn count:", error);
+        }
+      }
+    }
+    return 0;
+  });
+
+  const [errors, setErrors] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(storageKeyErrors);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error loading saved errors:", error);
+        }
+      }
+    }
+    return {};
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,28 +125,72 @@ export default function AIConversationPractice({
     scrollToBottom();
   }, [messages]);
 
-  // Load saved content on mount
+  // Save messages to localStorage whenever they change
   useEffect(() => {
-    try {
-      const savedInput = localStorage.getItem(storageKey);
-      if (savedInput && turnCount < maxTurns) {
-        setInput(savedInput);
-      }
-    } catch (error) {
-      console.error('Error loading saved input:', error);
-    }
-  }, [storageKey, turnCount, maxTurns]);
-
-  // Save content as user types
-  useEffect(() => {
-    if (input && turnCount < maxTurns) {
+    if (typeof window !== "undefined" && messages.length > 0) {
       try {
-        localStorage.setItem(storageKey, input);
+        localStorage.setItem(storageKeyMessages, JSON.stringify(messages));
       } catch (error) {
-        console.error('Error saving input:', error);
+        console.error("Error saving messages:", error);
       }
     }
-  }, [input, storageKey, turnCount, maxTurns]);
+  }, [messages, storageKeyMessages]);
+
+  // Save input to localStorage as user types
+  useEffect(() => {
+    if (typeof window !== "undefined" && turnCount < maxTurns) {
+      try {
+        if (input) {
+          localStorage.setItem(storageKeyInput, input);
+        } else {
+          localStorage.removeItem(storageKeyInput);
+        }
+      } catch (error) {
+        console.error("Error saving input:", error);
+      }
+    }
+  }, [input, storageKeyInput, turnCount, maxTurns]);
+
+  // Save turn count to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(storageKeyTurnCount, turnCount.toString());
+      } catch (error) {
+        console.error("Error saving turn count:", error);
+      }
+    }
+  }, [turnCount, storageKeyTurnCount]);
+
+  // Save errors to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(storageKeyErrors, JSON.stringify(errors));
+      } catch (error) {
+        console.error("Error saving errors:", error);
+      }
+    }
+  }, [errors, storageKeyErrors]);
+
+  // Clear localStorage when conversation is completed (max turns reached)
+  useEffect(() => {
+    if (turnCount >= maxTurns && typeof window !== "undefined") {
+      // Delay clearing to allow the user to see the final state
+      const timeoutId = setTimeout(() => {
+        try {
+          localStorage.removeItem(storageKeyInput);
+          localStorage.removeItem(storageKeyMessages);
+          localStorage.removeItem(storageKeyTurnCount);
+          localStorage.removeItem(storageKeyErrors);
+        } catch (error) {
+          console.error("Error clearing saved data on completion:", error);
+        }
+      }, 5000); // Clear after 5 seconds
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [turnCount, maxTurns, storageKeyInput, storageKeyMessages, storageKeyTurnCount, storageKeyErrors]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -97,9 +205,9 @@ export default function AIConversationPractice({
     setInput("");
     // Clear saved input after sending
     try {
-      localStorage.removeItem(storageKey);
+      localStorage.removeItem(storageKeyInput);
     } catch (error) {
-      console.error('Error clearing saved input:', error);
+      console.error("Error clearing saved input:", error);
     }
     setLoading(true);
     setTurnCount((prev) => prev + 1);
@@ -239,32 +347,22 @@ export default function AIConversationPractice({
   };
 
   const resetConversation = () => {
-    // Reset to initial messages including coach greeting if applicable
-    const resetMessages = [
-      {
-        role: "system",
-        content: scenario,
-        timestamp: new Date().toISOString(),
-      },
-    ];
-    
-    if (conversationStarters && conversationStarters.length > 0) {
-      resetMessages.push({
-        role: "assistant",
-        content: "Hello! I'm your academy coach. Let's have a conversation about your football journey. Feel free to use one of the conversation starters below, or start with your own introduction.",
-        timestamp: new Date().toISOString(),
-      });
-    }
+    // Reset to initial messages
+    const resetMessages = createInitialMessages();
     
     setMessages(resetMessages);
     setTurnCount(0);
     setErrors({});
     setInput("");
-    // Clear saved input
+    
+    // Clear all saved data from localStorage
     try {
-      localStorage.removeItem(storageKey);
+      localStorage.removeItem(storageKeyInput);
+      localStorage.removeItem(storageKeyMessages);
+      localStorage.removeItem(storageKeyTurnCount);
+      localStorage.removeItem(storageKeyErrors);
     } catch (error) {
-      console.error('Error clearing saved input:', error);
+      console.error("Error clearing saved data:", error);
     }
   };
 
@@ -291,37 +389,42 @@ export default function AIConversationPractice({
       </div>
 
       {/* Conversation Starters */}
-      {conversationStarters && conversationStarters.length > 0 && turnCount === 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-            Conversation Starters - Click to use:
-          </h4>
-          <div className="space-y-2">
-            {conversationStarters.map((starter, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setInput(starter);
-                  // Auto-save the starter
-                  try {
-                    localStorage.setItem(storageKey, starter);
-                  } catch (error) {
-                    console.error('Error saving starter:', error);
-                  }
-                }}
-                className="block w-full text-left p-3 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
-              >
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {index + 1}. {starter}
-                </span>
-              </button>
-            ))}
+      {conversationStarters &&
+        conversationStarters.length > 0 &&
+        turnCount === 0 && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <h4 className="text-gray-900 dark:text-white mb-3">
+              Clique para usar a frase abaixo para iniciar a conversa - não
+              esqueça de inserir seus próprios dados nos espaços em branco - ou
+              digite sua própria mensagem abaixo.
+            </h4>
+            <div className="space-y-2">
+              {conversationStarters.map((starter, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setInput(starter);
+                    // Auto-save the starter
+                    try {
+                      localStorage.setItem(storageKeyInput, starter);
+                    } catch (error) {
+                      console.error("Error saving starter:", error);
+                    }
+                  }}
+                  className="block w-full text-left p-3 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+                >
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {index + 1}. {starter}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+              Use a frase inicial acima para lhe ajudar a começar a conversa, ou
+              digite sua própria mensagem abaixo.
+            </p> */}
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-            Choose a starter to begin the conversation, or type your own message below.
-          </p>
-        </div>
-      )}
+        )}
 
       {/* Messages Area */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg h-96 overflow-y-auto mb-4 p-4">

@@ -30,7 +30,7 @@ export default function SignInPage() {
     if (error) {
       setError(error);
     } else {
-      router.push("/dashboard");
+      router.push("/lesson");
     }
 
     setLoading(false);
@@ -49,22 +49,22 @@ export default function SignInPage() {
     if (error) {
       setError("Demo login not available. Please use the form below.");
     } else {
-      router.push("/dashboard");
+      router.push("/lesson");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
-              <Globe className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
+              {/* <Globe className="w-6 h-6 text-white" /> */}
             </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+            <span className="text-2xl font-bold text-gradient-to-r from-primary-500 to-accent-500 dark:text-white">
               FieldTalk English
             </span>
           </div>
@@ -81,7 +81,7 @@ export default function SignInPage() {
           <button
             onClick={handleDemoLogin}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             <span>Try Demo Account</span>
             <ArrowRight className="w-4 h-4" />
@@ -165,7 +165,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -176,7 +176,7 @@ export default function SignInPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href="/auth/signup"
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-accent-600 hover:text-accent-700 font-medium"
               >
                 Sign up
               </Link>
@@ -190,7 +190,7 @@ export default function SignInPage() {
             For club partnerships and custom implementations,{" "}
             <Link
               href="/#contact"
-              className="text-blue-600 hover:text-blue-700"
+              className="text-accent-600 hover:text-accent-700"
             >
               contact our team
             </Link>

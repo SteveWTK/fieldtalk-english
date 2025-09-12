@@ -228,7 +228,7 @@ function PlayerLessonsMenu() {
                   {pillar.display_name}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  {pillar.description}
+                  {pillar.description_pt}
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">

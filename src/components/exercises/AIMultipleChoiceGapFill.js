@@ -388,11 +388,11 @@ export default function AIMultipleChoiceGapFill({
       usedHints >= MAX_HINTS_PER_GAP || loadingHint[sentenceId];
 
     if (isDisabled) {
-      return "px-3 py-1 bg-gray-200 text-gray-400 cursor-not-allowed rounded text-sm font-medium";
+      return "px-3 py-1 bg-gray-200 text-gray-400 cursor-not-allowed rounded-xl text-sm font-medium";
     } else if (usedHints === 1) {
-      return "px-3 py-1 bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30 rounded text-sm font-medium transition-colors flex items-center space-x-1";
+      return "px-3 py-1 bg-growth-100 text-growth-700 hover:bg-growth-200 dark:bg-growth-900/20 dark:text-growth-400 dark:hover:bg-growth-900/30 rounded-xl text-sm font-medium transition-colors flex items-center space-x-1";
     } else {
-      return "px-3 py-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30 rounded text-sm font-medium transition-colors flex items-center space-x-1";
+      return "px-3 py-1 bg-accent-100 text-accent-700 hover:bg-accent-200 dark:bg-accent-900/20 dark:text-accent-400 dark:hover:bg-accent-900/30 rounded-xl text-sm font-medium transition-colors flex items-center space-x-1";
     }
   };
 
@@ -412,9 +412,9 @@ export default function AIMultipleChoiceGapFill({
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <Target className="w-4 h-4 text-blue-500" />
+            <Target className="w-4 h-4 text-growth-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('choose_best_word')}
+              {t("choose_best_word")}
             </span>
           </div>
 
@@ -426,14 +426,14 @@ export default function AIMultipleChoiceGapFill({
                 sentenceId
               )
             }
-            className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-fieldtalk-900/30 dark:hover:bg-fieldtalk-900/50 
+            className="p-2 bg-growth-100 hover:bg-growth-200 dark:bg-growth-900/30 dark:hover:bg-growth-900/50 
                      rounded-lg transition-colors flex items-center space-x-1"
-            title={t('listen_to_sentence')}
+            title={t("listen_to_sentence")}
           >
             {playingAudio[sentenceId] ? (
-              <Pause className="w-4 h-4 text-fieldtalk-600 dark:text-fieldtalk-400" />
+              <Pause className="w-4 h-4 text-growth-600 dark:text-growth-400" />
             ) : (
-              <Play className="w-4 h-4 text-fieldtalk-600 dark:text-fieldtalk-400" />
+              <Play className="w-4 h-4 text-growth-600 dark:text-growth-400" />
             )}
           </button>
 
@@ -441,29 +441,29 @@ export default function AIMultipleChoiceGapFill({
           {usedHints > 0 && (
             <div className="flex items-center space-x-1">
               <Lightbulb
-                className={`w-4 h-4 ${hasUsedAllHints ? "text-orange-500" : "text-yellow-500"}`}
+                className={`w-4 h-4 ${hasUsedAllHints ? "text-attention-500" : "text-accent-500"}`}
               />
               <span
-                className={`text-xs font-medium ${hasUsedAllHints ? "text-orange-600" : "text-yellow-600"}`}
+                className={`text-xs font-medium ${hasUsedAllHints ? "text-attention-600" : "text-accent-600"}`}
               >
-                {usedHints}/{MAX_HINTS_PER_GAP} {t('hints_used')}
+                {usedHints}/{MAX_HINTS_PER_GAP} {t("hints_used")}
               </span>
             </div>
           )}
         </div>
 
         {/* Sentence with gap */}
-        <div className="text-lg text-gray-900 dark:text-white leading-relaxed mb-4">
+        <div className="text-lg text-primary-900 dark:text-white leading-relaxed mb-4">
           {parts[0]}
           <span
-            className={`mx-2 px-3 py-1 rounded-xl border-2 transition-colors min-w-[120px] inline-block text-center
+            className={`mx-2 px-3 py-1 rounded-2xl border-r-2 border-b-2 transition-colors min-w-[120px] inline-block text-center
             ${
               feedback?.isCorrect
-                ? "border-growth-500 bg-green-100 text-growth-700"
+                ? "border-accent-400 bg-accent-100 dark:border-accent-600 dark:bg-accent-200 text-accent-900"
                 : feedback?.isCorrect === false
                   ? "border-red-500 bg-red-100 text-red-700"
                   : selectedOption
-                    ? "border-fieldtalk-400 bg-blue-50 text-fieldtalk-700"
+                    ? "border-primary-500 bg-primary-50 text-primary-800"
                     : "border-gray-300 bg-gray-50 text-gray-500"
             }`}
           >
@@ -479,11 +479,11 @@ export default function AIMultipleChoiceGapFill({
               <button
                 key={index}
                 onClick={() => handleOptionSelect(sentenceId, option)}
-                className={`p-3 rounded-xl border-2 transition-all text-left
+                className={`p-3 rounded-2xl border-r-2 border-b-2 transition-all text-left
                   ${
                     selectedOption === option
-                      ? "border-fieldtalk-400 bg-blue-50 dark:bg-fieldtalk-900/20 text-fieldtalk-700 dark:text-fieldtalk-300"
-                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 dark:text-white"
+                      ? "border-r-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 hover:translate-x-1 text-primary-800 dark:text-fieldtalk-300"
+                      : "border-r-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:translate-x-1 bg-white dark:bg-gray-700 dark:text-white"
                   }`}
               >
                 <span className="font-medium">{option}</span>
@@ -493,14 +493,14 @@ export default function AIMultipleChoiceGapFill({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between gap-3 mt-4">
           <div className="flex items-center space-x-2">
             {!feedback?.isCorrect && selectedOption && (
               <button
                 onClick={() => checkAnswer(sentenceId, sentence)}
-                className="px-4 py-2 bg-fieldtalk-600 text-white rounded-xl hover:bg-fieldtalk-700 transition-colors font-medium"
+                className="rounded-2xl border-2 transition-all text-left px-4 py-1 border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-300 hover:scale-105 font-medium"
               >
-                {t('check_answer')}
+                {t("check_answer")}
               </button>
             )}
 
@@ -536,7 +536,7 @@ export default function AIMultipleChoiceGapFill({
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-5 h-5 text-green-500" />
                   <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                    {t('correct')}
+                    {t("correct")}
                   </span>
                   {usedHints > 0 && (
                     <span className="text-xs text-gray-500">
@@ -549,7 +549,7 @@ export default function AIMultipleChoiceGapFill({
                   <XCircle className="w-5 h-5 text-red-500" />
                   <div className="text-sm">
                     <span className="text-red-600 dark:text-red-400">
-                      {t('incorrect')}.{" "}
+                      {t("incorrect")}.{" "}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
                       Correct answer: <strong>{feedback.answer}</strong>
@@ -651,10 +651,10 @@ export default function AIMultipleChoiceGapFill({
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          {t('complete_sentences_mc')}
+          {t("complete_sentences_mc")}
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
-          {t('choose_best_word_instruction')}
+          {t("choose_best_word_instruction")}
         </p>
       </div>
 
@@ -665,7 +665,7 @@ export default function AIMultipleChoiceGapFill({
           <div className="flex items-center space-x-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <p className="text-green-800 dark:text-green-300 font-medium">
-              {t('excellent_work_completed')}
+              {t("excellent_work_completed")}
             </p>
           </div>
           <p className="text-sm text-green-700 dark:text-green-400">

@@ -1,4 +1,4 @@
-// pages/api/ai-speech/route.js
+// src\app\api\ai-speech\route.js
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 export async function POST(request) {
   console.log("[AI-Speech] Starting speech analysis...");
-  
+
   try {
     const formData = await request.formData();
     const audioFile = formData.get("audio");
@@ -22,7 +22,7 @@ export async function POST(request) {
       lessonId,
       expectedText,
       language,
-      audioSize: audioFile?.size
+      audioSize: audioFile?.size,
     });
 
     if (!audioFile) {
@@ -49,7 +49,7 @@ export async function POST(request) {
 
     // Convert audio to text using Whisper
     console.log("[AI-Speech] Sending to Whisper API...");
-    
+
     let transcript;
     try {
       const transcription = await openai.audio.transcriptions.create({
@@ -77,7 +77,7 @@ export async function POST(request) {
     );
 
     console.log("[AI-Speech] Getting AI feedback...");
-    
+
     let feedback;
     try {
       const analysis = await openai.chat.completions.create({
@@ -106,9 +106,16 @@ export async function POST(request) {
         accuracy_score: 75,
         overall_score: 72,
         strengths: ["You made a good effort!", "Your confidence is showing"],
-        improvements: ["Keep practicing the pronunciation", "Try to speak more clearly"],
-        encouragement: "Great attempt! Keep practicing and you'll improve quickly.",
-        specific_tips: ["Practice speaking slowly and clearly", "Listen to native speakers"],
+        improvements: [
+          "Keep practicing the pronunciation",
+          "Try to speak more clearly",
+        ],
+        encouragement:
+          "Great attempt! Keep practicing and you'll improve quickly.",
+        specific_tips: [
+          "Practice speaking slowly and clearly",
+          "Listen to native speakers",
+        ],
       };
     }
 

@@ -174,8 +174,8 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
       "left-back": { x: 100, y: 450 },
       "right-back": { x: 300, y: 450 },
       midfielder: { x: 200, y: 300 },
-      "left-winger": { x: 60, y: 240 },
-      "right-winger": { x: 340, y: 240 },
+      "left-winger": { x: 60, y: 200 },
+      "right-winger": { x: 340, y: 200 },
       striker: { x: 200, y: 120 },
       goal: { x: 200, y: 10 },
     };
@@ -214,7 +214,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600 dark:text-gray-400">Score</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-accent-600">
               {score}/{commands.length}
             </p>
           </div>
@@ -229,7 +229,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               onClick={playCommand}
               disabled={audioLoading}
               data-autoplay-next={currentCommand > 0}
-              className="bg-fieldtalk-800 text-white px-6 py-3 rounded-lg hover:bg-fieldtalk-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto transition-colors"
+              className="bg-accent-600 text-white px-6 py-3 rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto transition-colors"
             >
               {audioLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -248,39 +248,43 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
 
         {gameState === "playing" && (
           <div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-3">
-              <p className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-lg mb-3">
+              <p className="text-lg font-semibold text-primary-900 dark:text-white mb-2">
                 &quot;{currentCmd.text}&quot;
               </p>
               <div className="flex justify-center space-x-3 mt-2">
                 <button
                   onClick={playCommand}
                   disabled={audioLoading}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="text-premium-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                 >
                   {audioLoading ? (
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Volume2 className="w-4 h-4" />
                   )}
-                  <span>{audioLoading ? t("loading") : t("listen_again")}</span>
+                  <span>
+                    {audioLoading ? t("loading") : t("Ouça novamente")}
+                  </span>
                 </button>
                 <button
                   onClick={() => setShowTranslation(!showTranslation)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                 >
-                  <span>{showTranslation ? "Hide" : "Show"} Portuguese</span>
+                  <span>
+                    {showTranslation ? "Esconda" : "Mostre"} a tradução
+                  </span>
                 </button>
               </div>
               {showTranslation && (
-                <p className="text-blue-600 dark:text-blue-400 italic mt-2">
+                <p className="text-accent-800 dark:text-accent-400 font-bold italic mt-2">
                   {currentCmd.translation}
                 </p>
               )}
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Click where the ball should go!
+              Clique onde a bola deve ir!
             </p>
 
             {/* Feedback message */}
@@ -498,7 +502,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
           <g onClick={() => handleTargetClick("left-winger")}>
             <circle
               cx="60"
-              cy="240"
+              cy="200"
               r="25"
               fill="#8b5cf6"
               stroke="white"
@@ -507,7 +511,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
             />
             <text
               x="60"
-              y="245"
+              y="205"
               textAnchor="middle"
               className="text-sm font-bold fill-white pointer-events-none"
             >
@@ -519,7 +523,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
           <g onClick={() => handleTargetClick("right-winger")}>
             <circle
               cx="340"
-              cy="240"
+              cy="200"
               r="25"
               fill="#8b5cf6"
               stroke="white"
@@ -528,7 +532,7 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
             />
             <text
               x="340"
-              y="245"
+              y="205"
               textAnchor="middle"
               className="text-sm font-bold fill-white pointer-events-none"
             >

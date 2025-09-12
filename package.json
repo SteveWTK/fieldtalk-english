@@ -12,6 +12,7 @@
     "@auth/supabase-adapter": "^1.9.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.3",
+    "framer-motion": "^12.23.12",
     "lucide-react": "^0.525.0",
     "next": "15.3.4",
     "next-auth": "^4.24.11",

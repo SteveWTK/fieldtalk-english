@@ -27,7 +27,7 @@ import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-function PlayerLessonsMenu() {
+function PlayerDashboardContent() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
 
@@ -72,8 +72,8 @@ function PlayerLessonsMenu() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-primary-900 dark:text-white mb-4">
-            Please sign in to view your Lesson Menu
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Please sign in to view your dashboard
           </h2>
         </div>
       </div>
@@ -142,11 +142,11 @@ function PlayerLessonsMenu() {
     },
   ];
 
-  // const upcomingMatches = [
-  //   { opponent: "Brighton", date: "Dec 28", type: "Premier League" },
-  //   { opponent: "Arsenal", date: "Jan 2", type: "Premier League" },
-  //   { opponent: "Man City", date: "Jan 15", type: "FA Cup" },
-  // ];
+  const upcomingMatches = [
+    { opponent: "Brighton", date: "Dec 28", type: "Premier League" },
+    { opponent: "Arsenal", date: "Jan 2", type: "Premier League" },
+    { opponent: "Man City", date: "Jan 15", type: "FA Cup" },
+  ];
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -164,15 +164,15 @@ function PlayerLessonsMenu() {
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case "Beginner":
-        return "bg-primary-100 text-primary-800";
+        return "bg-green-100 text-green-800";
       case "Intermediate":
-        return "bg-accent-100 text-accent-800";
+        return "bg-yellow-100 text-yellow-800";
       case "Advanced":
-        return "bg-attention-100 text-attention-800";
+        return "bg-orange-100 text-orange-800";
       case "Expert":
-        return "bg-rose-100 text-rose-800";
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-primary-100 text-primary-800";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -192,16 +192,113 @@ function PlayerLessonsMenu() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Welcome Message */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-          Welcome back, {playerData.name}!
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Welcome back, {playerData.name}! 👋
         </h1>
-        {/* <p className="text-gray-600 dark:text-gray-300 mt-2">
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
           Continue your English learning journey
-        </p> */}
+        </p>
+      </div>
+
+      {/* Player Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Level</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <AnimatedCounter
+                  value={playerData.current_level}
+                  duration={800}
+                />
+              </p>
+            </div>
+            <div
+              className={`w-12 h-12 bg-gradient-to-r ${currentPillar?.color_gradient || "from-blue-500 to-green-500"} rounded-lg flex items-center justify-center`}
+            >
+              <Star className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <AnimatedProgressBar
+              value={playerData.total_xp % 500} // XP towards next level
+              maxValue={500}
+              color="from-blue-500 to-green-500"
+              animationDelay={200}
+            />
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+              <AnimatedCounter
+                value={playerData.total_xp % 500}
+                duration={1000}
+                animationDelay={300}
+              />
+              /500 XP to Level {playerData.current_level + 1}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Lessons Completed
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <AnimatedCounter
+                  value={playerData.completedLessons}
+                  duration={1200}
+                  animationDelay={100}
+                />
+              </p>
+            </div>
+            <BookOpen className="w-8 h-8 text-blue-500" />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Learning Streak
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <AnimatedCounter
+                  value={playerData.current_streak}
+                  duration={800}
+                  animationDelay={200}
+                />
+              </p>
+            </div>
+            <div className="text-orange-500">
+              <Calendar className="w-8 h-8" />
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+            Days in a row
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Total XP
+              </p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                <AnimatedCounter
+                  value={playerData.total_xp}
+                  duration={1500}
+                  animationDelay={400}
+                />
+              </p>
+            </div>
+            <TrendingUp className="w-8 h-8 text-green-500" />
+          </div>
+        </div>
       </div>
 
       {/* Three Pillars Navigation */}
-      <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           Your Learning Journey
         </h2>
@@ -214,13 +311,12 @@ function PlayerLessonsMenu() {
                 onClick={() => setSelectedPillar(pillar.name)}
                 className={`p-6 rounded-xl border-2 transition-all duration-200 ${
                   selectedPillar === pillar.name
-                    ? "border-accent-500 bg-accent-50/20 dark:bg-accent-900/20"
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                 }`}
               >
-                {/* ${currentPillar.color_gradient}  */}
                 <div
-                  className={`w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4`}
+                  className={`w-12 h-12 bg-gradient-to-r ${pillar.color_gradient} rounded-lg flex items-center justify-center mb-4`}
                 >
                   <IconComponent className="w-6 h-6 text-white" />
                 </div>
@@ -228,7 +324,7 @@ function PlayerLessonsMenu() {
                   {pillar.display_name}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  {pillar.description_pt}
+                  {pillar.description}
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -242,7 +338,7 @@ function PlayerLessonsMenu() {
                   <AnimatedProgressBar
                     value={pillar.progress}
                     maxValue={100}
-                    color="bg-gradient-to-r from-accent-600 to-accent-400"
+                    color={pillar.color_gradient}
                     showPercentage={false}
                     animationDelay={index * 200 + 500}
                   />
@@ -262,7 +358,7 @@ function PlayerLessonsMenu() {
                 {currentPillar?.display_name}
               </h3>
               <div
-                className={`px-3 py-1 bg-gradient-to-r from-accent-600 to-accent-400 text-white rounded-full text-sm font-medium`}
+                className={`px-3 py-1 bg-gradient-to-r ${currentPillar?.color_gradient} text-white rounded-full text-sm font-medium`}
               >
                 Level {currentPillar?.level}
               </div>
@@ -283,12 +379,12 @@ function PlayerLessonsMenu() {
                   return (
                     <div
                       key={lesson.id}
-                      className={`p-4 rounded-lg border hover:scale-[1.01] transition-all duration-200 ${
+                      className={`p-4 rounded-lg border transition-all duration-200 ${
                         status === "current"
-                          ? "border-fieldtalk-500 bg-fieldtalk-50 dark:bg-fieldtalk-900/20"
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                           : status === "completed"
-                            ? "border-accent-200 bg-accent-50/50 dark:bg-accent-900/20"
-                            : "border-primary-200 dark:border-primary-700"
+                            ? "border-green-200 bg-green-50 dark:bg-green-900/20"
+                            : "border-gray-200 dark:border-gray-700"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -349,6 +445,44 @@ function PlayerLessonsMenu() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Match Day Countdown */}
+          <MatchCountdown
+            opponent="Brighton"
+            matchDate="2025-01-15T15:00:00"
+            competition="Premier League"
+          />
+
+          {/* Upcoming Matches */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Upcoming Matches
+            </h3>
+            <div className="space-y-3">
+              {upcomingMatches.map((match, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      vs {match.opponent}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {match.type}
+                    </p>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {match.date}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <button
+              className="w-full mt-4 py-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              onClick={() => setShowXPGain(true)}
+            >
+              Practice Match Communication
+            </button>
+          </div>
 
           {/* Recent Achievements */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
@@ -415,7 +549,7 @@ function PlayerLessonsMenu() {
 export default function PlayerDashboard() {
   return (
     <ProtectedRoute>
-      <PlayerLessonsMenu />
+      <PlayerDashboardContent />
     </ProtectedRoute>
   );
 }

@@ -35,13 +35,13 @@ export default function BrazilianLandingPage() {
               <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
                 Inglês de Elite para
                 <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
-                  Futuros Craques
+                  Amantes do Futebol
                 </span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Prepare seu filho para uma carreira internacional com confiança
-                total em inglês. Ou simplesmente leve seu inglês para outro
-                nível falando sobre sua paixão!
+                Alunos de escolas bilíngues e redes de ensino de idiomas como a
+                Cultura Inglesa batem papo sobre sua paixão em aulas de
+                conversação dinâmicas e divertidas.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -79,14 +79,14 @@ export default function BrazilianLandingPage() {
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='18'%3EJovem jogador brasileiro%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='%236b7280' font-size='14'%3Etreinando com confiança%3C/text%3E%3C/svg%3E";
                 }}
               />
-              <div className="absolute -bottom-6 -left-6 text-gray-950 dark:text-white bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+              {/* <div className="absolute -bottom-6 -left-6 text-gray-950 dark:text-white bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium">
                     +1.000 alunos ativos
                   </span>
                 </div>
-              </div>
+              </div> */}
               <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">98%</div>

@@ -21,28 +21,28 @@ function HeaderBase({
     landing: {
       en: [
         { href: "/", label: "Home" },
-        { href: "/dashboard", label: "Dashboard" },
+        // { href: "/dashboard", label: "Dashboard" },
         { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Presentation" },
       ],
       pt: [
         { href: "/", label: "Início" },
-        { href: "/dashboard", label: "Painel" },
-        { href: "/lesson", label: "lições" },
+        // { href: "/dashboard", label: "Painel" },
+        { href: "/lesson", label: "Aulas" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Apresentação" },
       ],
       es: [
         { href: "/", label: "Inicio" },
-        { href: "/dashboard", label: "Panel" },
+        // { href: "/dashboard", label: "Panel" },
         { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Presentación" },
       ],
       fr: [
         { href: "/", label: "Accueil" },
-        { href: "/dashboard", label: "Tableau de bord" },
+        // { href: "/dashboard", label: "Tableau de bord" },
         { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Présentation" },
@@ -50,25 +50,29 @@ function HeaderBase({
     },
     site: {
       en: [
-        { href: "/dashboard", label: "Dashboard" },
+        { href: "/", label: "Home" },
+        // { href: "/dashboard", label: "Dashboard" },
         { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Presentation" },
       ],
       pt: [
-        { href: "/dashboard", label: "Painel" },
-        { href: "/lesson", label: "Lições" },
+        { href: "/", label: "Início" },
+        // { href: "/dashboard", label: "Painel" },
+        { href: "/lesson", label: "Aulas" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Apresentação" },
       ],
       es: [
-        { href: "/dashboard", label: "Panel" },
+        { href: "/", label: "Inicio" },
+        // { href: "/dashboard", label: "Panel" },
         { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Presentación" },
       ],
       fr: [
-        { href: "/dashboard", label: "Tableau de bord" },
+        { href: "/", label: "Accueil" },
+        // { href: "/dashboard", label: "Tableau de bord" },
         { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         // { href: "/presentation", label: "Présentation" },
@@ -119,7 +123,7 @@ function HeaderBase({
               <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
                 {/* <Globe className="w-5 h-5 text-white" /> */}
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 dark:from-accent-600 dark:to-accent-500 bg-clip-text text-transparent">
                 FieldTalk English
               </span>
             </Link>

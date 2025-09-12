@@ -142,13 +142,13 @@ export default function SignUpPage() {
   // Step 1: Role Selection
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">
           {/* Logo and Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
-                <Globe className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
+                {/* <Globe className="w-6 h-6 text-white" /> */}
               </div>
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
                 FieldTalk English
@@ -210,7 +210,7 @@ export default function SignUpPage() {
 
   // Step 2: Details Form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -224,7 +224,7 @@ export default function SignUpPage() {
           </div>
           <button
             onClick={() => setStep(1)}
-            className="text-blue-600 hover:text-blue-700 text-sm mb-4"
+            className="text-accent-600 hover:text-accent-700 text-sm mb-4"
           >
             ← Change account type
           </button>

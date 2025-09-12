@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from "react";
 import SiteHeader from "@/components/SiteHeader";
+import { LanguageProvider, useLanguage } from "@/lib/contexts/LanguageContext";
 
-export default function SiteLayout({ children }) {
+function SiteLayoutContent({ children }) {
   const [darkMode, setDarkMode] = useState(false);
-  const [lang, setLang] = useState("en");
+  const { lang, setLang } = useLanguage();
 
   // Language options for the header
   const languageOptions = {
@@ -41,5 +42,13 @@ export default function SiteLayout({ children }) {
       />
       <main>{children}</main>
     </div>
+  );
+}
+
+export default function SiteLayout({ children }) {
+  return (
+    <LanguageProvider>
+      <SiteLayoutContent>{children}</SiteLayoutContent>
+    </LanguageProvider>
   );
 }

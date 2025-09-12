@@ -127,8 +127,7 @@ export default function InteractivePitch({
       {/* Main instruction text */}
       <div className="mb-4">
         <p className="text-lg text-gray-700 dark:text-gray-300">
-          {interactiveConfig.instruction ||
-            t('click_areas_to_learn')}
+          {interactiveConfig.instruction || t("click_areas_to_learn")}
         </p>
       </div>
 
@@ -138,7 +137,7 @@ export default function InteractivePitch({
           className="w-full max-w-md mx-auto border-2 border-green-600 bg-green-100"
         >
           {/* Football pitch SVG */}
-          <rect width="400" height="600" fill="#4ade80" />
+          <rect width="400" height="600" fill="#16a34a" />
 
           {/* Penalty areas */}
           <rect
@@ -234,7 +233,7 @@ export default function InteractivePitch({
                   cx={x}
                   cy={y}
                   r="15"
-                  fill={isClicked ? "#22c55e" : "#0284c7"}
+                  fill={isClicked ? "#065f46" : "#0284c7"}
                   stroke="white"
                   strokeWidth="2"
                   transform={isHovered ? `scale(1.1)` : "scale(1)"}
@@ -278,30 +277,34 @@ export default function InteractivePitch({
         <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h4 className="font-semibold text-gray-900 dark:text-white">
+              <MapPin className="w-5 h-5 text-accent-600 dark:text-accent-400" />
+              <h4 className="font-semibold text-primary-900 dark:text-primary-50">
                 {currentArea.label}
               </h4>
             </div>
             <button
               onClick={() => setShowTranslations(!showTranslations)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center space-x-1"
+              className="text-accent-700 dark:text-accent-400 hover:text-accent-800 dark:hover:text-accent-300 text-sm flex items-center space-x-1"
             >
               <Info className="w-4 h-4" />
-              <span>{showTranslations ? t('hide_translation') : t('show_translation')}</span>
+              <span>
+                {showTranslations
+                  ? t("hide_translation")
+                  : t("show_translation")}
+              </span>
             </button>
           </div>
 
-          <p className="text-gray-700 dark:text-gray-300 mb-3">
+          {/* <p className="text-gray-700 dark:text-gray-300 mb-3">
             {currentArea.description || "Click to learn more about this area."}
-          </p>
+          </p> */}
 
           {showTranslations && currentArea.translation && (
-            <div className="bg-white dark:bg-gray-800 p-3 rounded mb-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                Portuguese:
+            <div className="bg-white dark:bg-primary-800 p-3 rounded mb-3">
+              <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">
+                Português:
               </p>
-              <p className="text-blue-600 dark:text-blue-400 font-medium">
+              <p className="text-primary-600 dark:text-primary-400 font-medium">
                 {currentArea.translation}
               </p>
             </div>
@@ -310,14 +313,14 @@ export default function InteractivePitch({
           <button
             onClick={() => playAreaAudio(currentArea)}
             disabled={audioLoading}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center space-x-2 bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {audioLoading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <Volume2 className="w-4 h-4" />
             )}
-            <span>{audioLoading ? t('loading') : t('play_audio_again')}</span>
+            <span>{audioLoading ? t("loading") : t("play_audio_again")}</span>
           </button>
         </div>
       )}
@@ -325,12 +328,12 @@ export default function InteractivePitch({
       {/* Progress indicator */}
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t('explored')}: {clickedAreas.size} /{" "}
-          {interactiveConfig.click_areas?.length || 0} {t('areas')}
+          {t("explored")}: {clickedAreas.size} /{" "}
+          {interactiveConfig.click_areas?.length || 0} {t("areas")}
         </p>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
           <div
-            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+            className="bg-accent-600 h-2 rounded-full transition-all duration-300"
             style={{
               width: `${(clickedAreas.size / (interactiveConfig.click_areas?.length || 1)) * 100}%`,
             }}
@@ -338,8 +341,8 @@ export default function InteractivePitch({
         </div>
 
         {clickedAreas.size === interactiveConfig.click_areas?.length && (
-          <div className="mt-3 p-3 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-lg">
-            <p className="font-semibold">{t('all_areas_explored')}</p>
+          <div className="mt-3 p-3 bg-green-100 dark:bg-accent-900/20 text-accent-800 dark:text-accent-200 rounded-lg">
+            <p className="font-semibold">{t("all_areas_explored")}</p>
           </div>
         )}
       </div>

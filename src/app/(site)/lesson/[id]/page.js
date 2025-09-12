@@ -590,7 +590,7 @@ function DynamicLessonContent() {
 
   const handleLessonComplete = async () => {
     if (!user) {
-      router.push("/dashboard");
+      router.push("/lesson");
       return;
     }
 
@@ -608,19 +608,19 @@ function DynamicLessonContent() {
       );
 
       console.log(
-        "✅ Lesson completion successful, navigating to dashboard..."
+        "✅ Lesson completion successful, navigating to lessons page..."
       );
 
       // Small delay to ensure database operations complete
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/lesson");
       }, 500);
     } catch (error) {
       console.error("❌ Error marking lesson complete:", error);
       setCompleting(false);
 
       // Even if completion fails, still allow navigation
-      router.push("/dashboard");
+      router.push("/lesson");
     }
   };
 
@@ -739,7 +739,7 @@ function DynamicLessonContent() {
       case "scenario":
         return (
           <div className="text-center">
-            <div className="bg-blue-50 dark:bg-primary-900/20 rounded-xl p-6 mb-6">
+            <div className="bg-white dark:bg-primary-900/20 rounded-xl p-6 mb-6">
               {/* Translation button */}
               {/* {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
@@ -780,8 +780,8 @@ function DynamicLessonContent() {
               </p>
 
               {currentStepData.cultural_context && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg mt-4">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <div className="bg-primary-50 dark:bg-primary-900/20 p-3 rounded-lg mt-4">
+                  <p className="text-sm text-primary-800 dark:text-accent-200">
                     <strong>{t("cultural_context")}:</strong>{" "}
                     {translations[`cultural-${currentStep}`] ||
                       currentStepData.cultural_context}
@@ -798,7 +798,7 @@ function DynamicLessonContent() {
                     {currentStepData.reflection_questions.map(
                       (question, index) => (
                         <li key={index} className="flex items-start">
-                          <span className="text-blue-600 mr-2">•</span>
+                          <span className="text-primary-600 mr-2">•</span>
                           {translations[`reflection-${currentStep}-${index}`] ||
                             question}
                         </li>
@@ -810,7 +810,7 @@ function DynamicLessonContent() {
             </div>
             <button
               onClick={toggleAudio}
-              className="flex items-center space-x-2 mx-auto bg-fieldtalk-600 text-white px-4 py-2 rounded-lg hover:bg-fieldtalk-700 transition-colors"
+              className="flex items-center space-x-2 mx-auto bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 transition-colors"
               disabled={!currentStepData.content}
               title={
                 !currentStepData.content
@@ -945,35 +945,6 @@ function DynamicLessonContent() {
           />
         );
 
-      // Use multiple choice for academy demos (beginners)
-      // const isAcademyDemo =
-      //   lesson?.title?.includes("Academy") ||
-      //   lesson?.title?.includes("Trial");
-      // return isAcademyDemo ? (
-      //   <AIMultipleChoiceGapFill
-      //     sentences={currentStepData.sentences}
-      //     lessonId={lessonId}
-      //     englishVariant={userEnglishVariant}
-      //     voiceGender={userVoiceGender}
-      //     onComplete={(xp) => {
-      //       setXpEarned((prev) => prev + xp);
-      //       setCompletedSteps((prev) => new Set([...prev, currentStep]));
-      //       // Auto-advance to next step after a short delay
-      //       setTimeout(() => handleNext(), 1000);
-      //     }}
-      //   />
-      // ) : (
-      //   <AIGapFillExercise
-      //     sentences={currentStepData.sentences}
-      //     lessonId={lessonId}
-      //     onComplete={(xp) => {
-      //       setXpEarned((prev) => prev + xp);
-      //       setCompletedSteps((prev) => new Set([...prev, currentStep]));
-      //       // Auto-advance to next step after a short delay
-      //       setTimeout(() => handleNext(), 1000);
-      //     }}
-      //   />
-      // );
       case "vocabulary":
         return (
           <div className="space-y-4">
@@ -1183,7 +1154,7 @@ function DynamicLessonContent() {
                   return (
                     <div
                       key={scenarioIndex}
-                      className="bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white p-6 rounded-xl"
+                      className="bg-accent-50 dark:bg-accent-900/20 text-gray-900 dark:text-white p-6 rounded-xl"
                     >
                       <h4 className="font-semibold mb-3 text-gray-900 dark:text-white">
                         {scenario.context}
@@ -2377,7 +2348,7 @@ function DynamicLessonContent() {
                 />
               )}
 
-              <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+              <Trophy className="w-16 h-16 text-[#d97706] mx-auto mb-4" />
 
               {/* Show translated or original content */}
               {showTranslation && translations[`completion-${currentStep}`] ? (
@@ -2402,7 +2373,7 @@ function DynamicLessonContent() {
                   {currentStepData.achievements && (
                     <div className="text-left max-w-md mx-auto space-y-2 mb-6">
                       <h4 className="font-semibold text-center mb-3">
-                        {t("achievements")}:
+                        {t("achievements")}
                       </h4>
                       {currentStepData.achievements.map(
                         (achievement, index) => (
@@ -2420,30 +2391,31 @@ function DynamicLessonContent() {
                   )}
                 </>
               )}
+              <div className="flex flex-col gap-1">
+                <div className="bg-white dark:bg-gray-800 px-4 py-1 rounded-lg inline-block mb-6">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {t("total_xp_earned")}
+                  </p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {xpEarned} XP
+                  </p>
+                </div>
 
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg inline-block mb-6">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {t("total_xp_earned")}
-                </p>
-                <p className="text-3xl font-bold text-green-600">
-                  {xpEarned} XP
-                </p>
+                <button
+                  onClick={handleLessonComplete}
+                  disabled={completing}
+                  className="bg-gradient-to-r from-primary-500 to-accent-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {completing ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>{t("saving_progress")}</span>
+                    </div>
+                  ) : (
+                    t("Return to Lessons")
+                  )}
+                </button>
               </div>
-
-              <button
-                onClick={handleLessonComplete}
-                disabled={completing}
-                className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {completing ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>{t("saving_progress")}</span>
-                  </div>
-                ) : (
-                  t("return_to_dashboard")
-                )}
-              </button>
             </div>
           </div>
         );
@@ -2477,19 +2449,19 @@ function DynamicLessonContent() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => router.push("/dashboard")}
-              className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              onClick={() => router.push("/lesson")}
+              className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Dashboard</span>
+              <span>Lessons</span>
             </button>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600 dark:text-gray-300">
+            <span className="text-gray-600 dark:text-gray-300 font-bold">
               {lesson.pillar?.display_name || "Lesson"}
             </span>
           </div>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/lesson")}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <Home className="w-5 h-5" />
@@ -2505,7 +2477,7 @@ function DynamicLessonContent() {
               {/* <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {lesson.pillar?.display_name || "Lesson"}
               </span> */}
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-white text-accent-800 rounded-full text-sm font-medium">
                 {lesson.difficulty}
               </span>
               {/* <span className="text-gray-600 dark:text-gray-300 text-sm">
@@ -2524,7 +2496,7 @@ function DynamicLessonContent() {
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
           <div
-            className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-primary-500 to-accent-500 h-3 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -2566,7 +2538,7 @@ function DynamicLessonContent() {
           className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Previous Activity</span>
+          <span>Atividade anterior</span>
         </button>
 
         <div className="text-center">
@@ -2587,7 +2559,7 @@ function DynamicLessonContent() {
             (currentStep === steps.length - 1 &&
               currentStepData?.type !== "completion")
           }
-          className="flex items-center space-x-2 px-6 py-2 bg-fieldtalk-600 text-white rounded-lg hover:bg-fieldtalk-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center space-x-2 px-6 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {completing ? (
             <>
@@ -2598,8 +2570,8 @@ function DynamicLessonContent() {
             <>
               <span>
                 {currentStep === steps.length - 1
-                  ? "Complete Lesson"
-                  : "Next Activity"}
+                  ? "Aula Completa"
+                  : "Próxima atividade"}
               </span>
               <ArrowRight className="w-4 h-4" />
             </>

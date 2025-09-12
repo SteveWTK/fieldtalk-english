@@ -25,26 +25,26 @@ export default function AcademyLandingPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="py-20 bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div>
               {/* <div className="flex items-center mb-6">
                 <span className="text-sm font-medium text-accent-600 bg-accent-50 px-3 py-1 rounded-full">
                   Feito para Jovens Brasileiros
                 </span>
               </div> */}
-              <h1 className="text-4xl md:text-5xl font-bold text-primary-900 dark:text-white mb-6">
-                Inglês que Abre Portas no
+              <h1 className="text-4xl md:text-[42px] font-bold text-primary-900 dark:text-white mb-6">
+                Inglês que Abre Portas para o
                 <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Futebol Internacional
                 </span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Plataforma de inglês especializada para jovens jogadores de
-                futebol que sonham em jogar na Europa. Do primeiro treino às
-                entrevistas na mídia - preparamos nossos atletas para o sucesso
-                mundial.
+                Plataforma de inglês especializada para jovens jogadores e
+                profissionais do futebol que sonham em atuar fora do Brasil. Do
+                primeiro treino às entrevistas na mídia - preparamos nossos
+                atletas para o sucesso mundial.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -99,12 +99,12 @@ export default function AcademyLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              O Sonho Europeu Começa com o Inglês
+              O Sonho Internacional Começa com o Inglês
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Sabemos que muitos talentos brasileiros perdem oportunidades na
-              Europa porque não conseguem se comunicar em inglês. Nós mudamos
-              essa realidade.
+              Sabemos que muitos talentos brasileiros perdem tempo e
+              oportunidades no exterior porque não conseguem se comunicar em
+              inglês. Nós mudamos essa realidade.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -114,7 +114,7 @@ export default function AcademyLandingPage() {
                 Sonhos Interrompidos
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Jovens talentos perdem contratos na Europa por não conseguirem
+                Jovens talentos perdem contratos no exterior por não conseguirem
                 se comunicar com técnicos e companheiros
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function AcademyLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Três Pilares para o Sucesso Internacional
+              Três Módulos para o Sucesso Internacional
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Nossa metodologia comprovada leva jovens jogadores desde as

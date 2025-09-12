@@ -39,7 +39,7 @@ export default function AISpeechPractice({
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
         setAudioBlob(audioBlob);
-        
+
         // Create URL for audio playback
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
@@ -82,11 +82,11 @@ export default function AISpeechPractice({
     } else {
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-      
+
       audio.onended = () => {
         setIsPlaying(false);
       };
-      
+
       audio.play();
       setIsPlaying(true);
     }
@@ -110,7 +110,7 @@ export default function AISpeechPractice({
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         console.error("API Error Response:", result);
         throw new Error(result.error || "Failed to analyze speech");
@@ -139,7 +139,7 @@ export default function AISpeechPractice({
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
     }
-    
+
     setAudioBlob(null);
     setAudioUrl(null);
     setIsPlaying(false);
@@ -151,10 +151,14 @@ export default function AISpeechPractice({
   return (
     <div className="ai-speech-practice">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Speaking Practice</h3>
+        {/* <h3 className="text-lg font-semibold mb-2">Pratique sua Pronuncia.</h3> */}
+        <p className="px-4 mb-4 text-primary-800 dark:text-white">
+          Ative o microfone e leia o texto abaixo em voz alta para praticar e
+          receber feedback sobre sua pronuncia.
+        </p>
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-gray-700 mb-2">{prompt}</p>
-          <div className="bg-white p-3 rounded border-l-4 border-blue-500">
+          <div className="bg-white p-3 rounded border-l-4 border-accent-500">
             <p className="font-mono text-lg">&quot;{expectedText}&quot;</p>
           </div>
         </div>
@@ -168,8 +172,8 @@ export default function AISpeechPractice({
               onClick={isRecording ? stopRecording : startRecording}
               className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${
                 isRecording
-                  ? "bg-red-500 hover:bg-red-600 animate-pulse"
-                  : "bg-blue-500 hover:bg-blue-600"
+                  ? "bg-[#b91c1c] hover:bg-[#991b1b] animate-pulse"
+                  : "bg-accent-500 hover:bg-accent-600"
               } text-white`}
             >
               {isRecording ? (
@@ -219,7 +223,7 @@ export default function AISpeechPractice({
               <button
                 onClick={analyzeRecording}
                 disabled={loading}
-                className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 disabled:opacity-50 flex items-center space-x-2"
+                className="bg-accent-500 text-white px-6 py-3 rounded-lg hover:bg-accent-600 disabled:opacity-50 flex items-center space-x-2"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -231,7 +235,7 @@ export default function AISpeechPractice({
 
               <button
                 onClick={resetRecording}
-                className="bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 flex items-center space-x-2"
+                className="bg-primary-500 text-white px-4 py-3 rounded-lg hover:bg-primary-600 flex items-center space-x-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Try Again</span>
@@ -239,7 +243,8 @@ export default function AISpeechPractice({
             </div>
 
             <p className="text-sm text-gray-600">
-              Recording ready! Listen to review your pronunciation, then click &quot;Get Feedback&quot; for analysis.
+              Recording ready! Listen to review your pronunciation, then click
+              &quot;Get Feedback&quot; for analysis.
             </p>
           </div>
         )}
