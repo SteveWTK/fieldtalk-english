@@ -270,7 +270,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl">
+      <div className="flex flex-col lg:flex-row justify-center gap-10 w-full max-w-7xl">
         {/* Game Grid */}
         <div className={`grid ${gridCols} gap-2 sm:gap-3 px-2 sm:px-0 pt-4`}>
           {cards.map((card, i) => {
