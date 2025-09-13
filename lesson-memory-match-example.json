@@ -1,0 +1,92 @@
+{
+  "comment": "This is an example of how to add the Memory Match step to your lesson JSON in Supabase",
+  "instruction": "Add this step before the completion step in your lesson's content.steps array",
+  "memory_match_step": {
+    "id": "step-7",
+    "type": "memory_match",
+    "title": "Vocabulary Memory Match",
+    "content": "Test your memory by matching English football positions with their Portuguese translations!",
+    "vocabulary": [
+      {
+        "id": "1",
+        "english": "Centre forward",
+        "translation": "Centro-avante",
+        "portuguese": "Centro-avante"
+      },
+      {
+        "id": "2",
+        "english": "Striker",
+        "translation": "Atacante",
+        "portuguese": "Atacante"
+      },
+      {
+        "id": "3",
+        "english": "Right winger",
+        "translation": "Ponta direita",
+        "portuguese": "Ponta direita"
+      },
+      {
+        "id": "4",
+        "english": "Left winger",
+        "translation": "Ponta esquerda",
+        "portuguese": "Ponta esquerda"
+      },
+      {
+        "id": "5",
+        "english": "Midfielder",
+        "translation": "Meio-campista",
+        "portuguese": "Meio-campista"
+      },
+      {
+        "id": "6",
+        "english": "Defensive midfielder",
+        "translation": "Volante",
+        "portuguese": "Volante"
+      },
+      {
+        "id": "7",
+        "english": "Attacking midfielder",
+        "translation": "Meia atacante",
+        "portuguese": "Meia atacante"
+      },
+      {
+        "id": "8",
+        "english": "Center back",
+        "translation": "Zagueiro central",
+        "portuguese": "Zagueiro central"
+      },
+      {
+        "id": "9",
+        "english": "Left back",
+        "translation": "Lateral esquerdo",
+        "portuguese": "Lateral esquerdo"
+      },
+      {
+        "id": "10",
+        "english": "Right back",
+        "translation": "Lateral direito",
+        "portuguese": "Lateral direito"
+      },
+      {
+        "id": "11",
+        "english": "Goalkeeper",
+        "translation": "Goleiro",
+        "portuguese": "Goleiro"
+      },
+      {
+        "id": "12",
+        "english": "Playmaker",
+        "translation": "Armador",
+        "portuguese": "Armador"
+      }
+    ]
+  },
+  "notes": [
+    "The vocabulary array should have at least 8 items for the 3x3 grid and 16 items for the 4x4 grid",
+    "Each vocabulary item needs an 'id', 'english', and either 'translation' or 'portuguese' field",
+    "The game will randomly select items from the vocabulary array each time it's played",
+    "Players can choose between 3x3 (8 cards) or 4x4 (16 cards) grid sizes",
+    "XP is awarded based on performance (fewer attempts = more XP)"
+  ],
+  "example_integration": "To add this to your existing lesson, insert the memory_match_step object into your steps array at position 7 (or wherever you want it, but before the completion step)"
+}

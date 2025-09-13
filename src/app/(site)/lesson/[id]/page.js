@@ -52,6 +52,7 @@ import InteractivePitch from "@/components/exercises/InteractivePitch";
 import InteractiveGame from "@/components/exercises/InteractiveGame";
 import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
 import AISpeechPractice from "@/components/exercises/AISpeechPractice";
+import MemoryMatch from "@/components/exercises/MemoryMatch";
 
 function DynamicLessonContent() {
   const params = useParams();
@@ -2308,6 +2309,26 @@ function DynamicLessonContent() {
               </pre>
             </details>
           </div>
+        );
+
+      case "memory_match":
+        const memoryVocabulary = currentStepData.vocabulary || [];
+        const translatedVocabulary = memoryVocabulary.map((word, idx) => ({
+          ...word,
+          english: translations[`memory-english-${currentStep}-${idx}`] || word.english,
+          translation: translations[`memory-translation-${currentStep}-${idx}`] || word.translation || word.portuguese,
+        }));
+
+        return (
+          <MemoryMatch
+            vocabulary={translatedVocabulary}
+            lessonId={lessonId}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
         );
 
       // FIXED: Completion step with better button handling
