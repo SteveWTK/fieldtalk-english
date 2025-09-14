@@ -213,8 +213,8 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
     gridSize === "3x4" ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-4";
   const cardSize =
     gridSize === "3x4"
-      ? "h-16 w-24 sm:h-20 sm:w-28"
-      : "h-16 w-20 sm:h-20 sm:w-24";
+      ? "h-16 w-20 sm:h-20 sm:w-24"
+      : "h-16 w-16 sm:h-20 sm:w-24";
 
   return (
     <div className="flex flex-col items-center gap-6 p-4">

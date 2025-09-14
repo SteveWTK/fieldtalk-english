@@ -780,6 +780,30 @@ function DynamicLessonContent() {
                   currentStepData.content}
               </p>
 
+              <button
+                onClick={toggleAudio}
+                className="flex items-center space-x-2 mx-auto bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 transition-colors"
+                disabled={!currentStepData.content}
+                title={
+                  !currentStepData.content
+                    ? "No content available for audio"
+                    : "Listen to scenario in English"
+                }
+              >
+                {isPlaying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>{t("playing")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4" />
+                    <span>{t("listen_to_scenario_in_English")}</span>
+                  </>
+                )}
+              </button>
+              <audio ref={audioRef} style={{ display: "none" }} />
+
               {currentStepData.cultural_context && (
                 <div className="bg-primary-50 dark:bg-primary-900/20 p-3 rounded-lg mt-4">
                   <p className="text-sm text-primary-800 dark:text-accent-200">
@@ -809,29 +833,6 @@ function DynamicLessonContent() {
                 </div>
               )}
             </div>
-            <button
-              onClick={toggleAudio}
-              className="flex items-center space-x-2 mx-auto bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 transition-colors"
-              disabled={!currentStepData.content}
-              title={
-                !currentStepData.content
-                  ? "No content available for audio"
-                  : "Listen to scenario"
-              }
-            >
-              {isPlaying ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>{t("playing")}</span>
-                </>
-              ) : (
-                <>
-                  <Volume2 className="w-4 h-4" />
-                  <span>{t("listen_to_scenario")}</span>
-                </>
-              )}
-            </button>
-            <audio ref={audioRef} style={{ display: "none" }} />
           </div>
         );
 
@@ -2315,8 +2316,13 @@ function DynamicLessonContent() {
         const memoryVocabulary = currentStepData.vocabulary || [];
         const translatedVocabulary = memoryVocabulary.map((word, idx) => ({
           ...word,
-          english: translations[`memory-english-${currentStep}-${idx}`] || word.english,
-          translation: translations[`memory-translation-${currentStep}-${idx}`] || word.translation || word.portuguese,
+          english:
+            translations[`memory-english-${currentStep}-${idx}`] ||
+            word.english,
+          translation:
+            translations[`memory-translation-${currentStep}-${idx}`] ||
+            word.translation ||
+            word.portuguese,
         }));
 
         return (

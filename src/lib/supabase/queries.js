@@ -232,6 +232,7 @@ export async function getPlayerLessonCompletions(playerId) {
           id,
           title,
           description,
+          description_pt,
           difficulty,
           xp_reward
         )

@@ -203,7 +203,7 @@ function PlayerLessonsMenu() {
       {/* Three Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Your Learning Journey
+          Sua jornada de aprendizagem
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pillars.map((pillar, index) => {
@@ -299,7 +299,7 @@ function PlayerLessonsMenu() {
                               {lesson.title}
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                              {lesson.description}
+                              {lesson.description_pt}
                             </p>
                             <div className="flex items-center space-x-2 mt-2">
                               <span
