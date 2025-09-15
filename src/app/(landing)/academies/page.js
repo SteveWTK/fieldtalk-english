@@ -574,7 +574,7 @@ export default function AcademyLandingPage() {
             Dê aos seus atletas a vantagem competitiva que eles precisam para
             brilhar na Europa
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Agendar Demonstração Gratuita
             </button>
@@ -585,12 +585,12 @@ export default function AcademyLandingPage() {
           <div className="mt-8 text-green-100 text-sm">
             ⚽ Usado por +50 academias no Brasil | 🏆 92% de taxa de sucesso em
             transferências
-          </div>
+          </div> */}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
@@ -608,7 +608,7 @@ export default function AcademyLandingPage() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </>
   );
 }

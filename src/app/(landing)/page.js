@@ -1,4 +1,4 @@
-// src/app/(landing)/academies/page.js
+// / src/app/(landing)/academies/page.js
 "use client";
 
 import React from "react";
@@ -8,18 +8,18 @@ import {
   Target,
   //   BarChart3,
   Star,
-  TrendingUp,
-  Shield,
-  Award,
-  Clock,
+  // TrendingUp,
+  // Shield,
+  // Award,
+  // Clock,
   CheckCircle,
-  Presentation,
+  // Presentation,
   Heart,
   Zap,
   BookOpen,
 } from "lucide-react";
 // import PlayerJourney from "@/components/PlayerJourney";
-import Link from "next/link";
+// import Link from "next/link";
 
 export default function AcademyLandingPage() {
   return (
@@ -46,7 +46,7 @@ export default function AcademyLandingPage() {
                 primeiro treino às entrevistas na mídia - preparamos nossos
                 atletas para o sucesso mundial.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/presentation"
                   className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
@@ -57,7 +57,7 @@ export default function AcademyLandingPage() {
                 <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
                   Agendar Demonstração
                 </button>
-              </div>
+              </div> */}
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
@@ -260,7 +260,7 @@ export default function AcademyLandingPage() {
           </div>
 
           {/* Benefícios para Academias */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8">
+          {/* <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 ROI Comprovado para Academias
@@ -312,12 +312,12 @@ export default function AcademyLandingPage() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
       {/* Jornada do Jogador - Adaptada */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      {/* <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
@@ -389,10 +389,10 @@ export default function AcademyLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Planos de Investimento */}
-      <section id="planos" className="py-16 bg-gray-50 dark:bg-gray-800">
+      {/* <section id="planos" className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -404,9 +404,9 @@ export default function AcademyLandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Plano Básico */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="grid md:grid-cols-3 gap-8"> */}
+      {/* Plano Básico */}
+      {/* <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Academia Básica
@@ -447,10 +447,10 @@ export default function AcademyLandingPage() {
               <button className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
                 Começar Agora
               </button>
-            </div>
+            </div> */}
 
-            {/* Plano Profissional */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border-2 border-green-500 relative">
+      {/* Plano Profissional */}
+      {/* <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border-2 border-green-500 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                   Mais Popular
@@ -502,10 +502,10 @@ export default function AcademyLandingPage() {
               <button className="w-full bg-gradient-to-r from-green-600 to-blue-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                 Escolher Profissional
               </button>
-            </div>
+            </div> */}
 
-            {/* Plano Elite */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+      {/* Plano Elite */}
+      {/* <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Academia Elite
@@ -562,19 +562,19 @@ export default function AcademyLandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-green-600 to-blue-500">
+      <section className="py-10 bg-gradient-to-r from-primary-600 to-accent-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Transforme o Futuro dos Seus Jogadores
           </h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl text-green-100 mb-4">
             Dê aos seus atletas a vantagem competitiva que eles precisam para
             brilhar na Europa
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Agendar Demonstração Gratuita
             </button>
@@ -585,12 +585,12 @@ export default function AcademyLandingPage() {
           <div className="mt-8 text-green-100 text-sm">
             ⚽ Usado por +50 academias no Brasil | 🏆 92% de taxa de sucesso em
             transferências
-          </div>
+          </div> */}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
@@ -608,7 +608,7 @@ export default function AcademyLandingPage() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </>
   );
 }
