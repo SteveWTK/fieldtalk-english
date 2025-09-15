@@ -18,6 +18,7 @@ import {
   BookOpen,
   MessageSquare,
   Mic,
+  Construction,
 } from "lucide-react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 import AnimatedCounter from "@/components/AnimatedCounter";
@@ -26,12 +27,15 @@ import MatchCountdown from "@/components/MatchCountdown";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
+  const [showConstructionModal, setShowConstructionModal] = useState(false);
 
   const { user } = useAuth();
+  const { t, userLanguage } = useTranslation(user);
 
   // Use the actual logged-in user's ID
   const userId = user?.id;
@@ -102,6 +106,9 @@ function PlayerLessonsMenu() {
 
   // Improved lesson status calculation
   const getLessonStatus = (lesson) => {
+    // Check if lesson is under construction
+    if (lesson.under_construction) return "construction";
+
     // Check if this lesson is completed
     const isCompleted = completions?.some((c) => c.lesson_id === lesson.id);
     if (isCompleted) return "completed";
@@ -156,6 +163,8 @@ function PlayerLessonsMenu() {
         return <Play className="w-5 h-5 text-blue-500" />;
       case "locked":
         return <Lock className="w-5 h-5 text-gray-400" />;
+      case "construction":
+        return <Construction className="w-5 h-5 text-orange-500" />;
       default:
         return null;
     }
@@ -278,7 +287,8 @@ function PlayerLessonsMenu() {
               ) : (
                 currentLessons.map((lesson) => {
                   const status = getLessonStatus(lesson);
-                  const isClickable = status !== "locked";
+                  const isClickable =
+                    status !== "locked" && status !== "construction";
 
                   return (
                     <div
@@ -288,7 +298,9 @@ function PlayerLessonsMenu() {
                           ? "border-fieldtalk-500 bg-fieldtalk-50 dark:bg-fieldtalk-900/20"
                           : status === "completed"
                             ? "border-accent-200 bg-accent-50/50 dark:bg-accent-900/20"
-                            : "border-primary-200 dark:border-primary-700"
+                            : status === "construction"
+                              ? "border-orange-200 bg-orange-50/50 dark:bg-orange-900/20 opacity-75"
+                              : "border-primary-200 dark:border-primary-700"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -327,6 +339,13 @@ function PlayerLessonsMenu() {
                               <ChevronRight className="w-5 h-5" />
                             )}
                           </Link>
+                        ) : status === "construction" ? (
+                          <button
+                            onClick={() => setShowConstructionModal(false)}
+                            className="p-2 text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/20 rounded-lg transition-colors ml-4"
+                          >
+                            <Construction className="w-5 h-5" />
+                          </button>
                         ) : (
                           <div className="p-2 text-gray-400 ml-4">
                             <Lock className="w-5 h-5" />
@@ -336,6 +355,13 @@ function PlayerLessonsMenu() {
                       {status === "locked" && (
                         <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                           Complete previous lessons to unlock
+                        </div>
+                      )}
+                      {status === "construction" && (
+                        <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
+                          {userLanguage === "pt-BR"
+                            ? "Aula em construção"
+                            : "Lesson under construction"}
                         </div>
                       )}
                     </div>
@@ -408,6 +434,35 @@ function PlayerLessonsMenu() {
         show={showXPGain}
         onComplete={() => setShowXPGain(false)}
       />
+
+      {/* Under Construction Modal */}
+      {showConstructionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                <Construction className="w-8 h-8 text-orange-500" />
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
+              {userLanguage === "pt"
+                ? "Lição em Construção"
+                : "Lesson Under Construction"}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
+              {userLanguage === "pt"
+                ? "Estamos desenvolvendo esta lição e em breve a disponibilizaremos para você."
+                : "We are developing this lesson and will soon make it available to you."}
+            </p>
+            <button
+              onClick={() => setShowConstructionModal(false)}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+            >
+              {userLanguage === "pt" ? "Entendido" : "Understood"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
