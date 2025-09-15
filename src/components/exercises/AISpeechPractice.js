@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { Mic, MicOff, Play, RotateCcw, Pause, Volume2 } from "lucide-react";
 
 export default function AISpeechPractice({
-  prompt,
+  // prompt,
   expectedText,
   lessonId,
   onComplete,
@@ -157,7 +157,7 @@ export default function AISpeechPractice({
           receber feedback sobre sua pronuncia.
         </p>
         <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-gray-700 mb-2">{prompt}</p>
+          {/* <p className="text-gray-700 mb-2">{prompt}</p> */}
           <div className="bg-white p-3 rounded border-l-4 border-accent-500">
             <p className="font-mono text-lg">&quot;{expectedText}&quot;</p>
           </div>

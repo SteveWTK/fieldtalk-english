@@ -33,6 +33,7 @@ import {
   Award,
   Headphones,
   Languages,
+  RefreshCw,
 } from "lucide-react";
 import {
   getLessonById,
@@ -82,6 +83,14 @@ function DynamicLessonContent() {
   const [userVoiceGender, setUserVoiceGender] = useState("male");
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
+
+  // Reset keys for each exercise type to force re-render
+  const [aiWritingKey, setAiWritingKey] = useState(0);
+  const [aiConversationKey, setAiConversationKey] = useState(0);
+  const [aiGapFillKey, setAiGapFillKey] = useState(0);
+  const [aiSpeechKey, setAiSpeechKey] = useState(0);
+  const [interactivePitchKey, setInteractivePitchKey] = useState(0);
+  const [interactiveGameKey, setInteractiveGameKey] = useState(0);
 
   const audioRef = useRef(null);
 
@@ -798,7 +807,7 @@ function DynamicLessonContent() {
                 ) : (
                   <>
                     <Volume2 className="w-4 h-4" />
-                    <span>{t("listen_to_scenario_in_English")}</span>
+                    <span>Ouça o texto em inglês</span>
                   </>
                 )}
               </button>
@@ -838,59 +847,127 @@ function DynamicLessonContent() {
 
       case "ai_writing":
         return (
-          <AIWritingExercise
-            prompt={
-              translations[`writing-prompt-${currentStep}`] ||
-              currentStepData.prompt
-            }
-            context={currentStepData.context}
-            lessonId={lessonId}
-            englishVariant={userEnglishVariant}
-            voiceGender={userVoiceGender}
-            onComplete={(xp) => {
-              setXpEarned((prev) => prev + xp);
-              setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              // Auto-advance to next step after a short delay
-              setTimeout(() => handleNext(), 1000);
-            }}
-            minWords={currentStepData.minWords || 50}
-            maxWords={currentStepData.maxWords || 200}
-          />
+          <div className="space-y-4">
+            <AIWritingExercise
+              key={aiWritingKey}
+              prompt={
+                translations[`writing-prompt-${currentStep}`] ||
+                currentStepData.prompt
+              }
+              context={currentStepData.context}
+              lessonId={lessonId}
+              englishVariant={userEnglishVariant}
+              voiceGender={userVoiceGender}
+              onComplete={(xp) => {
+                setXpEarned((prev) => prev + xp);
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                // Auto-advance to next step after a short delay
+                setTimeout(() => handleNext(), 1000);
+              }}
+              minWords={currentStepData.minWords || 50}
+              maxWords={currentStepData.maxWords || 200}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this writing exercise
+                  if (typeof window !== "undefined") {
+                    // AIWritingExercise uses: ai-writing-${lessonId}-${prompt.substring(0, 50)}
+                    const promptPrefix = (
+                      translations[`writing-prompt-${currentStep}`] ||
+                      currentStepData.prompt ||
+                      ""
+                    ).substring(0, 50);
+                    localStorage.removeItem(`ai-writing-${lessonId}-${promptPrefix}`);
+                  }
+                  // Force re-render by changing the key
+                  setAiWritingKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "ai_conversation":
         return (
-          <AIConversationPractice
-            scenario={currentStepData.scenario}
-            context={currentStepData.context}
-            conversationStarters={currentStepData.conversation_starters}
-            lessonId={lessonId}
-            englishVariant={userEnglishVariant}
-            voiceGender={userVoiceGender}
-            onComplete={(xp) => {
-              setXpEarned((prev) => prev + xp);
-              setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              // Auto-advance to next step after a short delay
-              setTimeout(() => handleNext(), 1000);
-            }}
-            maxTurns={currentStepData.maxTurns || 6}
-          />
+          <div className="space-y-4">
+            <AIConversationPractice
+              key={aiConversationKey}
+              scenario={currentStepData.scenario}
+              context={currentStepData.context}
+              conversationStarters={currentStepData.conversation_starters}
+              lessonId={lessonId}
+              englishVariant={userEnglishVariant}
+              voiceGender={userVoiceGender}
+              onComplete={(xp) => {
+                setXpEarned((prev) => prev + xp);
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                // Auto-advance to next step after a short delay
+                setTimeout(() => handleNext(), 1000);
+              }}
+              maxTurns={currentStepData.maxTurns || 6}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this conversation practice
+                  if (typeof window !== "undefined") {
+                    // AIConversationPractice uses these keys:
+                    localStorage.removeItem(`ai-conversation-${lessonId}-input`);
+                    localStorage.removeItem(`ai-conversation-${lessonId}-messages`);
+                    localStorage.removeItem(`ai-conversation-${lessonId}-turnCount`);
+                    localStorage.removeItem(`ai-conversation-${lessonId}-errors`);
+                  }
+                  // Force re-render by changing the key
+                  setAiConversationKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "ai_gap_fill":
         return (
-          <AIMultipleChoiceGapFill
-            sentences={currentStepData.sentences}
-            lessonId={lessonId}
-            englishVariant={userEnglishVariant}
-            voiceGender={userVoiceGender}
-            onComplete={(xp) => {
-              setXpEarned((prev) => prev + xp);
-              setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              // Auto-advance to next step after a short delay
-              setTimeout(() => handleNext(), 1000);
-            }}
-          />
+          <div className="space-y-4">
+            <AIMultipleChoiceGapFill
+              key={aiGapFillKey}
+              sentences={currentStepData.sentences}
+              lessonId={lessonId}
+              englishVariant={userEnglishVariant}
+              voiceGender={userVoiceGender}
+              onComplete={(xp) => {
+                setXpEarned((prev) => prev + xp);
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                // Auto-advance to next step after a short delay
+                setTimeout(() => handleNext(), 1000);
+              }}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this gap fill exercise
+                  if (typeof window !== "undefined") {
+                    // AIMultipleChoiceGapFill uses a single key with JSON data
+                    localStorage.removeItem(`lesson-${lessonId}-aiGapFill-progress`);
+                  }
+                  // Force re-render by changing the key
+                  setAiGapFillKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "ai_listening_challenge":
@@ -925,26 +1002,45 @@ function DynamicLessonContent() {
 
       case "ai_speech_practice":
         return (
-          <AISpeechPractice
-            prompt={
-              translations[`speech-prompt-${currentStep}`] ||
-              currentStepData.prompt
-            }
-            expectedText={currentStepData.expectedText}
-            context={
-              translations[`speech-context-${currentStep}`] ||
-              currentStepData.context
-            }
-            lessonId={lessonId}
-            englishVariant={userEnglishVariant}
-            voiceGender={userVoiceGender}
-            onComplete={(xp) => {
-              setXpEarned((prev) => prev + xp);
-              setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              // For speech practice, user manually advances after reviewing feedback
-              handleNext();
-            }}
-          />
+          <div className="space-y-4">
+            <AISpeechPractice
+              key={aiSpeechKey}
+              prompt={
+                translations[`speech-prompt-${currentStep}`] ||
+                currentStepData.prompt
+              }
+              expectedText={currentStepData.expectedText}
+              context={
+                translations[`speech-context-${currentStep}`] ||
+                currentStepData.context
+              }
+              lessonId={lessonId}
+              englishVariant={userEnglishVariant}
+              voiceGender={userVoiceGender}
+              onComplete={(xp) => {
+                setXpEarned((prev) => prev + xp);
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                // For speech practice, user manually advances after reviewing feedback
+                handleNext();
+              }}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this speech practice
+                  if (typeof window !== "undefined") {
+                    // AISpeechPractice doesn't use localStorage, just reset the component
+                  }
+                  // Force re-render by changing the key
+                  setAiSpeechKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "vocabulary":
@@ -999,11 +1095,31 @@ function DynamicLessonContent() {
           ),
         };
         return (
-          <InteractivePitch
-            interactiveConfig={pitchConfig}
-            lessonId={lessonId}
-            onComplete={handleStepComplete}
-          />
+          <div className="space-y-4">
+            <InteractivePitch
+              key={interactivePitchKey}
+              interactiveConfig={pitchConfig}
+              lessonId={lessonId}
+              onComplete={handleStepComplete}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this interactive pitch
+                  if (typeof window !== "undefined") {
+                    // InteractivePitch uses a single key with JSON data
+                    localStorage.removeItem(`lesson-${lessonId}-interactivePitch-progress`);
+                  }
+                  // Force re-render by changing the key
+                  setInteractivePitchKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "interactive_game":
@@ -1020,11 +1136,31 @@ function DynamicLessonContent() {
           })),
         };
         return (
-          <InteractiveGame
-            gameConfig={gameConfig}
-            lessonId={lessonId}
-            onComplete={handleStepComplete}
-          />
+          <div className="space-y-4">
+            <InteractiveGame
+              key={interactiveGameKey}
+              gameConfig={gameConfig}
+              lessonId={lessonId}
+              onComplete={handleStepComplete}
+            />
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => {
+                  // Clear localStorage for this interactive game
+                  if (typeof window !== "undefined") {
+                    // InteractiveGame uses a single key with JSON data
+                    localStorage.removeItem(`lesson-${lessonId}-interactiveGame-progress`);
+                  }
+                  // Force re-render by changing the key
+                  setInteractiveGameKey((prev) => prev + 1);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Start Over
+              </button>
+            </div>
+          </div>
         );
 
       case "pronunciation_drill":
