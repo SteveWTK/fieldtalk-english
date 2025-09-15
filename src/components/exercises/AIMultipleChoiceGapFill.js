@@ -464,10 +464,10 @@ export default function AIMultipleChoiceGapFill({
                   ? "border-red-500 bg-red-100 text-red-700"
                   : selectedOption
                     ? "border-primary-500 bg-primary-50 text-primary-800"
-                    : "border-gray-300 bg-gray-50 text-gray-500"
+                    : "border-gray-300 bg-gray-50 text-gray-50"
             }`}
           >
-            {selectedOption || "___"}
+            {selectedOption || "....."}
           </span>
           {parts[1]}
         </div>

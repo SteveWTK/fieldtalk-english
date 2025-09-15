@@ -19,7 +19,7 @@ import {
   BookOpen,
 } from "lucide-react";
 // import PlayerJourney from "@/components/PlayerJourney";
-// import Link from "next/link";
+import Link from "next/link";
 
 export default function AcademyLandingPage() {
   return (
@@ -46,18 +46,18 @@ export default function AcademyLandingPage() {
                 primeiro treino às entrevistas na mídia - preparamos nossos
                 atletas para o sucesso mundial.
               </p>
-              {/* <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/presentation"
+                  href="/auth/signin"
                   className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
-                  Ver Apresentação Completa
-                  <Presentation className="w-5 h-5 ml-2" />
+                  Crie uma conta
+                  {/* <Presentation className="w-5 h-5 ml-2" /> */}
                 </Link>
                 <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
-                  Agendar Demonstração
+                  Entre em Contato
                 </button>
-              </div> */}
+              </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
@@ -572,7 +572,7 @@ export default function AcademyLandingPage() {
           </h2>
           <p className="text-xl text-green-100 mb-4">
             Dê aos seus atletas a vantagem competitiva que eles precisam para
-            brilhar na Europa
+            brilhar globalmente
           </p>
           {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">

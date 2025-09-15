@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/app/(site)/dashboard/page.js
+// src/app/(site)/lesson/page.js
 "use client";
 
 import React, { useState } from "react";

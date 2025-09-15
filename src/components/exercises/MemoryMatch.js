@@ -227,30 +227,30 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
         </p>
       </div>
 
-      {/* {!gameStarted && ( */}
-      <div className="flex gap-2 sm:gap-4 mb-4">
-        <button
-          onClick={() => handleGridSizeChange("3x4")}
-          className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
-            gridSize === "3x4"
-              ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-          }`}
-        >
-          3x4 (12 cards)
-        </button>
-        <button
-          onClick={() => handleGridSizeChange("4x4")}
-          className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
-            gridSize === "4x4"
-              ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-          }`}
-        >
-          4x4 (16 cards)
-        </button>
-      </div>
-      {/* )} */}
+      {!gameStarted && (
+        <div className="flex gap-2 sm:gap-4 mb-4">
+          <button
+            onClick={() => handleGridSizeChange("3x4")}
+            className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
+              gridSize === "3x4"
+                ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+            }`}
+          >
+            3x4 (12 cards)
+          </button>
+          <button
+            onClick={() => handleGridSizeChange("4x4")}
+            className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
+              gridSize === "4x4"
+                ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+            }`}
+          >
+            4x4 (16 cards)
+          </button>
+        </div>
+      )}
 
       {showSuccess && (
         <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
