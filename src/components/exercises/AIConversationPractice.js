@@ -61,9 +61,15 @@ export default function AIConversationPractice({
         try {
           const parsedMessages = JSON.parse(saved);
           // Validate that the saved messages match the current scenario
-          if (parsedMessages && Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+          if (
+            parsedMessages &&
+            Array.isArray(parsedMessages) &&
+            parsedMessages.length > 0
+          ) {
             // Check if the first system message matches the current scenario
-            const savedSystemMessage = parsedMessages.find(m => m.role === "system");
+            const savedSystemMessage = parsedMessages.find(
+              (m) => m.role === "system"
+            );
             if (savedSystemMessage && savedSystemMessage.content === scenario) {
               return parsedMessages;
             }
@@ -190,7 +196,14 @@ export default function AIConversationPractice({
 
       return () => clearTimeout(timeoutId);
     }
-  }, [turnCount, maxTurns, storageKeyInput, storageKeyMessages, storageKeyTurnCount, storageKeyErrors]);
+  }, [
+    turnCount,
+    maxTurns,
+    storageKeyInput,
+    storageKeyMessages,
+    storageKeyTurnCount,
+    storageKeyErrors,
+  ]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -349,12 +362,12 @@ export default function AIConversationPractice({
   const resetConversation = () => {
     // Reset to initial messages
     const resetMessages = createInitialMessages();
-    
+
     setMessages(resetMessages);
     setTurnCount(0);
     setErrors({});
     setInput("");
-    
+
     // Clear all saved data from localStorage
     try {
       localStorage.removeItem(storageKeyInput);
@@ -389,7 +402,7 @@ export default function AIConversationPractice({
       </div>
 
       {/* Conversation Starters */}
-      {conversationStarters &&
+      {/* {conversationStarters &&
         conversationStarters.length > 0 &&
         turnCount === 0 && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
@@ -418,13 +431,13 @@ export default function AIConversationPractice({
                   </span>
                 </button>
               ))}
-            </div>
-            {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+            </div> */}
+      {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
               Use a frase inicial acima para lhe ajudar a começar a conversa, ou
               digite sua própria mensagem abaixo.
             </p> */}
-          </div>
-        )}
+      {/* </div>
+        )} */}
 
       {/* Messages Area */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg h-96 overflow-y-auto mb-4 p-4">

@@ -253,8 +253,8 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
       {/* )} */}
 
       {showSuccess && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
-          <div className="bg-accent-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+        <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
+          <div className="bg-accent-500 bg-opacity-50 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
             <Check className="w-6 h-6" />
             <span className="font-bold">Perfect Match!</span>
           </div>
@@ -262,8 +262,8 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
       )}
 
       {showError && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-pulse">
-          <div className="bg-[#dc2626] text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+        <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-pulse transition delay-150 duration-300 ease-in-out">
+          <div className="bg-[#dc2626] bg-opacity-50 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
             <X className="w-6 h-6" />
             <span className="font-bold">Try Again!</span>
           </div>

@@ -158,7 +158,7 @@ export default function AboutUsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-accent-50 dark:from-primary-900 dark:to-accent-800">
+    <div className="min-h-screen bg-accent-50 dark:bg-gray-900">
       {/* Hero Section */}
       {/* <section className="relative py-6 px-6 text-center">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-green-600/10 dark:from-blue-800/20 dark:to-green-800/20"></div>
@@ -301,29 +301,29 @@ export default function AboutUsPage() {
               {
                 title: copy.feature1Title,
                 text: copy.feature1Text,
-                icon: "🌱",
-                image: "heroes/augustin-basabose-gorilla.jpg",
+                icon: "⚽",
+                image: "/images/journey/week8-tactics.jpeg",
                 color: "green",
               },
               {
                 title: copy.feature2Title,
                 text: copy.feature2Text,
                 icon: "🎮",
-                image: "screenshots/eco-map-preview-2.png",
+                image: "/images/hero/hero-clubs.jpg",
                 color: "blue",
               },
               {
                 title: copy.feature3Title,
                 text: copy.feature3Text,
                 icon: "🌍",
-                image: "heroes/farwiza-farhan-2.jpg",
+                image: "/images/journey/week16-goal.webp",
                 color: "indigo",
               },
               {
                 title: copy.feature4Title,
                 text: copy.feature4Text,
                 icon: "🗣️",
-                image: "eco/vaquitas.jpg",
+                image: "/images/journey/week2-laughing.jpeg",
                 color: "purple",
               },
             ].map((feature, index) => (
@@ -376,7 +376,7 @@ export default function AboutUsPage() {
             ].map((value, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-4 p-6 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                className="flex items-start space-x-4 p-6 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-t-2 border-accent-400 hover:transform hover:scale-[1.02] transition-all duration-300"
               >
                 {/* <div className="text-3xl flex-shrink-0">{value.icon}</div> */}
                 <div>
@@ -394,7 +394,7 @@ export default function AboutUsPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 px-6 bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-800 dark:to-green-800">
+      {/* <section className="py-16 px-6 bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-800 dark:to-green-800">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-orbitron font-bold text-white mb-6">
             {copy.joinUsTitle}
@@ -412,7 +412,7 @@ export default function AboutUsPage() {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

@@ -161,15 +161,15 @@ function PlayerLessonsMenu() {
     }
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "Beginner":
-        return "bg-primary-100 text-primary-800";
-      case "Intermediate":
-        return "bg-accent-100 text-accent-800";
-      case "Advanced":
+  const getDifficultyColor = (level_name) => {
+    switch (level_name) {
+      case "Survival":
         return "bg-attention-100 text-attention-800";
-      case "Expert":
+      case "Survival Absolute":
+        return "bg-accent-100 text-accent-800";
+      case "Precision":
+        return "bg-attention-100 text-attention-800";
+      case "Fluency":
         return "bg-rose-100 text-rose-800";
       default:
         return "bg-primary-100 text-primary-800";
@@ -305,7 +305,7 @@ function PlayerLessonsMenu() {
                               <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(lesson.difficulty)}`}
                               >
-                                {lesson.difficulty}
+                                {lesson.level_name}
                               </span>
                               <span className="text-sm text-gray-600 dark:text-gray-300">
                                 {lesson.xp_reward} XP
