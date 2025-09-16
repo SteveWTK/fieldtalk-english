@@ -122,7 +122,7 @@ export default function SignInPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                Password
+                Senha
               </label>
               <div className="relative">
                 <input
@@ -132,7 +132,7 @@ export default function SignInPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                  placeholder="Your password"
+                  placeholder="Sua senha"
                 />
                 <button
                   type="button"
@@ -153,25 +153,25 @@ export default function SignInPage() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Signing in..." : "Entrar"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Don&apos;t have an account?{" "}
+              Não tem uma conta?{" "}
               <Link
                 href="/signup"
                 className="text-accent-600 hover:text-accent-700 font-medium"
               >
-                Sign up
+                Registre-se aqui.
               </Link>
             </p>
           </div>
         </div>
 
         {/* Demo Login Button */}
-        <div className="my-6">
+        {/* <div className="my-6">
           <button
             onClick={handleDemoLogin}
             disabled={loading}
@@ -183,7 +183,7 @@ export default function SignInPage() {
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
             Experience the platform instantly with sample data
           </p>
-        </div>
+        </div> */}
 
         {/* Partnership Note */}
         <div className="mt-6 text-center">
