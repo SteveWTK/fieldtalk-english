@@ -34,18 +34,18 @@ export default function AboutUsPage() {
       teamTitle: "Meet Our Team",
       teamSubtitle:
         "Passionate educators and football experts working together to break language barriers in professional football",
-      founder1Title: "Academic Director",
+      founder1Title: "Technical Director",
       founder1Bio:
-        "With over 25 years of experience teaching English in Brazilian universities and a deep understanding of football culture, our lead specialist creates content that bridges the gap between the pitch and professional English communication.",
-      founder2Title: "Technical Director",
+        "With expertise in technology and language learning platforms combined with over 30 years of experience running English language schools, including experience teaching players and coaches in the Premier League, Stephen ensures that players have access to cutting-edge tools to master football English.",
+      founder2Title: "Director of Content and Strategic Parnterships",
       founder2Bio:
-        "Combining expertise in sports technology and language learning platforms, our technical director ensures players have access to cutting-edge tools for mastering football English.",
-      founder3Title: "Director of Content",
+        "Paul has been teaching English for 30 years and specializes in language training and effective, student-centered techniques, including sports-specific language. With connections in professional soccer, Paul ensures players learn the exact English they need for success.",
+      founder3Title: "Marketing Director",
       founder3Bio:
-        "Specializing in sports-specific language training and with connections to professional football, our education expert ensures players learn the exact English they need for success.",
-      founder4Title: "Strategic Director",
+        "David has over 25 years of experience in ESL as a teacher and director. He has been the director of Cultura Inglesa Teresina since 2008, leading it to a peak of 1,750 students and over 100 employees. Specializing in business strategy and management processes, David is passionate about leading strong, united teams and creating a highly positive company culture.",
+      founder4Title: "Academic Consultant",
       founder4Bio:
-        "With extensive experience in international football and player development, our advisor ensures FieldTalk meets the real needs of professional football.",
+        "With nearly 50 years of experience teaching English as a second language, Michael holds a BA in Modern Languages ​​from the University of Oxford, an MA in Language Science from the University of Reading, and a PhD in Second Language Acquisition from UFSC, Brazil. Michael specializes in EFL materials design and has published extensively.",
       valuesTitle: "Our Values",
       value1Title: "Player-First Approach",
       value1Text:
