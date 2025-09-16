@@ -21,13 +21,14 @@ import {
   Construction,
 } from "lucide-react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
-import AnimatedCounter from "@/components/AnimatedCounter";
+// import AnimatedCounter from "@/components/AnimatedCounter";
 import XPGainAnimation from "@/components/XPGainAnimation";
-import MatchCountdown from "@/components/MatchCountdown";
+// import MatchCountdown from "@/components/MatchCountdown";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -35,7 +36,19 @@ function PlayerLessonsMenu() {
   const [showConstructionModal, setShowConstructionModal] = useState(false);
 
   const { user } = useAuth();
-  const { t, userLanguage } = useTranslation(user);
+  const { userLanguage } = useTranslation(user);
+  const { lang } = useLanguage();
+
+  const t = {
+    en: {
+      subtitle: "Your learning journey",
+    },
+    pt: {
+      subtitle: "Sua jornada de aprendizagem",
+    },
+  };
+
+  const copy = t[lang];
 
   // Use the actual logged-in user's ID
   const userId = user?.id;
@@ -212,7 +225,9 @@ function PlayerLessonsMenu() {
       {/* Three Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Sua jornada de aprendizagem
+          {userLanguage === "pt-BR"
+            ? "Sua jornada de aprendizagem"
+            : "Your learning journey"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pillars.map((pillar, index) => {
@@ -341,7 +356,7 @@ function PlayerLessonsMenu() {
                           </Link>
                         ) : status === "construction" ? (
                           <button
-                            onClick={() => setShowConstructionModal(false)}
+                            onClick={() => setShowConstructionModal(true)}
                             className="p-2 text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/20 rounded-lg transition-colors ml-4"
                           >
                             <Construction className="w-5 h-5" />
@@ -440,25 +455,25 @@ function PlayerLessonsMenu() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
-                <Construction className="w-8 h-8 text-orange-500" />
+              <div className="w-16 h-16 bg-orange-100 dark:bg-attention-900/20 rounded-full flex items-center justify-center">
+                <Construction className="w-8 h-8 text-attention-500" />
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
-              {userLanguage === "pt"
-                ? "Lição em Construção"
+              {userLanguage === "pt-BR"
+                ? "Aula em Construção"
                 : "Lesson Under Construction"}
             </h3>
             <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-              {userLanguage === "pt"
-                ? "Estamos desenvolvendo esta lição e em breve a disponibilizaremos para você."
+              {userLanguage === "pt-BR"
+                ? "Estamos desenvolvendo esta aula e em breve a disponibilizaremos para você."
                 : "We are developing this lesson and will soon make it available to you."}
             </p>
             <button
               onClick={() => setShowConstructionModal(false)}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              className="w-full bg-attention-500 hover:bg-attention-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
             >
-              {userLanguage === "pt" ? "Entendido" : "Understood"}
+              {userLanguage === "pt-BR" ? "Ok" : "Ok"}
             </button>
           </div>
         </div>
