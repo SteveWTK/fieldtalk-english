@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prevent future accidents
+*.html
+*.download
+*_files/
+*Supabase_files/
