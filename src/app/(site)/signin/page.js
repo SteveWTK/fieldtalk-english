@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/app/auth/signin/page.js
-
+// src/app/signin/page.js
 "use client";
 
 import React, { useState } from "react";
@@ -172,7 +171,7 @@ export default function SignInPage() {
         </div>
 
         {/* Demo Login Button */}
-        {/* <div className="my-6">
+        <div className="my-6">
           <button
             onClick={handleDemoLogin}
             disabled={loading}
@@ -184,7 +183,7 @@ export default function SignInPage() {
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
             Experience the platform instantly with sample data
           </p>
-        </div> */}
+        </div>
 
         {/* Partnership Note */}
         <div className="mt-6 text-center">

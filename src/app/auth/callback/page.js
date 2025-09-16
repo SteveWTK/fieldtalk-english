@@ -36,9 +36,9 @@ export default function AuthCallbackPage() {
           setStatus("success");
           setMessage("Sign in successful! Redirecting...");
 
-          // Redirect to dashboard after short delay
+          // Redirect to lesson page after short delay
           setTimeout(() => {
-            router.push("/dashboard");
+            router.push("/lesson");
           }, 1500);
         } else {
           console.log("❌ No session found");
@@ -65,7 +65,7 @@ export default function AuthCallbackPage() {
           <p className="text-gray-600 mb-4">{message}</p>
           <div className="space-y-2">
             <button
-              onClick={() => router.push("/auth/signin")}
+              onClick={() => router.push("/signin")}
               className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
             >
               Try Again

@@ -148,7 +148,7 @@ function HeaderBase({
               {user ? (
                 <div className="flex items-center space-x-3">
                   <Link
-                    href="/dashboard"
+                    href="/lesson"
                     className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-primary-50 dark:hover:text-accent-400 dark:hover:border-accent-400 gap-2 lg:gap-4"
                   >
                     <User className="w-5 h-5" />
@@ -167,7 +167,7 @@ function HeaderBase({
                 </div>
               ) : (
                 <Link
-                  href="/auth/signin"
+                  href="/signin"
                   className="text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors font-medium"
                 >
                   {copy.signIn}
@@ -249,7 +249,7 @@ function HeaderBase({
                 {user ? (
                   <div className="space-y-4">
                     <Link
-                      href="/dashboard"
+                      href="/lesson"
                       className="flex items-center space-x-3 py-2"
                       onClick={closeMobileMenu}
                     >
@@ -269,7 +269,7 @@ function HeaderBase({
                   </div>
                 ) : (
                   <Link
-                    href="/auth/signin"
+                    href="/signin"
                     className="block py-2 text-lg font-medium text-primary-900 dark:text-primary-50"
                     onClick={closeMobileMenu}
                   >
