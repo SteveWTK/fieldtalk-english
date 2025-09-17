@@ -310,7 +310,7 @@ function PlayerLessonsMenu() {
                       key={lesson.id}
                       className={`p-4 rounded-lg border hover:scale-[1.01] transition-all duration-200 ${
                         status === "current"
-                          ? "border-fieldtalk-500 bg-fieldtalk-50 dark:bg-fieldtalk-900/20"
+                          ? "border-growth-500 bg-growth-50 dark:bg-growth-900/20"
                           : status === "completed"
                             ? "border-accent-200 bg-accent-50/50 dark:bg-accent-900/20"
                             : status === "construction"

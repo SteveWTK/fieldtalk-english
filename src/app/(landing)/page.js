@@ -54,8 +54,15 @@ export default function AcademyLandingPage() {
                   Crie uma conta
                   {/* <Presentation className="w-5 h-5 ml-2" /> */}
                 </Link>
+                <Link
+                  href="/lesson"
+                  className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                >
+                  Área do Aluno
+                  {/* <Presentation className="w-5 h-5 ml-2" /> */}
+                </Link>
                 {/* <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
-                  Entre em Contato
+                  Aulas
                 </button> */}
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">

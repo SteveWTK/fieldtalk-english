@@ -878,7 +878,9 @@ function DynamicLessonContent() {
                       currentStepData.prompt ||
                       ""
                     ).substring(0, 50);
-                    localStorage.removeItem(`ai-writing-${lessonId}-${promptPrefix}`);
+                    localStorage.removeItem(
+                      `ai-writing-${lessonId}-${promptPrefix}`
+                    );
                   }
                   // Force re-render by changing the key
                   setAiWritingKey((prev) => prev + 1);
@@ -917,10 +919,18 @@ function DynamicLessonContent() {
                   // Clear localStorage for this conversation practice
                   if (typeof window !== "undefined") {
                     // AIConversationPractice uses these keys:
-                    localStorage.removeItem(`ai-conversation-${lessonId}-input`);
-                    localStorage.removeItem(`ai-conversation-${lessonId}-messages`);
-                    localStorage.removeItem(`ai-conversation-${lessonId}-turnCount`);
-                    localStorage.removeItem(`ai-conversation-${lessonId}-errors`);
+                    localStorage.removeItem(
+                      `ai-conversation-${lessonId}-input`
+                    );
+                    localStorage.removeItem(
+                      `ai-conversation-${lessonId}-messages`
+                    );
+                    localStorage.removeItem(
+                      `ai-conversation-${lessonId}-turnCount`
+                    );
+                    localStorage.removeItem(
+                      `ai-conversation-${lessonId}-errors`
+                    );
                   }
                   // Force re-render by changing the key
                   setAiConversationKey((prev) => prev + 1);
@@ -956,7 +966,9 @@ function DynamicLessonContent() {
                   // Clear localStorage for this gap fill exercise
                   if (typeof window !== "undefined") {
                     // AIMultipleChoiceGapFill uses a single key with JSON data
-                    localStorage.removeItem(`lesson-${lessonId}-aiGapFill-progress`);
+                    localStorage.removeItem(
+                      `lesson-${lessonId}-aiGapFill-progress`
+                    );
                   }
                   // Force re-render by changing the key
                   setAiGapFillKey((prev) => prev + 1);
@@ -1108,7 +1120,9 @@ function DynamicLessonContent() {
                   // Clear localStorage for this interactive pitch
                   if (typeof window !== "undefined") {
                     // InteractivePitch uses a single key with JSON data
-                    localStorage.removeItem(`lesson-${lessonId}-interactivePitch-progress`);
+                    localStorage.removeItem(
+                      `lesson-${lessonId}-interactivePitch-progress`
+                    );
                   }
                   // Force re-render by changing the key
                   setInteractivePitchKey((prev) => prev + 1);
@@ -1149,7 +1163,9 @@ function DynamicLessonContent() {
                   // Clear localStorage for this interactive game
                   if (typeof window !== "undefined") {
                     // InteractiveGame uses a single key with JSON data
-                    localStorage.removeItem(`lesson-${lessonId}-interactiveGame-progress`);
+                    localStorage.removeItem(
+                      `lesson-${lessonId}-interactiveGame-progress`
+                    );
                   }
                   // Force re-render by changing the key
                   setInteractiveGameKey((prev) => prev + 1);
@@ -2694,11 +2710,11 @@ function DynamicLessonContent() {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col gap-4 sm:flex-row justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={handlePrevious}
           disabled={currentStep === 0 || completing}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Atividade anterior</span>
