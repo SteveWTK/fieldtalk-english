@@ -54,6 +54,7 @@ import InteractiveGame from "@/components/exercises/InteractiveGame";
 import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
 import AISpeechPractice from "@/components/exercises/AISpeechPractice";
 import MemoryMatch from "@/components/exercises/MemoryMatch";
+import Link from "next/link";
 
 function DynamicLessonContent() {
   const params = useParams();
@@ -2712,14 +2713,24 @@ function DynamicLessonContent() {
 
       {/* Navigation */}
       <div className="flex flex-col gap-4 sm:flex-row justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={handlePrevious}
-          disabled={currentStep === 0 || completing}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Atividade anterior</span>
-        </button>
+        {currentStep === 0 ? (
+          <Link
+            href="/lesson"
+            className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Voltar</span>
+          </Link>
+        ) : (
+          <button
+            onClick={handlePrevious}
+            disabled={currentStep === 0 || completing}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Atividade anterior</span>
+          </button>
+        )}
 
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">

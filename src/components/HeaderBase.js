@@ -25,6 +25,7 @@ function HeaderBase({
         { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
+        // { href: "/settings", label: "Settings" },
       ],
       pt: [
         { href: "/", label: "Início" },
@@ -32,6 +33,7 @@ function HeaderBase({
         { href: "/lesson", label: "Aulas" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
+        // { href: "/settings", label: "Settings" },
       ],
       es: [
         { href: "/", label: "Inicio" },
@@ -39,6 +41,7 @@ function HeaderBase({
         { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
+        // { href: "/settings", label: "Settings" },
       ],
       fr: [
         { href: "/", label: "Accueil" },
@@ -46,6 +49,7 @@ function HeaderBase({
         { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
+        // { href: "/settings", label: "Settings" },
       ],
     },
     site: {
@@ -55,6 +59,7 @@ function HeaderBase({
         { href: "/lesson", label: "Lessons" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
+        // { href: "/settings", label: "Settings" },
       ],
       pt: [
         { href: "/", label: "Início" },
@@ -62,6 +67,7 @@ function HeaderBase({
         { href: "/lesson", label: "Aulas" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
+        // { href: "/settings", label: "Settings" },
       ],
       es: [
         { href: "/", label: "Inicio" },
@@ -69,6 +75,7 @@ function HeaderBase({
         { href: "/lesson", label: "Lecciones" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
+        // { href: "/settings", label: "Settings" },
       ],
       fr: [
         { href: "/", label: "Accueil" },
@@ -76,6 +83,7 @@ function HeaderBase({
         { href: "/lesson", label: "Leçons" },
         { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
+        // { href: "/settings", label: "Settings" },
       ],
     },
   };

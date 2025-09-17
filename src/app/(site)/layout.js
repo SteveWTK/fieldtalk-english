@@ -13,8 +13,8 @@ function SiteLayoutContent({ children }) {
   const languageOptions = {
     en: { label: "English", flag: "🇬🇧" },
     pt: { label: "Português", flag: "🇵🇹" },
-    es: { label: "Español", flag: "🇪🇸" },
-    fr: { label: "Français", flag: "🇫🇷" },
+    // es: { label: "Español", flag: "🇪🇸" },
+    // fr: { label: "Français", flag: "🇫🇷" },
   };
 
   // Handle dark mode toggle

@@ -6,7 +6,7 @@ export default function AISpeechPractice({
   // prompt,
   expectedText,
   lessonId,
-  onComplete,
+  // onComplete,
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -357,7 +357,7 @@ export default function AISpeechPractice({
             )}
           </div>
 
-          <div className="mt-6 flex justify-center space-x-4">
+          {/* <div className="mt-6 flex justify-center space-x-4">
             <button
               onClick={resetRecording}
               className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
@@ -376,7 +376,7 @@ export default function AISpeechPractice({
                 Continue to Next Activity →
               </button>
             )}
-          </div>
+          </div> */}
         </div>
       )}
     </div>
