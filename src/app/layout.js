@@ -40,7 +40,9 @@ export const metadata = {
     "Custom-built English learning platform designed specifically for international football players. From matchday communication to media interviews.",
 };
 
-<meta name="apple-mobile-web-app-title" content="FieldTalk" />;
+{
+  /* <meta name="apple-mobile-web-app-title" content="FieldTalk" />; */
+}
 
 export default function RootLayout({ children }) {
   return (
