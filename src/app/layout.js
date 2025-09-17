@@ -41,7 +41,7 @@ export const metadata = {
 };
 
 {
-  /* <meta name="apple-mobile-web-app-title" content="FieldTalk" />; */
+  <meta name="apple-mobile-web-app-title" content="FieldTalk" />;
 }
 
 export default function RootLayout({ children }) {
@@ -50,6 +50,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${inter.variable} ${poppins.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
     >
+      <meta name="apple-mobile-web-app-title" content="FieldTalk" />
       <body className={inter.className}>
         <AuthProvider>{children}</AuthProvider>
       </body>
