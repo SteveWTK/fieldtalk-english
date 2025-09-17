@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "FieldTalk English",
+  "short_name": "FieldTalk",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
