@@ -21,6 +21,7 @@ import { useAuth } from "@/components/AuthProvider";
 
 export default function AIWritingExercise({
   prompt,
+  example,
   lessonId,
   onComplete,
   minWords = 50,
@@ -313,7 +314,10 @@ export default function AIWritingExercise({
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                 {t("writing_task")}
               </h3>
-              <p className="text-gray-700 dark:text-gray-300">{prompt}</p>
+              <p className="text-gray-800 dark:text-gray-300 pb-2">{prompt}</p>
+              <p className="text-accent-800 dark:text-accent-300 font-bold">
+                {example}
+              </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {t("write_words")} {minWords}-{maxWords} {t("words")}
               </p>

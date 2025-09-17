@@ -855,6 +855,7 @@ function DynamicLessonContent() {
                 currentStepData.prompt
               }
               context={currentStepData.context}
+              example={currentStepData.example}
               lessonId={lessonId}
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
