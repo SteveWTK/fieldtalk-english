@@ -77,7 +77,7 @@ export default function VocabularyItem({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800  p-4 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between mb-2">
         <div>
           <span className="font-semibold text-gray-900 dark:text-white text-lg">
@@ -90,7 +90,7 @@ export default function VocabularyItem({
           )} */}
         </div>
         <button
-          className="text-accent-600 hover:text-accent-700 disabled:opacity-50"
+          className="text-accent-600 hover:text-accent-700 hover:scale-105 disabled:opacity-50"
           onClick={async () => {
             const wordText = item.word || item.english;
             if (audioUrl) {
@@ -111,11 +111,11 @@ export default function VocabularyItem({
       <p className="text-gray-600 dark:text-gray-300 mb-1">
         {item.translation}
       </p>
-      {item.example && (
+      {/* {item.example && (
         <p className="text-sm text-gray-500 dark:text-gray-400 italic">
           {t("example")}: {item.example}
         </p>
-      )}
+      )} */}
       {item.tip && (
         <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 text-black dark:text-gray-200 rounded text-sm">
           <strong>{t("tip")}:</strong> {item.tip}
