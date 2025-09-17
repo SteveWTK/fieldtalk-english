@@ -335,10 +335,10 @@ export default function FieldTalkPresentation() {
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="mb-8">
-              <div className="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 {/* <Globe className="w-8 h-8 md:w-12 md:h-12 text-white" /> */}
               </div>
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent mb-4">
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent mb-4">
                 {currentSlideData.title}
               </h1>
               <h2 className="text-lg md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 mb-6">
