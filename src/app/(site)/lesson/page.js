@@ -242,42 +242,44 @@ function PlayerLessonsMenu() {
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                 }`}
               >
-                {/* ${currentPillar.color_gradient}  */}
-                <div
-                  className={`w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4`}
-                >
-                  <IconComponent className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {pillar.display_name}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  {pillar.description_pt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Level {pillar.level}
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {pillar.progress}%
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <AnimatedProgressBar
-                    value={pillar.progress}
-                    maxValue={100}
-                    color="bg-gradient-to-r from-accent-600 to-accent-400"
-                    showPercentage={false}
-                    animationDelay={index * 200 + 500}
-                  />
-                </div>
+                <Link href="#lessons">
+                  {/* ${currentPillar.color_gradient}  */}
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4`}
+                  >
+                    <IconComponent className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    {pillar.display_name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    {pillar.description_pt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Level {pillar.level}
+                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      {pillar.progress}%
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <AnimatedProgressBar
+                      value={pillar.progress}
+                      maxValue={100}
+                      color="bg-gradient-to-r from-accent-600 to-accent-400"
+                      showPercentage={false}
+                      animationDelay={index * 200 + 500}
+                    />
+                  </div>
+                </Link>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8" id="lessons">
         {/* Current Pillar Lessons */}
         <div className="lg:col-span-2">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">

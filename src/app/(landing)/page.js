@@ -572,9 +572,9 @@ export default function AcademyLandingPage() {
       </section> */}
 
       {/* Call to Action Final */}
-      <section className="py-10 bg-gradient-to-r from-primary-600 to-accent-600">
+      <section className="pt-8 pb-4 bg-gradient-to-r from-primary-600 to-accent-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-bold text-white">
             Transforme o Futuro dos Seus Jogadores
           </h2>
           <p className="text-xl text-green-100 mb-4">

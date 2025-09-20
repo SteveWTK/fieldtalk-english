@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-8 border-t border-gray-700 ">
+    <footer className="bg-gray-900 text-white py-3 border-t border-gray-700 ">
       <div className="px-8 flex flex-col md:flex-row justify-between items-center">
         <p className="text-gray-400 text-sm">
           © 2025 FieldTalk English. All rights reserved.
