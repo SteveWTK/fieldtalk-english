@@ -315,11 +315,11 @@ export default function AIListeningChallenge({
               </div>
 
               {/* Context hint */}
-              {currentClip.context && (
+              {/* {currentClip.context && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 italic mb-4">
                   {currentClip.context}
                 </p>
-              )}
+              )} */}
 
               {/* Play Audio Button */}
               <button

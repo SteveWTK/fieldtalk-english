@@ -178,6 +178,11 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
       "right-winger": { x: 340, y: 200 },
       striker: { x: 200, y: 120 },
       goal: { x: 200, y: 10 },
+      "penalty-box": { x: 50, y: 87 },
+      "centre-circle": { x: 50, y: 50 },
+      "goal-posts": { x: 50, y: 97 },
+      corner: { x: 25, y: 575 },
+      "touch-line": { x: 92, y: 75 },
     };
 
     const target = targetPositions[targetId];
@@ -623,6 +628,24 @@ export default function InteractiveGame({ gameConfig, lessonId, onComplete }) {
               GK
             </text>
           </g>
+          {/* corner */}
+          {/* <g onClick={() => handleTargetClick("corner")}>
+            <circle
+              cx="25"
+              cy="575"
+              r="15"
+              fill="#475569"
+              stroke="white"
+              strokeWidth="2"
+              className="cursor-pointer hover:fill-primary-600 transition-colors"
+            />
+            <text
+              x="200"
+              y="555"
+              textAnchor="middle"
+              className="text-sm font-bold fill-white pointer-events-none"
+            ></text>
+          </g> */}
 
           {/* Animated ball */}
           <g

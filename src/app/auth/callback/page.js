@@ -57,7 +57,7 @@ export default function AuthCallbackPage() {
 
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
         <div className="text-center bg-white p-8 rounded-xl shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Authentication Error
@@ -66,7 +66,7 @@ export default function AuthCallbackPage() {
           <div className="space-y-2">
             <button
               onClick={() => router.push("/signin")}
-              className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              className="block w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700"
             >
               Try Again
             </button>
@@ -83,10 +83,10 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
       <div className="text-center">
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
             <Globe className="w-6 h-6 text-white" />
           </div>
           <span className="text-2xl font-bold text-gray-900">
@@ -95,7 +95,7 @@ export default function AuthCallbackPage() {
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-lg">
-          <Loader className="w-8 h-8 text-blue-600 mx-auto mb-4 animate-spin" />
+          <Loader className="w-8 h-8 text-primary-600 mx-auto mb-4 animate-spin" />
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
             {status === "success" ? "Success!" : "Completing your sign in..."}
           </h1>

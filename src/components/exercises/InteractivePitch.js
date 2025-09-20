@@ -284,7 +284,7 @@ export default function InteractivePitch({
             </div>
             <button
               onClick={() => setShowTranslations(!showTranslations)}
-              className="text-accent-700 dark:text-accent-400 hover:text-accent-800 dark:hover:text-accent-300 text-sm flex items-center space-x-1"
+              className="font-bold text-accent-600 dark:text-accent-400 hover:text-accent-800 dark:hover:text-accent-300 text-sm flex items-center space-x-1"
             >
               <Info className="w-4 h-4" />
               <span>

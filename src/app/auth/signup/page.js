@@ -146,14 +146,14 @@ export default function SignUpPage() {
         <div className="max-w-2xl w-full">
           {/* Logo and Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
+            {/* <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
-                {/* <Globe className="w-6 h-6 text-white" /> */}
+                <Globe className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
                 FieldTalk English
               </span>
-            </div>
+            </div> */}
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Join FieldTalk
             </h1>
@@ -197,7 +197,7 @@ export default function SignUpPage() {
               Already have an account?{" "}
               <Link
                 href="/auth/signin"
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-primary-600 hover:text-primary-700 font-medium"
               >
                 Sign in
               </Link>
@@ -215,7 +215,7 @@ export default function SignUpPage() {
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
               <Globe className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -254,7 +254,7 @@ export default function SignUpPage() {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="Your full name"
               />
             </div>
@@ -270,7 +270,7 @@ export default function SignUpPage() {
                     value={formData.position}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="Goalkeeper">Goalkeeper</option>
@@ -289,7 +289,7 @@ export default function SignUpPage() {
                     value={formData.nationality}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     placeholder="Your nationality"
                   />
                 </div>
@@ -308,7 +308,7 @@ export default function SignUpPage() {
                     value={formData.clubName}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     placeholder="Your club or organization"
                   />
                 </div>
@@ -323,7 +323,7 @@ export default function SignUpPage() {
                     onChange={handleChange}
                     placeholder="e.g., Head Coach, Academy Director"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -339,7 +339,7 @@ export default function SignUpPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="your.email@example.com"
               />
             </div>
@@ -355,7 +355,7 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="Minimum 6 characters"
               />
             </div>
@@ -374,7 +374,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-green-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <span>{loading ? "Creating account..." : "Create Account"}</span>
               {!loading && <ArrowRight className="w-4 h-4" />}
@@ -385,8 +385,8 @@ export default function SignUpPage() {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Already have an account?{" "}
               <Link
-                href="/auth/signin"
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                href="/signin"
+                className="text-accent-600 hover:primary-accent-700 font-medium"
               >
                 Sign in
               </Link>

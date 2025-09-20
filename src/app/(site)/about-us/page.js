@@ -59,6 +59,10 @@ export default function AboutUsPage() {
       value4Title: "Continuous Improvement",
       value4Text:
         "We constantly update our content based on the latest football terminology, tactics, and industry requirements.",
+      value5Title: "English for everyone",
+      value5Text:
+        "Developing special programs for soccer schools in underprivileged communities.",
+
       joinUsTitle: "Start Your Journey",
       joinUsText:
         "Whether you're an aspiring professional player, a youth academy talent, or already playing professionally and looking to make the jump to international football, FieldTalk is your pathway to success.",
@@ -73,7 +77,7 @@ export default function AboutUsPage() {
         "Capacitamos jogadores de futebol do Brasil e outros países não falantes de inglês a alcançar seus sonhos de jogar internacionalmente, fornecendo treinamento especializado em inglês adaptado ao ambiente do futebol profissional.",
       visionTitle: "Nossa Visão",
       visionText:
-        "Um mundo onde o idioma nunca é uma barreira para o talento no futebol—onde cada jogador aspirante tem as habilidades em inglês necessárias para se comunicar com confiança com treinadores, companheiros de equipe e mídia no Reino Unido, Europa e mercados internacionais de futebol.",
+        "Um mundo onde o idioma nunca é uma barreira para o talento do futebol - onde cada jogador aspirante, não importando seu país de origem ou destino, tem as habilidades necessárias para se comunicar com confiança com treinadores, companheiros de equipe e mídia no Reino Unido, Europa e mercados internacionais do futebol.",
       whatMakesUsSpecial: "O Que Nos Torna Especiais",
       feature1Title: "Inglês Específico para Futebol",
       feature1Text:
@@ -115,6 +119,9 @@ export default function AboutUsPage() {
       value4Title: "Melhoria Contínua",
       value4Text:
         "Atualizamos constantemente nosso conteúdo com base na terminologia, táticas e requisitos mais recentes da indústria do futebol.",
+      value5Title: "Inglês para todos",
+      value5Text:
+        "Desenvolver programas especiais para escolinhas de futebol em comunidades carentes.",
       joinUsTitle: "Comece Sua Jornada",
       joinUsText:
         "Seja você um jogador profissional aspirante, um talento de academia juvenil, ou já jogando profissionalmente e buscando dar o salto para o futebol internacional, o FieldTalk é seu caminho para o sucesso.",
@@ -371,8 +378,9 @@ export default function AboutUsPage() {
             {[
               { title: copy.value1Title, text: copy.value1Text, icon: "🌿" },
               { title: copy.value2Title, text: copy.value2Text, icon: "🎓" },
-              { title: copy.value3Title, text: copy.value3Text, icon: "🌐" },
+              // { title: copy.value3Title, text: copy.value3Text, icon: "🌐" },
               { title: copy.value4Title, text: copy.value4Text, icon: "🚀" },
+              { title: copy.value5Title, text: copy.value5Text, icon: "" },
             ].map((value, index) => (
               <div
                 key={index}
