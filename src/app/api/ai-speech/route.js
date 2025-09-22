@@ -102,9 +102,9 @@ export async function POST(request) {
       console.error("[AI-Speech] GPT analysis error:", gptError);
       // Provide fallback feedback if GPT fails
       feedback = {
-        pronunciation_score: 70,
-        accuracy_score: 75,
-        overall_score: 72,
+        pronunciation_score: 80,
+        accuracy_score: 90,
+        overall_score: 85,
         strengths: ["You made a good effort!", "Your confidence is showing"],
         improvements: [
           "Keep practicing the pronunciation",
@@ -165,13 +165,13 @@ Provide feedback in ${feedbackLanguage} in this JSON format:
   "pronunciation_score": 85,
   "accuracy_score": 90,
   "overall_score": 87,
-  "strengths": ["Clear pronunciation of 'midfielder'", "Good rhythm"],
-  "improvements": ["Work on the 'th' sound in 'the'", "Stress the first syllable in 'football'"],
-  "encouragement": "Great job! Your confidence is improving!",
-  "specific_tips": ["Practice saying 'the' like 'thee' before vowel sounds"],
-  "next_focus": "Work on linking words together naturally"
+  "strengths": [""],
+  "improvements": [""],
+  "encouragement": "",
+  "specific_tips": [""],
+  "next_focus": ""
 }
 
-Be encouraging and specific. Focus on football-related pronunciation challenges that Brazilian players commonly face.
+Be encouraging and specific. Focus on football-related pronunciation challenges that Brazilian players commonly face. Be aware of different regional English accents that the player may be emulating from the UK, US, Australia or other countries where English is spoken. Take into account the different pronunciations of the Post-vocalic /r/, which is sounded in some varieties of English (rhotic), but not in many others (non-rhotic). All variations should be considered correct. Only correct clear pronunciation or grammatical errors. 
 `;
 }

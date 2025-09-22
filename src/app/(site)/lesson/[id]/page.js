@@ -54,6 +54,7 @@ import InteractiveGame from "@/components/exercises/InteractiveGame";
 import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
 import AISpeechPractice from "@/components/exercises/AISpeechPractice";
 import MemoryMatch from "@/components/exercises/MemoryMatch";
+import VideoPlayer from "@/components/exercises/VideoPlayer";
 import Link from "next/link";
 
 function DynamicLessonContent() {
@@ -773,7 +774,14 @@ function DynamicLessonContent() {
                 </div>
               )} */}
 
-              {currentStepData.image_url && (
+              {currentStepData.video_url ? (
+                <VideoPlayer
+                  title={currentStepData.title}
+                  videoUrl={currentStepData.video_url}
+                  description={currentStepData.video_description}
+                  className="mb-4"
+                />
+              ) : currentStepData.image_url ? (
                 <img
                   src={currentStepData.image_url}
                   alt="Scenario"
@@ -782,7 +790,7 @@ function DynamicLessonContent() {
                     e.target.style.display = "none";
                   }}
                 />
-              )}
+              ) : null}
 
               {/* Auto-translated content */}
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
@@ -2518,7 +2526,14 @@ function DynamicLessonContent() {
                 </div>
               )} */}
 
-              {currentStepData.image_url && (
+              {currentStepData.video_url ? (
+                <VideoPlayer
+                  title={currentStepData.title}
+                  videoUrl={currentStepData.video_url}
+                  description={currentStepData.video_description}
+                  className="mb-4"
+                />
+              ) : currentStepData.image_url ? (
                 <img
                   src={currentStepData.image_url}
                   alt="Scenario"
@@ -2527,7 +2542,7 @@ function DynamicLessonContent() {
                     e.target.style.display = "none";
                   }}
                 />
-              )}
+              ) : null}
 
               <Trophy className="w-16 h-16 text-[#d97706] mx-auto mb-4" />
 
@@ -2599,6 +2614,16 @@ function DynamicLessonContent() {
               </div>
             </div>
           </div>
+        );
+
+      case "video":
+        return (
+          <VideoPlayer
+            title={currentStepData.title}
+            videoUrl={currentStepData.video_url}
+            description={currentStepData.description}
+            className="mb-6"
+          />
         );
 
       default:
