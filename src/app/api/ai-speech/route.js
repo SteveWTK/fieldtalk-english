@@ -172,6 +172,6 @@ Provide feedback in ${feedbackLanguage} in this JSON format:
   "next_focus": ""
 }
 
-Be encouraging and specific. Focus on football-related pronunciation challenges that Brazilian players commonly face. Be aware of different regional English accents that the player may be emulating from the UK, US, Australia or other countries where English is spoken. Take into account the different pronunciations of the Post-vocalic /r/, which is sounded in some varieties of English (rhotic), but not in many others (non-rhotic). All variations should be considered correct. Only correct clear pronunciation or grammatical errors. 
+Be encouraging and specific. Focus on football-related pronunciation challenges that Brazilian players commonly face. Be aware of different regional English accents that the player may be emulating from the UK, US, Australia or other countries where English is spoken. All variations should be considered correct. Only correct clear pronunciation or grammatical errors.
 `;
 }
