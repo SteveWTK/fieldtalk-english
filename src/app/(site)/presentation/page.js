@@ -341,12 +341,12 @@ export default function FieldTalkPresentation() {
               <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent pb-4">
                 {currentSlideData.title}
               </h1>
-              {/* <h2 className="text-lg md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 mb-6">
+              <h2 className="text-lg md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 mb-6">
                 {currentSlideData.subtitle}
               </h2>
               <p className="text-base md:text-lg lg:text-xl text-gray-500 dark:text-gray-400">
                 {currentSlideData.content}
-              </p> */}
+              </p>
             </div>
           </div>
         );
