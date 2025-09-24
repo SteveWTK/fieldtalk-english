@@ -400,7 +400,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                 className="flex items-center gap-2 px-6 py-3 bg-white text-accent-600 rounded-lg font-bold hover:bg-orange-50 transition-colors"
               >
                 <RefreshCw className="w-5 h-5" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                Comece de Novo
               </button>
             </div>
           </div>
