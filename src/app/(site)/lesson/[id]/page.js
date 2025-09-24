@@ -778,6 +778,7 @@ function DynamicLessonContent() {
                 <VideoPlayer
                   title={currentStepData.title}
                   videoUrl={currentStepData.video_url}
+                  thumbnailUrl={currentStepData.thumbnail_url}
                   description={currentStepData.video_description}
                   className="mb-4"
                 />

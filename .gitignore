@@ -45,3 +45,20 @@ next-env.d.ts
 *.download
 *_files/
 *Supabase_files/
+
+echo "public/videos/*.mp4" >> .gitignore
+echo "public/videos/*.mov" >> .gitignore
+echo "public/videos/*.avi" >> .gitignore
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wmv
+*.flv
+public/videos/
+public/audio/*.mp4
+
+# Keep audio files under 10MB only
+!public/audio/*.mp3
