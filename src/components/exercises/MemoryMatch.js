@@ -400,7 +400,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                 className="flex items-center gap-2 px-6 py-3 bg-white text-accent-600 rounded-lg font-bold hover:bg-orange-50 transition-colors"
               >
                 <RefreshCw className="w-5 h-5" />
-                Play Again
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -436,7 +436,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
           className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
-          Start Over
+          Comece de novo
         </button>
       )}
     </div>

@@ -899,7 +899,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -949,7 +949,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -987,7 +987,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -1060,7 +1060,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -1141,7 +1141,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>
@@ -1184,7 +1184,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Start Over
+                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
               </button>
             </div>
           </div>

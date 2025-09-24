@@ -134,7 +134,7 @@ const VideoPlayer = ({
             >
               <div className="bg-white/90 backdrop-blur-sm rounded-full p-6 shadow-2xl transform transition-transform hover:scale-110">
                 <Play
-                  className="w-12 h-12 text-green-600 ml-1"
+                  className="w-12 h-12 text-accent-600 ml-1"
                   fill="currentColor"
                 />
               </div>
@@ -153,7 +153,7 @@ const VideoPlayer = ({
             onChange={handleSeek}
             className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, #10b981 0%, #10b981 ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb 100%)`,
+              background: `linear-gradient(to right, #4d7c0f 0%, #4d7c0f ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb 100%)`,
             }}
           />
           <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[80px] text-right">
@@ -167,12 +167,12 @@ const VideoPlayer = ({
             className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             aria-label="Rewind"
           >
-            <RotateCcw className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <RotateCcw className="w-5 h-5 text-accent-700 dark:text-accent-300" />
           </button>
 
           <button
             onClick={handlePlayPause}
-            className="p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            className="p-4 bg-accent-600 hover:bg-accent-700 text-white rounded-lg transition-colors"
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
@@ -188,9 +188,9 @@ const VideoPlayer = ({
             aria-label={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? (
-              <VolumeX className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              <VolumeX className="w-5 h-5 text-accent-700 dark:text-accent-300" />
             ) : (
-              <Volume2 className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              <Volume2 className="w-5 h-5 text-accent-700 dark:text-accent-300" />
             )}
           </button>
         </div>
