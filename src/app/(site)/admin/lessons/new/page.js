@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
-import { createLesson, getAllPillarsForCMS } from "@/lib/supabase/lesson-queries";
+import {
+  createLesson,
+  getAllPillarsForCMS,
+} from "@/lib/supabase/lesson-queries";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -23,8 +27,8 @@ function NewLessonContent() {
     is_active: false,
     content: {
       type: "multi_step",
-      steps: []
-    }
+      steps: [],
+    },
   });
 
   useEffect(() => {
@@ -186,7 +190,9 @@ function NewLessonContent() {
                 <input
                   type="number"
                   value={formData.xp_reward}
-                  onChange={(e) => updateField("xp_reward", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("xp_reward", parseInt(e.target.value) || 0)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -198,7 +204,9 @@ function NewLessonContent() {
                 <input
                   type="number"
                   value={formData.sort_order}
-                  onChange={(e) => updateField("sort_order", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("sort_order", parseInt(e.target.value) || 0)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -223,7 +231,9 @@ function NewLessonContent() {
                 <input
                   type="checkbox"
                   checked={formData.under_construction || false}
-                  onChange={(e) => updateField("under_construction", e.target.checked)}
+                  onChange={(e) =>
+                    updateField("under_construction", e.target.checked)
+                  }
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -235,7 +245,9 @@ function NewLessonContent() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Next Step:</strong> After creating the lesson, you'll be able to add steps (scenarios, vocabulary, exercises, etc.) in the lesson editor.
+                  <strong>Next Step:</strong> After creating the lesson,
+                  you&apos;ll be able to add steps (scenarios, vocabulary,
+                  exercises, etc.) in the lesson editor.
                 </p>
               </div>
             </div>

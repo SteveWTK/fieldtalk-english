@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,7 +15,11 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { getLessonByIdForCMS, updateLesson, getAllPillarsForCMS } from "@/lib/supabase/lesson-queries";
+import {
+  getLessonByIdForCMS,
+  updateLesson,
+  getAllPillarsForCMS,
+} from "@/lib/supabase/lesson-queries";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -65,7 +70,7 @@ function LessonEditorContent() {
       setLoading(true);
       const [lessonData, pillarsData] = await Promise.all([
         getLessonByIdForCMS(lessonId),
-        getAllPillarsForCMS()
+        getAllPillarsForCMS(),
       ]);
       setLesson(lessonData);
       setPillars(pillarsData);
@@ -175,7 +180,12 @@ function LessonEditorContent() {
       case "ai_writing":
         return <AIWritingStepForm {...commonProps} />;
       case "memory_match":
-        return <MemoryMatchStepForm {...commonProps} allSteps={lesson.content?.steps || []} />;
+        return (
+          <MemoryMatchStepForm
+            {...commonProps}
+            allSteps={lesson.content?.steps || []}
+          />
+        );
       case "completion":
         return <CompletionStepForm {...commonProps} />;
       case "interactive_pitch":
@@ -193,7 +203,9 @@ function LessonEditorContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading lesson...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading lesson...
+          </p>
         </div>
       </div>
     );
@@ -243,7 +255,9 @@ function LessonEditorContent() {
                     const parsed = JSON.parse(jsonText);
                     updateLessonField("content", parsed);
                   } catch (err) {
-                    alert("Invalid JSON. Please fix errors before switching modes.");
+                    alert(
+                      "Invalid JSON. Please fix errors before switching modes."
+                    );
                     return;
                   }
                 } else {
@@ -293,7 +307,7 @@ function LessonEditorContent() {
               onChange={(e) => setJsonText(e.target.value)}
               rows={30}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
-              style={{ fontFamily: 'monospace' }}
+              style={{ fontFamily: "monospace" }}
             />
           </div>
         ) : (
@@ -320,7 +334,9 @@ function LessonEditorContent() {
                   </label>
                   <select
                     value={lesson.pillar_id || ""}
-                    onChange={(e) => updateLessonField("pillar_id", e.target.value)}
+                    onChange={(e) =>
+                      updateLessonField("pillar_id", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select a pillar</option>
@@ -337,7 +353,9 @@ function LessonEditorContent() {
                   </label>
                   <textarea
                     value={lesson.description || ""}
-                    onChange={(e) => updateLessonField("description", e.target.value)}
+                    onChange={(e) =>
+                      updateLessonField("description", e.target.value)
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -348,7 +366,9 @@ function LessonEditorContent() {
                   </label>
                   <textarea
                     value={lesson.description_pt || ""}
-                    onChange={(e) => updateLessonField("description_pt", e.target.value)}
+                    onChange={(e) =>
+                      updateLessonField("description_pt", e.target.value)
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -359,7 +379,9 @@ function LessonEditorContent() {
                   </label>
                   <select
                     value={lesson.difficulty || ""}
-                    onChange={(e) => updateLessonField("difficulty", e.target.value)}
+                    onChange={(e) =>
+                      updateLessonField("difficulty", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select difficulty</option>
@@ -377,7 +399,12 @@ function LessonEditorContent() {
                   <input
                     type="number"
                     value={lesson.xp_reward || 0}
-                    onChange={(e) => updateLessonField("xp_reward", parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateLessonField(
+                        "xp_reward",
+                        parseInt(e.target.value) || 0
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -388,7 +415,12 @@ function LessonEditorContent() {
                   <input
                     type="number"
                     value={lesson.sort_order || 0}
-                    onChange={(e) => updateLessonField("sort_order", parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateLessonField(
+                        "sort_order",
+                        parseInt(e.target.value) || 0
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -397,7 +429,9 @@ function LessonEditorContent() {
                     <input
                       type="checkbox"
                       checked={lesson.is_active || false}
-                      onChange={(e) => updateLessonField("is_active", e.target.checked)}
+                      onChange={(e) =>
+                        updateLessonField("is_active", e.target.checked)
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -408,7 +442,12 @@ function LessonEditorContent() {
                     <input
                       type="checkbox"
                       checked={lesson.under_construction || false}
-                      onChange={(e) => updateLessonField("under_construction", e.target.checked)}
+                      onChange={(e) =>
+                        updateLessonField(
+                          "under_construction",
+                          e.target.checked
+                        )
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -459,7 +498,9 @@ function LessonEditorContent() {
                   >
                     <div
                       className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-t-lg cursor-pointer"
-                      onClick={() => setExpandedStep(expandedStep === index ? null : index)}
+                      onClick={() =>
+                        setExpandedStep(expandedStep === index ? null : index)
+                      }
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
@@ -469,7 +510,8 @@ function LessonEditorContent() {
                               Step {index + 1}
                             </span>
                             <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              {STEP_TYPES.find((t) => t.value === step.type)?.label || step.type}
+                              {STEP_TYPES.find((t) => t.value === step.type)
+                                ?.label || step.type}
                             </span>
                           </div>
                           <p className="text-sm text-gray-900 dark:text-white mt-1">
@@ -505,7 +547,10 @@ function LessonEditorContent() {
 
                 {(lesson.content?.steps || []).length === 0 && (
                   <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <p>No steps yet. Click "+ Add Step" to create your first step.</p>
+                    <p>
+                      No steps yet. Click &quot;+ Add Step&quot; to create your
+                      first step.
+                    </p>
                   </div>
                 )}
               </div>
