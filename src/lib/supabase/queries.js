@@ -200,13 +200,38 @@ export async function getLessonById(lessonId) {
   }
 }
 
-// Get all lessons (for general use)
-export async function getAllLessons() {
+// Get all lessons (for general use) - filters by user's client_type
+export async function getAllLessons(userId) {
   try {
+    // Get user's client_type
+    const { data: user, error: userError } = await supabase
+      .from("players")
+      .select("client_type, user_type")
+      .eq("id", userId)
+      .single();
+
+    if (userError) throw userError;
+
+    // Platform admins see everything
+    if (user.user_type === "platform_admin") {
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("*")
+        .order("sort_order", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    // Filter by target_audience based on client_type
+    const audience = user.client_type === "student" ? ["schools", "both"] : ["players", "both"];
+
     const { data, error } = await supabase
       .from("lessons")
       .select("*")
-      .order("order_index", { ascending: true });
+      .in("target_audience", audience)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
 
     if (error) {
       console.error("Error fetching lessons:", error);

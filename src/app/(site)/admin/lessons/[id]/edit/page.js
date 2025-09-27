@@ -30,6 +30,7 @@ import AIGapFillStepForm from "@/components/admin/step-forms/AIGapFillStepForm";
 import AIWritingStepForm from "@/components/admin/step-forms/AIWritingStepForm";
 import MemoryMatchStepForm from "@/components/admin/step-forms/MemoryMatchStepForm";
 import CompletionStepForm from "@/components/admin/step-forms/CompletionStepForm";
+import ConversationVoteStepForm from "@/components/admin/step-forms/ConversationVoteStepForm";
 import JSONStepForm from "@/components/admin/step-forms/JSONStepForm";
 
 function LessonEditorContent() {
@@ -58,6 +59,7 @@ function LessonEditorContent() {
     { value: "memory_match", label: "Memory Match" },
     { value: "ai_conversation", label: "AI Conversation" },
     { value: "ai_listening_challenge", label: "AI Listening Challenge" },
+    { value: "conversation_vote", label: "Conversation Vote" },
     { value: "completion", label: "Completion" },
   ];
 
@@ -186,6 +188,8 @@ function LessonEditorContent() {
             allSteps={lesson.content?.steps || []}
           />
         );
+      case "conversation_vote":
+        return <ConversationVoteStepForm {...commonProps} />;
       case "completion":
         return <CompletionStepForm {...commonProps} />;
       case "interactive_pitch":
@@ -390,6 +394,20 @@ function LessonEditorContent() {
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
                     <option value="Expert">Expert</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Target Audience
+                  </label>
+                  <select
+                    value={lesson.target_audience || "players"}
+                    onChange={(e) => updateLessonField("target_audience", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="players">Players (Academies/Clubs)</option>
+                    <option value="schools">Schools (Students)</option>
+                    <option value="both">Both</option>
                   </select>
                 </div>
                 <div>

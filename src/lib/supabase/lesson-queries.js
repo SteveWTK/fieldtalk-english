@@ -65,7 +65,8 @@ export async function createLesson(lessonData) {
       'unit_number',
       'lesson_number',
       'level_name',
-      'under_construction'
+      'under_construction',
+      'target_audience'
     ];
 
     const cleanedData = {};
@@ -118,7 +119,8 @@ export async function updateLesson(lessonId, lessonData) {
       'unit_number',
       'lesson_number',
       'level_name',
-      'under_construction'
+      'under_construction',
+      'target_audience'
     ];
 
     const cleanedData = {};
@@ -172,7 +174,8 @@ export async function cloneLesson(lessonId) {
     const cloneData = {
       ...original,
       id: undefined,
-      pillar_id: undefined,
+      pillar: undefined,
+      pillar_id: original.pillar_id,
       title: `${original.title} (Copy)`,
       is_active: false,
       created_at: undefined,

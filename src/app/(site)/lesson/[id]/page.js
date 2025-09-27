@@ -55,6 +55,7 @@ import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
 import AISpeechPractice from "@/components/exercises/AISpeechPractice";
 import MemoryMatch from "@/components/exercises/MemoryMatch";
 import VideoPlayer from "@/components/exercises/VideoPlayer";
+import ConversationVote from "@/components/ConversationVote";
 import Link from "next/link";
 
 function DynamicLessonContent() {
@@ -2497,6 +2498,14 @@ function DynamicLessonContent() {
               setCompletedSteps((prev) => new Set([...prev, currentStep]));
               setStepCompleted(true);
             }}
+          />
+        );
+
+      case "conversation_vote":
+        return (
+          <ConversationVote
+            step={currentStepData}
+            onComplete={() => handleNext()}
           />
         );
 

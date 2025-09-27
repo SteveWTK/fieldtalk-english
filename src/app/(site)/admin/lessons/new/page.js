@@ -24,6 +24,7 @@ function NewLessonContent() {
     difficulty: "Beginner",
     xp_reward: 100,
     sort_order: 0,
+    target_audience: "players",
     is_active: false,
     content: {
       type: "multi_step",
@@ -153,6 +154,24 @@ function NewLessonContent() {
                   <option value="Advanced">Advanced</option>
                   <option value="Expert">Expert</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Target Audience
+                </label>
+                <select
+                  value={formData.target_audience}
+                  onChange={(e) => updateField("target_audience", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="players">Players (Academies/Clubs)</option>
+                  <option value="schools">Schools (Students)</option>
+                  <option value="both">Both</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Who should see this lesson?
+                </p>
               </div>
             </div>
 
