@@ -103,24 +103,7 @@ CREATE TABLE IF NOT EXISTS topic_votes (
 CREATE INDEX IF NOT EXISTS idx_topic_votes_topic_id ON topic_votes(topic_id);
 CREATE INDEX IF NOT EXISTS idx_topic_votes_player_id ON topic_votes(player_id);
 
--- 5. Conversation attendance table
-CREATE TABLE IF NOT EXISTS conversation_attendance (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-  player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
-  conversation_date DATE NOT NULL,
-  topic_title TEXT,
-  attended BOOLEAN DEFAULT false,
-  notes TEXT,
-  marked_by UUID REFERENCES players(id), -- Teacher who marked attendance
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(class_id, player_id, conversation_date)
-);
 
-CREATE INDEX IF NOT EXISTS idx_conversation_attendance_class_id ON conversation_attendance(class_id);
-CREATE INDEX IF NOT EXISTS idx_conversation_attendance_player_id ON conversation_attendance(player_id);
-CREATE INDEX IF NOT EXISTS idx_conversation_attendance_date ON conversation_attendance(conversation_date);
 
 -- =====================================================
 -- PHASE 3: ROW LEVEL SECURITY POLICIES

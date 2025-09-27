@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -158,10 +159,14 @@ function NewAcademyContent() {
               </label>
               <select
                 value={formData.subscription_type}
-                onChange={(e) => updateField("subscription_type", e.target.value)}
+                onChange={(e) =>
+                  updateField("subscription_type", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="per_player">Per Player (Pay for each player added)</option>
+                <option value="per_player">
+                  Per Player (Pay for each player added)
+                </option>
                 <option value="unlimited">Unlimited (Fixed annual fee)</option>
                 <option value="trial">Trial (Free for limited time)</option>
               </select>
@@ -185,12 +190,18 @@ function NewAcademyContent() {
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Next Steps:</strong> After creating the academy, you&apos;ll need to:
+                  <strong>Next Steps:</strong> After creating the academy,
+                  you&apos;ll need to:
                 </p>
                 <ul className="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
                   <li>Create an academy admin user account</li>
-                  <li>Assign them to this academy (set academy_id in players table)</li>
-                  <li>They can then create player accounts (triggers billing)</li>
+                  <li>
+                    Assign them to this academy (set academy_id in players
+                    table)
+                  </li>
+                  <li>
+                    They can then create player accounts (triggers billing)
+                  </li>
                   <li>Players will see player-focused lessons</li>
                 </ul>
               </div>

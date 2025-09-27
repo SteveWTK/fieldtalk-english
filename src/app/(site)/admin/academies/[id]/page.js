@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -84,7 +85,9 @@ function AcademyDetailContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading academy...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading academy...
+          </p>
         </div>
       </div>
     );
@@ -94,7 +97,9 @@ function AcademyDetailContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Academy not found</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Academy not found
+          </p>
           <button
             onClick={() => router.push("/admin/academies")}
             className="text-blue-600 hover:text-blue-700"
@@ -137,19 +142,23 @@ function AcademyDetailContent() {
                   )}
                   {academy.subscription_type && (
                     <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded">
-                      {academy.subscription_type.replace('_', ' ')}
+                      {academy.subscription_type.replace("_", " ")}
                     </span>
                   )}
                 </div>
               </div>
             </div>
             <button
-              onClick={() => editing ? handleSave() : setEditing(true)}
+              onClick={() => (editing ? handleSave() : setEditing(true))}
               disabled={saving}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
-              {editing ? (saving ? "Saving..." : "Save Changes") : "Edit Academy"}
+              {editing
+                ? saving
+                  ? "Saving..."
+                  : "Save Changes"
+                : "Edit Academy"}
             </button>
           </div>
         </div>
@@ -158,7 +167,9 @@ function AcademyDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Players</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Total Players
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.totalPlayers || 0}
                 </p>
@@ -172,7 +183,9 @@ function AcademyDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Players</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Active Players
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.activePlayers || 0}
                 </p>
@@ -186,7 +199,9 @@ function AcademyDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Lessons Completed</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Lessons Completed
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.totalLessonsCompleted || 0}
                 </p>
@@ -200,7 +215,9 @@ function AcademyDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Average XP</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Average XP
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.averageXP || 0}
                 </p>
@@ -245,7 +262,9 @@ function AcademyDetailContent() {
                     <input
                       type="text"
                       value={editData.name}
-                      onChange={(e) => setEditData({...editData, name: e.target.value})}
+                      onChange={(e) =>
+                        setEditData({ ...editData, name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -257,7 +276,9 @@ function AcademyDetailContent() {
                       <input
                         type="text"
                         value={editData.city || ""}
-                        onChange={(e) => setEditData({...editData, city: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({ ...editData, city: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -268,7 +289,9 @@ function AcademyDetailContent() {
                       <input
                         type="text"
                         value={editData.country || ""}
-                        onChange={(e) => setEditData({...editData, country: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({ ...editData, country: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -281,7 +304,12 @@ function AcademyDetailContent() {
                       <input
                         type="email"
                         value={editData.contact_email || ""}
-                        onChange={(e) => setEditData({...editData, contact_email: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            contact_email: e.target.value,
+                          })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -292,7 +320,12 @@ function AcademyDetailContent() {
                       <input
                         type="tel"
                         value={editData.contact_phone || ""}
-                        onChange={(e) => setEditData({...editData, contact_phone: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            contact_phone: e.target.value,
+                          })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -301,7 +334,12 @@ function AcademyDetailContent() {
                     <input
                       type="checkbox"
                       checked={editData.is_active}
-                      onChange={(e) => setEditData({...editData, is_active: e.target.checked})}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          is_active: e.target.checked,
+                        })
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded"
                     />
                     <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -315,7 +353,9 @@ function AcademyDetailContent() {
                     <div className="flex items-start gap-3">
                       <MapPin className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Location</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Location
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {academy.city}, {academy.country}
                         </p>
@@ -326,7 +366,9 @@ function AcademyDetailContent() {
                     <div className="flex items-start gap-3">
                       <Mail className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Contact Email</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Contact Email
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {academy.contact_email}
                         </p>
@@ -337,7 +379,9 @@ function AcademyDetailContent() {
                     <div className="flex items-start gap-3">
                       <Phone className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Contact Phone</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Contact Phone
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {academy.contact_phone}
                         </p>
@@ -347,7 +391,9 @@ function AcademyDetailContent() {
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Created</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Created
+                      </p>
                       <p className="text-lg font-medium text-gray-900 dark:text-white">
                         {new Date(academy.created_at).toLocaleDateString()}
                       </p>
@@ -375,7 +421,9 @@ function AcademyDetailContent() {
             {players.length === 0 ? (
               <div className="p-12 text-center">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">No players yet</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  No players yet
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
                   Academy admin needs to create player accounts
                 </p>
@@ -402,13 +450,17 @@ function AcademyDetailContent() {
                       </div>
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-sm text-gray-600 dark:text-gray-400">XP</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            XP
+                          </p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {player.total_xp || 0}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Lessons</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Lessons
+                          </p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {player.completions?.[0]?.count || 0}
                           </p>

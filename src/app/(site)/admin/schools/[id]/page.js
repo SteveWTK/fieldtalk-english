@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -83,9 +84,10 @@ function SchoolDetailContent() {
 
   const stats = {
     totalClasses: classes.length,
-    activeClasses: classes.filter(c => c.is_active).length,
+    activeClasses: classes.filter((c) => c.is_active).length,
     totalStudents: students.length,
-    totalTeachers: new Set(classes.map(c => c.teacher_id).filter(Boolean)).size,
+    totalTeachers: new Set(classes.map((c) => c.teacher_id).filter(Boolean))
+      .size,
   };
 
   if (loading) {
@@ -93,7 +95,9 @@ function SchoolDetailContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading school...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading school...
+          </p>
         </div>
       </div>
     );
@@ -103,7 +107,9 @@ function SchoolDetailContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">School not found</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            School not found
+          </p>
           <button
             onClick={() => router.push("/admin/schools")}
             className="text-blue-600 hover:text-blue-700"
@@ -146,19 +152,23 @@ function SchoolDetailContent() {
                   )}
                   {school.subscription_type && (
                     <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded">
-                      {school.subscription_type.replace('_', ' ')}
+                      {school.subscription_type.replace("_", " ")}
                     </span>
                   )}
                 </div>
               </div>
             </div>
             <button
-              onClick={() => editing ? handleSave() : setEditing(true)}
+              onClick={() => (editing ? handleSave() : setEditing(true))}
               disabled={saving}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
-              {editing ? (saving ? "Saving..." : "Save Changes") : "Edit School"}
+              {editing
+                ? saving
+                  ? "Saving..."
+                  : "Save Changes"
+                : "Edit School"}
             </button>
           </div>
         </div>
@@ -167,7 +177,9 @@ function SchoolDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Classes</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Total Classes
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.totalClasses}
                 </p>
@@ -181,7 +193,9 @@ function SchoolDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Students</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Total Students
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.totalStudents}
                 </p>
@@ -195,7 +209,9 @@ function SchoolDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Teachers</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Teachers
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.totalTeachers}
                 </p>
@@ -209,7 +225,9 @@ function SchoolDetailContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Classes</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Active Classes
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stats.activeClasses}
                 </p>
@@ -254,7 +272,9 @@ function SchoolDetailContent() {
                     <input
                       type="text"
                       value={editData.name}
-                      onChange={(e) => setEditData({...editData, name: e.target.value})}
+                      onChange={(e) =>
+                        setEditData({ ...editData, name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -266,7 +286,9 @@ function SchoolDetailContent() {
                       <input
                         type="text"
                         value={editData.city || ""}
-                        onChange={(e) => setEditData({...editData, city: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({ ...editData, city: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -277,7 +299,9 @@ function SchoolDetailContent() {
                       <input
                         type="text"
                         value={editData.country || ""}
-                        onChange={(e) => setEditData({...editData, country: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({ ...editData, country: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -290,7 +314,12 @@ function SchoolDetailContent() {
                       <input
                         type="email"
                         value={editData.contact_email || ""}
-                        onChange={(e) => setEditData({...editData, contact_email: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            contact_email: e.target.value,
+                          })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -301,7 +330,12 @@ function SchoolDetailContent() {
                       <input
                         type="tel"
                         value={editData.contact_phone || ""}
-                        onChange={(e) => setEditData({...editData, contact_phone: e.target.value})}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            contact_phone: e.target.value,
+                          })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -310,7 +344,12 @@ function SchoolDetailContent() {
                     <input
                       type="checkbox"
                       checked={editData.is_active}
-                      onChange={(e) => setEditData({...editData, is_active: e.target.checked})}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          is_active: e.target.checked,
+                        })
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded"
                     />
                     <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
@@ -324,7 +363,9 @@ function SchoolDetailContent() {
                     <div className="flex items-start gap-3">
                       <MapPin className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Location</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Location
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {school.city}, {school.country}
                         </p>
@@ -335,7 +376,9 @@ function SchoolDetailContent() {
                     <div className="flex items-start gap-3">
                       <Mail className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Contact Email</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Contact Email
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {school.contact_email}
                         </p>
@@ -346,7 +389,9 @@ function SchoolDetailContent() {
                     <div className="flex items-start gap-3">
                       <Phone className="w-5 h-5 text-gray-400 mt-1" />
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Contact Phone</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Contact Phone
+                        </p>
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {school.contact_phone}
                         </p>
@@ -356,7 +401,9 @@ function SchoolDetailContent() {
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Created</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Created
+                      </p>
                       <p className="text-lg font-medium text-gray-900 dark:text-white">
                         {new Date(school.created_at).toLocaleDateString()}
                       </p>
@@ -384,7 +431,9 @@ function SchoolDetailContent() {
             {classes.length === 0 ? (
               <div className="p-12 text-center">
                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">No classes yet</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  No classes yet
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
                   School admin needs to create classes
                 </p>
@@ -412,7 +461,9 @@ function SchoolDetailContent() {
                         <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <GraduationCap className="w-4 h-4" />
-                            <span>{cls.teacher?.full_name || "No teacher"}</span>
+                            <span>
+                              {cls.teacher?.full_name || "No teacher"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
@@ -444,7 +495,9 @@ function SchoolDetailContent() {
             {students.length === 0 ? (
               <div className="p-12 text-center">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No students enrolled yet</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No students enrolled yet
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -468,13 +521,17 @@ function SchoolDetailContent() {
                       </div>
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Class</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Class
+                          </p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {student.class?.name || "Not assigned"}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-600 dark:text-gray-400">XP</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            XP
+                          </p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {student.total_xp || 0}
                           </p>

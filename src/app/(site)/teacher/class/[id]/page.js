@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Users, Calendar, TrendingUp, MessageSquare, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Users,
+  Calendar,
+  TrendingUp,
+  MessageSquare,
+  CheckCircle,
+} from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import {
@@ -22,7 +30,9 @@ function ClassDetailContent() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("students");
-  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split("T")[0]);
+  const [attendanceDate, setAttendanceDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [attendanceRecords, setAttendanceRecords] = useState({});
   const [savingAttendance, setSavingAttendance] = useState(false);
 
@@ -54,9 +64,13 @@ function ClassDetailContent() {
 
   async function loadAttendance() {
     try {
-      const records = await getAttendanceForClass(classId, attendanceDate, attendanceDate);
+      const records = await getAttendanceForClass(
+        classId,
+        attendanceDate,
+        attendanceDate
+      );
       const attendanceMap = {};
-      records.forEach(record => {
+      records.forEach((record) => {
         attendanceMap[record.player_id] = record.attended;
       });
       setAttendanceRecords(attendanceMap);
@@ -68,7 +82,7 @@ function ClassDetailContent() {
   async function handleSaveAttendance() {
     try {
       setSavingAttendance(true);
-      const promises = students.map(student => {
+      const promises = students.map((student) => {
         const attended = attendanceRecords[student.id] || false;
         return markAttendance({
           class_id: classId,
@@ -90,9 +104,9 @@ function ClassDetailContent() {
   }
 
   function toggleAttendance(studentId) {
-    setAttendanceRecords(prev => ({
+    setAttendanceRecords((prev) => ({
       ...prev,
-      [studentId]: !prev[studentId]
+      [studentId]: !prev[studentId],
     }));
   }
 
@@ -101,7 +115,9 @@ function ClassDetailContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading class...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading class...
+          </p>
         </div>
       </div>
     );
@@ -111,7 +127,9 @@ function ClassDetailContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Class not found</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Class not found
+          </p>
           <button
             onClick={() => router.push("/teacher/dashboard")}
             className="text-blue-600 hover:text-blue-700"
@@ -213,12 +231,17 @@ function ClassDetailContent() {
             {students.length === 0 ? (
               <div className="p-12 text-center">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No students enrolled yet</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No students enrolled yet
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {students.map((student, index) => (
-                  <div key={student.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <div
+                    key={student.id}
+                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -279,12 +302,17 @@ function ClassDetailContent() {
             {students.length === 0 ? (
               <div className="p-12 text-center">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No students to track</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No students to track
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {students.map((student, index) => (
-                  <div key={student.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <div
+                    key={student.id}
+                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -322,7 +350,8 @@ function ClassDetailContent() {
               Conversation Voting Results
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Voting results for lessons will appear here. This feature tracks which conversation topics your students vote for in their lessons.
+              Voting results for lessons will appear here. This feature tracks
+              which conversation topics your students vote for in their lessons.
             </p>
           </div>
         )}

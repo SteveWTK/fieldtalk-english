@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -40,10 +41,11 @@ function SchoolsManagementContent() {
     }
   }
 
-  const filteredSchools = schools.filter((school) =>
-    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.country?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSchools = schools.filter(
+    (school) =>
+      school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      school.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      school.country?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -51,7 +53,9 @@ function SchoolsManagementContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading schools...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
+            Loading schools...
+          </p>
         </div>
       </div>
     );
@@ -140,7 +144,9 @@ function SchoolsManagementContent() {
                       {school.city && school.country && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          <span>{school.city}, {school.country}</span>
+                          <span>
+                            {school.city}, {school.country}
+                          </span>
                         </div>
                       )}
                       {school.contact_email && (
@@ -148,7 +154,10 @@ function SchoolsManagementContent() {
                       )}
                     </div>
                     <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-500 mt-2">
-                      <span>Created {new Date(school.created_at).toLocaleDateString()}</span>
+                      <span>
+                        Created{" "}
+                        {new Date(school.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
@@ -162,7 +171,9 @@ function SchoolsManagementContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Schools</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Total Schools
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
                   {schools.length}
                 </p>
@@ -176,9 +187,11 @@ function SchoolsManagementContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Schools</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Active Schools
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {schools.filter(s => s.is_active).length}
+                  {schools.filter((s) => s.is_active).length}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -190,9 +203,11 @@ function SchoolsManagementContent() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inactive Schools</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  Inactive Schools
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {schools.filter(s => !s.is_active).length}
+                  {schools.filter((s) => !s.is_active).length}
                 </p>
               </div>
               <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
