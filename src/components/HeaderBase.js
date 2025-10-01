@@ -134,18 +134,18 @@ function HeaderBase({
               </div> */}
               {darkMode ? (
                 <Image
-                  src="/logos/FieldTalk-wide-dm-a.png"
-                  height="45"
-                  width="150"
+                  src="/logos/FieldTalk-wider-dm-w.png"
+                  height="40"
+                  width="200"
                   quality={100}
                   alt="FieldTalk logo"
                   className="block rounded-tr-3xl rounded-bl-3xl"
                 />
               ) : (
                 <Image
-                  src="/logos/FieldTalk-wide-lm-a79.png"
-                  height="45"
-                  width="150"
+                  src="/logos/FieldTalk-wider-lm-a79.png"
+                  height="40"
+                  width="200"
                   quality={100}
                   alt="FieldTalk logo"
                   className="block rounded-tr-3xl rounded-bl-3xl"
