@@ -10,7 +10,7 @@ export default function landingPageHome() {
     <div className="relative transform-3d bg-white dark:bg-primary-900">
       <div className="top-1/2 left-1/2 flex justify-center rounded-b-xl bg-white dark:bg-primary-900">
         <img
-          src="/landing/Fieldtalk-landing-slogan-3.png"
+          src="/landing/Fieldtalk-landing.png"
           alt="FieldTalk Hero Image"
           className="block lg:px-32"
         />

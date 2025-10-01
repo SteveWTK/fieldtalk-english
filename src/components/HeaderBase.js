@@ -151,7 +151,7 @@ function HeaderBase({
                 />
               ) : (
                 <Image
-                  src="/logos/FieldTalk-wider-lm-a79.png"
+                  src="/logos/FieldTalk-wide-lm-bg-w.png"
                   height="45"
                   width="225"
                   quality={100}
