@@ -1,4 +1,4 @@
-// src/app/(landing)/academies/page.js
+// / src/app/(landing)/academies/page.js
 "use client";
 
 import React from "react";
@@ -19,7 +19,7 @@ import {
   BookOpen,
 } from "lucide-react";
 // import PlayerJourney from "@/components/PlayerJourney";
-// import Link from "next/link";
+import Link from "next/link";
 
 export default function AcademyLandingPage() {
   return (
@@ -46,18 +46,25 @@ export default function AcademyLandingPage() {
                 primeiro treino às entrevistas na mídia - preparamos nossos
                 atletas para o sucesso mundial.
               </p>
-              {/* <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/presentation"
+                  href="/signin"
                   className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
-                  Ver Apresentação Completa
-                  <Presentation className="w-5 h-5 ml-2" />
+                  Crie uma conta
+                  {/* <Presentation className="w-5 h-5 ml-2" /> */}
                 </Link>
-                <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
-                  Agendar Demonstração
-                </button>
-              </div> */}
+                <Link
+                  href="/lesson"
+                  className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                >
+                  Área do Aluno
+                  {/* <Presentation className="w-5 h-5 ml-2" /> */}
+                </Link>
+                {/* <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+                  Aulas
+                </button> */}
+              </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
@@ -83,12 +90,12 @@ export default function AcademyLandingPage() {
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='180' text-anchor='middle' fill='%236b7280' font-size='18'%3EJovens Talentos%3C/text%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='18'%3EAprendendo Inglês%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='%236b7280' font-size='14'%3EFieldTalk Academy%3C/text%3E%3C/svg%3E";
                 }}
               />
-              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
+              {/* <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">100%</div>
                   <div className="text-xs">Taxa de Sucesso</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -565,14 +572,14 @@ export default function AcademyLandingPage() {
       </section> */}
 
       {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-green-600 to-blue-500">
+      <section className="pt-8 pb-4 bg-gradient-to-r from-primary-600 to-accent-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-bold text-white">
             Transforme o Futuro dos Seus Jogadores
           </h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl text-green-100 mb-4">
             Dê aos seus atletas a vantagem competitiva que eles precisam para
-            brilhar na Europa
+            brilhar globalmente
           </p>
           {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">

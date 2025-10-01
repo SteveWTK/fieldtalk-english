@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src\app\(landing)\schools\page.js
 
 "use client";
@@ -45,14 +46,14 @@ export default function BrazilianLandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/demo"
+                  href="/lessons"
                   className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
-                  Experimente Grátis <Play className="w-5 h-5 ml-2" />
+                  Área do Aluno <Play className="w-5 h-5 ml-2" />
                 </Link>
-                <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
+                {/* <button className="border-2 border-accent-600 text-accent-600 dark:text-accent-400 dark:border-accent-400 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-gray-800 transition-all duration-200">
                   Fale com a Cultura
-                </button>
+                </button> */}
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
@@ -87,12 +88,12 @@ export default function BrazilianLandingPage() {
                   </span>
                 </div>
               </div> */}
-              <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
+              {/* <div className="absolute -top-6 -right-6 bg-gradient-to-r from-accent-500 to-primary-500 text-white rounded-xl p-4 shadow-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold">98%</div>
                   <div className="text-xs">Taxa de sucesso</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -105,10 +106,10 @@ export default function BrazilianLandingPage() {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Por que FieldTalk English?
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            {/* <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Não é apenas mais um curso de inglês. É a preparação completa para
               uma carreira internacional no futebol.
-            </p>
+            </p> */}
           </div>
           <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center p-6 rounded-xl bg-green-50 dark:bg-gray-800">
@@ -117,7 +118,8 @@ export default function BrazilianLandingPage() {
                 Método Exclusivo
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Único curso no mundo desenvolvido especificamente para futebol
+                Um curso desenvolvido especificamente para jogadores e amantes
+                do futebol
               </p>
             </div>
             <div className="text-center p-6 rounded-xl bg-blue-50 dark:bg-gray-800">
@@ -153,17 +155,17 @@ export default function BrazilianLandingPage() {
       </section>
 
       {/* Three Pillars Section - Adapted for Students */}
-      <section id="metodo" className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="metodo" className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
               Os Três Pilares do Sucesso Internacional
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            {/* <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Nossa metodologia exclusiva garante que seu filho domine o inglês
               necessário para uma carreira internacional - desde o primeiro dia
               até se tornar um líder.
-            </p>
+            </p> */}
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8 mb-16">
@@ -288,7 +290,7 @@ export default function BrazilianLandingPage() {
       </section>
 
       {/* Pricing Plans Section */}
-      <section id="planos" className="py-16 bg-gray-50 dark:bg-gray-800">
+      {/* <section id="planos" className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -300,7 +302,6 @@ export default function BrazilianLandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Basic Plan */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -344,7 +345,6 @@ export default function BrazilianLandingPage() {
               </button>
             </div>
 
-            {/* Premium Plan */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border-2 border-green-500 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium">
@@ -399,7 +399,6 @@ export default function BrazilianLandingPage() {
               </button>
             </div>
 
-            {/* Elite Plan */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -457,10 +456,10 @@ export default function BrazilianLandingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-green-600 to-blue-500">
+      {/* <section className="py-20 bg-gradient-to-r from-green-600 to-blue-500">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Invista no Futuro Internacional do Seu Filho
@@ -492,10 +491,10 @@ export default function BrazilianLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
@@ -580,7 +579,7 @@ export default function BrazilianLandingPage() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </>
   );
 }
