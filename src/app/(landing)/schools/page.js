@@ -200,11 +200,11 @@ export default function BrazilianLandingPage() {
                     Vida social e compras
                   </li>
                 </ul>
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                {/* <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <span className="text-sm font-medium text-green-600">
                     Meta: Primeiros 30 dias
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -239,11 +239,11 @@ export default function BrazilianLandingPage() {
                     Relatórios médicos e lesões
                   </li>
                 </ul>
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                {/* <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <span className="text-sm font-medium text-blue-600">
                     Meta: Primeiros 3 meses
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -278,11 +278,11 @@ export default function BrazilianLandingPage() {
                     Engajamento comunitário
                   </li>
                 </ul>
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                {/* <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <span className="text-sm font-medium text-purple-600">
                     Meta: 6+ meses
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
