@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 export default function landingPageHome() {
@@ -9,11 +10,19 @@ export default function landingPageHome() {
     // </div>
     <div className="relative transform-3d bg-white dark:bg-primary-900">
       <div className="top-1/2 left-1/2 flex justify-center rounded-b-xl bg-white dark:bg-primary-900">
-        <img
-          src="/images/hero/Fieldtalk-landing.png"
+        <Image
+          src="/images/hero/FieldTalk-landing.png"
+          alt="FieldTalk Hero Image"
+          width={1920} // actual image width
+          height={1080} // actual image height
+          className="lg:px-32"
+          priority
+        />
+        {/* <img
+          src="/images/hero/FieldTalk-landing.png"
           alt="FieldTalk Hero Image"
           className="lg:px-32"
-        />
+        /> */}
         {/* <img
           src="/landing/Habitat-landing-mobile-5.png"
           alt="Hero"
