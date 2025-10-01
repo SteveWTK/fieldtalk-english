@@ -124,7 +124,7 @@ function LessonsListContent() {
           </div>
           <button
             onClick={() => router.push("/admin/lessons/new")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
           >
             <Plus className="w-5 h-5" />
             Create New Lesson
@@ -148,7 +148,7 @@ function LessonsListContent() {
             <select
               value={filterPillar}
               onChange={(e) => setFilterPillar(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
             >
               <option value="all">All Pillars</option>
               {pillars.map((pillar) => (
@@ -160,7 +160,7 @@ function LessonsListContent() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -186,7 +186,7 @@ function LessonsListContent() {
                 filterStatus === "all" && (
                   <button
                     onClick={() => router.push("/admin/lessons/new")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+                    className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
                   >
                     <Plus className="w-5 h-5" />
                     Create First Lesson

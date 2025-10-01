@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Moon, Sun, User, Menu, X } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState } from "react";
+import Image from "next/image";
 
 function HeaderBase({
   type = "landing",
@@ -128,12 +129,31 @@ function HeaderBase({
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
-                {/* <Globe className="w-5 h-5 text-white" /> */}
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 dark:from-accent-600 dark:to-accent-500 bg-clip-text text-transparent">
+              {/* <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
+                <Globe className="w-5 h-5 text-white" />
+              </div> */}
+              {darkMode ? (
+                <Image
+                  src="/logos/FieldTalk-wide-dm-a.png"
+                  height="45"
+                  width="150"
+                  quality={100}
+                  alt="FieldTalk logo"
+                  className="block rounded-tr-3xl rounded-bl-3xl"
+                />
+              ) : (
+                <Image
+                  src="/logos/FieldTalk-wide-lm-a79.png"
+                  height="45"
+                  width="150"
+                  quality={100}
+                  alt="FieldTalk logo"
+                  className="block rounded-tr-3xl rounded-bl-3xl"
+                />
+              )}
+              {/* <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 dark:from-accent-600 dark:to-accent-500 bg-clip-text text-transparent">
                 FieldTalk English
-              </span>
+              </span> */}
             </Link>
 
             {/* Desktop Navigation */}
