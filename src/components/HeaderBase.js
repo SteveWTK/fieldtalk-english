@@ -135,8 +135,8 @@ function HeaderBase({
               {darkMode ? (
                 <Image
                   src="/logos/FieldTalk-wider-dm-w.png"
-                  height="40"
-                  width="200"
+                  height="45"
+                  width="225"
                   quality={100}
                   alt="FieldTalk logo"
                   className="block rounded-tr-3xl rounded-bl-3xl"
@@ -144,8 +144,8 @@ function HeaderBase({
               ) : (
                 <Image
                   src="/logos/FieldTalk-wider-lm-a79.png"
-                  height="40"
-                  width="200"
+                  height="45"
+                  width="225"
                   quality={100}
                   alt="FieldTalk logo"
                   className="block rounded-tr-3xl rounded-bl-3xl"
