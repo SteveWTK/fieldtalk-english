@@ -26,6 +26,7 @@ import {
 // import TestimonialCard from "@/components/TestimonialCard";
 // import PhotoGallery from "@/components/PhotoGallery";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function BrazilianLandingPage() {
   return (
@@ -36,7 +37,7 @@ export default function BrazilianLandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
-                Uma experiência gamificada de conversação para
+                Uma Experiência Gamificada de Conversação para
                 <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Amantes do Futebol
                 </span>
@@ -72,7 +73,7 @@ export default function BrazilianLandingPage() {
             </div>
             <div className="relative">
               <img
-                src="/images/hero/young-brazilian-player.jpg"
+                src="/images/hero/hero-schools-cr3.jpg"
                 alt="Jovem jogador brasileiro treinando"
                 className="rounded-2xl shadow-2xl w-full"
                 onError={(e) => {
@@ -100,7 +101,7 @@ export default function BrazilianLandingPage() {
       </section>
 
       {/* Why Choose FieldTalk Section */}
-      <section className="py-16 bg-white dark:bg-gray-900">
+      <section className="pt-2 pb-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
