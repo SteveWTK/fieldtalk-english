@@ -36,7 +36,7 @@ export default function BrazilianLandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
-                Uma experiência gameficado de conversação para
+                Uma experiência gamificada de conversação para
                 <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Amantes do Futebol
                 </span>
