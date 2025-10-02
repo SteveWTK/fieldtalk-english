@@ -19,6 +19,8 @@ import {
   Zap,
   Heart,
   CheckCircle,
+  LaptopMinimal,
+  Smartphone,
 } from "lucide-react";
 // import PlayerJourney from "@/components/PlayerJourney";
 // import TestimonialCard from "@/components/TestimonialCard";
@@ -34,19 +36,17 @@ export default function BrazilianLandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
-                Inglês de Elite para
+                Uma experiência gameficado de conversação para
                 <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
                   Amantes do Futebol
                 </span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Alunos de escolas bilíngues e redes de ensino de idiomas como a
-                Cultura Inglesa batem papo sobre sua paixão em aulas de
-                conversação dinâmicas e divertidas.
+                Alunos empolgados. Aulas diferentes. Fácil de implementar.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/lessons"
+                  href="/lesson"
                   className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
                   Área do Aluno <Play className="w-5 h-5 ml-2" />
@@ -113,41 +113,42 @@ export default function BrazilianLandingPage() {
           </div>
           <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center p-6 rounded-xl bg-green-50 dark:bg-gray-800">
-              <Trophy className="w-12 h-12 text-green-600 mx-auto mb-4" />
+              <Smartphone className="w-12 h-12 text-green-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Método Exclusivo
+                Experiência gameficada
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Um curso desenvolvido especificamente para jogadores e amantes
-                do futebol
+                Atividades para preparar o aluno de forma leve e dinâmica para a
+                aula de conversação
               </p>
             </div>
             <div className="text-center p-6 rounded-xl bg-blue-50 dark:bg-gray-800">
               <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Experiência Real
+                Os alunos decidem
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Criado por professores que ensinaram jogadores da Premier League
+                Votação semanal no tópico da próxima aula de conversação
               </p>
             </div>
             <div className="text-center p-6 rounded-xl bg-purple-50 dark:bg-gray-800">
-              <BookOpen className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+              <LaptopMinimal className="w-12 h-12 text-purple-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Cultura Inglesa
+                Painel de acompanhamento
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Parceria com a melhor escola de inglês do Brasil
+                Gestor e pais acompanham desempenho nas atividades e presença
+                nas aulas
               </p>
             </div>
             <div className="text-center p-6 rounded-xl bg-orange-50 dark:bg-gray-800">
-              <Target className="w-12 h-12 text-orange-600 mx-auto mb-4" />
+              <Trophy className="w-12 h-12 text-orange-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Foco Total
+                Avaliações e certificados
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Tudo o que seu filho precisa para se comunicar como um
-                profissional
+                Ao finalizar o módulo o aluno recebe um certificado digital com
+                seu desempenho
               </p>
             </div>
           </div>
