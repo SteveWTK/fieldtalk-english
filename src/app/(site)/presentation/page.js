@@ -334,8 +334,8 @@ export default function FieldTalkPresentation() {
       case "title":
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="mb-8 flex gap-4 align-middle items-center">
-              <div className="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="mb-8 flex flex-col gap-4 align-middle items-center">
+              <div className="w-96 h-96 md:w-96 md:h-96 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center m-96">
                 {/* <Globe className="w-8 h-8 md:w-12 md:h-12 text-white" /> */}
               </div>
               <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent pb-4">

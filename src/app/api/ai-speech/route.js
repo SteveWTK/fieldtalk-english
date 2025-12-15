@@ -86,7 +86,7 @@ export async function POST(request) {
           {
             role: "system",
             content:
-              "You are an expert English pronunciation coach helping Brazilian football players improve their English speaking skills.",
+              "You are a VERY ENCOURAGING expert English pronunciation coach helping BEGINNER Brazilian football players improve their English speaking skills. Be extremely positive and give high scores (80-100) for any reasonable attempt. Focus on praising effort and progress, not perfection. Accept all accent variations (British, American, Australian, etc.) as correct.",
           },
           {
             role: "user",
@@ -102,19 +102,18 @@ export async function POST(request) {
       console.error("[AI-Speech] GPT analysis error:", gptError);
       // Provide fallback feedback if GPT fails
       feedback = {
-        pronunciation_score: 80,
+        pronunciation_score: 85,
         accuracy_score: 90,
-        overall_score: 85,
-        strengths: ["You made a good effort!", "Your confidence is showing"],
+        overall_score: 87,
+        strengths: ["You made a great effort!", "Your confidence is showing", "You're communicating well!"],
         improvements: [
-          "Keep practicing the pronunciation",
-          "Try to speak more clearly",
+          "Keep practicing to build more confidence",
         ],
         encouragement:
-          "Great attempt! Keep practicing and you'll improve quickly.",
+          "Excellent attempt! You're doing really well. Keep practicing and you'll continue to improve!",
         specific_tips: [
-          "Practice speaking slowly and clearly",
-          "Listen to native speakers",
+          "Keep speaking English as much as possible",
+          "You're on the right track!",
         ],
       };
     }
@@ -155,23 +154,36 @@ function createSpeechAnalysisPrompt(transcript, expectedText, language) {
   const feedbackLanguage = language === "en" ? "English" : "Portuguese";
 
   return `
-Analyze this English pronunciation attempt by a Brazilian football player:
+Analyze this English pronunciation attempt by a BEGINNER Brazilian football player:
 
 Expected text: "${expectedText}"
 What they said: "${transcript}"
+
+IMPORTANT INSTRUCTIONS:
+- This is a BEGINNER student - be VERY encouraging and positive!
+- Give scores between 80-100 for any reasonable attempt (reserve below 75 only for completely incorrect responses)
+- ACCEPT ALL ACCENT VARIATIONS as correct (British, American, Australian, Irish, Scottish, South African, etc.)
+- DO NOT penalize for accent differences - only correct if the word is completely wrong or unintelligible
+- Focus on whether they communicated the message, not on perfect native-like pronunciation
+- Praise their effort and courage to speak English!
+
+SCORING GUIDELINES:
+- pronunciation_score: 80-90 for basic attempts, 90-95 for good attempts, 95-100 for excellent attempts
+- accuracy_score: Did they say the right words? Be lenient - accept synonyms and accent variations
+- overall_score: Average of the two, biased towards being encouraging
 
 Provide feedback in ${feedbackLanguage} in this JSON format:
 {
   "pronunciation_score": 85,
   "accuracy_score": 90,
   "overall_score": 87,
-  "strengths": [""],
-  "improvements": [""],
-  "encouragement": "",
-  "specific_tips": [""],
-  "next_focus": ""
+  "strengths": ["At least 2-3 positive specific things they did well"],
+  "improvements": ["Only 1-2 gentle, simple suggestions if really needed"],
+  "encouragement": "A very positive and motivational message!",
+  "specific_tips": ["1-2 simple, practical tips - be encouraging!"],
+  "next_focus": "One simple thing to work on next - phrase it positively!"
 }
 
-Be encouraging and specific. Focus on football-related pronunciation challenges that Brazilian players commonly face. Be aware of different regional English accents that the player may be emulating from the UK, US, Australia or other countries where English is spoken. All variations should be considered correct. Only correct clear pronunciation or grammatical errors.
+Be extremely encouraging and specific. Praise their effort. Remember: different accents (British 'tomahto' vs American 'tomayto', British 'shedule' vs American 'skedule', etc.) are ALL CORRECT. Only flag true errors where the word is wrong or incomprehensible.
 `;
 }

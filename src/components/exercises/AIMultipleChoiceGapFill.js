@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/exercises/AIMultipleChoiceGapFill.js
 "use client";
 
@@ -504,7 +505,7 @@ export default function AIMultipleChoiceGapFill({
               </button>
             )}
 
-            {!feedback?.isCorrect && (
+            {/* {!feedback?.isCorrect && (
               <button
                 onClick={() => getAIHint(sentenceId, sentence)}
                 disabled={hasUsedAllHints || loadingHint[sentenceId]}
@@ -526,7 +527,7 @@ export default function AIMultipleChoiceGapFill({
                 )}
                 <span>{getHintButtonText(sentenceId)}</span>
               </button>
-            )}
+            )} */}
           </div>
 
           {/* Feedback Icons */}

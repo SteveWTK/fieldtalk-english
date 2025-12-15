@@ -110,6 +110,7 @@ export const UI_TRANSLATIONS = {
     good_job_practicing:
       "Bom trabalho completando o exercício! Continue praticando para ganhar confiança! 💪",
     total_hints_used: "Total de dicas usadas:",
+    check_answer: "Confira a resposta",
 
     // AI Writing Exercise
     ai_writing_feedback: "Feedback da IA sobre Escrita",
@@ -363,6 +364,7 @@ export const UI_TRANSLATIONS = {
     listen_to_scenario: "Listen to Scenario",
     writing_task: "Writing Task",
     ai_feedback: "AI Feedback",
+    check_answer: "Check your answer",
   },
 };
 
