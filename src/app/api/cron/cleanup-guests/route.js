@@ -19,7 +19,6 @@ export async function GET(request) {
     }
 
     const supabase = await getSupabaseAdmin();
-    const now = new Date().toISOString();
     const thirtyDaysAgo = new Date(
       Date.now() - 30 * 24 * 60 * 60 * 1000
     ).toISOString();

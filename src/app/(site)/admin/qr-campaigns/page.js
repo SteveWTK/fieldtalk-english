@@ -12,14 +12,11 @@ import {
   Copy,
   ToggleLeft,
   ToggleRight,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   Loader2,
-  Globe,
   MapPin,
   Clock,
-  ArrowRight,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -53,34 +50,7 @@ export default function QRCampaignsAdminPage() {
   const [formWelcomeTh, setFormWelcomeTh] = useState("");
   const [formExpires, setFormExpires] = useState("");
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      loadUserAndCampaigns();
-    } else if (!authLoading && !user) {
-      // User not logged in, stop loading
-      setIsLoading(false);
-    }
-  }, [user, authLoading]);
-
-  const loadUserAndCampaigns = async () => {
-    try {
-      console.log("Loading user profile for:", user.id);
-      const profile = await getPlayerProfile(user.id);
-      console.log("Profile loaded:", profile?.user_type);
-      setUserProfile(profile);
-      if (profile?.user_type === "platform_admin") {
-        await fetchCampaigns();
-      } else {
-        console.log("User is not platform_admin, stopping load");
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error);
-      setIsLoading(false);
-    }
-  };
-
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log("Fetching campaigns...");
@@ -96,13 +66,40 @@ export default function QRCampaignsAdminPage() {
         console.error("Campaigns API error:", data.error);
         toast.error(data.error || "Failed to load campaigns");
       }
-    } catch (err) {
-      console.error("Error fetching campaigns:", err);
+    } catch {
+      console.error("Error fetching campaigns");
       toast.error("Failed to load campaigns");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const loadUserAndCampaigns = async () => {
+      try {
+        console.log("Loading user profile for:", user.id);
+        const profile = await getPlayerProfile(user.id);
+        console.log("Profile loaded:", profile?.user_type);
+        setUserProfile(profile);
+        if (profile?.user_type === "platform_admin") {
+          await fetchCampaigns();
+        } else {
+          console.log("User is not platform_admin, stopping load");
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        setIsLoading(false);
+      }
+    };
+
+    if (!authLoading && user) {
+      loadUserAndCampaigns();
+    } else if (!authLoading && !user) {
+      // User not logged in, stop loading
+      setIsLoading(false);
+    }
+  }, [user, authLoading, fetchCampaigns]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -178,7 +175,7 @@ export default function QRCampaignsAdminPage() {
         );
         fetchCampaigns();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to update campaign");
     }
   };
