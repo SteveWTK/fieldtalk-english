@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SessionProvider } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
 import { LanguageProvider, useLanguage } from "@/lib/contexts/LanguageContext";
 
@@ -47,8 +48,10 @@ function SiteLayoutContent({ children }) {
 
 export default function SiteLayout({ children }) {
   return (
-    <LanguageProvider>
-      <SiteLayoutContent>{children}</SiteLayoutContent>
-    </LanguageProvider>
+    <SessionProvider>
+      <LanguageProvider>
+        <SiteLayoutContent>{children}</SiteLayoutContent>
+      </LanguageProvider>
+    </SessionProvider>
   );
 }
