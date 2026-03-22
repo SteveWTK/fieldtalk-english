@@ -42,9 +42,13 @@ function PlayerLessonsMenu() {
   const t = {
     en: {
       subtitle: "Your learning journey",
+      welcomeGuest: "Welcome to FieldTalk!",
+      welcomeBack: "Welcome back,",
     },
     pt: {
       subtitle: "Sua jornada de aprendizagem",
+      welcomeGuest: "Bem-vindo ao FieldTalk!",
+      welcomeBack: "Bem-vindo de volta,",
     },
   };
 
@@ -97,12 +101,15 @@ function PlayerLessonsMenu() {
     );
   }
 
+  // Check if user is a guest (guest emails end with @fieldtalk.guest)
+  const isGuest = user.email?.endsWith("@fieldtalk.guest") || user.user_metadata?.is_guest;
+
   // Use real data or fallback to sensible defaults
   const playerData = {
     name:
       profile?.full_name ||
       user.user_metadata?.full_name ||
-      user.email?.split("@")[0] ||
+      (isGuest ? null : user.email?.split("@")[0]) ||
       "Player",
     position: profile?.position || user.user_metadata?.position || "Player",
     club: profile?.club?.name || "FieldTalk English",
@@ -215,7 +222,9 @@ function PlayerLessonsMenu() {
       {/* Welcome Message */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-          Welcome back, {playerData.name}!
+          {isGuest
+            ? copy.welcomeGuest
+            : `${copy.welcomeBack} ${playerData.name}!`}
         </h1>
         {/* <p className="text-gray-600 dark:text-gray-300 mt-2">
           Continue your English learning journey
