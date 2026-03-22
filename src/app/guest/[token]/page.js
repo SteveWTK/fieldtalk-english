@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
+import { createClient } from "@/lib/supabase/client";
 import { Loader2, AlertTriangle, Trophy, RefreshCw } from "lucide-react";
 
 const t = {
@@ -45,13 +46,13 @@ const t = {
  * This page:
  * 1. Validates the QR token via the activation API
  * 2. Creates a temporary guest account
- * 3. Signs them in automatically via NextAuth credentials
+ * 3. Signs them in automatically via Supabase Auth
  * 4. Redirects to the configured destination page
  */
 export default function GuestAccessPage() {
   const { token } = useParams();
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const [pageStatus, setPageStatus] = useState("activating");
   const [error, setError] = useState(null);
   const [welcomeMessage, setWelcomeMessage] = useState(null);
@@ -69,17 +70,17 @@ export default function GuestAccessPage() {
   const copy = t[browserLang] || t.en;
 
   useEffect(() => {
-    if (!token || activatingRef.current) return;
+    if (!token || activatingRef.current || authLoading) return;
     activatingRef.current = true;
 
-    // If already logged in as a non-guest, just validate and redirect
-    if (session?.user && !session.user.is_guest) {
+    // If already logged in, just validate and redirect
+    if (user) {
       handleAuthenticatedUser();
       return;
     }
 
     activateGuest();
-  }, [token, session, sessionStatus]);
+  }, [token, user, authLoading]);
 
   const handleAuthenticatedUser = async () => {
     try {
@@ -135,17 +136,17 @@ export default function GuestAccessPage() {
         setWelcomeMessage(welcomeMsg);
       }
 
-      // Step 2: Sign in with the generated credentials
+      // Step 2: Sign in with Supabase Auth using the generated credentials
       setPageStatus("signing-in");
 
-      const signInResult = await signIn("credentials", {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.guest_email,
         password: data.guest_password,
-        redirect: false,
       });
 
-      if (signInResult?.error) {
-        console.error("Sign-in error:", signInResult.error);
+      if (signInError) {
+        console.error("Supabase sign-in error:", signInError);
         setError("Failed to sign in. Please try scanning the QR code again.");
         setPageStatus("error");
         return;

@@ -90,16 +90,19 @@ export async function POST(request) {
       Date.now() + result.duration_hours * 3600 * 1000
     );
 
-    // Create public.users record
-    const { error: userError } = await supabase.from("users").insert({
-      id: authData.user.id,
-      email: guestEmail,
-      name: "Guest Player",
-      role: "guest",
-      is_premium: isPremium,
-      premium_until: premiumUntil.toISOString(),
-      premium_source: "guest_qr",
-    });
+    // Create or update public.users record (upsert handles existing records)
+    const { error: userError } = await supabase.from("users").upsert(
+      {
+        id: authData.user.id,
+        email: guestEmail,
+        name: "Guest Player",
+        role: "guest",
+        is_premium: isPremium,
+        premium_until: premiumUntil.toISOString(),
+        premium_source: "guest_qr",
+      },
+      { onConflict: "id" }
+    );
 
     if (userError) {
       console.error("Error creating guest user record:", userError);
