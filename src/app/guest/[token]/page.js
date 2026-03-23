@@ -90,8 +90,17 @@ export default function GuestAccessPage() {
         body: JSON.stringify({ code: token }),
       });
       const data = await res.json();
-      if (data.already_authenticated) {
+
+      // If already authenticated or any successful response, redirect
+      if (data.already_authenticated || data.success) {
         router.push(data.destination_path || "/dashboard");
+      } else if (data.error) {
+        // Show error if code is invalid
+        setError(data.error);
+        setPageStatus("error");
+      } else {
+        // Fallback: redirect to dashboard anyway since user is logged in
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Error for authenticated user:", err);

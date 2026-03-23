@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import crypto from "crypto";
 
@@ -20,13 +20,27 @@ export async function POST(request) {
       );
     }
 
-    const supabase = await getSupabaseAdmin();
+    const supabaseAdmin = await getSupabaseAdmin();
 
-    // Check if caller is already logged in as a non-guest user
-    const session = await getServerSession(authOptions);
-    if (session?.user && session.user.role !== "guest") {
-      // Already authenticated - just return the destination path
-      const { data: codeData } = await supabase
+    // Check if caller is already logged in via Supabase Auth
+    const cookieStore = await cookies();
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+
+    const { data: { user: existingUser } } = await supabaseAuth.auth.getUser();
+
+    if (existingUser) {
+      // User already has a Supabase Auth session - just return the destination path
+      const { data: codeData } = await supabaseAdmin
         .from("guest_access_codes")
         .select("destination_path")
         .eq("code", code.trim().toUpperCase())
@@ -40,7 +54,7 @@ export async function POST(request) {
     }
 
     // Validate and activate the code atomically via RPC
-    const { data: result, error: rpcError } = await supabase
+    const { data: result, error: rpcError } = await supabaseAdmin
       .rpc("activate_guest_code", { p_code: code.trim().toUpperCase() });
 
     if (rpcError) {
@@ -65,7 +79,7 @@ export async function POST(request) {
 
     // Create Supabase Auth user
     const { data: authData, error: authError } =
-      await supabase.auth.admin.createUser({
+      await supabaseAdmin.auth.admin.createUser({
         email: guestEmail,
         password: guestPassword,
         email_confirm: true, // Auto-confirm for immediate sign-in
@@ -91,7 +105,7 @@ export async function POST(request) {
     );
 
     // Create or update public.users record (upsert handles existing records)
-    const { error: userError } = await supabase.from("users").upsert(
+    const { error: userError } = await supabaseAdmin.from("users").upsert(
       {
         id: authData.user.id,
         email: guestEmail,
@@ -107,7 +121,7 @@ export async function POST(request) {
     if (userError) {
       console.error("Error creating guest user record:", userError);
       // Clean up the Supabase Auth user
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json(
         { error: "Failed to create guest profile" },
         { status: 500 }
@@ -119,7 +133,7 @@ export async function POST(request) {
     const realIp = request.headers.get("x-real-ip");
     const userAgent = request.headers.get("user-agent");
 
-    const { error: sessionError } = await supabase
+    const { error: sessionError } = await supabaseAdmin
       .from("guest_sessions")
       .insert({
         access_code_id: result.code_id,
