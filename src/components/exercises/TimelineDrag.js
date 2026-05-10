@@ -103,6 +103,7 @@ export default function TimelineDrag({
   const [completed, setCompleted] = useState(false);
 
   const timelineRef = useRef(null);
+  const markerRefsRef = useRef({});
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -170,10 +171,35 @@ export default function TimelineDrag({
           e.clientY <= rect.bottom + buffer;
 
         if (inside) {
-          // In vertical mode, use Y axis; in horizontal, use X axis
-          const droppedYear = isVertical
-            ? yearAtPercent(((e.clientY - rect.top) / rect.height) * 100)
-            : yearAtPercent(((e.clientX - rect.left) / rect.width) * 100);
+          let droppedYear;
+          if (isVertical) {
+            // Empirical: use actual rendered positions of the first and last
+            // year markers to map pointer Y → year. This bypasses any CSS
+            // positioning quirks that could make percent-based math drift
+            // from where markers are actually rendered.
+            const firstEl = markerRefsRef.current[yearMin];
+            const lastEl = markerRefsRef.current[yearMax];
+            if (firstEl && lastEl) {
+              const firstR = firstEl.getBoundingClientRect();
+              const lastR = lastEl.getBoundingClientRect();
+              const firstY = firstR.top + firstR.height / 2;
+              const lastY = lastR.top + lastR.height / 2;
+              if (lastY === firstY) {
+                droppedYear = yearMin;
+              } else {
+                const t = (e.clientY - firstY) / (lastY - firstY);
+                droppedYear = yearMin + t * (yearMax - yearMin);
+              }
+            } else {
+              droppedYear = yearAtPercent(
+                ((e.clientY - rect.top) / rect.height) * 100
+              );
+            }
+          } else {
+            droppedYear = yearAtPercent(
+              ((e.clientX - rect.left) / rect.width) * 100
+            );
+          }
 
           if (Math.abs(droppedYear - event.year) <= tolerance) {
             placed = true;
@@ -193,7 +219,7 @@ export default function TimelineDrag({
       setDraggingEventId(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draggingEventId, events, tolerance, isVertical]
+    [draggingEventId, events, tolerance, isVertical, yearMin, yearMax]
   );
 
   useEffect(() => {
@@ -320,12 +346,17 @@ export default function TimelineDrag({
         ref={timelineRef}
         className="absolute inset-x-0 inset-y-4"
       >
-        {/* Year markers (left of axis, right-aligned so ticks line up) */}
+        {/* Year markers (left of axis, right-aligned so ticks line up).
+            Refs are stored so drop detection can use the markers' actual
+            rendered positions instead of CSS-percent math. */}
         {markerYears.map((year) => {
           const top = percentForYear(year);
           return (
             <div
               key={year}
+              ref={(el) => {
+                markerRefsRef.current[year] = el;
+              }}
               className="absolute -translate-y-1/2 flex items-center justify-end gap-1"
               style={{ top: `${top}%`, left: 0, width: "56px" }}
             >
@@ -452,8 +483,10 @@ export default function TimelineDrag({
         </div>
       )}
 
-      {/* Floating card while dragging — with green aim indicator showing
-          where the card's center will land on the timeline */}
+      {/* Floating card + sleek aim tick on the side facing the timeline.
+          Drop accuracy is guaranteed by the marker-position-based math in
+          handlePointerUp, so the aim line just needs to be a visual hint —
+          it doesn't carry the precision burden. */}
       {draggingEventId && (
         <div
           className="fixed pointer-events-none z-50"
@@ -468,15 +501,13 @@ export default function TimelineDrag({
               events.find((ev) => ev.id === draggingEventId) || {}
             )}
             {isVertical ? (
-              // Vertical timeline: aim indicator on the LEFT of the card,
-              // pointing toward the axis line
+              // Vertical timeline: short tick on the LEFT of the card
               <div
                 className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-green-500 shadow-md"
                 style={{ width: "40px" }}
               />
             ) : (
-              // Horizontal timeline: aim indicator on TOP of the card,
-              // pointing up toward the axis line
+              // Horizontal timeline: short tick on TOP of the card
               <div
                 className="absolute bottom-full left-1/2 -translate-x-1/2 w-0.5 bg-green-500 shadow-md"
                 style={{ height: "40px" }}
