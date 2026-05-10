@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 
 /**
@@ -10,16 +10,33 @@ import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
  */
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
+    // Get user from Supabase Auth session via cookies
+    const cookieStore = await cookies();
+    const supabaseAuth = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
 
-    if (!session?.user) {
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+    if (authError || !user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    if (session.user.role !== "guest") {
+    // Check if user is a guest (email ends with @fieldtalk.guest or user_metadata.is_guest)
+    const isGuest = user.email?.endsWith("@fieldtalk.guest") || user.user_metadata?.is_guest || false;
+
+    if (!isGuest) {
       return NextResponse.json(
         { error: "Only guest users can claim accounts" },
         { status: 403 }
@@ -69,7 +86,7 @@ export async function POST(request) {
 
     // Update Supabase Auth user with real email and password
     const { error: authUpdateError } =
-      await supabase.auth.admin.updateUserById(session.user.userId, {
+      await supabase.auth.admin.updateUserById(user.id, {
         email: email.toLowerCase().trim(),
         password: password,
         email_confirm: true,
@@ -93,7 +110,7 @@ export async function POST(request) {
         role: "User",
         // Preserve is_premium and premium_until — they keep their remaining access
       })
-      .eq("id", session.user.userId);
+      .eq("id", user.id);
 
     if (userUpdateError) {
       console.error("Error updating guest user record:", userUpdateError);
@@ -110,7 +127,7 @@ export async function POST(request) {
         converted_at: new Date().toISOString(),
         converted_to_email: email.toLowerCase().trim(),
       })
-      .eq("user_id", session.user.userId)
+      .eq("user_id", user.id)
       .is("converted_at", null);
 
     return NextResponse.json({

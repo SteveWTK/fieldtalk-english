@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
@@ -90,7 +90,7 @@ const translations = {
 };
 
 export default function ClaimAccountPage() {
-  const { data: session, status } = useSession();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const { lang } = useLanguage();
   const copy = translations[lang] || translations.en;
@@ -104,8 +104,11 @@ export default function ClaimAccountPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  // Check if user is a guest (email ends with @fieldtalk.guest or user_metadata.is_guest)
+  const isGuest = user?.email?.endsWith("@fieldtalk.guest") || user?.user_metadata?.is_guest || false;
+
   // Loading state
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-accent-600" />
@@ -114,7 +117,7 @@ export default function ClaimAccountPage() {
   }
 
   // Not logged in
-  if (!session?.user) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
@@ -134,7 +137,7 @@ export default function ClaimAccountPage() {
   }
 
   // Not a guest user
-  if (session.user.role !== "guest") {
+  if (!isGuest) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
@@ -169,7 +172,7 @@ export default function ClaimAccountPage() {
           </p>
           <button
             onClick={async () => {
-              await signOut({ redirect: false });
+              await signOut();
               router.push("/login");
             }}
             className="w-full py-3 px-6 bg-accent-600 hover:bg-accent-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -197,6 +200,7 @@ export default function ClaimAccountPage() {
       const res = await fetch("/api/guest-access/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           email: email.trim(),
           password,

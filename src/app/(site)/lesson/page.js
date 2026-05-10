@@ -102,7 +102,8 @@ function PlayerLessonsMenu() {
   }
 
   // Check if user is a guest (guest emails end with @fieldtalk.guest)
-  const isGuest = user.email?.endsWith("@fieldtalk.guest") || user.user_metadata?.is_guest;
+  const isGuest =
+    user.email?.endsWith("@fieldtalk.guest") || user.user_metadata?.is_guest;
 
   // Use real data or fallback to sensible defaults
   const playerData = {

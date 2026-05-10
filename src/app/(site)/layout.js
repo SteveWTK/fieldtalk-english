@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
 import { LanguageProvider, useLanguage } from "@/lib/contexts/LanguageContext";
+import GuestPrompts from "@/components/guest/GuestPrompts";
 
 function SiteLayoutContent({ children }) {
   const [darkMode, setDarkMode] = useState(false);
@@ -42,6 +43,9 @@ function SiteLayoutContent({ children }) {
         languageOptions={languageOptions}
       />
       <main>{children}</main>
+
+      {/* Guest user CTAs - floating buttons, modals, banners */}
+      <GuestPrompts />
     </div>
   );
 }

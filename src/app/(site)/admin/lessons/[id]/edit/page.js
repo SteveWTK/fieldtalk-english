@@ -31,6 +31,8 @@ import AIWritingStepForm from "@/components/admin/step-forms/AIWritingStepForm";
 import MemoryMatchStepForm from "@/components/admin/step-forms/MemoryMatchStepForm";
 import CompletionStepForm from "@/components/admin/step-forms/CompletionStepForm";
 import ConversationVoteStepForm from "@/components/admin/step-forms/ConversationVoteStepForm";
+import AudioComprehensionStepForm from "@/components/admin/step-forms/AudioComprehensionStepForm";
+import DragDropFormationStepForm from "@/components/admin/step-forms/DragDropFormationStepForm";
 import JSONStepForm from "@/components/admin/step-forms/JSONStepForm";
 
 function LessonEditorContent() {
@@ -59,6 +61,8 @@ function LessonEditorContent() {
     { value: "memory_match", label: "Memory Match" },
     { value: "ai_conversation", label: "AI Conversation" },
     { value: "ai_listening_challenge", label: "AI Listening Challenge" },
+    { value: "audio_comprehension", label: "Audio Comprehension" },
+    { value: "drag_drop_formation", label: "Drag & Drop Formation" },
     { value: "conversation_vote", label: "Conversation Vote" },
     { value: "completion", label: "Completion" },
   ];
@@ -190,6 +194,10 @@ function LessonEditorContent() {
         );
       case "conversation_vote":
         return <ConversationVoteStepForm {...commonProps} />;
+      case "audio_comprehension":
+        return <AudioComprehensionStepForm {...commonProps} />;
+      case "drag_drop_formation":
+        return <DragDropFormationStepForm {...commonProps} />;
       case "completion":
         return <CompletionStepForm {...commonProps} />;
       case "interactive_pitch":

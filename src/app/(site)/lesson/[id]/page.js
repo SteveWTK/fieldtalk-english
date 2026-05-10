@@ -55,6 +55,8 @@ import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
 import AISpeechPractice from "@/components/exercises/AISpeechPractice";
 import MemoryMatch from "@/components/exercises/MemoryMatch";
 import VideoPlayer from "@/components/exercises/VideoPlayer";
+import AudioComprehension from "@/components/exercises/AudioComprehension";
+import DragDropFormation from "@/components/exercises/DragDropFormation";
 import ConversationVote from "@/components/ConversationVote";
 import Link from "next/link";
 
@@ -654,7 +656,11 @@ function DynamicLessonContent() {
 
     try {
       // If audio_url starts with "/audio/", try to play it directly
-      if (currentStepData.audio_url.startsWith("/audio/")) {
+      if (
+        currentStepData.audio_url.startsWith(
+          "https://ojxmpejjvwfaxtlmcnuq.supabase.co/storage/v1/object/public/Audios"
+        )
+      ) {
         // Check if file exists first
         const checkResponse = await fetch(currentStepData.audio_url, {
           method: "HEAD",
@@ -754,7 +760,7 @@ function DynamicLessonContent() {
           <div className="text-center">
             <div className="bg-white dark:bg-primary-900/20 rounded-xl p-6 mb-6">
               {/* Translation button */}
-              {/* {userPreferredLanguage !== "en" && (
+              {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
                   <button
                     onClick={() => {
@@ -773,7 +779,7 @@ function DynamicLessonContent() {
                     </span>
                   </button>
                 </div>
-              )} */}
+              )}
 
               {currentStepData.video_url ? (
                 <VideoPlayer
@@ -1874,6 +1880,41 @@ function DynamicLessonContent() {
               ))}
             </div>
           </div>
+        );
+
+      case "audio_comprehension":
+        return (
+          <div className="space-y-4">
+            {currentStepData.content && (
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
+                {currentStepData.content}
+              </p>
+            )}
+            <AudioComprehension
+              step={currentStepData}
+              lessonId={lessonId}
+              userLanguage={userLanguage}
+              onComplete={(xp) => {
+                setXpEarned((prev) => prev + xp);
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                setStepCompleted(true);
+              }}
+            />
+          </div>
+        );
+
+      case "drag_drop_formation":
+        return (
+          <DragDropFormation
+            step={currentStepData}
+            lessonId={lessonId}
+            userLanguage={userLanguage}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
         );
 
       case "cultural_insights":
