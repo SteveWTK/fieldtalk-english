@@ -452,7 +452,8 @@ export default function TimelineDrag({
         </div>
       )}
 
-      {/* Floating card while dragging */}
+      {/* Floating card while dragging — with green aim indicator showing
+          where the card's center will land on the timeline */}
       {draggingEventId && (
         <div
           className="fixed pointer-events-none z-50"
@@ -462,9 +463,26 @@ export default function TimelineDrag({
             transform: "translate(-50%, -50%)",
           }}
         >
-          {renderEventCard(
-            events.find((ev) => ev.id === draggingEventId) || {}
-          )}
+          <div className="relative">
+            {renderEventCard(
+              events.find((ev) => ev.id === draggingEventId) || {}
+            )}
+            {isVertical ? (
+              // Vertical timeline: aim indicator on the LEFT of the card,
+              // pointing toward the axis line
+              <div
+                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-green-500 shadow-md"
+                style={{ width: "40px" }}
+              />
+            ) : (
+              // Horizontal timeline: aim indicator on TOP of the card,
+              // pointing up toward the axis line
+              <div
+                className="absolute bottom-full left-1/2 -translate-x-1/2 w-0.5 bg-green-500 shadow-md"
+                style={{ height: "40px" }}
+              />
+            )}
+          </div>
         </div>
       )}
 

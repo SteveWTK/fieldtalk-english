@@ -62,14 +62,18 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
 
     const pairs = selectedWords.flatMap((word) => [
       {
-        id: word.id || word.english,
+        id: word.id || word.english || word.en,
         text: word.english || word.en,
+        image: word.enImage || "",
+        isImage: !!word.enImage,
         lang: "en",
         matched: false,
       },
       {
-        id: word.id || word.english,
+        id: word.id || word.english || word.en,
         text: word.translation || word.portuguese || word.pt,
+        image: word.ptImage || "",
+        isImage: !!word.ptImage,
         lang: "pt",
         matched: false,
       },
@@ -158,7 +162,15 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
         const portugueseCard = first.lang === "pt" ? first : second;
         setMatchedPairs((prev) => [
           ...prev,
-          { id: first.id, en: englishCard.text, pt: portugueseCard.text },
+          {
+            id: first.id,
+            en: englishCard.text,
+            pt: portugueseCard.text,
+            enImage: englishCard.image,
+            ptImage: portugueseCard.image,
+            enIsImage: englishCard.isImage,
+            ptIsImage: portugueseCard.isImage,
+          },
         ]);
 
         setTimeout(() => {
@@ -301,12 +313,25 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                 {/* For matched cards, show the vocabulary directly without transform */}
                 {isMatched ? (
                   <div
-                    className={`absolute inset-0 flex items-center justify-center rounded-xl p-2 ${"bg-gradient-to-br from-accent-600 to-accent-800 text-white"}`}
+                    className={`absolute inset-0 flex items-center justify-center rounded-xl overflow-hidden ${
+                      card.isImage
+                        ? "bg-white dark:bg-gray-700"
+                        : "bg-gradient-to-br from-accent-600 to-accent-800 text-white p-2"
+                    }`}
                   >
-                    <span className="text-center font-semibold text-xs sm:text-sm">
-                      {card.text}
-                    </span>
-                    <Check className="absolute top-1 right-1 w-4 h-4" />
+                    {card.isImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={card.image}
+                        alt={card.text}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-center font-semibold text-xs sm:text-sm">
+                        {card.text}
+                      </span>
+                    )}
+                    <Check className="absolute top-1 right-1 w-4 h-4 text-white drop-shadow" />
                   </div>
                 ) : (
                   <>
@@ -317,21 +342,32 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                     >
                       <Target className="w-6 h-6 sm:w-8 sm:h-8 text-[#dc2626]" />
                     </div>
-                    {/* Back face - Vocabulary */}
+                    {/* Back face - Vocabulary or image */}
                     <div
-                      className={`absolute inset-0 flex items-center justify-center rounded-xl p-2 rotate-y-180 backface-hidden ${
-                        card.lang === "en"
-                          ? "bg-fieldtalk-400 text-primary-900"
-                          : "bg-attention-400 text-primary-900"
+                      className={`absolute inset-0 flex items-center justify-center rounded-xl rotate-y-180 backface-hidden overflow-hidden ${
+                        card.isImage
+                          ? "bg-white dark:bg-gray-700"
+                          : card.lang === "en"
+                            ? "bg-fieldtalk-400 text-primary-900 p-2"
+                            : "bg-attention-400 text-primary-900 p-2"
                       }`}
                       style={{
                         backfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
                       }}
                     >
-                      <span className="text-center font-semibold text-xs sm:text-sm">
-                        {card.text}
-                      </span>
+                      {card.isImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={card.image}
+                          alt={card.text || "image"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-center font-semibold text-xs sm:text-sm">
+                          {card.text}
+                        </span>
+                      )}
                     </div>
                   </>
                 )}
@@ -355,12 +391,23 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                 {matchedPairs.map((pair, idx) => (
                   <div
                     key={`en-${idx}`}
-                    className="bg-fieldtalk-400 text-primary-900 px-3 py-2 rounded-lg text-center text-xs sm:text-sm font-semibold animate-slideIn shadow-md"
-                    style={{
-                      animationDelay: `${idx * 0.1}s`,
-                    }}
+                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden ${
+                      pair.enIsImage
+                        ? "bg-white dark:bg-gray-700"
+                        : "bg-fieldtalk-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
+                    }`}
+                    style={{ animationDelay: `${idx * 0.1}s` }}
                   >
-                    {pair.en}
+                    {pair.enIsImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={pair.enImage}
+                        alt={pair.en || "image"}
+                        className="w-full h-12 sm:h-14 object-cover"
+                      />
+                    ) : (
+                      pair.en
+                    )}
                   </div>
                 ))}
               </div>
@@ -372,12 +419,23 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
                 {matchedPairs.map((pair, idx) => (
                   <div
                     key={`pt-${idx}`}
-                    className="bg-attention-400 text-primary-900 px-3 py-2 rounded-lg text-center text-xs sm:text-sm font-semibold animate-slideIn shadow-md"
-                    style={{
-                      animationDelay: `${idx * 0.1}s`,
-                    }}
+                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden ${
+                      pair.ptIsImage
+                        ? "bg-white dark:bg-gray-700"
+                        : "bg-attention-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
+                    }`}
+                    style={{ animationDelay: `${idx * 0.1}s` }}
                   >
-                    {pair.pt}
+                    {pair.ptIsImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={pair.ptImage}
+                        alt={pair.pt || "image"}
+                        className="w-full h-12 sm:h-14 object-cover"
+                      />
+                    ) : (
+                      pair.pt
+                    )}
                   </div>
                 ))}
               </div>
