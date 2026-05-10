@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useGuestPrompts } from "@/lib/contexts/GuestPromptContext";
-import { X, Trophy, Star, Sparkles, UserPlus, Flame } from "lucide-react";
+import { X, Trophy, Star, Sparkles, Flame } from "lucide-react";
 
 const translations = {
   en: {
     title: "Hat-trick!",
     subtitle: "You've completed {count} challenges",
-    message: "You're on fire! Create a free account to keep your winning streak and track your progress.",
+    message:
+      "You're on fire! Create a free account to keep your winning streak and track your progress.",
     stats: {
       challenges: "Challenges",
       xp: "XP Earned",
@@ -21,7 +22,8 @@ const translations = {
   pt: {
     title: "Hat-trick!",
     subtitle: "Você completou {count} desafios",
-    message: "Você está em chamas! Crie uma conta gratuita para manter sua sequência de vitórias e acompanhar seu progresso.",
+    message:
+      "Você está em chamas! Crie uma conta gratuita para manter sua sequência de vitórias e acompanhar seu progresso.",
     stats: {
       challenges: "Desafios",
       xp: "XP Ganho",
@@ -32,7 +34,8 @@ const translations = {
   th: {
     title: "แฮตทริก!",
     subtitle: "คุณทำสำเร็จ {count} ความท้าทาย",
-    message: "คุณกำลังร้อนแรง! สร้างบัญชีฟรีเพื่อรักษาสถิติชัยชนะและติดตามความก้าวหน้าของคุณ",
+    message:
+      "คุณกำลังร้อนแรง! สร้างบัญชีฟรีเพื่อรักษาสถิติชัยชนะและติดตามความก้าวหน้าของคุณ",
     stats: {
       challenges: "ความท้าทาย",
       xp: "XP ที่ได้รับ",
@@ -99,10 +102,22 @@ export default function HatTrickModal() {
             {/* Animated sparkles and flames */}
             <div className="absolute inset-0 overflow-hidden">
               <Sparkles className="absolute top-4 left-8 w-6 h-6 text-white/30 animate-pulse" />
-              <Star className="absolute top-8 right-12 w-5 h-5 text-yellow-300/50 animate-bounce" style={{ animationDelay: "0.2s" }} />
-              <Flame className="absolute bottom-6 left-16 w-5 h-5 text-orange-300/40 animate-pulse" style={{ animationDelay: "0.4s" }} />
-              <Star className="absolute bottom-4 right-8 w-6 h-6 text-yellow-300/40 animate-bounce" style={{ animationDelay: "0.6s" }} />
-              <Flame className="absolute top-12 left-1/2 w-4 h-4 text-orange-300/30 animate-pulse" style={{ animationDelay: "0.3s" }} />
+              <Star
+                className="absolute top-8 right-12 w-5 h-5 text-yellow-300/50 animate-bounce"
+                style={{ animationDelay: "0.2s" }}
+              />
+              <Flame
+                className="absolute bottom-6 left-16 w-5 h-5 text-orange-300/40 animate-pulse"
+                style={{ animationDelay: "0.4s" }}
+              />
+              <Star
+                className="absolute bottom-4 right-8 w-6 h-6 text-yellow-300/40 animate-bounce"
+                style={{ animationDelay: "0.6s" }}
+              />
+              <Flame
+                className="absolute top-12 left-1/2 w-4 h-4 text-orange-300/30 animate-pulse"
+                style={{ animationDelay: "0.3s" }}
+              />
             </div>
 
             <div className="relative text-center">

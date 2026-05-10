@@ -12,7 +12,7 @@ import {
   Users,
   Mail,
   ArrowRight,
-  Flame,
+  // Flame,
   Star,
   Shield,
 } from "lucide-react";
@@ -140,7 +140,10 @@ const translations = {
         description: "Acesso completo para acelerar seu treino de inglês",
         features: [
           { text: "Sessões e desafios ilimitados", included: true },
-          { text: "Todos os módulos de vocabulário e conversação", included: true },
+          {
+            text: "Todos os módulos de vocabulário e conversação",
+            included: true,
+          },
           { text: "Análises avançadas de progresso", included: true },
           { text: "Feedback de pronúncia com IA", included: true },
           { text: "Recompensas e badges de sequência", included: true },
