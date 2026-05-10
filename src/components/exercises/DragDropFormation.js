@@ -28,7 +28,7 @@ import { CheckCircle, RotateCcw, Trophy, AlertCircle } from "lucide-react";
  */
 export default function DragDropFormation({
   step,
-  lessonId,
+  // lessonId,
   onComplete,
   userLanguage = "en",
 }) {
@@ -400,7 +400,7 @@ export default function DragDropFormation({
         <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-wrap gap-3 justify-center">
             {trayCards.map((card) => {
-              const isDragging = draggingCardId === card.id;
+              // const isDragging = draggingCardId === card.id;
               const isShaking = shakeCardId === card.id;
               return (
                 <div
@@ -428,9 +428,12 @@ export default function DragDropFormation({
             transform: "translate(-50%, -50%)",
           }}
         >
-          {renderCard(cards.find((c) => c.id === draggingCardId), {
-            isDragging: false,
-          })}
+          {renderCard(
+            cards.find((c) => c.id === draggingCardId),
+            {
+              isDragging: false,
+            }
+          )}
         </div>
       )}
 
@@ -442,8 +445,7 @@ export default function DragDropFormation({
             {labels.complete}
           </h3>
           <div className="inline-flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
-            <CheckCircle className="w-5 h-5" />
-            +{baseXp} {labels.xpEarned}
+            <CheckCircle className="w-5 h-5" />+{baseXp} {labels.xpEarned}
           </div>
         </div>
       )}

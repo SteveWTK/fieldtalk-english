@@ -12,7 +12,7 @@ import {
   Eye,
   EyeOff,
   Trophy,
-  Loader2,
+  // Loader2,
 } from "lucide-react";
 
 /**
@@ -37,7 +37,7 @@ import {
  */
 export default function AudioComprehension({
   step,
-  lessonId,
+  // lessonId,
   onComplete,
   userLanguage = "en",
 }) {
@@ -339,11 +339,9 @@ export default function AudioComprehension({
                   {showQuestionFeedback && isCorrectAnswer && (
                     <CheckCircle className="w-5 h-5 text-green-600" />
                   )}
-                  {showQuestionFeedback &&
-                    isSelected &&
-                    !isCorrectAnswer && (
-                      <XCircle className="w-5 h-5 text-red-600" />
-                    )}
+                  {showQuestionFeedback && isSelected && !isCorrectAnswer && (
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  )}
                 </div>
               </button>
             );
@@ -435,11 +433,7 @@ export default function AudioComprehension({
     <div className="space-y-6">
       {/* Audio Player */}
       <div className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-xl p-6">
-        <audio
-          ref={audioRef}
-          src={audioConfig.audio_url}
-          preload="metadata"
-        />
+        <audio ref={audioRef} src={audioConfig.audio_url} preload="metadata" />
 
         {audioError && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
@@ -476,9 +470,7 @@ export default function AudioComprehension({
                 className="h-full bg-accent-500 transition-all"
                 style={{
                   width:
-                    duration > 0
-                      ? `${(currentTime / duration) * 100}%`
-                      : "0%",
+                    duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
                 }}
               />
             </div>
