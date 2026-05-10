@@ -57,6 +57,7 @@ import MemoryMatch from "@/components/exercises/MemoryMatch";
 import VideoPlayer from "@/components/exercises/VideoPlayer";
 import AudioComprehension from "@/components/exercises/AudioComprehension";
 import DragDropFormation from "@/components/exercises/DragDropFormation";
+import TimelineDrag from "@/components/exercises/TimelineDrag";
 import ConversationVote from "@/components/ConversationVote";
 import Link from "next/link";
 
@@ -1908,6 +1909,19 @@ function DynamicLessonContent() {
           <DragDropFormation
             step={currentStepData}
             lessonId={lessonId}
+            userLanguage={userLanguage}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
+        );
+
+      case "timeline_drag":
+        return (
+          <TimelineDrag
+            step={currentStepData}
             userLanguage={userLanguage}
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
