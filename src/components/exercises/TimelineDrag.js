@@ -173,10 +173,17 @@ export default function TimelineDrag({
         if (inside) {
           let droppedYear;
           if (isVertical) {
-            // Empirical: use actual rendered positions of the first and last
-            // year markers to map pointer Y → year. This bypasses any CSS
-            // positioning quirks that could make percent-based math drift
-            // from where markers are actually rendered.
+            // ──────────────────────────────────────────────────────────────
+            // TUNABLE: empirical Y-offset correction for vertical drops.
+            // Observation: on mobile browsers, drops on the vertical timeline
+            // consistently register 2-4 years EARLIER than where the user
+            // aimed. Adjusting clientY by this value (positive = treat drop
+            // as N years LATER) compensates for it.
+            // Increase if drops still register too early; decrease if too late.
+            // ──────────────────────────────────────────────────────────────
+            const VERTICAL_DROP_OFFSET_YEARS = 3;
+
+            // Empirical: use rendered positions of first & last markers
             const firstEl = markerRefsRef.current[yearMin];
             const lastEl = markerRefsRef.current[yearMax];
             if (firstEl && lastEl) {
@@ -195,6 +202,7 @@ export default function TimelineDrag({
                 ((e.clientY - rect.top) / rect.height) * 100
               );
             }
+            droppedYear += VERTICAL_DROP_OFFSET_YEARS;
           } else {
             droppedYear = yearAtPercent(
               ((e.clientX - rect.left) / rect.width) * 100

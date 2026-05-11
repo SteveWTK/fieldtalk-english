@@ -34,6 +34,7 @@ import ConversationVoteStepForm from "@/components/admin/step-forms/Conversation
 import AudioComprehensionStepForm from "@/components/admin/step-forms/AudioComprehensionStepForm";
 import DragDropFormationStepForm from "@/components/admin/step-forms/DragDropFormationStepForm";
 import TimelineDragStepForm from "@/components/admin/step-forms/TimelineDragStepForm";
+import DragDropVocabularyStepForm from "@/components/admin/step-forms/DragDropVocabularyStepForm";
 import JSONStepForm from "@/components/admin/step-forms/JSONStepForm";
 
 function LessonEditorContent() {
@@ -65,6 +66,7 @@ function LessonEditorContent() {
     { value: "audio_comprehension", label: "Audio Comprehension" },
     { value: "drag_drop_formation", label: "Drag & Drop Formation" },
     { value: "timeline_drag", label: "Timeline Drag" },
+    { value: "drag_drop_vocab", label: "Drag & Drop Vocabulary" },
     { value: "conversation_vote", label: "Conversation Vote" },
     { value: "completion", label: "Completion" },
   ];
@@ -202,6 +204,13 @@ function LessonEditorContent() {
         return <DragDropFormationStepForm {...commonProps} />;
       case "timeline_drag":
         return <TimelineDragStepForm {...commonProps} />;
+      case "drag_drop_vocab":
+        return (
+          <DragDropVocabularyStepForm
+            {...commonProps}
+            allSteps={lesson.content?.steps || []}
+          />
+        );
       case "completion":
         return <CompletionStepForm {...commonProps} />;
       case "interactive_pitch":
