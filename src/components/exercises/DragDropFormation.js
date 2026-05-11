@@ -2,7 +2,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { CheckCircle, RotateCcw, Trophy, AlertCircle } from "lucide-react";
+import {
+  CheckCircle,
+  RotateCcw,
+  Trophy,
+  AlertCircle,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
+import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 
 /**
  * DragDropFormation Step
@@ -37,6 +46,7 @@ export default function DragDropFormation({
   const cards = config.player_cards || [];
   const baseXp = step?.xp_reward || 30;
   const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const { isMuted, toggleMute } = useSoundPreference();
 
   const labels = isPortuguese
     ? {
@@ -151,6 +161,7 @@ export default function DragDropFormation({
           // Correct placement
           setPlacements((prev) => ({ ...prev, [card.id]: targetSlot.id }));
           setErrorMessage(null);
+          if (!isMuted) playSuccessSound();
         } else {
           // Wrong placement — shake and return
           setShakeCardId(card.id);
@@ -159,13 +170,14 @@ export default function DragDropFormation({
             setShakeCardId(null);
           }, 600);
           setTimeout(() => setErrorMessage(null), 2000);
+          if (!isMuted) playErrorSound();
         }
       }
 
       setDraggingCardId(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draggingCardId, cards, placements, slots]
+    [draggingCardId, cards, placements, slots, isMuted]
   );
 
   // Attach window listeners while dragging so we still catch pointer-up if released outside
@@ -325,6 +337,17 @@ export default function DragDropFormation({
           <span className="font-semibold text-gray-900 dark:text-white">
             {placedCount}/{totalSlots} {labels.progress}
           </span>
+          <button
+            onClick={toggleMute}
+            aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+          >
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
+          </button>
           {placedCount > 0 && !completed && (
             <button
               onClick={resetAll}

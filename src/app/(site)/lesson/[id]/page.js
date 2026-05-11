@@ -1908,6 +1908,7 @@ function DynamicLessonContent() {
       case "drag_drop_formation":
         return (
           <DragDropFormation
+            key={`formation-${currentStepData.id || currentStep}`}
             step={currentStepData}
             lessonId={lessonId}
             userLanguage={userLanguage}
@@ -1922,6 +1923,7 @@ function DynamicLessonContent() {
       case "timeline_drag":
         return (
           <TimelineDrag
+            key={`timeline-${currentStepData.id || currentStep}`}
             step={currentStepData}
             userLanguage={userLanguage}
             onComplete={(xp) => {
@@ -1935,6 +1937,7 @@ function DynamicLessonContent() {
       case "drag_drop_vocab":
         return (
           <DragDropVocabulary
+            key={`ddvocab-${currentStepData.id || currentStep}`}
             step={currentStepData}
             userLanguage={userLanguage}
             onComplete={(xp) => {
@@ -2560,8 +2563,10 @@ function DynamicLessonContent() {
 
         return (
           <MemoryMatch
+            key={`memmatch-${currentStepData.id || currentStep}`}
             vocabulary={translatedVocabulary}
             lessonId={lessonId}
+            stepId={currentStepData.id || `step-${currentStep}`}
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
               setCompletedSteps((prev) => new Set([...prev, currentStep]));

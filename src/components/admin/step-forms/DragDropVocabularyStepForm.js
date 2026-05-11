@@ -24,6 +24,7 @@ export default function DragDropVocabularyStepForm({ step, onChange, allSteps })
       english: "",
       translation: "",
       image_url: "",
+      audio_url: "",
     };
     updateConfig("items", [...items, newItem]);
   };
@@ -51,6 +52,7 @@ export default function DragDropVocabularyStepForm({ step, onChange, allSteps })
       english: item.english || item.en || "",
       translation: item.translation || item.pt || "",
       image_url: item.image_url || "",
+      audio_url: item.audio_url || "",
     }));
     updateConfig("items", imported);
     alert(`Imported ${imported.length} vocabulary items`);
@@ -213,6 +215,15 @@ export default function DragDropVocabularyStepForm({ step, onChange, allSteps })
                   }
                   placeholder="Image URL (optional)"
                   className={`${smallInputClass} md:col-span-4`}
+                />
+                <input
+                  type="text"
+                  value={item.audio_url || ""}
+                  onChange={(e) =>
+                    updateItem(idx, "audio_url", e.target.value)
+                  }
+                  placeholder="Audio URL — plays when card is picked up (optional)"
+                  className={`${smallInputClass} md:col-span-12`}
                 />
               </div>
               {item.image_url && (

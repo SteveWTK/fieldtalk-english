@@ -1,6 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Trophy, RefreshCw, Check, X, Target } from "lucide-react";
+import {
+  Trophy,
+  RefreshCw,
+  Check,
+  X,
+  Target,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
+import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 
 function shuffle(array) {
   const newArray = [...array];
@@ -11,9 +21,18 @@ function shuffle(array) {
   return newArray;
 }
 
-export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
-  // Create a unique storage key for this lesson's memory match game
-  const storageKey = `memoryMatch_${lessonId || "default"}`;
+export default function MemoryMatch({
+  vocabulary,
+  onComplete,
+  lessonId,
+  stepId,
+}) {
+  const { isMuted, toggleMute } = useSoundPreference();
+
+  // Include stepId in the storage key so two memory_match steps in the same
+  // lesson don't share state. Falls back to "default" only when neither is
+  // provided (legacy callers).
+  const storageKey = `memoryMatch_${lessonId || "default"}_${stepId || "0"}`;
 
   // Load saved state from localStorage
   const loadSavedState = () => {
@@ -156,6 +175,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
         setMatchedIndices((m) => [...m, ...newFlipped]);
         setCorrectMatches((prev) => prev + 1);
         setShowSuccess(true);
+        if (!isMuted) playSuccessSound();
 
         // Add to matched pairs for display
         const englishCard = first.lang === "en" ? first : second;
@@ -190,6 +210,7 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
         }
       } else {
         setShowError(true);
+        if (!isMuted) playErrorSound();
         setTimeout(() => {
           setFlipped([]);
           setShowError(false);
@@ -229,7 +250,18 @@ export default function MemoryMatch({ vocabulary, onComplete, lessonId }) {
       : "h-16 w-16 sm:h-20 sm:w-24";
 
   return (
-    <div className="flex flex-col items-center gap-6 p-4">
+    <div className="flex flex-col items-center gap-6 p-4 relative">
+      <button
+        onClick={toggleMute}
+        aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+        className="absolute top-2 right-2 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      >
+        {isMuted ? (
+          <VolumeX className="w-5 h-5" />
+        ) : (
+          <Volume2 className="w-5 h-5" />
+        )}
+      </button>
       <div className="text-center px-4">
         <h3 className="text-xl sm:text-2xl font-bold text-primary-900 dark:text-white mb-2">
           Memory Match Challenge

@@ -2,7 +2,20 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { CheckCircle, RotateCcw, Trophy, AlertCircle } from "lucide-react";
+import {
+  CheckCircle,
+  RotateCcw,
+  Trophy,
+  AlertCircle,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import {
+  playSuccessSound,
+  playErrorSound,
+  playAudioFile,
+} from "@/lib/soundEffects";
+import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 
 /**
  * DragDropVocabulary Step
@@ -33,6 +46,7 @@ export default function DragDropVocabulary({
   const displayMode = config.display_mode || "auto";
   const baseXp = step?.xp_reward || 30;
   const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const { isMuted, toggleMute } = useSoundPreference();
 
   const labels = isPortuguese
     ? {
@@ -121,6 +135,11 @@ export default function DragDropVocabulary({
     } catch {
       // ignore
     }
+    // Play the word's audio file (if any) the moment the user picks up the card
+    if (!isMuted) {
+      const item = items.find((it) => it.id === itemId);
+      if (item?.audio_url) playAudioFile(item.audio_url);
+    }
   };
 
   const findTargetAtPoint = (clientX, clientY) => {
@@ -159,7 +178,8 @@ export default function DragDropVocabulary({
         // Correct match
         setMatches((prev) => ({ ...prev, [draggingItemId]: true }));
         setErrorMessage(null);
-      } else if (droppedTargetId || true) {
+        if (!isMuted) playSuccessSound();
+      } else {
         // Wrong drop OR dropped outside any target
         setShakeItemId(draggingItemId);
         setErrorMessage(droppedTargetId ? labels.wrongPlace : null);
@@ -167,13 +187,16 @@ export default function DragDropVocabulary({
         if (droppedTargetId) {
           setTimeout(() => setErrorMessage(null), 1800);
         }
+        // Error sound only when they actually dropped on a wrong target —
+        // skip if they just released over empty space (less punishing)
+        if (!isMuted && droppedTargetId) playErrorSound();
       }
 
       setDraggingItemId(null);
       setHoveredTargetId(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draggingItemId, items]
+    [draggingItemId, items, isMuted]
   );
 
   useEffect(() => {
@@ -280,6 +303,17 @@ export default function DragDropVocabulary({
           <span className="font-semibold text-gray-900 dark:text-white">
             {matchedCount}/{totalItems} {labels.progress}
           </span>
+          <button
+            onClick={toggleMute}
+            aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+          >
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
+          </button>
           {matchedCount > 0 && !completed && (
             <button
               onClick={resetAll}
