@@ -8,7 +8,7 @@ import { LanguageProvider, useLanguage } from "@/lib/contexts/LanguageContext";
 import GuestPrompts from "@/components/guest/GuestPrompts";
 
 function SiteLayoutContent({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const { lang, setLang } = useLanguage();
 
   // Language options for the header

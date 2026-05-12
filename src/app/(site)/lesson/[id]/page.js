@@ -48,7 +48,7 @@ import AIWritingExercise from "@/components/exercises/AIWritingExercise";
 import AIConversationPractice from "@/components/exercises/AIConversationPractice";
 import AIGapFillExercise from "@/components/exercises/AIGapFillExercise";
 import AIMultipleChoiceGapFill from "@/components/exercises/AIMultipleChoiceGapFill";
-import VocabularyItem from "@/components/VocabularyItem";
+import VocabularyList from "@/components/VocabularyList";
 import InteractivePitch from "@/components/exercises/InteractivePitch";
 import InteractiveGame from "@/components/exercises/InteractiveGame";
 import AIListeningChallenge from "@/components/exercises/AIListeningChallenge";
@@ -971,6 +971,7 @@ function DynamicLessonContent() {
               key={aiGapFillKey}
               sentences={currentStepData.sentences}
               lessonId={lessonId}
+              imageUrl={currentStepData.image_url || null}
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
               onComplete={(xp) => {
@@ -1075,7 +1076,16 @@ function DynamicLessonContent() {
           </div>
         );
 
-      case "vocabulary":
+      case "vocabulary": {
+        const rawVocab =
+          currentStepData.vocabulary || currentStepData.words || [];
+        const translatedItems = rawVocab.map((item, index) => ({
+          ...item,
+          tip: translations[`vocab-tip-${currentStep}-${index}`] || item.tip,
+          cultural_note:
+            translations[`vocab-note-${currentStep}-${index}`] ||
+            item.cultural_note,
+        }));
         return (
           <div className="space-y-4">
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
@@ -1083,33 +1093,16 @@ function DynamicLessonContent() {
                 currentStepData.content ||
                 t("learn_essential_words")}
             </p>
-            <div className="grid gap-4">
-              {(currentStepData.vocabulary || currentStepData.words || []).map(
-                (item, index) => {
-                  // Pass translated tips and notes to the component
-                  const translatedItem = {
-                    ...item,
-                    tip:
-                      translations[`vocab-tip-${currentStep}-${index}`] ||
-                      item.tip,
-                    cultural_note:
-                      translations[`vocab-note-${currentStep}-${index}`] ||
-                      item.cultural_note,
-                  };
-                  return (
-                    <VocabularyItem
-                      key={index}
-                      item={translatedItem}
-                      englishVariant={userEnglishVariant}
-                      voiceGender={userVoiceGender}
-                      userLanguage={userLanguage}
-                    />
-                  );
-                }
-              )}
-            </div>
+            <VocabularyList
+              key={`vocab-${currentStepData.id || currentStep}`}
+              items={translatedItems}
+              englishVariant={userEnglishVariant}
+              voiceGender={userVoiceGender}
+              userLanguage={userLanguage}
+            />
           </div>
         );
+      }
 
       case "interactive_pitch":
         const pitchConfig = {

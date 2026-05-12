@@ -10,6 +10,8 @@ export default function VocabularyItem({
   englishVariant = "british",
   voiceGender = "male",
   userLanguage = "en",
+  shouldShake = false,
+  onActivated = null,
 }) {
   const t = (key, fallback = "") => getTranslation(key, userLanguage, fallback);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -76,8 +78,34 @@ export default function VocabularyItem({
     }
   };
 
+  const handleActivate = async () => {
+    if (audioLoading) return;
+    const wordText = item.word || item.english;
+    // Notify parent so it can move the shake to the next card. Trigger before
+    // audio so the next card visibly responds even if TTS is slow.
+    if (typeof onActivated === "function") onActivated();
+    if (audioUrl) {
+      await playStoredAudio(audioUrl);
+    } else {
+      await generateAudio(wordText);
+    }
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800  p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div
+      onClick={handleActivate}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleActivate();
+        }
+      }}
+      className={`bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-accent-400 dark:hover:border-accent-500 transition-colors ${
+        shouldShake ? "vocab-attention" : ""
+      }`}
+    >
       <div className="flex items-center justify-between mb-2">
         <div>
           <span className="font-semibold text-gray-900 dark:text-white text-lg">
@@ -90,14 +118,14 @@ export default function VocabularyItem({
           )} */}
         </div>
         <button
+          type="button"
+          aria-label="Play audio"
           className="text-accent-600 hover:text-accent-700 hover:scale-105 disabled:opacity-50"
-          onClick={async () => {
-            const wordText = item.word || item.english;
-            if (audioUrl) {
-              await playStoredAudio(audioUrl);
-            } else {
-              await generateAudio(wordText);
-            }
+          onClick={(e) => {
+            // Click bubbles up to the card div which handles activation.
+            // Stop propagation so we don't trigger twice; then trigger ourselves.
+            e.stopPropagation();
+            handleActivate();
           }}
           disabled={audioLoading}
         >
@@ -126,6 +154,31 @@ export default function VocabularyItem({
           <strong>{t("cultural_note")}:</strong> {item.cultural_note}
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes vocab-attention {
+          0%,
+          88%,
+          100% {
+            transform: translateX(0) rotate(0);
+          }
+          90% {
+            transform: translateX(-2px) rotate(-0.4deg);
+          }
+          92% {
+            transform: translateX(2px) rotate(0.4deg);
+          }
+          94% {
+            transform: translateX(-2px) rotate(-0.4deg);
+          }
+          96% {
+            transform: translateX(2px) rotate(0.4deg);
+          }
+        }
+        :global(.vocab-attention) {
+          animation: vocab-attention 2.8s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
