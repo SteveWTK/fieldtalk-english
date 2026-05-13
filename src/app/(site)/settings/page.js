@@ -254,11 +254,10 @@ function SettingsContent() {
                 }
                 className="w-full max-w-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="pt-BR">Português (Brasil)</option>
-
                 <option value="en">English</option>
+                <option value="pt">Português (Brasil)</option>
                 <option value="es">Español</option>
-                <option value="fr">Français</option>
+                <option value="th">ไทย (Thai)</option>
               </select>
             </div>
           </div>

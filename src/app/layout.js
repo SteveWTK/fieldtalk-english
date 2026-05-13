@@ -2,6 +2,7 @@
 // import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
+import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -48,7 +49,9 @@ export default function RootLayout({ children }) {
     >
       <meta name="apple-mobile-web-app-title" content="FieldTalk" />
       <body className={inter.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

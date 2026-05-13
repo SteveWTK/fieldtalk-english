@@ -50,7 +50,7 @@ export default function TimelineDrag({
   const tolerance = config.tolerance_years ?? 2;
   const events = config.events || [];
   const baseXp = step?.xp_reward || 30;
-  const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 
   const labels = isPortuguese

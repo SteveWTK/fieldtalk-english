@@ -249,7 +249,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { lang } = useLanguage();
-  const copy = translations[lang] || translations.pt;
+  const copy = translations[lang] || translations.en;
 
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);

@@ -130,7 +130,7 @@ export default function AboutUsPage() {
     },
   };
 
-  const copy = t[lang];
+  const copy = t[lang] || t.en;
 
   // Placeholder team data - you can fill this in with actual team information
   const teamMembers = [

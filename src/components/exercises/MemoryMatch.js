@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Trophy,
   RefreshCw,
@@ -408,24 +408,28 @@ export default function MemoryMatch({
           })}
         </div>
 
-        {/* Matched Pairs Display */}
+        {/* Matched Pairs Display.
+            A single 2-column grid (instead of two parallel space-y columns)
+            so each pair sits in one row — the row's height matches the taller
+            of the two cells, keeping image+word pairs aligned. */}
         {matchedPairs.length > 0 && (
           <div className="flex-shrink-0 w-full lg:w-auto">
-            {/* <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3 text-center lg:text-left">
-              Pares Combinados
-            </h4> */}
             <div className="grid grid-cols-2 gap-2 max-w-md mx-auto lg:mx-0">
-              {/* English column */}
-              <div className="space-y-2">
-                <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                  English
-                </div>
-                {matchedPairs.map((pair, idx) => (
+              {/* Column headers (two cells) */}
+              <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
+                English
+              </div>
+              <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
+                Português
+              </div>
+
+              {/* One row per matched pair: two cells produced via Fragment */}
+              {matchedPairs.map((pair, idx) => (
+                <React.Fragment key={idx}>
                   <div
-                    key={`en-${idx}`}
-                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden ${
+                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden flex items-center justify-center ${
                       pair.enIsImage
-                        ? "bg-white dark:bg-gray-700"
+                        ? "bg-white dark:bg-gray-700 p-0"
                         : "bg-fieldtalk-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
                     }`}
                     style={{ animationDelay: `${idx * 0.1}s` }}
@@ -435,25 +439,16 @@ export default function MemoryMatch({
                       <img
                         src={pair.enImage}
                         alt={pair.en || "image"}
-                        className="w-full h-12 sm:h-14 object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       pair.en
                     )}
                   </div>
-                ))}
-              </div>
-              {/* Portuguese column */}
-              <div className="space-y-2">
-                <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                  Português
-                </div>
-                {matchedPairs.map((pair, idx) => (
                   <div
-                    key={`pt-${idx}`}
-                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden ${
+                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden flex items-center justify-center ${
                       pair.ptIsImage
-                        ? "bg-white dark:bg-gray-700"
+                        ? "bg-white dark:bg-gray-700 p-0"
                         : "bg-attention-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
                     }`}
                     style={{ animationDelay: `${idx * 0.1}s` }}
@@ -463,14 +458,14 @@ export default function MemoryMatch({
                       <img
                         src={pair.ptImage}
                         alt={pair.pt || "image"}
-                        className="w-full h-12 sm:h-14 object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       pair.pt
                     )}
                   </div>
-                ))}
-              </div>
+                </React.Fragment>
+              ))}
             </div>
           </div>
         )}

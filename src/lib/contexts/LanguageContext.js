@@ -1,42 +1,95 @@
-// lib\contexts\LanguageContext.js
-
+// lib/contexts/LanguageContext.js
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { createClient } from "@/lib/supabase/client";
 
-export const LanguageContext = createContext();
+// Default context value keeps consumers safe if used outside the provider —
+// they get English instead of a crash on `.lang`.
+export const LanguageContext = createContext({
+  lang: "en",
+  setLang: () => {},
+});
+
+const SUPPORTED = ["en", "pt", "es", "th"];
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState("en");
-  const supportedLanguages = ["en", "pt"]; // example
+  // Track which user we've already seeded from to avoid re-syncing every render
+  // and to avoid the initial localStorage load triggering a DB write.
+  const seededForUserIdRef = useRef(null);
+  const { user } = useAuth();
+  const userId = user?.id;
 
   // Load language from localStorage on mount
-
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const storedLang = localStorage.getItem("preferredLanguage");
-    if (storedLang) {
+    if (storedLang && SUPPORTED.includes(storedLang)) {
       setLangState(storedLang);
     } else {
-      const browserLang = navigator.language.slice(0, 2);
-      const fallbackLang = supportedLanguages.includes(browserLang)
+      const browserLang = navigator.language?.slice(0, 2);
+      const fallbackLang = SUPPORTED.includes(browserLang)
         ? browserLang
-        : "en"; // or your default
-
+        : "en";
       setLangState(fallbackLang);
       localStorage.setItem("preferredLanguage", fallbackLang);
     }
   }, []);
 
-  // useEffect(() => {
-  //   const storedLang = localStorage.getItem("preferredLanguage");
-  //   if (storedLang) {
-  //     setLangState(storedLang);
-  //   }
-  // }, []);
+  // Optional one-time DB → context seed: when an authenticated user lands and
+  // they have a server-side preference, honour it (overriding any browser
+  // fallback localStorage was using). We only do this ONCE per user per session.
+  useEffect(() => {
+    if (!userId || seededForUserIdRef.current === userId) return;
+    seededForUserIdRef.current = userId;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("players")
+          .select("preferred_language")
+          .eq("id", userId)
+          .single();
+        if (!data?.preferred_language) return;
+        const dbLang =
+          data.preferred_language === "pt-BR"
+            ? "pt"
+            : data.preferred_language;
+        if (SUPPORTED.includes(dbLang) && dbLang !== lang) {
+          setLangState(dbLang);
+          localStorage.setItem("preferredLanguage", dbLang);
+        }
+      } catch {
+        // Non-fatal — DB column may not exist yet, or network blip
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
+  // Public setter — writes to context state, localStorage AND (fire-and-forget)
+  // to the DB so server-side use cases see the user's choice.
   const setLang = (newLang) => {
+    if (!SUPPORTED.includes(newLang)) return;
     setLangState(newLang);
-    localStorage.setItem("preferredLanguage", newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("preferredLanguage", newLang);
+    }
+    if (userId) {
+      try {
+        const supabase = createClient();
+        supabase
+          .from("players")
+          .update({ preferred_language: newLang })
+          .eq("id", userId)
+          .then(() => {
+            /* ignore */
+          });
+      } catch {
+        // Non-fatal — DB write is opportunistic
+      }
+    }
   };
 
   return (

@@ -194,7 +194,7 @@ export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false);
   const [lang, setLang] = useState("pt"); // Default to Portuguese for Brazil
 
-  const copy = translations[lang] || translations.pt;
+  const copy = translations[lang] || translations.en;
 
   const handleSubscribe = async (plan) => {
     if (plan === "explorer") {

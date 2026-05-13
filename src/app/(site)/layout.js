@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
-import { LanguageProvider, useLanguage } from "@/lib/contexts/LanguageContext";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GuestPrompts from "@/components/guest/GuestPrompts";
 
 function SiteLayoutContent({ children }) {
@@ -14,9 +14,9 @@ function SiteLayoutContent({ children }) {
   // Language options for the header
   const languageOptions = {
     en: { label: "English", flag: "🇬🇧" },
-    pt: { label: "Português", flag: "🇵🇹" },
-    // es: { label: "Español", flag: "🇪🇸" },
-    // fr: { label: "Français", flag: "🇫🇷" },
+    pt: { label: "Português", flag: "🇧🇷" },
+    es: { label: "Español", flag: "🇪🇸" },
+    th: { label: "ไทย", flag: "🇹🇭" },
   };
 
   // Handle dark mode toggle
@@ -53,9 +53,7 @@ function SiteLayoutContent({ children }) {
 export default function SiteLayout({ children }) {
   return (
     <SessionProvider>
-      <LanguageProvider>
-        <SiteLayoutContent>{children}</SiteLayoutContent>
-      </LanguageProvider>
+      <SiteLayoutContent>{children}</SiteLayoutContent>
     </SessionProvider>
   );
 }

@@ -4,17 +4,20 @@
 import { useState, useEffect } from "react";
 import LandingHeader from "@/components/LandingHeader";
 import Footer from "@/components/Footer";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function LandingLayout({ children }) {
   const [darkMode, setDarkMode] = useState(false);
-  const [lang, setLang] = useState("en");
+  // Read language from the root-level LanguageProvider so the landing
+  // pages share the same toggle state as the rest of the site.
+  const { lang, setLang } = useLanguage();
 
   // Language options for the header
   const languageOptions = {
     en: { label: "English", flag: "🇬🇧" },
-    pt: { label: "Português", flag: "🇵🇹" },
-    // es: { label: "Español", flag: "🇪🇸" },
-    // fr: { label: "Français", flag: "🇫🇷" },
+    pt: { label: "Português", flag: "🇧🇷" },
+    es: { label: "Español", flag: "🇪🇸" },
+    th: { label: "ไทย", flag: "🇹🇭" },
   };
 
   // Handle dark mode toggle

@@ -69,7 +69,7 @@ export default function AudioComprehension({
     transcriptReveal === "always"
   );
 
-  const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const isPortuguese = userLanguage === "pt";
   const labels = isPortuguese
     ? {
         play: "Ouvir",

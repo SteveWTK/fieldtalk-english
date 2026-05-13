@@ -774,10 +774,10 @@ function DynamicLessonContent() {
                   >
                     <span>
                       {translating
-                        ? "Traduzindo..."
+                        ? t("translating")
                         : showTranslation
-                          ? "Show English"
-                          : "Traduzir"}
+                          ? t("show_english")
+                          : t("translate")}
                     </span>
                   </button>
                 </div>
@@ -814,8 +814,8 @@ function DynamicLessonContent() {
                 disabled={!currentStepData.content}
                 title={
                   !currentStepData.content
-                    ? "No content available for audio"
-                    : "Listen to scenario in English"
+                    ? t("no_content_for_audio")
+                    : t("listen_scenario_english")
                 }
               >
                 {isPlaying ? (
@@ -908,7 +908,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -958,7 +958,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -997,7 +997,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -1070,7 +1070,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -1143,7 +1143,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -1186,7 +1186,7 @@ function DynamicLessonContent() {
                 className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                {userLanguage !== "pt-BR" ? "Start Again" : "Comece de Novo"}
+                {t("start_again")}
               </button>
             </div>
           </div>
@@ -1218,16 +1218,17 @@ function DynamicLessonContent() {
                   <div className="flex justify-center space-x-4">
                     <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                       <Volume2 className="w-4 h-4" />
-                      <span>Listen</span>
+                      <span>{t("listen")}</span>
                     </button>
                     <button className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
                       <Mic className="w-4 h-4" />
-                      <span>Record</span>
+                      <span>{t("record")}</span>
                     </button>
                   </div>
                   {phrase.confidence_tips && (
                     <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-50 rounded text-sm">
-                      <strong>Confidence Tip:</strong> {phrase.confidence_tips}
+                      <strong>{t("confidence_tip")}:</strong>{" "}
+                      {phrase.confidence_tips}
                     </div>
                   )}
                 </div>
@@ -1281,12 +1282,14 @@ function DynamicLessonContent() {
                 ) : (
                   <Play className="w-4 h-4" />
                 )}
-                <span>{isPlaying ? "Pause" : "Listen to Dialogue"}</span>
+                <span>{isPlaying ? t("pause") : t("listen_to_dialogue")}</span>
               </button>
             )}
             {currentStepData.key_phrases_to_remember && (
               <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <h4 className="font-semibold mb-2">Key Phrases to Remember:</h4>
+                <h4 className="font-semibold mb-2">
+                  {t("key_phrases_to_remember")}
+                </h4>
                 <ul className="text-sm space-y-1">
                   {currentStepData.key_phrases_to_remember.map(
                     (phrase, index) => (
@@ -1562,7 +1565,7 @@ function DynamicLessonContent() {
                 }
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Check Answers
+                {t("check_answers")}
               </button>
             )}
 
@@ -1751,7 +1754,7 @@ function DynamicLessonContent() {
                     disabled={!selectedAnswer}
                     className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Submit Answer
+                    {t("submit_answer")}
                   </button>
                 )}
                 {showFeedback && (
@@ -1793,7 +1796,7 @@ function DynamicLessonContent() {
                 }
                 className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Submit Answers
+                {t("check_answers")}
               </button>
             )}
 
@@ -2594,10 +2597,10 @@ function DynamicLessonContent() {
                   >
                     <span>
                       {translating
-                        ? "Traduzindo..."
+                        ? t("translating")
                         : showTranslation
-                          ? "Show English"
-                          : "Traduzir"}
+                          ? t("show_english")
+                          : t("translate")}
                     </span>
                   </button>
                 </div>
@@ -2685,7 +2688,7 @@ function DynamicLessonContent() {
                       <span>{t("saving_progress")}</span>
                     </div>
                   ) : (
-                    t("Return to Lessons")
+                    t("return_to_lessons")
                   )}
                 </button>
               </div>
@@ -2736,11 +2739,11 @@ function DynamicLessonContent() {
               className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Lessons</span>
+              <span>{t("lessons")}</span>
             </button>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600 dark:text-gray-300 font-bold">
-              {lesson.pillar?.display_name || "Lesson"}
+              {lesson.pillar?.display_name || t("lesson")}
             </span>
           </div>
           <button
@@ -2785,9 +2788,14 @@ function DynamicLessonContent() {
         </div>
         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
           <span>
-            Step {currentStep + 1} of {steps.length}
+            {t("step_of_total")
+              .replace("{current}", currentStep + 1)
+              .replace("{total}", steps.length)}
           </span>
-          <span>{Math.round(progress)}% Complete</span>
+          <span>
+            {Math.round(progress)}
+            {t("percent_complete")}
+          </span>
         </div>
       </div>
 
@@ -2821,7 +2829,7 @@ function DynamicLessonContent() {
             className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Voltar</span>
+            <span>{t("back")}</span>
           </Link>
         ) : (
           <button
@@ -2830,16 +2838,20 @@ function DynamicLessonContent() {
             className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Atividade anterior</span>
+            <span>{t("previous_activity")}</span>
           </button>
         )}
 
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            {completedSteps.size} of {steps.length - 1} activities completed
+            {completedSteps.size}{" "}
+            {t("activities_completed_of").replace(
+              "{total}",
+              steps.length - 1
+            )}
           </p>
           {completing && (
-            <p className="text-xs text-blue-600 mt-1">Saving progress...</p>
+            <p className="text-xs text-blue-600 mt-1">{t("saving_progress")}</p>
           )}
         </div>
 
@@ -2857,14 +2869,14 @@ function DynamicLessonContent() {
           {completing ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Completing...</span>
+              <span>{t("completing")}</span>
             </>
           ) : (
             <>
               <span>
                 {currentStep === steps.length - 1
-                  ? "Aula Completa"
-                  : "Próxima atividade"}
+                  ? t("complete_lesson")
+                  : t("next_activity")}
               </span>
               <ArrowRight className="w-4 h-4" />
             </>

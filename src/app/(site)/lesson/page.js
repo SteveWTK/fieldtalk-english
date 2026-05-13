@@ -28,7 +28,6 @@ import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -36,23 +35,8 @@ function PlayerLessonsMenu() {
   const [showConstructionModal, setShowConstructionModal] = useState(false);
 
   const { user } = useAuth();
-  const { userLanguage } = useTranslation(user);
-  const { lang } = useLanguage();
-
-  const t = {
-    en: {
-      subtitle: "Your learning journey",
-      welcomeGuest: "Welcome to FieldTalk!",
-      welcomeBack: "Welcome back,",
-    },
-    pt: {
-      subtitle: "Sua jornada de aprendizagem",
-      welcomeGuest: "Bem-vindo ao FieldTalk!",
-      welcomeBack: "Bem-vindo de volta,",
-    },
-  };
-
-  const copy = t[lang];
+  // All visible strings now come from the locale files via t().
+  const { t } = useTranslation(user);
 
   // Use the actual logged-in user's ID
   const userId = user?.id;
@@ -224,8 +208,8 @@ function PlayerLessonsMenu() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
           {isGuest
-            ? copy.welcomeGuest
-            : `${copy.welcomeBack} ${playerData.name}!`}
+            ? t("welcome_to_fieldtalk")
+            : `${t("welcome_back")} ${playerData.name}!`}
         </h1>
         {/* <p className="text-gray-600 dark:text-gray-300 mt-2">
           Continue your English learning journey
@@ -235,9 +219,7 @@ function PlayerLessonsMenu() {
       {/* Three Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          {userLanguage === "pt-BR"
-            ? "Sua jornada de aprendizagem"
-            : "Your learning journey"}
+          {t("your_learning_journey")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pillars.map((pillar, index) => {
@@ -267,7 +249,7 @@ function PlayerLessonsMenu() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Level {pillar.level}
+                      {t("level")} {pillar.level}
                     </span>
                     <span className="text-sm text-gray-600 dark:text-gray-300">
                       {pillar.progress}%
@@ -381,14 +363,12 @@ function PlayerLessonsMenu() {
                       </div>
                       {status === "locked" && (
                         <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                          Complete previous lessons to unlock
+                          {t("complete_prev_to_unlock")}
                         </div>
                       )}
                       {status === "construction" && (
                         <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
-                          {userLanguage === "pt-BR"
-                            ? "Aula em construção"
-                            : "Lesson under construction"}
+                          {t("lesson_under_construction")}
                         </div>
                       )}
                     </div>
@@ -406,7 +386,7 @@ function PlayerLessonsMenu() {
           {/* Recent Achievements */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Recent Achievements
+              {t("recent_achievements")}
             </h3>
             <div className="space-y-3">
               {recentAchievements.map((achievement, index) => {
@@ -435,20 +415,20 @@ function PlayerLessonsMenu() {
           {/* Quick Actions */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Quick Practice
+              {t("quick_practice")}
             </h3>
             <div className="space-y-3">
               <button className="w-full p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors flex items-center space-x-2">
                 <Mic className="w-4 h-4" />
-                <span>Pronunciation Practice</span>
+                <span>{t("pronunciation_practice")}</span>
               </button>
               <button className="w-full p-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors flex items-center space-x-2">
                 <MessageSquare className="w-4 h-4" />
-                <span>Daily Dialogue</span>
+                <span>{t("daily_dialogue")}</span>
               </button>
               <button className="w-full p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors flex items-center space-x-2">
                 <Play className="w-4 h-4" />
-                <span>Video Analysis</span>
+                <span>{t("video_analysis")}</span>
               </button>
             </div>
           </div>
@@ -472,20 +452,16 @@ function PlayerLessonsMenu() {
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
-              {userLanguage === "pt-BR"
-                ? "Aula em Construção"
-                : "Lesson Under Construction"}
+              {t("lesson_under_construction")}
             </h3>
             <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-              {userLanguage === "pt-BR"
-                ? "Estamos desenvolvendo esta aula e em breve a disponibilizaremos para você."
-                : "We are developing this lesson and will soon make it available to you."}
+              {t("lesson_under_construction_msg")}
             </p>
             <button
               onClick={() => setShowConstructionModal(false)}
               className="w-full bg-attention-500 hover:bg-attention-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
             >
-              {userLanguage === "pt-BR" ? "Ok" : "Ok"}
+              {t("ok")}
             </button>
           </div>
         </div>

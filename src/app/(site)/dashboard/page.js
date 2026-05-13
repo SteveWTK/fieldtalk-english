@@ -48,7 +48,7 @@ function PlayerLessonsMenu() {
     },
   };
 
-  const copy = t[lang];
+  const copy = t[lang] || t.en;
 
   // Use the actual logged-in user's ID
   const userId = user?.id;
@@ -225,7 +225,7 @@ function PlayerLessonsMenu() {
       {/* Three Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          {userLanguage === "pt-BR"
+          {userLanguage === "pt"
             ? "Sua jornada de aprendizagem"
             : "Your learning journey"}
         </h2>
@@ -374,7 +374,7 @@ function PlayerLessonsMenu() {
                       )}
                       {status === "construction" && (
                         <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
-                          {userLanguage === "pt-BR"
+                          {userLanguage === "pt"
                             ? "Aula em construção"
                             : "Lesson under construction"}
                         </div>
@@ -460,12 +460,12 @@ function PlayerLessonsMenu() {
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
-              {userLanguage === "pt-BR"
+              {userLanguage === "pt"
                 ? "Aula em Construção"
                 : "Lesson Under Construction"}
             </h3>
             <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-              {userLanguage === "pt-BR"
+              {userLanguage === "pt"
                 ? "Estamos desenvolvendo esta aula e em breve a disponibilizaremos para você."
                 : "We are developing this lesson and will soon make it available to you."}
             </p>
@@ -473,7 +473,7 @@ function PlayerLessonsMenu() {
               onClick={() => setShowConstructionModal(false)}
               className="w-full bg-attention-500 hover:bg-attention-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
             >
-              {userLanguage === "pt-BR" ? "Ok" : "Ok"}
+              {userLanguage === "pt" ? "Ok" : "Ok"}
             </button>
           </div>
         </div>

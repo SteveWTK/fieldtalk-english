@@ -45,7 +45,7 @@ export default function DragDropFormation({
   const slots = config.position_slots || [];
   const cards = config.player_cards || [];
   const baseXp = step?.xp_reward || 30;
-  const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 
   const labels = isPortuguese

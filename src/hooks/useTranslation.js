@@ -1,61 +1,37 @@
 // src/hooks/useTranslation.js
-// Custom hook for getting user translations
+// Translation hook — reads the current language from LanguageContext (the
+// header toggle's source of truth) and resolves keys against the locale
+// dictionaries loaded by `@/utils/translations`.
+//
+// Phase 1 of the translation centralisation: the hook no longer hits the
+// Supabase `players.preferred_language` column on every mount. That DB column
+// is preserved for server-side use (e.g. emails) but is not the client-side
+// signal anymore — toggling the language in the header now instantly affects
+// every component that uses this hook.
+//
+// Phase 2: getTranslation now falls back to English before returning the raw
+// key, so missing keys in non-English locales show readable text.
+//
+// The `user` argument is accepted for backward compatibility with existing
+// callers (e.g. `useTranslation(user)`) but is ignored.
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getTranslation, getTranslations } from '@/utils/translations';
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { getTranslation, getTranslations } from "@/utils/translations";
 
-/**
- * Custom hook to get user's preferred language and translations
- * @returns {Object} { userLanguage, t, translations, loading }
- */
-export function useTranslation(user = null) {
-  const [userLanguage, setUserLanguage] = useState('en');
-  const [loading, setLoading] = useState(true);
+export function useTranslation(/* user (unused, retained for back-compat) */) {
+  const { lang } = useLanguage();
+  const userLanguage = lang || "en";
 
-  useEffect(() => {
-    async function fetchUserLanguage() {
-      if (!user?.id) {
-        setUserLanguage('en');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('players')
-          .select('preferred_language')
-          .eq('id', user.id)
-          .single();
-
-        if (!error && data) {
-          setUserLanguage(data.preferred_language || 'en');
-        } else {
-          console.error('Error fetching user language preference:', error);
-          setUserLanguage('en');
-        }
-      } catch (err) {
-        console.error('Error in fetchUserLanguage:', err);
-        setUserLanguage('en');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserLanguage();
-  }, [user?.id]);
-
-  // Translation function
-  const t = (key, fallback = '') => getTranslation(key, userLanguage, fallback);
-
-  // Multiple translations function
+  const t = (key, fallback = "") => getTranslation(key, userLanguage, fallback);
   const translations = (keys) => getTranslations(keys, userLanguage);
 
   return {
     userLanguage,
     t,
     translations,
-    loading
+    // Kept for back-compat with components that read `loading` — always false
+    // now because the language is available synchronously from context.
+    loading: false,
   };
 }

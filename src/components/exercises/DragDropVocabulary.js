@@ -45,7 +45,7 @@ export default function DragDropVocabulary({
   const items = config.items || [];
   const displayMode = config.display_mode || "auto";
   const baseXp = step?.xp_reward || 30;
-  const isPortuguese = userLanguage === "pt-BR" || userLanguage === "pt";
+  const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 
   const labels = isPortuguese
