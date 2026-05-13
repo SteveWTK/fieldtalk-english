@@ -2822,14 +2822,14 @@ function DynamicLessonContent() {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col gap-4 sm:flex-row justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-row gap-4 sm:flex-row justify-between sm:justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
         {currentStep === 0 ? (
           <Link
             href="/lesson"
             className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{t("back")}</span>
+            {/* <span>{t("back")}</span> */}
           </Link>
         ) : (
           <button
@@ -2838,22 +2838,19 @@ function DynamicLessonContent() {
             className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{t("previous_activity")}</span>
+            {/* <span>{t("previous_activity")}</span> */}
           </button>
         )}
 
-        <div className="text-center">
+        {/* <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">
             {completedSteps.size}{" "}
-            {t("activities_completed_of").replace(
-              "{total}",
-              steps.length - 1
-            )}
+            {t("activities_completed_of").replace("{total}", steps.length - 1)}
           </p>
           {completing && (
             <p className="text-xs text-blue-600 mt-1">{t("saving_progress")}</p>
           )}
-        </div>
+        </div> */}
 
         <button
           onClick={
@@ -2873,11 +2870,11 @@ function DynamicLessonContent() {
             </>
           ) : (
             <>
-              <span>
+              {/* <span>
                 {currentStep === steps.length - 1
                   ? t("complete_lesson")
                   : t("next_activity")}
-              </span>
+              </span> */}
               <ArrowRight className="w-4 h-4" />
             </>
           )}
