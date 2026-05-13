@@ -433,28 +433,29 @@ export default function AIMultipleChoiceGapFill({
               {t("choose_best_word")}
             </span>
           </div>
-
-          {/* Audio Button */}
-          <button
-            onClick={() =>
-              speakText(
-                sentence.text.replace("___", selectedOption || "[blank]"),
-                sentenceId
-              )
-            }
-            className="p-2 bg-growth-100 hover:bg-growth-200 dark:bg-growth-900/30 dark:hover:bg-growth-900/50 
+          <div className="flex items-center">
+            {/* Audio Button */}
+            <button
+              onClick={() =>
+                speakText(
+                  sentence.text.replace("___", selectedOption || "[blank]"),
+                  sentenceId
+                )
+              }
+              className="p-2 bg-growth-100 hover:bg-growth-200 dark:bg-growth-900/30 dark:hover:bg-growth-900/50 
                      rounded-lg transition-colors flex items-center space-x-1"
-            title={t("listen_to_sentence")}
-          >
-            {playingAudio[sentenceId] ? (
-              <Pause className="w-4 h-4 text-growth-600 dark:text-growth-400" />
-            ) : (
-              <Play className="w-4 h-4 text-growth-600 dark:text-growth-400" />
-            )}
-          </button>
+              title={t("listen_to_sentence")}
+            >
+              {playingAudio[sentenceId] ? (
+                <Pause className="w-4 h-4 text-growth-600 dark:text-growth-400" />
+              ) : (
+                <Play className="w-4 h-4 text-growth-600 dark:text-growth-400" />
+              )}
+            </button>
+          </div>
 
           {/* Hint Usage Indicator */}
-          {usedHints > 0 && (
+          {/* {usedHints > 0 && (
             <div className="flex items-center space-x-1">
               <Lightbulb
                 className={`w-4 h-4 ${hasUsedAllHints ? "text-attention-500" : "text-accent-500"}`}
@@ -465,7 +466,7 @@ export default function AIMultipleChoiceGapFill({
                 {usedHints}/{MAX_HINTS_PER_GAP} {t("hints_used")}
               </span>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Sentence with gap */}
@@ -636,9 +637,22 @@ export default function AIMultipleChoiceGapFill({
         )}
 
         {/* Context or translation if provided */}
-        {sentence.context && (
+        {/* {sentence.context && (
           <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">
             Context: {sentence.context}
+          </div>
+        )} */}
+        {feedback?.isCorrect && imageUrl && (
+          <div className="mt-6 mb-2 mx-16 sm:mx-48 md:mx-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt=""
+              className="w-full max-h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
           </div>
         )}
       </div>
@@ -687,9 +701,8 @@ export default function AIMultipleChoiceGapFill({
         </button>
       </div>
 
-      {imageUrl && (
+      {/* {imageUrl && (
         <div className="mb-6 mx-6 sm:mx-24 md:mx-36 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
             alt=""
@@ -699,7 +712,8 @@ export default function AIMultipleChoiceGapFill({
             }}
           />
         </div>
-      )}
+      )} */}
+
       {sentences.map((sentence) => renderSentenceWithOptions(sentence))}
 
       {completed && (

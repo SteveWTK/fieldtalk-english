@@ -106,35 +106,41 @@ export default function VocabularyItem({
         shouldShake ? "vocab-attention" : ""
       }`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <span className="font-semibold text-gray-900 dark:text-white text-lg">
-            {item.word || item.english}
-          </span>
-          {/* {item.pronunciation && (
-            <span className="text-gray-500 dark:text-gray-400 ml-2 text-sm">
-              {item.pronunciation}
-            </span>
-          )} */}
-        </div>
-        <button
-          type="button"
-          aria-label="Play audio"
-          className="text-accent-600 hover:text-accent-700 hover:scale-105 disabled:opacity-50"
-          onClick={(e) => {
-            // Click bubbles up to the card div which handles activation.
-            // Stop propagation so we don't trigger twice; then trigger ourselves.
-            e.stopPropagation();
-            handleActivate();
-          }}
-          disabled={audioLoading}
-        >
-          {audioLoading ? (
-            <div className="w-5 h-5 border-2 border-accent-600 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <Volume2 className="w-5 h-5" />
+      <div className="flex items-center justify-between mb-2 gap-3">
+        <span className="font-semibold text-gray-900 dark:text-white text-lg">
+          {item.word || item.english}
+        </span>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {item.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image_url}
+              alt={item.word || item.english || ""}
+              className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
           )}
-        </button>
+          <button
+            type="button"
+            aria-label="Play audio"
+            className="text-accent-600 hover:text-accent-700 hover:scale-105 disabled:opacity-50"
+            onClick={(e) => {
+              // Click bubbles up to the card div which handles activation.
+              // Stop propagation so we don't trigger twice; then trigger ourselves.
+              e.stopPropagation();
+              handleActivate();
+            }}
+            disabled={audioLoading}
+          >
+            {audioLoading ? (
+              <div className="w-5 h-5 border-2 border-accent-600 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
+          </button>
+        </div>
       </div>
       <p className="text-gray-600 dark:text-gray-300 mb-1">
         {item.translation}
@@ -158,20 +164,20 @@ export default function VocabularyItem({
       <style jsx>{`
         @keyframes vocab-attention {
           0%,
-          88%,
-          100% {
+          18%,
+          30% {
             transform: translateX(0) rotate(0);
           }
-          90% {
+          20% {
             transform: translateX(-2px) rotate(-0.4deg);
           }
-          92% {
+          22% {
             transform: translateX(2px) rotate(0.4deg);
           }
-          94% {
+          24% {
             transform: translateX(-2px) rotate(-0.4deg);
           }
-          96% {
+          26% {
             transform: translateX(2px) rotate(0.4deg);
           }
         }
