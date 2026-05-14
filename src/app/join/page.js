@@ -28,7 +28,7 @@ function JoinPageContent() {
   const searchParams = useSearchParams();
   const edition = searchParams.get("edition") || null;
   const { t } = useTranslation();
-  const { signUp } = useAuth();
+  const { signIn } = useAuth();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,23 +42,39 @@ function JoinPageContent() {
     setLoading(true);
     setError("");
 
-    const metadata = {
-      full_name: fullName.trim(),
-      user_type: "player",
-    };
-    if (edition) {
-      metadata.edition = edition;
-    }
+    try {
+      // 1. Create the account server-side with email already confirmed
+      const res = await fetch("/api/auth/signup-instant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName,
+          edition,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not create account");
+        setLoading(false);
+        return;
+      }
 
-    const { error: signUpError } = await signUp(email, password, metadata);
+      // 2. Sign them in immediately so they land on /lesson logged in
+      const { error: signInError } = await signIn(email, password);
+      if (signInError) {
+        setError(signInError);
+        setLoading(false);
+        return;
+      }
 
-    if (signUpError) {
-      setError(signUpError);
+      router.push("/lesson");
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("Network error. Please try again.");
       setLoading(false);
-      return;
     }
-
-    router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
   };
 
   return (

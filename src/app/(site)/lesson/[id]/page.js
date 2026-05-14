@@ -762,7 +762,7 @@ function DynamicLessonContent() {
           <div className="text-center">
             <div className="bg-white dark:bg-primary-900/20 rounded-xl pt-4 mb-0">
               {/* Translation button */}
-              {userPreferredLanguage !== "en" && (
+              {/* {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
                   <button
                     onClick={() => {
@@ -781,7 +781,7 @@ function DynamicLessonContent() {
                     </span>
                   </button>
                 </div>
-              )}
+              )} */}
 
               {currentStepData.video_url ? (
                 <VideoPlayer

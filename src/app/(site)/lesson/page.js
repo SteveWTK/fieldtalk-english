@@ -205,22 +205,22 @@ function PlayerLessonsMenu() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Welcome Message */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
           {isGuest
             ? t("welcome_to_fieldtalk")
             : `${t("welcome_back")} ${playerData.name}!`}
         </h1>
-        {/* <p className="text-gray-600 dark:text-gray-300 mt-2">
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
           Continue your English learning journey
-        </p> */}
-      </div>
+        </p>
+      </div> */}
 
       {/* Three Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        {/* <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t("your_learning_journey")}
-        </h2>
+        </h2> */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pillars.map((pillar, index) => {
             const IconComponent = getIconComponent(pillar.icon);
@@ -384,7 +384,7 @@ function PlayerLessonsMenu() {
           {/* Match Day Countdown */}
 
           {/* Recent Achievements */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {t("recent_achievements")}
             </h3>
@@ -410,10 +410,10 @@ function PlayerLessonsMenu() {
                 );
               })}
             </div>
-          </div>
+          </div> */}
 
           {/* Quick Actions */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {t("quick_practice")}
             </h3>
@@ -431,7 +431,7 @@ function PlayerLessonsMenu() {
                 <span>{t("video_analysis")}</span>
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

@@ -22,19 +22,19 @@ export function LanguageProvider({ children }) {
   const { user } = useAuth();
   const userId = user?.id;
 
-  // Load language from localStorage on mount
+  // Load language from localStorage on mount.
+  // Default is English — we no longer detect browser language. Cultura
+  // Inglesa's pedagogical preference is target-language immersion, so even
+  // Brazilian users see English UI on first visit. Users who explicitly
+  // toggle to another language have that preference honoured on return.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storedLang = localStorage.getItem("preferredLanguage");
     if (storedLang && SUPPORTED.includes(storedLang)) {
       setLangState(storedLang);
     } else {
-      const browserLang = navigator.language?.slice(0, 2);
-      const fallbackLang = SUPPORTED.includes(browserLang)
-        ? browserLang
-        : "en";
-      setLangState(fallbackLang);
-      localStorage.setItem("preferredLanguage", fallbackLang);
+      setLangState("en");
+      localStorage.setItem("preferredLanguage", "en");
     }
   }, []);
 

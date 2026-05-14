@@ -80,22 +80,20 @@ export default function AuthCallbackPage() {
 
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
-        <div className="text-center bg-white p-8 rounded-xl shadow-lg">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Authentication Error
-          </h1>
-          <p className="text-gray-600 mb-4">{message}</p>
+      <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center p-4">
+        <div className="text-center bg-white/5 border border-white/10 p-8 rounded-2xl max-w-sm w-full">
+          <h1 className="text-2xl font-bold mb-4">Authentication Error</h1>
+          <p className="text-white/60 mb-6">{message}</p>
           <div className="space-y-2">
             <button
               onClick={() => router.push("/signin")}
-              className="block w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700"
+              className="block w-full bg-white text-[#070707] py-2.5 px-4 rounded-full font-semibold hover:scale-[1.01] transition-transform"
             >
               Try Again
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="block w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+              className="block w-full border border-white/20 text-white py-2.5 px-4 rounded-full hover:bg-white/5 transition-colors"
             >
               Reload Page
             </button>
@@ -106,24 +104,29 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
-      <div className="text-center">
+    <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Soft ambient glow so the load doesn't feel like a black void */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(16,185,129,0.10), rgba(0,0,0,0) 60%)",
+        }}
+      />
+      <div className="relative text-center">
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-yellow-500 rounded-full flex items-center justify-center">
             <Globe className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-gray-900">
+          <span className="text-2xl font-bold tracking-tight">
             FieldTalk English
           </span>
         </div>
 
-        <div className="bg-white p-8 rounded-xl shadow-lg">
-          <Loader className="w-8 h-8 text-primary-600 mx-auto mb-4 animate-spin" />
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            {status === "success" ? "Success!" : "Completing your sign in..."}
-          </h1>
-          <p className="text-gray-600">{message}</p>
-        </div>
+        <Loader className="w-8 h-8 text-emerald-400 mx-auto mb-4 animate-spin" />
+        <p className="text-white/70">
+          {status === "success" ? message : "Completing your sign in..."}
+        </p>
       </div>
     </div>
   );
