@@ -433,8 +433,7 @@ export default function AIMultipleChoiceGapFill({
               {t("choose_best_word")}
             </span>
           </div>
-          <div className="flex items-center">
-            {/* Audio Button */}
+          {/* <div className="flex items-center">
             <button
               onClick={() =>
                 speakText(
@@ -452,7 +451,7 @@ export default function AIMultipleChoiceGapFill({
                 <Play className="w-4 h-4 text-growth-600 dark:text-growth-400" />
               )}
             </button>
-          </div>
+          </div> */}
 
           {/* Hint Usage Indicator */}
           {/* {usedHints > 0 && (
@@ -700,19 +699,6 @@ export default function AIMultipleChoiceGapFill({
           )}
         </button>
       </div> */}
-
-      {/* {imageUrl && (
-        <div className="mb-6 mx-6 sm:mx-24 md:mx-36 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-          <img
-            src={imageUrl}
-            alt=""
-            className="w-full max-h-72 object-cover"
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        </div>
-      )} */}
 
       {sentences.map((sentence) => renderSentenceWithOptions(sentence))}
 

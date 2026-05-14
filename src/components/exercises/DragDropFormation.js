@@ -3,9 +3,9 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  CheckCircle,
+  // CheckCircle,
   RotateCcw,
-  Trophy,
+  // Trophy,
   AlertCircle,
   Volume2,
   VolumeX,
@@ -461,7 +461,7 @@ export default function DragDropFormation({
       )}
 
       {/* Completion message */}
-      {completed && (
+      {/* {completed && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
           <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -471,7 +471,7 @@ export default function DragDropFormation({
             <CheckCircle className="w-5 h-5" />+{baseXp} {labels.xpEarned}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Custom animations */}
       <style jsx>{`
