@@ -2,13 +2,13 @@
 // Updated src/app/signup/page.js - Fix email confirmation flow
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Globe, ArrowRight, Users, Shield, User } from "lucide-react";
 
-export default function SignUpPage() {
+function SignUpPageContent() {
   const [step, setStep] = useState(1); // 1: Role selection, 2: Details form
   const [selectedRole, setSelectedRole] = useState("");
   const [formData, setFormData] = useState({
@@ -404,6 +404,16 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// useSearchParams needs a Suspense boundary, otherwise Next.js opts the
+// whole route out of static rendering and Vercel's build fails.
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignUpPageContent />
+    </Suspense>
   );
 }
 
