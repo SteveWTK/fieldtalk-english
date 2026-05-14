@@ -679,7 +679,7 @@ export default function AIMultipleChoiceGapFill({
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-3">
+      {/* <div className="mb-6 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
             {t("complete_sentences_mc")}
@@ -699,7 +699,7 @@ export default function AIMultipleChoiceGapFill({
             <Volume2 className="w-5 h-5" />
           )}
         </button>
-      </div>
+      </div> */}
 
       {/* {imageUrl && (
         <div className="mb-6 mx-6 sm:mx-24 md:mx-36 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">

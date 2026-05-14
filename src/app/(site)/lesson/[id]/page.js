@@ -760,7 +760,7 @@ function DynamicLessonContent() {
       case "scenario":
         return (
           <div className="text-center">
-            <div className="bg-white dark:bg-primary-900/20 rounded-xl p-6 mb-6">
+            <div className="bg-white dark:bg-primary-900/20 rounded-xl pt-4 mb-0">
               {/* Translation button */}
               {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
@@ -795,7 +795,7 @@ function DynamicLessonContent() {
                 <img
                   src={currentStepData.image_url}
                   alt="Scenario"
-                  className="w-full max-w-md mx-auto rounded-lg shadow-md mb-4"
+                  className="w-auto max-w-md max-h-72 mx-auto rounded-lg shadow-md mb-4"
                   onError={(e) => {
                     e.target.style.display = "none";
                   }}
@@ -808,7 +808,7 @@ function DynamicLessonContent() {
                   currentStepData.content}
               </p>
 
-              <button
+              {/* <button
                 onClick={toggleAudio}
                 className="flex items-center space-x-2 mx-auto bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 transition-colors"
                 disabled={!currentStepData.content}
@@ -830,7 +830,7 @@ function DynamicLessonContent() {
                   </>
                 )}
               </button>
-              <audio ref={audioRef} style={{ display: "none" }} />
+              <audio ref={audioRef} style={{ display: "none" }} /> */}
 
               {currentStepData.cultural_context && (
                 <div className="bg-primary-50 dark:bg-primary-900/20 p-3 rounded-lg mt-4">
@@ -1088,11 +1088,11 @@ function DynamicLessonContent() {
         }));
         return (
           <div className="space-y-4">
-            <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
+            {/* <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
               {translations[`vocab-content-${currentStep}`] ||
                 currentStepData.content ||
                 t("learn_essential_words")}
-            </p>
+            </p> */}
             <VocabularyList
               key={`vocab-${currentStepData.id || currentStep}`}
               items={translatedItems}
@@ -1103,6 +1103,33 @@ function DynamicLessonContent() {
           </div>
         );
       }
+
+      case "memory_match":
+        const memoryVocabulary = currentStepData.vocabulary || [];
+        const translatedVocabulary = memoryVocabulary.map((word, idx) => ({
+          ...word,
+          english:
+            translations[`memory-english-${currentStep}-${idx}`] ||
+            word.english,
+          translation:
+            translations[`memory-translation-${currentStep}-${idx}`] ||
+            word.translation ||
+            word.portuguese,
+        }));
+
+        return (
+          <MemoryMatch
+            key={`memmatch-${currentStepData.id || currentStep}`}
+            vocabulary={translatedVocabulary}
+            lessonId={lessonId}
+            stepId={currentStepData.id || `step-${currentStep}`}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
+        );
 
       case "interactive_pitch":
         const pitchConfig = {
@@ -2544,33 +2571,6 @@ function DynamicLessonContent() {
           </div>
         );
 
-      case "memory_match":
-        const memoryVocabulary = currentStepData.vocabulary || [];
-        const translatedVocabulary = memoryVocabulary.map((word, idx) => ({
-          ...word,
-          english:
-            translations[`memory-english-${currentStep}-${idx}`] ||
-            word.english,
-          translation:
-            translations[`memory-translation-${currentStep}-${idx}`] ||
-            word.translation ||
-            word.portuguese,
-        }));
-
-        return (
-          <MemoryMatch
-            key={`memmatch-${currentStepData.id || currentStep}`}
-            vocabulary={translatedVocabulary}
-            lessonId={lessonId}
-            stepId={currentStepData.id || `step-${currentStep}`}
-            onComplete={(xp) => {
-              setXpEarned((prev) => prev + xp);
-              setCompletedSteps((prev) => new Set([...prev, currentStep]));
-              setStepCompleted(true);
-            }}
-          />
-        );
-
       case "conversation_vote":
         return (
           <ConversationVote
@@ -2729,22 +2729,22 @@ function DynamicLessonContent() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 min-h-screen">
+    <div className="max-w-4xl mx-auto p-4 min-h-screen">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push("/lesson")}
               className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{t("lessons")}</span>
+              {/* <ArrowLeft className="w-4 h-4" /> */}
+              <span className="text-gray-600 dark:text-gray-300 font-semibold">
+                {lesson.pillar?.display_name || t("lesson")}
+              </span>
+              {/* <span>{t("lessons")}</span> */}
             </button>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600 dark:text-gray-300 font-bold">
-              {lesson.pillar?.display_name || t("lesson")}
-            </span>
+            {/* <span className="text-gray-400">•</span> */}
           </div>
           <button
             onClick={() => router.push("/lesson")}
@@ -2756,20 +2756,20 @@ function DynamicLessonContent() {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {lesson.title}
             </h1>
-            <div className="flex items-center space-x-4 mt-2">
-              {/* <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            {/* <div className="flex items-center space-x-4 mt-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {lesson.pillar?.display_name || "Lesson"}
-              </span> */}
+              </span>
               <span className="px-3 py-1 bg-white text-accent-800 rounded-full text-sm font-medium">
                 {lesson.difficulty}
               </span>
-              {/* <span className="text-gray-600 dark:text-gray-300 text-sm">
+              <span className="text-gray-600 dark:text-gray-300 text-sm">
                 {lesson.xp_reward} XP Available
-              </span> */}
-            </div>
+              </span>
+            </div> */}
           </div>
           {/* <div className="text-right">
             <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -2803,7 +2803,7 @@ function DynamicLessonContent() {
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
           {getStepIcon(currentStepData?.type)}
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
             {translations[`step-title-${currentStep}`] ||
               currentStepData?.title ||
               `Step ${currentStep + 1}`}

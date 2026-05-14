@@ -1,7 +1,13 @@
 // components/exercises/DragDropVocabulary.js
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   CheckCircle,
   RotateCcw,
@@ -59,8 +65,7 @@ export default function DragDropVocabulary({
         empty: "Nenhuma palavra de vocabulário configurada.",
       }
     : {
-        instruction:
-          "Drag each word onto its correct image or translation",
+        instruction: "Drag each word onto its correct image or translation",
         progress: "correct",
         wrongPlace: "Not the right match. Try again.",
         complete: "Vocabulary complete!",
@@ -296,9 +301,9 @@ export default function DragDropVocabulary({
     <div className="space-y-4">
       {/* Instruction & progress */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        {/* <p className="text-sm text-gray-700 dark:text-gray-300">
           {step?.content || labels.instruction}
-        </p>
+        </p> */}
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-gray-900 dark:text-white">
             {matchedCount}/{totalItems} {labels.progress}
@@ -354,7 +359,10 @@ export default function DragDropVocabulary({
       )}
 
       {/* Targets grid */}
-      <div className="grid gap-3 justify-center" style={{ gridTemplateColumns: "repeat(auto-fit, 120px)" }}>
+      <div
+        className="grid gap-3 justify-center"
+        style={{ gridTemplateColumns: "repeat(auto-fit, 120px)" }}
+      >
         {shuffledTargets.map((item) => (
           <div key={item.id}>{renderTargetCard(item)}</div>
         ))}
@@ -370,7 +378,9 @@ export default function DragDropVocabulary({
             transform: "translate(-50%, -50%)",
           }}
         >
-          {renderEnglishCard(items.find((it) => it.id === draggingItemId) || {})}
+          {renderEnglishCard(
+            items.find((it) => it.id === draggingItemId) || {}
+          )}
         </div>
       )}
 

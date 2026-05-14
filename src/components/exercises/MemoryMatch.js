@@ -254,7 +254,7 @@ export default function MemoryMatch({
       <button
         onClick={toggleMute}
         aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-        className="absolute top-2 right-2 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="absolute top-0 right-1 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         {isMuted ? (
           <VolumeX className="w-5 h-5" />
@@ -262,14 +262,14 @@ export default function MemoryMatch({
           <Volume2 className="w-5 h-5" />
         )}
       </button>
-      <div className="text-center px-4">
+      {/* <div className="text-center px-4">
         <h3 className="text-xl sm:text-2xl font-bold text-primary-900 dark:text-white mb-2">
           Memory Match Challenge
         </h3>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           Combine as palavras em inglês com suas traduções em português
         </p>
-      </div>
+      </div> */}
 
       {!gameStarted && (
         <div className="flex gap-2 sm:gap-4 mb-4">
