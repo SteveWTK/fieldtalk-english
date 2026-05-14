@@ -122,14 +122,29 @@ export async function getPlayerProgress(playerId) {
 }
 
 // Pillar and Lesson Functions - FROM ORIGINAL FILE
-export async function getAllPillars() {
+// `edition` is optional; when provided we filter to pillars matching that
+// edition (e.g. 'players' or 'wc2026'). If the column doesn't exist yet
+// (e.g. before the WC2026_EDITIONS_SCHEMA migration is run) we fall back
+// to returning all pillars so the page keeps working.
+export async function getAllPillars(edition = null) {
   try {
-    const { data, error } = await supabase
-      .from("pillars")
-      .select("*")
-      .order("sort_order");
-
+    let query = supabase.from("pillars").select("*").order("sort_order");
+    if (edition) {
+      query = query.eq("edition", edition);
+    }
+    const { data, error } = await query;
     if (error) {
+      // If the edition column hasn't been added yet, retry without the filter
+      const msg = (error.message || "").toLowerCase();
+      if (
+        edition &&
+        (msg.includes("column") || msg.includes("edition") || error.code === "42703")
+      ) {
+        console.warn(
+          "[pillars] edition column not present yet — returning unfiltered list"
+        );
+        return getAllPillars(null);
+      }
       console.error("Pillars error:", error.message, error.details, error.hint);
       throw error;
     }

@@ -4,7 +4,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Globe, ArrowRight, Users, Shield, User } from "lucide-react";
 
@@ -25,6 +25,10 @@ export default function SignUpPage() {
 
   const { signUp } = useAuth();
   const router = useRouter();
+  // If the user arrived via /wc2026 → /signup?edition=wc2026 we tag their
+  // new player row with that edition so the lesson list filters correctly.
+  const searchParams = useSearchParams();
+  const edition = searchParams.get("edition") || null;
 
   const roles = [
     {
@@ -119,6 +123,12 @@ export default function SignUpPage() {
     } else if (selectedRole === "client_admin") {
       metadata.role_title = formData.roleTitle;
       metadata.club_name = formData.clubName;
+    }
+
+    // Preserve the edition tag (e.g. 'wc2026') so the DB trigger writes it
+    // to players.edition. Falls back to 'players' (the default).
+    if (edition) {
+      metadata.edition = edition;
     }
 
     const { user, error } = await signUp(

@@ -23,6 +23,9 @@ export const auth = {
             nationality: metadata.nationality || "",
             role_title: metadata.role_title || "",
             club_name: metadata.club_name || "",
+            // Edition tag (e.g. 'wc2026'). The handle_new_user DB trigger
+            // copies this into players.edition. Defaults to 'players'.
+            edition: metadata.edition || "players",
           },
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },

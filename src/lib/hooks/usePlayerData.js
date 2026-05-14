@@ -61,7 +61,7 @@ export function usePlayerProgress(userId) {
   return { progress, loading, error, refetch: () => fetchProgress() };
 }
 
-export function usePillarsAndLessons() {
+export function usePillarsAndLessons(edition = null) {
   const [pillars, setPillars] = useState([]);
   const [lessons, setLessons] = useState({});
   const [loading, setLoading] = useState(true);
@@ -72,8 +72,8 @@ export function usePillarsAndLessons() {
       try {
         setLoading(true);
 
-        // Get all pillars
-        const pillarsData = await getAllPillars();
+        // Get pillars (optionally filtered to the user's edition)
+        const pillarsData = await getAllPillars(edition);
         setPillars(pillarsData);
 
         // Get lessons for each pillar
@@ -90,7 +90,7 @@ export function usePillarsAndLessons() {
     }
 
     fetchData();
-  }, []);
+  }, [edition]);
 
   return { pillars, lessons, loading, error };
 }
@@ -155,7 +155,12 @@ export function usePlayerDashboard(userId) {
     loading: progressLoading,
     refetch: refetchProgress,
   } = usePlayerProgress(userId);
-  const { pillars, lessons, loading: lessonsLoading } = usePillarsAndLessons();
+  // Filter pillars by the player's edition so a WC2026 player only sees
+  // WC pillars and a default 'players' user only sees the Players edition.
+  // Falls back to no filter if the column / profile field isn't populated.
+  const { pillars, lessons, loading: lessonsLoading } = usePillarsAndLessons(
+    profile?.edition || null
+  );
   const { completions, loading: completionsLoading } =
     usePlayerCompletions(userId);
   const { achievements, loading: achievementsLoading } =
