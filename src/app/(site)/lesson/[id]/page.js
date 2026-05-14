@@ -2733,33 +2733,36 @@ function DynamicLessonContent() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-[16px] lg:text-lg my-1 sm:my-[6px]">
             <button
               onClick={() => router.push("/lesson")}
               className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
             >
-              {/* <ArrowLeft className="w-4 h-4" /> */}
+              <ArrowLeft className="w-4 h-4" />
               <span className="text-gray-600 dark:text-gray-300 font-semibold">
                 {lesson.pillar?.display_name || t("lesson")}
               </span>
               {/* <span>{t("lessons")}</span> */}
             </button>
-            {/* <span className="text-gray-400">•</span> */}
+            <span className="text-gray-400">•</span>
+            <span className="text-gray-600 dark:text-gray-300 font-semibold">
+              {lesson.title || t("lesson")}
+            </span>
           </div>
           <button
             onClick={() => router.push("/lesson")}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <Home className="w-5 h-5" />
+            {/* <Home className="w-5 h-5" /> */}
           </button>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        {/* <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {lesson.title}
             </h1>
-            {/* <div className="flex items-center space-x-4 mt-2">
+            <div className="flex items-center space-x-4 mt-2">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {lesson.pillar?.display_name || "Lesson"}
               </span>
@@ -2769,15 +2772,15 @@ function DynamicLessonContent() {
               <span className="text-gray-600 dark:text-gray-300 text-sm">
                 {lesson.xp_reward} XP Available
               </span>
-            </div> */}
+            </div>
           </div>
-          {/* <div className="text-right">
+          <div className="text-right">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               XP Earned
             </p>
             <p className="text-2xl font-bold text-green-600">{xpEarned}</p>
-          </div> */}
-        </div>
+          </div>
+        </div> */}
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
@@ -2812,7 +2815,7 @@ function DynamicLessonContent() {
 
         {/* Step completion indicator */}
         {stepCompleted && (
-          <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-lg flex items-center space-x-2">
+          <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 text-green-800 dark:text-green-200 rounded-lg flex items-center space-x-2">
             <CheckCircle className="w-5 h-5" />
             <span className="font-semibold">{t("step_complete")}</span>
           </div>

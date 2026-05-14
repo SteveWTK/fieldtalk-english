@@ -12,6 +12,7 @@ export default function AISpeechPractice({
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [transcript, setTranscript] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -153,8 +154,7 @@ export default function AISpeechPractice({
       <div className="mb-6">
         {/* <h3 className="text-lg font-semibold mb-2">Pratique sua Pronuncia.</h3> */}
         <p className="px-4 mb-4 text-primary-800 dark:text-white">
-          Ative o microfone e leia o texto abaixo em voz alta para praticar e
-          receber feedback sobre sua pronuncia.
+          Read the words below
         </p>
         <div className="bg-blue-50 p-4 rounded-lg">
           {/* <p className="text-gray-700 mb-2">{prompt}</p> */}
@@ -210,7 +210,7 @@ export default function AISpeechPractice({
             <div className="flex justify-center space-x-3 mb-4">
               <button
                 onClick={playRecording}
-                className="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
               >
                 {isPlaying ? (
                   <Pause className="w-5 h-5" />
@@ -223,7 +223,7 @@ export default function AISpeechPractice({
               <button
                 onClick={analyzeRecording}
                 disabled={loading}
-                className="bg-accent-500 text-white px-6 py-3 rounded-lg hover:bg-accent-600 disabled:opacity-50 flex items-center space-x-2"
+                className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 disabled:opacity-50 flex items-center space-x-2"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -235,7 +235,7 @@ export default function AISpeechPractice({
 
               <button
                 onClick={resetRecording}
-                className="bg-primary-500 text-white px-4 py-3 rounded-lg hover:bg-primary-600 flex items-center space-x-2"
+                className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 flex items-center space-x-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Try Again</span>
@@ -298,14 +298,14 @@ export default function AISpeechPractice({
             </div>
           </div>
 
-          {transcript && (
+          {/* {transcript && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <h4 className="font-semibold mb-1">What we heard:</h4>
               <p className="font-mono">&quot;{transcript}&quot;</p>
             </div>
-          )}
+          )} */}
 
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             {feedback.strengths?.length > 0 && (
               <div className="p-3 bg-green-50 rounded-lg">
                 <h4 className="font-semibold text-green-800 mb-2">
@@ -355,7 +355,7 @@ export default function AISpeechPractice({
                 </ul>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* <div className="mt-6 flex justify-center space-x-4">
             <button

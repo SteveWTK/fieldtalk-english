@@ -473,19 +473,19 @@ export default function MemoryMatch({
 
       {isComplete ? (
         <div className="text-center space-y-4 animate-fadeIn">
-          <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white p-8 rounded-xl shadow-xl">
-            <Trophy className="w-20 h-20 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-3xl font-bold mb-2">Congratulations!</h3>
-            <p className="text-xl mb-4">
+          <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white p-4 rounded-xl shadow-xl">
+            <Trophy className="w-8 h-8 mx-auto mb-2 animate-bounce" />
+            {/* <h3 className="text-xl font-bold mb-2">Congratulations!</h3> */}
+            <p className="text-sm mb-4">
               You matched all pairs in {attempts} attempts!
             </p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={handleRestart}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-accent-600 rounded-lg font-bold hover:bg-orange-50 transition-colors"
+                className="flex items-center gap-2 px-6 py-[6px] bg-white text-accent-600 rounded-xl font-bold hover:bg-orange-50 transition-colors"
               >
                 <RefreshCw className="w-5 h-5" />
-                Comece de Novo
+                Play again
               </button>
             </div>
           </div>

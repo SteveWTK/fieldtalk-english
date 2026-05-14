@@ -11,7 +11,7 @@ import React, {
 import {
   CheckCircle,
   RotateCcw,
-  Trophy,
+  // Trophy,
   AlertCircle,
   Volume2,
   VolumeX,
@@ -386,14 +386,18 @@ export default function DragDropVocabulary({
 
       {/* Completion */}
       {completed && (
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
-          <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4 text-center">
+          {/* <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" /> */}
+          {/* <div className="inline-flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
+            <CheckCircle className="w-5 h-5" />
             {labels.complete}
-          </h3>
-          <div className="inline-flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
+          </div> */}
+          {/* <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {labels.complete}
+          </h3> */}
+          {/* <div className="inline-flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
             <CheckCircle className="w-5 h-5" />+{baseXp} {labels.xpEarned}
-          </div>
+          </div> */}
         </div>
       )}
 

@@ -311,10 +311,7 @@ export default function TimelineDrag({
       style={{ height: "180px" }}
     >
       {/* Inner: timelineRef + percent-positioned content */}
-      <div
-        ref={timelineRef}
-        className="absolute inset-x-3 top-3 bottom-3"
-      >
+      <div ref={timelineRef} className="absolute inset-x-3 top-3 bottom-3">
         {/* Year markers */}
         {markerYears.map((year) => {
           const left = percentForYear(year);
@@ -333,7 +330,10 @@ export default function TimelineDrag({
         })}
 
         {/* Axis line */}
-        <div className="absolute left-0 right-0 h-px bg-gray-400 dark:bg-gray-500" style={{ top: "32px" }} />
+        <div
+          className="absolute left-0 right-0 h-px bg-gray-400 dark:bg-gray-500"
+          style={{ top: "32px" }}
+        />
 
         {/* Placed events */}
         {placedEvents.map((event) => (
@@ -357,15 +357,12 @@ export default function TimelineDrag({
     <div
       className="relative bg-gradient-to-r from-blue-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex-1"
       style={{
-        minHeight: "500px",
+        minHeight: "200px",
         minWidth: layoutMode === "tablet" ? "180px" : undefined,
       }}
     >
       {/* Inner: timelineRef + percent-positioned content (inset to avoid clipping at edges) */}
-      <div
-        ref={timelineRef}
-        className="absolute inset-x-0 inset-y-4"
-      >
+      <div ref={timelineRef} className="absolute inset-x-0 inset-y-4">
         {/* Year markers (left of axis, right-aligned so ticks line up).
             Refs are stored so drop detection can use the markers' actual
             rendered positions instead of CSS-percent math. */}
@@ -389,7 +386,10 @@ export default function TimelineDrag({
         })}
 
         {/* Axis line */}
-        <div className="absolute top-0 bottom-0 w-px bg-gray-400 dark:bg-gray-500" style={{ left: "56px" }} />
+        <div
+          className="absolute top-0 bottom-0 w-px bg-gray-400 dark:bg-gray-500"
+          style={{ left: "56px" }}
+        />
 
         {/* Placed events (right of line) */}
         {placedEvents.map((event) => {
