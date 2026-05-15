@@ -2,7 +2,7 @@
 // src/app/(site)/lesson/page.js
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Target,
@@ -28,11 +28,16 @@ import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
+import FirstLessonPrompt from "@/components/FirstLessonPrompt";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
   const [showConstructionModal, setShowConstructionModal] = useState(false);
+  // "Start here" prompt — visible on first visit only (no completions yet
+  // AND localStorage hasn't recorded a dismissal). Decided in useEffect
+  // below once data has loaded.
+  const [showStartPrompt, setShowStartPrompt] = useState(false);
 
   const { user } = useAuth();
   // All visible strings now come from the locale files via t().
@@ -51,6 +56,18 @@ function PlayerLessonsMenu() {
     loading,
     refetchProgress,
   } = usePlayerDashboard(userId);
+
+  // Show the "Start here" prompt only when:
+  //   - data has loaded
+  //   - the user is signed in
+  //   - they have no completed lessons yet
+  // The component itself also respects a localStorage dismissal flag, so
+  // setting this to true won't force the prompt to re-appear after it was
+  // already dismissed in a prior session.
+  useEffect(() => {
+    if (loading || !user) return;
+    setShowStartPrompt((completions?.length || 0) === 0);
+  }, [loading, user, completions]);
 
   // Loading state
   if (loading) {
@@ -306,6 +323,13 @@ function PlayerLessonsMenu() {
             </div>
 
             <div className="space-y-4">
+              {/* Start-here prompt — only mounts when shouldShow is true.
+                  Sits above the first lesson card with a downward arrow. */}
+              <FirstLessonPrompt
+                shouldShow={showStartPrompt}
+                onDismiss={() => setShowStartPrompt(false)}
+              />
+
               {currentLessons.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 dark:text-gray-400">
@@ -313,10 +337,14 @@ function PlayerLessonsMenu() {
                   </p>
                 </div>
               ) : (
-                currentLessons.map((lesson) => {
+                currentLessons.map((lesson, lessonIndex) => {
                   const status = getLessonStatus(lesson);
                   const isClickable =
                     status !== "locked" && status !== "construction";
+                  // Pulse a soft emerald ring on the first lesson card while
+                  // the "Start here" prompt is up, to visually anchor the
+                  // prompt's downward arrow to the right card.
+                  const highlight = showStartPrompt && lessonIndex === 0;
 
                   return (
                     <div
@@ -329,7 +357,7 @@ function PlayerLessonsMenu() {
                             : status === "construction"
                               ? "border-orange-200 bg-orange-50/50 dark:bg-orange-900/20 opacity-75"
                               : "border-primary-200 dark:border-primary-700"
-                      }`}
+                      } ${highlight ? "fl-first-lesson-pulse" : ""}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-grow">
@@ -485,6 +513,23 @@ function PlayerLessonsMenu() {
           </div>
         </div>
       )}
+
+      {/* Pulse ring used by the first lesson card while the Start-here
+          prompt is visible. Soft emerald glow that breathes ~2s loop. */}
+      <style jsx global>{`
+        @keyframes fl-first-lesson-pulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+          }
+          50% {
+            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+          }
+        }
+        .fl-first-lesson-pulse {
+          animation: fl-first-lesson-pulse 2s ease-out infinite;
+          border-color: rgb(16 185 129) !important;
+        }
+      `}</style>
     </div>
   );
 }
