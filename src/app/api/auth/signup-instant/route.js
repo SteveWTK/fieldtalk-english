@@ -67,6 +67,27 @@ export async function POST(request) {
       );
     }
 
+    // Belt-and-braces: don't rely on the DB trigger. Write the players row
+    // directly with the admin client so the lesson page sees a correctly
+    // tagged player even if handle_new_user is silently failing.
+    const { error: playerError } = await supabase.from("players").upsert(
+      {
+        id: data.user.id,
+        email: data.user.email,
+        full_name: fullName || email.split("@")[0],
+        user_type: "player",
+        edition,
+        preferred_language: "en",
+      },
+      { onConflict: "id" }
+    );
+
+    if (playerError) {
+      // Don't fail the signup — the auth user exists and the lesson page
+      // can recover. Just log so we can see this in Vercel logs.
+      console.error("[signup-instant] players upsert error:", playerError);
+    }
+
     return NextResponse.json({ success: true, userId: data.user.id });
   } catch (err) {
     console.error("[signup-instant] unexpected error:", err);

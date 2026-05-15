@@ -155,11 +155,18 @@ export function usePlayerDashboard(userId) {
     loading: progressLoading,
     refetch: refetchProgress,
   } = usePlayerProgress(userId);
-  // Filter pillars by the player's edition so a WC2026 player only sees
-  // WC pillars and a default 'players' user only sees the Players edition.
-  // Falls back to no filter if the column / profile field isn't populated.
+  // ──────────────────────────────────────────────────────────────────
+  // TEMPORARY (WC2026 launch week): force the lesson list to show only
+  // WC pillars regardless of what the player's profile says. This is a
+  // belt-and-braces guard so even if the auth → players row chain has a
+  // gap, the demo never accidentally shows 'players' edition content.
+  //
+  // To restore normal per-edition filtering: set FORCE_EDITION = null
+  // and rely on profile.edition. Re-enable when auth-chain bug fixed.
+  // ──────────────────────────────────────────────────────────────────
+  const FORCE_EDITION = "wc2026";
   const { pillars, lessons, loading: lessonsLoading } = usePillarsAndLessons(
-    profile?.edition || null
+    FORCE_EDITION || profile?.edition || null
   );
   const { completions, loading: completionsLoading } =
     usePlayerCompletions(userId);

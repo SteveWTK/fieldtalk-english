@@ -36,27 +36,31 @@ export default function AuthCallbackPage() {
           setStatus("success");
           setMessage("Sign in successful! Redirecting...");
 
-          // If the user came in via a fan/edition landing page (e.g. WC2026)
-          // and signed in with Google, the edition was stashed in
-          // localStorage before the OAuth redirect. Apply it to the player
-          // row now that we have a session.
+          // OAuth signups don't pass our metadata through, so we ensure a
+          // properly-tagged players row exists via a server-side admin
+          // upsert. If the user came from /wc2026, the edition was stashed
+          // in localStorage before the OAuth redirect.
           try {
             const pendingEdition =
               typeof window !== "undefined"
                 ? localStorage.getItem("pending_edition")
                 : null;
-            if (pendingEdition && data.session.user?.id) {
-              await supabase
-                .from("players")
-                .update({ edition: pendingEdition })
-                .eq("id", data.session.user.id);
+            // Always call ensure-player so a row exists, even if no
+            // pending_edition (default to 'players' edition).
+            await fetch("/api/auth/ensure-player", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ edition: pendingEdition || "players" }),
+            });
+            if (pendingEdition && typeof window !== "undefined") {
               localStorage.removeItem("pending_edition");
             }
           } catch (err) {
-            // Non-fatal — user can still proceed, just may end up on the
-            // default 'players' edition. Worst case they re-enter via the
+            // Non-fatal — user can still proceed, just may not have the
+            // edition tag applied. Worst case they re-enter via the
             // landing link.
-            console.warn("Could not apply pending edition:", err);
+            console.warn("Could not ensure player row:", err);
           }
 
           // Redirect to lesson page after short delay
