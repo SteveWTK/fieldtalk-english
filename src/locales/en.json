@@ -155,6 +155,8 @@
   "sign_in_link": "Sign in",
   "show_password": "Show password",
   "hide_password": "Hide password",
+  "password_min_hint": "At least 6 characters",
+  "password_too_short": "Please choose a password with at least 6 characters.",
   "start_journey_here": "Start your journey here",
   "start_here": "Start here",
   "start_journey_sub": "Tap the first lesson below to begin",

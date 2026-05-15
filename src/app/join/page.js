@@ -22,11 +22,13 @@ import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
+import { getBranch } from "@/lib/branches";
 
 function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const edition = searchParams.get("edition") || null;
+  const branch = getBranch(searchParams.get("branch"));
   const { t } = useTranslation();
   const { signIn } = useAuth();
 
@@ -39,8 +41,15 @@ function JoinPageContent() {
 
   const handleEmailSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    // Gentle inline validation before we even hit the network.
+    if (password.length < 6) {
+      setError(t("password_too_short"));
+      return;
+    }
+
+    setLoading(true);
 
     try {
       // 1. Create the account server-side with email already confirmed
@@ -102,8 +111,8 @@ function JoinPageContent() {
           {/* Logo + heading */}
           <div className="text-center mb-8">
             <Image
-              src="/logos/cultura-inglesa-logo-lion.png"
-              alt="Cultura Inglesa"
+              src={branch.logoSrc}
+              alt={branch.alt}
               width={140}
               height={50}
               priority
@@ -165,36 +174,40 @@ function JoinPageContent() {
               className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
             />
 
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-                placeholder={t("password_label")}
-                className="w-full px-4 py-3 pr-12 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={
-                  showPassword ? t("hide_password") : t("show_password")
-                }
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white/70"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
+            <div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  placeholder={t("password_label")}
+                  className="w-full px-4 py-3 pr-12 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={
+                    showPassword ? t("hide_password") : t("show_password")
+                  }
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white/70"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              <p className="mt-1.5 text-xs text-white/40 px-1">
+                {t("password_min_hint")}
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={loading || !email || password.length < 6}
+              disabled={loading || !email}
               className="w-full mt-2 px-4 py-3.5 rounded-full font-bold tracking-[0.1em] uppercase text-sm text-[#070707] bg-white hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-transform"
             >
               {loading ? t("creating_account") : t("create_account")}

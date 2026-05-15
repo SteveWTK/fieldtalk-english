@@ -57,6 +57,8 @@ import MemoryMatch from "@/components/exercises/MemoryMatch";
 import VideoPlayer from "@/components/exercises/VideoPlayer";
 import AudioComprehension from "@/components/exercises/AudioComprehension";
 import DragDropFormation from "@/components/exercises/DragDropFormation";
+import InteractivePitchFormation from "@/components/exercises/InteractivePitchFormation";
+import InteractiveGameFormation from "@/components/exercises/InteractiveGameFormation";
 import TimelineDrag from "@/components/exercises/TimelineDrag";
 import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
 import ConversationVote from "@/components/ConversationVote";
@@ -1932,6 +1934,36 @@ function DynamicLessonContent() {
         return (
           <DragDropFormation
             key={`formation-${currentStepData.id || currentStep}`}
+            step={currentStepData}
+            lessonId={lessonId}
+            userLanguage={userLanguage}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
+        );
+
+      case "interactive_pitch_formation":
+        return (
+          <InteractivePitchFormation
+            key={`pitch-formation-${currentStepData.id || currentStep}`}
+            step={currentStepData}
+            lessonId={lessonId}
+            userLanguage={userLanguage}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
+        );
+
+      case "interactive_game_formation":
+        return (
+          <InteractiveGameFormation
+            key={`game-formation-${currentStepData.id || currentStep}`}
             step={currentStepData}
             lessonId={lessonId}
             userLanguage={userLanguage}

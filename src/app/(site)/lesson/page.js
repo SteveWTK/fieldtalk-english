@@ -126,10 +126,14 @@ function PlayerLessonsMenu() {
     pillars.find((p) => p.name === selectedPillar) || pillars[0];
   const currentLessons = currentPillar?.lessons || [];
 
+  // Platform admins get to preview under-construction lessons so we can
+  // QA new content (e.g. Lesson 2) before it goes live to the cohort.
+  const isPlatformAdmin = profile?.user_type === "platform_admin";
+
   // Improved lesson status calculation
   const getLessonStatus = (lesson) => {
-    // Check if lesson is under construction
-    if (lesson.under_construction) return "construction";
+    // Check if lesson is under construction — platform admins bypass this.
+    if (lesson.under_construction && !isPlatformAdmin) return "construction";
 
     // Check if this lesson is completed
     const isCompleted = completions?.some((c) => c.lesson_id === lesson.id);

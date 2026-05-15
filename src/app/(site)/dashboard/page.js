@@ -118,9 +118,11 @@ function PlayerLessonsMenu() {
   const currentLessons = currentPillar?.lessons || [];
 
   // Improved lesson status calculation
+  const isPlatformAdmin = profile?.user_type === "platform_admin";
+
   const getLessonStatus = (lesson) => {
-    // Check if lesson is under construction
-    if (lesson.under_construction) return "construction";
+    // Check if lesson is under construction — platform admins bypass this.
+    if (lesson.under_construction && !isPlatformAdmin) return "construction";
 
     // Check if this lesson is completed
     const isCompleted = completions?.some((c) => c.lesson_id === lesson.id);

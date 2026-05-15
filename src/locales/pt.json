@@ -155,6 +155,8 @@
   "sign_in_link": "Entrar",
   "show_password": "Mostrar senha",
   "hide_password": "Ocultar senha",
+  "password_min_hint": "Pelo menos 6 caracteres",
+  "password_too_short": "Por favor, escolha uma senha com pelo menos 6 caracteres.",
   "start_journey_here": "Comece sua jornada aqui",
   "start_here": "Comece aqui",
   "start_journey_sub": "Toque na primeira lição abaixo para começar",

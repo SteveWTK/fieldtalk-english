@@ -7,11 +7,12 @@
 // their player row can later be tagged with edition = 'wc2026'.
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getBranch } from "@/lib/branches";
 
 // Colour strip inspired by the marketing artwork — drawn from flags of
 // historically significant World Cup nations. Pure decoration, not a flag set.
@@ -26,8 +27,11 @@ const STRIPE_COLORS = [
   "#75AADB", // Argentina sky blue
 ];
 
-export default function WorldCup2026Landing() {
+function WorldCup2026LandingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const branchKey = searchParams.get("branch");
+  const branch = getBranch(branchKey);
   const { user } = useAuth();
   const { t } = useTranslation();
   // We delay applying the entrance animations until the component has mounted
@@ -44,8 +48,12 @@ export default function WorldCup2026Landing() {
       router.push("/lesson");
     } else {
       // Streamlined fan-edition signup (Google + email only), edition tag
-      // flows through on the URL.
-      router.push("/join?edition=wc2026");
+      // flows through on the URL. Preserve the branch param so /join shows
+      // the same branded logo.
+      const joinUrl = branchKey
+        ? `/join?edition=wc2026&branch=${encodeURIComponent(branchKey)}`
+        : "/join?edition=wc2026";
+      router.push(joinUrl);
     }
   };
 
@@ -66,8 +74,8 @@ export default function WorldCup2026Landing() {
           style={{ animationDelay: "100ms" }}
         >
           <Image
-            src="/logos/cultura-inglesa-logo-lion.png"
-            alt="Cultura Inglesa"
+            src={branch.logoSrc}
+            alt={branch.alt}
             width={180}
             height={64}
             priority
@@ -252,5 +260,16 @@ export default function WorldCup2026Landing() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function WorldCup2026Landing() {
+  // useSearchParams must live under a Suspense boundary for static rendering.
+  return (
+    <Suspense
+      fallback={<div className="min-h-screen bg-[#070707]" aria-hidden />}
+    >
+      <WorldCup2026LandingContent />
+    </Suspense>
   );
 }

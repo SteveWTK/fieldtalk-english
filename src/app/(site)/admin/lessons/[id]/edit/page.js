@@ -33,6 +33,8 @@ import CompletionStepForm from "@/components/admin/step-forms/CompletionStepForm
 import ConversationVoteStepForm from "@/components/admin/step-forms/ConversationVoteStepForm";
 import AudioComprehensionStepForm from "@/components/admin/step-forms/AudioComprehensionStepForm";
 import DragDropFormationStepForm from "@/components/admin/step-forms/DragDropFormationStepForm";
+import InteractivePitchFormationStepForm from "@/components/admin/step-forms/InteractivePitchFormationStepForm";
+import InteractiveGameFormationStepForm from "@/components/admin/step-forms/InteractiveGameFormationStepForm";
 import TimelineDragStepForm from "@/components/admin/step-forms/TimelineDragStepForm";
 import DragDropVocabularyStepForm from "@/components/admin/step-forms/DragDropVocabularyStepForm";
 import JSONStepForm from "@/components/admin/step-forms/JSONStepForm";
@@ -65,6 +67,14 @@ function LessonEditorContent() {
     { value: "ai_listening_challenge", label: "AI Listening Challenge" },
     { value: "audio_comprehension", label: "Audio Comprehension" },
     { value: "drag_drop_formation", label: "Drag & Drop Formation" },
+    {
+      value: "interactive_pitch_formation",
+      label: "Interactive Pitch (Formation)",
+    },
+    {
+      value: "interactive_game_formation",
+      label: "Interactive Game (Formation)",
+    },
     { value: "timeline_drag", label: "Timeline Drag" },
     { value: "drag_drop_vocab", label: "Drag & Drop Vocabulary" },
     { value: "conversation_vote", label: "Conversation Vote" },
@@ -202,6 +212,10 @@ function LessonEditorContent() {
         return <AudioComprehensionStepForm {...commonProps} />;
       case "drag_drop_formation":
         return <DragDropFormationStepForm {...commonProps} />;
+      case "interactive_pitch_formation":
+        return <InteractivePitchFormationStepForm {...commonProps} />;
+      case "interactive_game_formation":
+        return <InteractiveGameFormationStepForm {...commonProps} />;
       case "timeline_drag":
         return <TimelineDragStepForm {...commonProps} />;
       case "drag_drop_vocab":
