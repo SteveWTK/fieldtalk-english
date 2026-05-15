@@ -50,16 +50,6 @@ function HeaderBase({
         { href: "/about-us", label: "Sobre Nosotros" },
         // { href: "/settings", label: "Settings" },
       ],
-      fr: [
-        // { href: "/", label: "Accueil" },
-        // { href: "/dashboard", label: "Tableau de bord" },
-        // { href: "/admin", label: "Admin" },
-        { href: "/academies", label: "For Players" },
-        { href: "/schools", label: "For Schools" },
-        { href: "/lesson", label: "Leçons" },
-        { href: "/about-us", label: "About Us" },
-        // { href: "/settings", label: "Settings" },
-      ],
     },
     site: {
       en: [
