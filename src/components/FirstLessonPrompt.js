@@ -10,15 +10,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, X, ChevronDown } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const STORAGE_KEY = "fieldtalk_first_lesson_prompt_dismissed";
 
-export default function FirstLessonPrompt({
-  shouldShow,
-  onDismiss,
-}) {
+export default function FirstLessonPrompt({ shouldShow, onDismiss }) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -55,23 +52,23 @@ export default function FirstLessonPrompt({
 
   return (
     <div
-      className={`relative mb-4 ${
+      className={`relative mb-4 max-w-fit ${
         closing ? "fl-prompt-closing" : "fl-prompt-enter"
       }`}
     >
-      <div className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white rounded-xl px-4 py-3 sm:px-5 sm:py-4 shadow-lg shadow-emerald-500/20 flex items-center gap-3">
-        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 fl-prompt-icon" />
+      <div className="relative bg-gradient-to-r from-accent-500 to-accent-600 dark:from-accent-600 dark:to-accent-700 text-white rounded-xl px-4 py-3 sm:px-5 sm:py-3 shadow-lg shadow-accent-500/20 flex items-center gap-3">
+        {/* <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 fl-prompt-icon" /> */}
 
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm sm:text-base leading-tight">
-            {t("start_journey_here")}
+          <p className="font-semibold text-sm leading-tight">
+            {t("start_here")}
           </p>
-          <p className="text-emerald-50/90 text-xs sm:text-sm mt-0.5 leading-tight">
+          {/* <p className="text-emerald-50/90 text-xs sm:text-sm mt-0.5 leading-tight">
             {t("start_journey_sub")}
-          </p>
+          </p> */}
         </div>
 
-        <ChevronDown className="hidden sm:block w-6 h-6 flex-shrink-0 animate-bounce" />
+        {/* <ChevronDown className="hidden sm:block w-6 h-6 flex-shrink-0 animate-bounce" /> */}
 
         <button
           type="button"
@@ -85,7 +82,7 @@ export default function FirstLessonPrompt({
 
       {/* Triangle pointing down at the first lesson card */}
       <div
-        className="absolute left-8 sm:left-10 -bottom-2 w-4 h-4 bg-emerald-500 dark:bg-emerald-600 rotate-45"
+        className="absolute left-8 sm:left-10 -bottom-2 w-4 h-4 bg-accent-500 dark:bg-accent-600 rotate-45"
         aria-hidden="true"
       />
 
