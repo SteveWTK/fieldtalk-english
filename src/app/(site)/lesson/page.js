@@ -267,9 +267,9 @@ function PlayerLessonsMenu() {
                     {pillar.description_pt}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {/* <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {t("level")} {pillar.level}
-                    </span>
+                    </span> */}
                     <span className="text-sm text-gray-600 dark:text-gray-300">
                       {pillar.progress}%
                     </span>
@@ -298,11 +298,11 @@ function PlayerLessonsMenu() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                 {currentPillar?.display_name}
               </h3>
-              <div
+              {/* <div
                 className={`px-3 py-1 bg-gradient-to-r from-accent-600 to-accent-400 text-white rounded-full text-sm font-medium`}
               >
                 Level {currentPillar?.level}
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-4">

@@ -565,11 +565,12 @@ export default function AIMultipleChoiceGapFill({
                   <XCircle className="w-5 h-5 text-red-500" />
                   <div className="text-sm">
                     <span className="text-red-600 dark:text-red-400">
-                      {t("incorrect")}.{" "}
+                      {t("incorrect")}. Try again.
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">
+
+                    {/* <span className="text-gray-600 dark:text-gray-400">
                       Correct answer: <strong>{feedback.answer}</strong>
-                    </span>
+                    </span> */}
                   </div>
                 </>
               )}
