@@ -186,7 +186,7 @@ function PlayerLessonsMenu() {
       case "locked":
         return <Lock className="w-5 h-5 text-gray-400" />;
       case "construction":
-        return <Construction className="w-5 h-5 text-orange-500" />;
+        return <Construction className="w-5 h-5 text-white" />;
       default:
         return null;
     }
@@ -358,7 +358,7 @@ function PlayerLessonsMenu() {
                           : status === "completed"
                             ? "border-accent-200 bg-accent-50/50 dark:bg-accent-900/20"
                             : status === "construction"
-                              ? "border-orange-200 bg-orange-50/50 dark:bg-orange-900/20 opacity-75"
+                              ? "border-primary-200 bg-primary-50/50 dark:bg-primary-900/20 opacity-75"
                               : "border-primary-200 dark:border-primary-700"
                       } ${highlight ? "fl-first-lesson-pulse" : ""}`}
                     >
@@ -401,7 +401,7 @@ function PlayerLessonsMenu() {
                         ) : status === "construction" ? (
                           <button
                             onClick={() => setShowConstructionModal(true)}
-                            className="p-2 text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/20 rounded-lg transition-colors ml-4"
+                            className="p-2 text-white hover:bg-accent-100 dark:hover:bg-accent-900/20 rounded-lg transition-colors ml-4"
                           >
                             <Construction className="w-5 h-5" />
                           </button>
@@ -417,7 +417,7 @@ function PlayerLessonsMenu() {
                         </div>
                       )}
                       {status === "construction" && (
-                        <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
+                        <div className="mt-3 text-xs text-white dark:text-white">
                           {t("lesson_under_construction")}
                         </div>
                       )}
@@ -498,7 +498,7 @@ function PlayerLessonsMenu() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
             <div className="flex items-center justify-center mb-4">
               <div className="w-16 h-16 bg-orange-100 dark:bg-attention-900/20 rounded-full flex items-center justify-center">
-                <Construction className="w-8 h-8 text-attention-500" />
+                <Construction className="w-8 h-8 text-primary-500" />
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
@@ -509,7 +509,7 @@ function PlayerLessonsMenu() {
             </p>
             <button
               onClick={() => setShowConstructionModal(false)}
-              className="w-full bg-attention-500 hover:bg-attention-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
             >
               {t("ok")}
             </button>
