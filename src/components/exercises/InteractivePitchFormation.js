@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/exercises/InteractivePitchFormation.js
 "use client";
 
@@ -126,16 +127,14 @@ export default function InteractivePitchFormation({
           "Esta atividade ainda não tem conteúdo. Pergunte ao seu professor.",
       }
     : {
-        instruction:
-          "Tap each player or area to learn the vocabulary",
+        instruction: "Tap each player or area to learn the vocabulary",
         progress: "explored",
         complete: "Excellent! You've explored everything.",
         xpEarned: "XP earned",
         listen: "Listen",
         translation: "Translation",
         reset: "Reset",
-        empty:
-          "This activity has no content yet. Ask your teacher.",
+        empty: "This activity has no content yet. Ask your teacher.",
       };
 
   if (totalItems === 0) {

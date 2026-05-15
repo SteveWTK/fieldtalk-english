@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/exercises/InteractiveGameFormation.js
 "use client";
 
@@ -7,7 +8,6 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
-  CheckCircle,
   Trophy,
   Languages,
 } from "lucide-react";
