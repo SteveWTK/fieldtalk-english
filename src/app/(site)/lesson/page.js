@@ -216,7 +216,7 @@ function PlayerLessonsMenu() {
         </p>
       </div> */}
 
-      {/* Three Pillars Navigation */}
+      {/* Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         {/* <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t("your_learning_journey")}
@@ -228,19 +228,38 @@ function PlayerLessonsMenu() {
               <button
                 key={pillar.name}
                 onClick={() => setSelectedPillar(pillar.name)}
-                className={`p-6 rounded-xl border-2 transition-all duration-200 ${
+                className={`p-6 rounded-xl border-2 transition-all duration-200 overflow-hidden text-left ${
                   selectedPillar === pillar.name
                     ? "border-accent-500 bg-accent-50/20 dark:bg-accent-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                 }`}
               >
                 <Link href="#lessons">
-                  {/* ${currentPillar.color_gradient}  */}
-                  <div
-                    className={`w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4`}
-                  >
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </div>
+                  {pillar.image_url ? (
+                    // Full-width banner image. The negative margins make it
+                    // extend past the card's p-6 padding so the visual
+                    // reaches the card's edges. eslint-disable-next-line is
+                    // here because we use plain <img> (not Next/Image) so
+                    // admins don't need to configure remote-image domains
+                    // for every CMS-managed pillar image.
+                    <div className="-mx-6 -mt-6 mb-4 h-32 overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={pillar.image_url}
+                        alt={pillar.display_name || ""}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4`}
+                    >
+                      <IconComponent className="w-6 h-6 text-white" />
+                    </div>
+                  )}
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                     {pillar.display_name}
                   </h3>

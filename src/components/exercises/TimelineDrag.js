@@ -185,17 +185,23 @@ export default function TimelineDrag({
           if (isVertical) {
             // ──────────────────────────────────────────────────────────────
             // TUNABLE: empirical Y-offset correction for vertical drops.
-            // Observation: on mobile browsers, drops on the vertical timeline
-            // consistently register 2-4 years EARLIER than where the user
-            // aimed. Adjusting clientY by this value (positive = treat drop
-            // as N years LATER) compensates for it.
-            // Increase if drops still register too early; decrease if too late.
+            // Observation: on mobile browsers, drops register slightly
+            // EARLIER than where the user visually aimed — likely because
+            // the reported touch clientY is a few px above the actual
+            // finger contact point. We compensate in PIXEL space (not
+            // years), so the correction scales correctly regardless of
+            // how short or long the timeline range is.
+            //
+            // Positive value = treat the drop as that many pixels lower
+            // than reported (compensates for clientY being too high).
+            // Set to 0 to disable correction entirely.
             // ──────────────────────────────────────────────────────────────
-            const VERTICAL_DROP_OFFSET_YEARS = 3;
+            const VERTICAL_DROP_OFFSET_PX = 12;
 
             // Empirical: use rendered positions of first & last markers
             const firstEl = markerRefsRef.current[yearMin];
             const lastEl = markerRefsRef.current[yearMax];
+            const adjustedClientY = e.clientY + VERTICAL_DROP_OFFSET_PX;
             if (firstEl && lastEl) {
               const firstR = firstEl.getBoundingClientRect();
               const lastR = lastEl.getBoundingClientRect();
@@ -204,15 +210,14 @@ export default function TimelineDrag({
               if (lastY === firstY) {
                 droppedYear = yearMin;
               } else {
-                const t = (e.clientY - firstY) / (lastY - firstY);
+                const t = (adjustedClientY - firstY) / (lastY - firstY);
                 droppedYear = yearMin + t * (yearMax - yearMin);
               }
             } else {
               droppedYear = yearAtPercent(
-                ((e.clientY - rect.top) / rect.height) * 100
+                ((adjustedClientY - rect.top) / rect.height) * 100
               );
             }
-            droppedYear += VERTICAL_DROP_OFFSET_YEARS;
           } else {
             droppedYear = yearAtPercent(
               ((e.clientX - rect.left) / rect.width) * 100

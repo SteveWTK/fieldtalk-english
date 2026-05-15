@@ -314,9 +314,12 @@ export default function MemoryMatch({
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-center gap-10 w-full max-w-7xl">
-        {/* Game Grid */}
-        <div className={`grid ${gridCols} gap-2 sm:gap-3 px-2 sm:px-0 pt-4`}>
+      <div className="flex flex-col lg:flex-row justify-center items-start gap-6 lg:gap-8 w-full max-w-7xl">
+        {/* Game Grid. flex-shrink-0 stops the matched-pairs panel on the
+            right from squeezing it horizontally on wide screens. */}
+        <div
+          className={`grid ${gridCols} gap-2 sm:gap-3 px-2 sm:px-0 pt-4 flex-shrink-0`}
+        >
           {cards.map((card, i) => {
             const isFlipped = flipped.includes(i) || matchedIndices.includes(i);
             const isMatched = matchedIndices.includes(i);
@@ -411,10 +414,15 @@ export default function MemoryMatch({
         {/* Matched Pairs Display.
             A single 2-column grid (instead of two parallel space-y columns)
             so each pair sits in one row — the row's height matches the taller
-            of the two cells, keeping image+word pairs aligned. */}
+            of the two cells, keeping image+word pairs aligned. Tight max-width
+            and fixed row height keep the panel from dominating wide-screen
+            layouts and squeezing the game grid. */}
         {matchedPairs.length > 0 && (
-          <div className="flex-shrink-0 w-full lg:w-auto">
-            <div className="grid grid-cols-2 gap-2 max-w-md mx-auto lg:mx-0">
+          <div className="w-full lg:w-auto lg:flex-shrink">
+            <div
+              className="grid grid-cols-2 gap-2 mx-auto lg:mx-0"
+              style={{ width: "min(100%, 16rem)" }}
+            >
               {/* Column headers (two cells) */}
               <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
                 English
@@ -423,14 +431,15 @@ export default function MemoryMatch({
                 Português
               </div>
 
-              {/* One row per matched pair: two cells produced via Fragment */}
+              {/* One row per matched pair: two cells produced via Fragment.
+                  Fixed row height keeps the panel compact even with images. */}
               {matchedPairs.map((pair, idx) => (
                 <React.Fragment key={idx}>
                   <div
-                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden flex items-center justify-center ${
+                    className={`rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
                       pair.enIsImage
                         ? "bg-white dark:bg-gray-700 p-0"
-                        : "bg-fieldtalk-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
+                        : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
                     }`}
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
@@ -446,10 +455,10 @@ export default function MemoryMatch({
                     )}
                   </div>
                   <div
-                    className={`rounded-lg shadow-md animate-slideIn overflow-hidden flex items-center justify-center ${
+                    className={`rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
                       pair.ptIsImage
                         ? "bg-white dark:bg-gray-700 p-0"
-                        : "bg-attention-400 text-primary-900 px-3 py-2 text-center text-xs sm:text-sm font-semibold"
+                        : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
                     }`}
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
@@ -474,11 +483,11 @@ export default function MemoryMatch({
       {isComplete ? (
         <div className="text-center space-y-4 animate-fadeIn">
           <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white p-4 rounded-xl shadow-xl">
-            <Trophy className="w-8 h-8 mx-auto mb-2 animate-bounce" />
-            {/* <h3 className="text-xl font-bold mb-2">Congratulations!</h3> */}
+            {/* <Trophy className="w-8 h-8 mx-auto mb-2 animate-bounce" />
+            <h3 className="text-xl font-bold mb-2">Congratulations!</h3>
             <p className="text-sm mb-4">
               You matched all pairs in {attempts} attempts!
-            </p>
+            </p> */}
             <div className="flex justify-center gap-3">
               <button
                 onClick={handleRestart}
