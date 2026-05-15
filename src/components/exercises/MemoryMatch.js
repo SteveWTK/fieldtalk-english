@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  Trophy,
+  // Trophy,
   RefreshCw,
   Check,
   X,
@@ -428,7 +428,7 @@ export default function MemoryMatch({
                 English
               </div>
               <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                Português
+                Image
               </div>
 
               {/* One row per matched pair: two cells produced via Fragment.
