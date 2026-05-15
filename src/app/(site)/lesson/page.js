@@ -221,6 +221,9 @@ function PlayerLessonsMenu() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* <h1 className="text-2xl font-bold text-primary-900 dark:text-white">
+        World Cup 2026 Edition
+      </h1> */}
       {/* Welcome Message */}
       {/* <div className="mb-8">
         <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
@@ -518,7 +521,8 @@ function PlayerLessonsMenu() {
           prompt is visible. Soft emerald glow that breathes ~2s loop. */}
       <style jsx global>{`
         @keyframes fl-first-lesson-pulse {
-          0%, 100% {
+          0%,
+          100% {
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
           }
           50% {

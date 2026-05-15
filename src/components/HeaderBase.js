@@ -63,34 +63,34 @@ function HeaderBase({
     },
     site: {
       en: [
-        { href: "/", label: "Home" },
+        // { href: "/lesson", label: "Home" },
         // { href: "/dashboard", label: "Dashboard" },
         { href: "/lesson", label: "Lessons" },
-        { href: "/admin", label: "Admin" },
+        // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
       ],
       pt: [
-        { href: "/", label: "Início" },
+        // { href: "/", label: "Início" },
         // { href: "/dashboard", label: "Painel" },
         { href: "/lesson", label: "Aulas" },
-        { href: "/admin", label: "Admin" },
+        // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
         // { href: "/settings", label: "Settings" },
       ],
       es: [
-        { href: "/", label: "Inicio" },
+        // { href: "/", label: "Inicio" },
         // { href: "/dashboard", label: "Panel" },
         { href: "/lesson", label: "Lecciones" },
-        { href: "/admin", label: "Admin" },
+        // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
         // { href: "/settings", label: "Settings" },
       ],
       fr: [
-        { href: "/", label: "Accueil" },
+        // { href: "/", label: "Accueil" },
         // { href: "/dashboard", label: "Tableau de bord" },
         { href: "/lesson", label: "Leçons" },
-        { href: "/admin", label: "Admin" },
+        // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
       ],
@@ -136,7 +136,7 @@ function HeaderBase({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/lesson" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
                 {/* <Globe className="w-5 h-5 text-white" /> */}
               </div>
