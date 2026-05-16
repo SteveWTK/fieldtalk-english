@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Target,
@@ -262,16 +263,14 @@ function PlayerLessonsMenu() {
                   {pillar.image_url ? (
                     // Full-width banner image. The negative margins make it
                     // extend past the card's p-6 padding so the visual
-                    // reaches the card's edges. eslint-disable-next-line is
-                    // here because we use plain <img> (not Next/Image) so
-                    // admins don't need to configure remote-image domains
-                    // for every CMS-managed pillar image.
-                    <div className="-mx-6 -mt-6 mb-4 h-32 overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                    // reaches the card's edges.
+                    <div className="relative -mx-6 -mt-6 mb-4 h-32 overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
+                      <Image
                         src={pillar.image_url}
                         alt={pillar.display_name || ""}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
                         onError={(e) => {
                           e.target.style.display = "none";
                         }}
