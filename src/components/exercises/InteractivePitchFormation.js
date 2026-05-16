@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/exercises/InteractivePitchFormation.js
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Volume2, Trophy, Languages, CheckCircle, RotateCcw } from "lucide-react";
 import { useIsWide } from "@/lib/hooks/useIsWide";
 
@@ -409,11 +409,12 @@ export default function InteractivePitchFormation({
         }}
       >
         {config.pitch_image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={config.pitch_image}
             alt="Pitch"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            fill
+            sizes="(max-width: 1024px) 500px, 700px"
+            className="object-cover pointer-events-none"
           />
         ) : isHorizontal ? (
           renderHorizontalPitch()

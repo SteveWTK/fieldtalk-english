@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   // Trophy,
   RefreshCw,
@@ -355,11 +356,12 @@ export default function MemoryMatch({
                     }`}
                   >
                     {card.isImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={card.image}
                         alt={card.text}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 120px, 160px"
+                        className="object-cover"
                       />
                     ) : (
                       <span className="text-center font-semibold text-xs sm:text-sm">
@@ -392,11 +394,12 @@ export default function MemoryMatch({
                       }}
                     >
                       {card.isImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={card.image}
                           alt={card.text || "image"}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 120px, 160px"
+                          className="object-cover"
                         />
                       ) : (
                         <span className="text-center font-semibold text-xs sm:text-sm">
@@ -436,7 +439,7 @@ export default function MemoryMatch({
               {matchedPairs.map((pair, idx) => (
                 <React.Fragment key={idx}>
                   <div
-                    className={`rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
+                    className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
                       pair.enIsImage
                         ? "bg-white dark:bg-gray-700 p-0"
                         : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
@@ -444,18 +447,19 @@ export default function MemoryMatch({
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     {pair.enIsImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={pair.enImage}
                         alt={pair.en || "image"}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="128px"
+                        className="object-cover"
                       />
                     ) : (
                       pair.en
                     )}
                   </div>
                   <div
-                    className={`rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
+                    className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
                       pair.ptIsImage
                         ? "bg-white dark:bg-gray-700 p-0"
                         : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
@@ -463,11 +467,12 @@ export default function MemoryMatch({
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     {pair.ptIsImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={pair.ptImage}
                         alt={pair.pt || "image"}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="128px"
+                        className="object-cover"
                       />
                     ) : (
                       pair.pt

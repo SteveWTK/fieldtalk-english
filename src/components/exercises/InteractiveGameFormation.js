@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   Play,
   RotateCcw,
@@ -706,11 +707,12 @@ export default function InteractiveGameFormation({
         }}
       >
         {config.pitch_image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={config.pitch_image}
             alt="Pitch"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            fill
+            sizes="(max-width: 1024px) 500px, 700px"
+            className="object-cover pointer-events-none"
           />
         ) : isHorizontal ? (
           renderHorizontalPitch()

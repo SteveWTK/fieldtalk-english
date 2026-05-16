@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   // CheckCircle,
   RotateCcw,
@@ -242,12 +243,13 @@ export default function DragDropFormation({
         } flex flex-col items-center justify-center p-1 transition-colors`}
       >
         {card.image_url ? (
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 dark:bg-gray-600 overflow-hidden mb-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 dark:bg-gray-600 overflow-hidden mb-1">
+            <Image
               src={card.image_url}
               alt={card.name}
-              className="w-full h-full object-cover"
+              fill
+              sizes="48px"
+              className="object-cover"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
@@ -455,11 +457,12 @@ export default function DragDropFormation({
         }}
       >
         {config.pitch_image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={config.pitch_image}
             alt="Pitch"
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            sizes="(max-width: 1024px) 500px, 700px"
+            className="object-cover"
           />
         ) : isHorizontal ? (
           renderHorizontalPitch()

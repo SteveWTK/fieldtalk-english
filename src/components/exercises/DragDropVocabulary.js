@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import Image from "next/image";
 import {
   CheckCircle,
   RotateCcw,
@@ -274,13 +275,14 @@ export default function DragDropVocabulary({
             {item.english}
           </div>
         )}
-        <div className="h-20 flex items-center justify-center p-2">
+        <div className="relative h-20 flex items-center justify-center p-2">
           {showImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={item.image_url}
               alt={item.english}
-              className="max-w-full max-h-full object-contain"
+              fill
+              sizes="120px"
+              className="object-contain p-2"
               onError={(e) => {
                 e.target.style.display = "none";
               }}

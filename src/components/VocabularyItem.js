@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Volume2 } from "lucide-react";
 import { getTranslation } from "@/utils/translations";
 
@@ -112,10 +113,12 @@ export default function VocabularyItem({
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
           {item.image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={item.image_url}
               alt={item.word || item.english || ""}
+              width={56}
+              height={56}
+              sizes="56px"
               className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
               onError={(e) => {
                 e.target.style.display = "none";

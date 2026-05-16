@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   BookOpen,
@@ -794,9 +795,12 @@ function DynamicLessonContent() {
                   className="mb-4"
                 />
               ) : currentStepData.image_url ? (
-                <img
+                <Image
                   src={currentStepData.image_url}
                   alt="Scenario"
+                  width={600}
+                  height={400}
+                  sizes="(max-width: 768px) 90vw, 28rem"
                   className="w-auto max-w-md max-h-72 mx-auto rounded-lg shadow-md mb-4"
                   onError={(e) => {
                     e.target.style.display = "none";
@@ -2145,13 +2149,16 @@ function DynamicLessonContent() {
             <div className="bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 p-6 rounded-xl">
               <div className="relative">
                 {/* Map Image */}
-                <img
+                <Image
                   src={
                     currentStepData.map_image ||
                     "/images/training-ground-map.jpg"
                   }
                   alt="Interactive Map"
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-md"
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 1024px) 90vw, 42rem"
+                  className="w-full max-w-2xl mx-auto rounded-lg shadow-md h-auto"
                   onError={(e) => {
                     e.target.src =
                       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='16'%3EInteractive Map Coming Soon%3C/text%3E%3C/svg%3E";
@@ -2646,10 +2653,13 @@ function DynamicLessonContent() {
                   className="mb-4"
                 />
               ) : currentStepData.image_url ? (
-                <img
+                <Image
                   src={currentStepData.image_url}
                   alt="Scenario"
-                  className="w-full max-w-md mx-auto rounded-lg shadow-md mb-4"
+                  width={600}
+                  height={400}
+                  sizes="(max-width: 768px) 90vw, 28rem"
+                  className="w-full max-w-md mx-auto rounded-lg shadow-md mb-4 h-auto"
                   onError={(e) => {
                     e.target.style.display = "none";
                   }}

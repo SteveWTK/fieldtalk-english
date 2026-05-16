@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   HelpCircle,
   CheckCircle,
@@ -644,11 +645,13 @@ export default function AIMultipleChoiceGapFill({
         )} */}
         {feedback?.isCorrect && imageUrl && (
           <div className="mt-6 mb-2 mx-16 sm:mx-48 md:mx-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={imageUrl}
               alt=""
-              className="w-full max-h-full object-cover"
+              width={800}
+              height={500}
+              sizes="(max-width: 640px) 70vw, (max-width: 768px) 40vw, 30vw"
+              className="w-full h-auto object-cover"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
