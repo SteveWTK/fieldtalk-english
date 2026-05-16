@@ -190,6 +190,43 @@ export default function InteractivePitchFormationStepForm({ step, onChange }) {
         />
       </div>
 
+      {/* Mode */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Mode
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => updateFormationConfig("mode", "revision")}
+            className={`px-3 py-2 rounded-lg border text-left transition-colors ${
+              (config.mode || "revision") === "revision"
+                ? "bg-accent-50 dark:bg-accent-900/30 border-accent-400 text-accent-800 dark:text-accent-200"
+                : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-accent-300"
+            }`}
+          >
+            <div className="font-semibold text-sm">Revision</div>
+            <div className="text-xs opacity-80">
+              Only the most recent label is shown — good for self-quizzing.
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => updateFormationConfig("mode", "presentation")}
+            className={`px-3 py-2 rounded-lg border text-left transition-colors ${
+              config.mode === "presentation"
+                ? "bg-accent-50 dark:bg-accent-900/30 border-accent-400 text-accent-800 dark:text-accent-200"
+                : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-accent-300"
+            }`}
+          >
+            <div className="font-semibold text-sm">Presentation</div>
+            <div className="text-xs opacity-80">
+              Labels stay visible — the pitch fills up as the user explores.
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Formation settings */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-3">

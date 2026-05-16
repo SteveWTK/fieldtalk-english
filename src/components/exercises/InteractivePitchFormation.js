@@ -45,6 +45,12 @@ export default function InteractivePitchFormation({
   const isPortuguese = userLanguage === "pt";
   const isHorizontal = useIsWide(1024);
 
+  // "revision" (default) → only the most recently clicked item shows a
+  // label; good for self-quizzing.
+  // "presentation" → every clicked item keeps its label visible, so the
+  // pitch fills up as the user works through it.
+  const mode = config.mode === "presentation" ? "presentation" : "revision";
+
   const storageKey = `interactivePitchFormation_${lessonId || "x"}_${
     step?.id || "0"
   }`;
@@ -355,7 +361,7 @@ export default function InteractivePitchFormation({
             />
           )}
         </button>
-        {isActive && (
+        {(isActive || (mode === "presentation" && isClicked)) && (
           <span className="mt-1 px-2 py-0.5 rounded-md bg-black/75 text-white text-[11px] sm:text-xs font-semibold whitespace-nowrap shadow ipf-fade-in">
             {labelText(item)}
           </span>
