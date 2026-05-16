@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { useIsWide } from "@/lib/hooks/useIsWide";
 
 /**
  * DragDropFormation Step
@@ -47,6 +48,20 @@ export default function DragDropFormation({
   const baseXp = step?.xp_reward || 30;
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
+  const isHorizontal = useIsWide(1024);
+
+  // Rotate vertical (x, y) percentages CW for landscape layout on wide
+  // screens. Mirrors InteractivePitchFormation so the three pitch step
+  // types stay visually aligned.
+  const transformPosition = (slot) => {
+    if (!isHorizontal) return { left: slot.x, top: slot.y };
+    const xv = parseFloat(String(slot.x).replace("%", ""));
+    const yv = parseFloat(String(slot.y).replace("%", ""));
+    if (Number.isNaN(xv) || Number.isNaN(yv)) {
+      return { left: slot.x, top: slot.y };
+    }
+    return { left: `${100 - yv}%`, top: `${xv}%` };
+  };
 
   const labels = isPortuguese
     ? {
@@ -250,27 +265,26 @@ export default function DragDropFormation({
     );
   };
 
-  // Inline SVG pitch fallback when no pitch_image is provided
-  const renderInlinePitch = () => (
+  // Inline SVG pitch fallback when no pitch_image is provided. Markings
+  // are inset 8% so click areas (sideline, goal line) have room outside
+  // the playable area.
+  const renderVerticalPitch = () => (
     <svg
       viewBox="0 0 100 140"
       preserveAspectRatio="none"
       className="absolute inset-0 w-full h-full"
     >
       <rect x="0" y="0" width="100" height="140" fill="#15803d" />
-      {/* Outer line */}
       <rect
-        x="2"
-        y="2"
-        width="96"
-        height="136"
+        x="8"
+        y="8"
+        width="84"
+        height="124"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
-      {/* Halfway line */}
-      <line x1="2" y1="70" x2="98" y2="70" stroke="white" strokeWidth="0.4" />
-      {/* Center circle */}
+      <line x1="8" y1="70" x2="92" y2="70" stroke="white" strokeWidth="0.4" />
       <circle
         cx="50"
         cy="70"
@@ -280,40 +294,103 @@ export default function DragDropFormation({
         strokeWidth="0.4"
       />
       <circle cx="50" cy="70" r="0.6" fill="white" />
-      {/* Top penalty area */}
       <rect
-        x="25"
-        y="2"
-        width="50"
+        x="28"
+        y="8"
+        width="44"
         height="14"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
       <rect
-        x="36"
-        y="2"
-        width="28"
+        x="38"
+        y="8"
+        width="24"
         height="6"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
-      {/* Bottom penalty area */}
       <rect
-        x="25"
-        y="124"
-        width="50"
+        x="28"
+        y="118"
+        width="44"
         height="14"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
       <rect
-        x="36"
-        y="132"
-        width="28"
+        x="38"
+        y="126"
+        width="24"
         height="6"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+    </svg>
+  );
+
+  const renderHorizontalPitch = () => (
+    <svg
+      viewBox="0 0 140 100"
+      preserveAspectRatio="none"
+      className="absolute inset-0 w-full h-full"
+    >
+      <rect x="0" y="0" width="140" height="100" fill="#15803d" />
+      <rect
+        x="8"
+        y="8"
+        width="124"
+        height="84"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <line x1="70" y1="8" x2="70" y2="92" stroke="white" strokeWidth="0.4" />
+      <circle
+        cx="70"
+        cy="50"
+        r="8"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <circle cx="70" cy="50" r="0.6" fill="white" />
+      <rect
+        x="8"
+        y="28"
+        width="14"
+        height="44"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="8"
+        y="38"
+        width="6"
+        height="24"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="118"
+        y="28"
+        width="14"
+        height="44"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="126"
+        y="38"
+        width="6"
+        height="24"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
@@ -372,7 +449,10 @@ export default function DragDropFormation({
       <div
         ref={pitchRef}
         className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md"
-        style={{ maxWidth: "500px", aspectRatio: "5 / 7" }}
+        style={{
+          maxWidth: isHorizontal ? "700px" : "500px",
+          aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
+        }}
       >
         {config.pitch_image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -381,13 +461,18 @@ export default function DragDropFormation({
             alt="Pitch"
             className="absolute inset-0 w-full h-full object-cover"
           />
+        ) : isHorizontal ? (
+          renderHorizontalPitch()
         ) : (
-          renderInlinePitch()
+          renderVerticalPitch()
         )}
 
-        {/* Position slots */}
+        {/* Position slots — empty slots are silent dashed circles (no
+            labels); the player learns position names from the preceding
+            InteractivePitchFormation step. */}
         {slots.map((slot) => {
           const placedCard = cardInSlot(slot.id);
+          const pos = transformPosition(slot);
           return (
             <div
               key={slot.id}
@@ -395,23 +480,19 @@ export default function DragDropFormation({
               className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center transition-all ${
                 placedCard
                   ? ""
-                  : "border-2 border-dashed border-white/70 bg-white/10 hover:bg-white/20 rounded-lg"
+                  : "border-2 border-dashed border-white/70 bg-white/10 hover:bg-white/20 rounded-full"
               }`}
               style={{
-                left: slot.x,
-                top: slot.y,
-                width: placedCard ? "auto" : "60px",
-                height: placedCard ? "auto" : "60px",
+                left: pos.left,
+                top: pos.top,
+                width: placedCard ? "auto" : "44px",
+                height: placedCard ? "auto" : "44px",
               }}
             >
-              {placedCard ? (
+              {placedCard && (
                 <div className="animate-pop-in">
                   {renderCard(placedCard, { isPlaced: true })}
                 </div>
-              ) : (
-                <span className="text-xs font-semibold text-white text-center px-1 leading-tight pointer-events-none">
-                  {slot.label}
-                </span>
               )}
             </div>
           );

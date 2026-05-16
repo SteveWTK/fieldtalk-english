@@ -250,7 +250,7 @@ export default function MemoryMatch({
       : "h-16 w-16 sm:h-20 sm:w-24";
 
   return (
-    <div className="flex flex-col items-center gap-6 p-4 relative">
+    <div className="flex flex-col items-center gap-6 px-4 py-2 relative">
       <button
         onClick={toggleMute}
         aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
@@ -318,7 +318,7 @@ export default function MemoryMatch({
         {/* Game Grid. flex-shrink-0 stops the matched-pairs panel on the
             right from squeezing it horizontally on wide screens. */}
         <div
-          className={`grid ${gridCols} gap-2 sm:gap-3 px-2 sm:px-0 pt-4 flex-shrink-0`}
+          className={`grid ${gridCols} gap-2 sm:gap-3 px-2 sm:px-0 pt-0 flex-shrink-0`}
         >
           {cards.map((card, i) => {
             const isFlipped = flipped.includes(i) || matchedIndices.includes(i);

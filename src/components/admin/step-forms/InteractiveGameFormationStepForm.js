@@ -146,6 +146,11 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
   };
 
   const ballStart = config.ball_start || { x: "50%", y: "85%" };
+  const timing = config.timing || {};
+
+  const updateTiming = (field, value) => {
+    updateFormationConfig("timing", { ...timing, [field]: value });
+  };
 
   return (
     <div className="space-y-4">
@@ -306,6 +311,98 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Timing / speed-progression */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-medium text-gray-900 dark:text-white">
+            Speed Progression
+          </h4>
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={timing.enabled === true}
+              onChange={(e) => updateTiming("enabled", e.target.checked)}
+              className="w-4 h-4"
+            />
+            Enable timer
+          </label>
+        </div>
+        {timing.enabled ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Commands per round
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={timing.commands_per_round || 4}
+                onChange={(e) =>
+                  updateTiming("commands_per_round", Number(e.target.value))
+                }
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Initial time (ms)
+              </label>
+              <input
+                type="number"
+                min="1000"
+                step="500"
+                value={timing.initial_ms || 8000}
+                onChange={(e) =>
+                  updateTiming("initial_ms", Number(e.target.value))
+                }
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Decrement / round (ms)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="250"
+                value={timing.decrement_ms || 1500}
+                onChange={(e) =>
+                  updateTiming("decrement_ms", Number(e.target.value))
+                }
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Minimum time (ms)
+              </label>
+              <input
+                type="number"
+                min="500"
+                step="250"
+                value={timing.min_ms || 3000}
+                onChange={(e) =>
+                  updateTiming("min_ms", Number(e.target.value))
+                }
+                className={inputClass}
+              />
+            </div>
+            <p className="col-span-2 md:col-span-4 text-xs text-gray-500 dark:text-gray-400">
+              Round 1 gets the initial time; each subsequent round subtracts
+              the decrement, floored at the minimum. Timeout counts as a
+              wrong attempt and advances to the next command. A cheer plays
+              after the last correct of each round.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No time limit — players answer at their own pace. Enable the
+            timer to introduce rounds with a gradually shortening window.
+          </p>
+        )}
       </div>
 
       {/* Position slots */}

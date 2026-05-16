@@ -12,8 +12,13 @@ import {
   Languages,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
+import {
+  playSuccessSound,
+  playErrorSound,
+  playCheerSound,
+} from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { useIsWide } from "@/lib/hooks/useIsWide";
 
 /**
  * InteractiveGameFormation — visual sibling to DragDropFormation, but
@@ -44,6 +49,21 @@ import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
  *       - target_slot_id: string  ← references a position_slots[].id
  *       - audio_url: string (optional pre-recorded; otherwise TTS)
  *       - success_message: string (optional)
+ *   - timing: optional speed-progression block
+ *       - enabled: boolean — if false/missing, no per-command timer
+ *       - commands_per_round: number (default 4)
+ *       - initial_ms: number (default 8000) — round 1's time limit
+ *       - decrement_ms: number (default 1500) — shaved off each round
+ *       - min_ms: number (default 3000) — floor
+ *
+ * Sounds:
+ *   - playSuccessSound on a normal correct
+ *   - playCheerSound on the last correct of each round (or final command)
+ *   - playErrorSound on wrong or timeout
+ *
+ * Wide-screen layout:
+ *   - Viewports ≥ 1024px wide flip to landscape; slot/ball percentages
+ *     are auto-rotated CW so the same JSON works in both orientations.
  */
 export default function InteractiveGameFormation({
   step,
@@ -62,6 +82,33 @@ export default function InteractiveGameFormation({
   const baseXp = step?.xp_reward || 40;
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
+  const isHorizontal = useIsWide(1024);
+
+  // Speed-progression block. enabled=false (or missing) → no timer.
+  const timing = config.timing || {};
+  const timingEnabled = timing.enabled === true;
+  const commandsPerRound = Math.max(1, Number(timing.commands_per_round) || 4);
+  const initialMs = Math.max(1000, Number(timing.initial_ms) || 8000);
+  const decrementMs = Math.max(0, Number(timing.decrement_ms) || 1500);
+  const minMs = Math.max(1000, Number(timing.min_ms) || 3000);
+
+  const timeLimitFor = (commandIdx) => {
+    if (!timingEnabled) return null;
+    const round = Math.floor(commandIdx / commandsPerRound);
+    return Math.max(minMs, initialMs - round * decrementMs);
+  };
+
+  // CW rotation of (x, y) percentage pairs for landscape layout on wide
+  // screens. Matches DragDropFormation + InteractivePitchFormation.
+  const transformPosition = (pos) => {
+    if (!isHorizontal) return { left: pos.x, top: pos.y };
+    const xv = parseFloat(String(pos.x).replace("%", ""));
+    const yv = parseFloat(String(pos.y).replace("%", ""));
+    if (Number.isNaN(xv) || Number.isNaN(yv)) {
+      return { left: pos.x, top: pos.y };
+    }
+    return { left: `${100 - yv}%`, top: `${xv}%` };
+  };
 
   const storageKey = `interactiveGameFormation_${lessonId || "x"}_${
     step?.id || "0"
@@ -129,6 +176,11 @@ export default function InteractiveGameFormation({
   // Drag mode state
   const [dragging, setDragging] = useState(false);
   const [dragPx, setDragPx] = useState({ x: 0, y: 0 });
+
+  // Timing/round state
+  const [roundBadge, setRoundBadge] = useState(null); // number | null
+  const [timerKey, setTimerKey] = useState(0); // bump to restart the CSS bar
+  const prevRoundRef = useRef(0);
 
   const audioRef = useRef(null);
   const pitchRef = useRef(null);
@@ -230,6 +282,25 @@ export default function InteractiveGameFormation({
     setBallPos({ left: slot.x, top: slot.y });
   };
 
+  // Advance to next command (or complete) — used for both correct answers
+  // and timeouts. `scoreDelta` is 1 for correct, 0 for timeout/wrong-then-
+  // skip. Currently only the timeout path uses 0 since wrong clicks just
+  // shake and let the user retry.
+  const advanceCommand = (scoreDelta) => {
+    setFeedback(null);
+    setActiveSlotId(null);
+    const nextScore = score + scoreDelta;
+    if (currentCommand + 1 < totalCommands) {
+      setCurrentCommand((c) => c + 1);
+      setHasPlayedCommand(false);
+      setGameState("ready");
+    } else {
+      setGameState("completed");
+      const xp = Math.round((nextScore / totalCommands) * (baseXp - 10)) + 10;
+      onCompleteRef.current?.(xp);
+    }
+  };
+
   const handleHit = (targetSlot) => {
     if (!currentCmd || !targetSlot) return;
     const isCorrect = targetSlot.id === currentCmd.target_slot_id;
@@ -239,23 +310,19 @@ export default function InteractiveGameFormation({
       setFeedback("correct");
       setScore((s) => s + 1);
       moveBallToSlot(targetSlot);
-      if (!isMuted) playSuccessSound();
-
-      setTimeout(() => {
-        setFeedback(null);
-        setActiveSlotId(null);
-        if (currentCommand + 1 < totalCommands) {
-          setCurrentCommand((c) => c + 1);
-          setHasPlayedCommand(false);
-          setGameState("ready");
+      // Cheer at the last command of every round (rounds enabled) AND at
+      // the final command of the entire exercise. Otherwise standard chime.
+      const isLastOfRound =
+        timingEnabled && (currentCommand + 1) % commandsPerRound === 0;
+      const isLastOfGame = currentCommand + 1 === totalCommands;
+      if (!isMuted) {
+        if (isLastOfRound || isLastOfGame) {
+          playCheerSound();
         } else {
-          setGameState("completed");
-          const finalScore = score + 1;
-          const xp =
-            Math.round((finalScore / totalCommands) * (baseXp - 10)) + 10;
-          onCompleteRef.current?.(xp);
+          playSuccessSound();
         }
-      }, 1800);
+      }
+      setTimeout(() => advanceCommand(1), 1800);
     } else {
       setFeedback("wrong");
       if (!isMuted) playErrorSound();
@@ -265,6 +332,42 @@ export default function InteractiveGameFormation({
       }, 1500);
     }
   };
+
+  // Per-command countdown — when the game enters "playing" with a finite
+  // time limit, schedule a timeout that auto-advances (counting as wrong)
+  // if the user hasn't clicked in time. The CSS bar reads the same value.
+  const currentTimeLimit = timeLimitFor(currentCommand);
+  useEffect(() => {
+    if (!timingEnabled) return;
+    if (gameState !== "playing") return;
+    if (!currentTimeLimit) return;
+    setTimerKey((k) => k + 1);
+    const tid = setTimeout(() => {
+      setFeedback("wrong");
+      if (!isMuted) playErrorSound();
+      setTimeout(() => advanceCommand(0), 1200);
+    }, currentTimeLimit);
+    return () => clearTimeout(tid);
+    // advanceCommand intentionally omitted — capture the values at the
+    // moment we enter "playing".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState, currentCommand, currentTimeLimit, timingEnabled, isMuted]);
+
+  // Round transition badge — fires briefly when entering a new round.
+  useEffect(() => {
+    if (!timingEnabled) {
+      prevRoundRef.current = 0;
+      return;
+    }
+    const round = Math.floor(currentCommand / commandsPerRound);
+    if (round > prevRoundRef.current && currentCommand > 0) {
+      setRoundBadge(round + 1);
+      const tid = setTimeout(() => setRoundBadge(null), 1600);
+      prevRoundRef.current = round;
+      return () => clearTimeout(tid);
+    }
+    prevRoundRef.current = round;
+  }, [currentCommand, timingEnabled, commandsPerRound]);
 
   // ---- Click mode ----
   const handlePitchClick = (e) => {
@@ -324,6 +427,8 @@ export default function InteractiveGameFormation({
     setShowTranslation(false);
     setHasPlayedCommand(false);
     setActiveSlotId(null);
+    setRoundBadge(null);
+    prevRoundRef.current = 0;
   };
 
   // ---- Empty-state guard ----
@@ -335,8 +440,9 @@ export default function InteractiveGameFormation({
     );
   }
 
-  // Inline SVG pitch — same as DragDropFormation for visual consistency.
-  const renderInlinePitch = () => (
+  // Inline SVG pitch — inset markings so the three pitch step types share
+  // visual vocabulary. See DragDropFormation + InteractivePitchFormation.
+  const renderVerticalPitch = () => (
     <svg
       viewBox="0 0 100 140"
       preserveAspectRatio="none"
@@ -344,15 +450,15 @@ export default function InteractiveGameFormation({
     >
       <rect x="0" y="0" width="100" height="140" fill="#15803d" />
       <rect
-        x="2"
-        y="2"
-        width="96"
-        height="136"
+        x="8"
+        y="8"
+        width="84"
+        height="124"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
-      <line x1="2" y1="70" x2="98" y2="70" stroke="white" strokeWidth="0.4" />
+      <line x1="8" y1="70" x2="92" y2="70" stroke="white" strokeWidth="0.4" />
       <circle
         cx="50"
         cy="70"
@@ -363,37 +469,102 @@ export default function InteractiveGameFormation({
       />
       <circle cx="50" cy="70" r="0.6" fill="white" />
       <rect
-        x="25"
-        y="2"
-        width="50"
+        x="28"
+        y="8"
+        width="44"
         height="14"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
       <rect
-        x="36"
-        y="2"
-        width="28"
+        x="38"
+        y="8"
+        width="24"
         height="6"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
       <rect
-        x="25"
-        y="124"
-        width="50"
+        x="28"
+        y="118"
+        width="44"
         height="14"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
       />
       <rect
-        x="36"
-        y="132"
-        width="28"
+        x="38"
+        y="126"
+        width="24"
         height="6"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+    </svg>
+  );
+
+  const renderHorizontalPitch = () => (
+    <svg
+      viewBox="0 0 140 100"
+      preserveAspectRatio="none"
+      className="absolute inset-0 w-full h-full pointer-events-none"
+    >
+      <rect x="0" y="0" width="140" height="100" fill="#15803d" />
+      <rect
+        x="8"
+        y="8"
+        width="124"
+        height="84"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <line x1="70" y1="8" x2="70" y2="92" stroke="white" strokeWidth="0.4" />
+      <circle
+        cx="70"
+        cy="50"
+        r="8"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <circle cx="70" cy="50" r="0.6" fill="white" />
+      <rect
+        x="8"
+        y="28"
+        width="14"
+        height="44"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="8"
+        y="38"
+        width="6"
+        height="24"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="118"
+        y="28"
+        width="14"
+        height="44"
+        fill="none"
+        stroke="white"
+        strokeWidth="0.4"
+      />
+      <rect
+        x="126"
+        y="38"
+        width="6"
+        height="24"
         fill="none"
         stroke="white"
         strokeWidth="0.4"
@@ -489,6 +660,19 @@ export default function InteractiveGameFormation({
                   {currentCmd.translation}
                 </p>
               )}
+              {/* Countdown bar — only when timing is enabled & we're in
+                  the answer window for this command. */}
+              {timingEnabled && currentTimeLimit && !feedback && (
+                <div className="mt-3 h-1.5 rounded-full bg-emerald-200/40 dark:bg-emerald-900/40 overflow-hidden">
+                  <div
+                    key={timerKey}
+                    className="h-full bg-emerald-500 dark:bg-emerald-400 ig-timer-bar"
+                    style={{
+                      animationDuration: `${currentTimeLimit}ms`,
+                    }}
+                  />
+                </div>
+              )}
               {feedback && (
                 <div
                   className={`mt-3 text-center text-sm font-semibold ${
@@ -513,8 +697,8 @@ export default function InteractiveGameFormation({
         onClick={handlePitchClick}
         className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md select-none"
         style={{
-          maxWidth: "500px",
-          aspectRatio: "5 / 7",
+          maxWidth: isHorizontal ? "700px" : "500px",
+          aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
           cursor:
             gameState === "playing" && interactionMode === "click"
               ? "crosshair"
@@ -528,56 +712,71 @@ export default function InteractiveGameFormation({
             alt="Pitch"
             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           />
+        ) : isHorizontal ? (
+          renderHorizontalPitch()
         ) : (
-          renderInlinePitch()
+          renderVerticalPitch()
         )}
 
-        {/* Player slots */}
+        {/* Player slots — blank circles. Names from the prior pitch step. */}
         {slots.map((slot) => {
           const isTarget = activeSlotId === slot.id;
           const isCorrectTarget =
             feedback === "correct" && currentCmd?.target_slot_id === slot.id;
+          const pos = transformPosition(slot);
           return (
             <div
               key={slot.id}
               ref={(el) => (slotRefs.current[slot.id] = el)}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-white shadow-md transition-all ${
+              className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-md transition-all ${
                 isCorrectTarget
                   ? "bg-emerald-500 ring-4 ring-emerald-200 scale-110"
                   : isTarget
                     ? "bg-red-500 ring-4 ring-red-200"
                     : "bg-gradient-to-br from-accent-500 to-accent-700 ring-2 ring-white/40"
               }`}
-              style={{ left: slot.x, top: slot.y, pointerEvents: "none" }}
+              style={{ left: pos.left, top: pos.top, pointerEvents: "none" }}
               aria-label={slot.label}
-            >
-              {isPortuguese && slot.label_pt
-                ? slot.label_pt.charAt(0)
-                : slot.label?.charAt(0) || "?"}
-            </div>
+            />
           );
         })}
 
         {/* The ball */}
-        {!dragging && (
-          <button
-            type="button"
-            onPointerDown={handleBallPointerDown}
-            disabled={gameState !== "playing" || interactionMode !== "drag"}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black shadow-lg transition-all duration-700 ${
-              interactionMode === "drag" && gameState === "playing"
-                ? "cursor-grab active:cursor-grabbing hover:scale-110"
-                : "cursor-default"
-            }`}
-            style={{
-              left: ballPos.left,
-              top: ballPos.top,
-              touchAction: "none",
-              backgroundImage:
-                "radial-gradient(circle at 30% 30%, white 25%, #ddd 70%)",
-            }}
-            aria-label="Ball"
-          />
+        {!dragging && (() => {
+          const ballPosTransformed = transformPosition({
+            x: ballPos.left,
+            y: ballPos.top,
+          });
+          return (
+            <button
+              type="button"
+              onPointerDown={handleBallPointerDown}
+              disabled={gameState !== "playing" || interactionMode !== "drag"}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black shadow-lg transition-all duration-700 ${
+                interactionMode === "drag" && gameState === "playing"
+                  ? "cursor-grab active:cursor-grabbing hover:scale-110"
+                  : "cursor-default"
+              }`}
+              style={{
+                left: ballPosTransformed.left,
+                top: ballPosTransformed.top,
+                touchAction: "none",
+                backgroundImage:
+                  "radial-gradient(circle at 30% 30%, white 25%, #ddd 70%)",
+              }}
+              aria-label="Ball"
+            />
+          );
+        })()}
+
+        {/* Round transition badge — brief overlay when a faster round starts. */}
+        {roundBadge && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="ig-round-badge px-4 py-2 rounded-full bg-black/75 text-white font-bold text-lg shadow-lg">
+              {isPortuguese ? "Rodada" : "Round"} {roundBadge}
+              <span className="ml-2 text-amber-300">⚡</span>
+            </div>
+          </div>
         )}
       </div>
 
@@ -623,6 +822,40 @@ export default function InteractiveGameFormation({
 
       {/* Hidden audio element */}
       <audio ref={audioRef} className="hidden" />
+
+      <style jsx>{`
+        @keyframes ig-timer-bar {
+          0% {
+            width: 100%;
+          }
+          100% {
+            width: 0%;
+          }
+        }
+        :global(.ig-timer-bar) {
+          animation-name: ig-timer-bar;
+          animation-timing-function: linear;
+          animation-fill-mode: forwards;
+        }
+        @keyframes ig-round-badge {
+          0% {
+            opacity: 0;
+            transform: scale(0.7);
+          }
+          15%,
+          85% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+        }
+        :global(.ig-round-badge) {
+          animation: ig-round-badge 1.6s ease-in-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

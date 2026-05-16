@@ -341,7 +341,7 @@ export default function DragDropVocabulary({
 
       {/* English tray */}
       {!completed && unmatchedSources.length > 0 && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-4 border border-gray-200 dark:border-gray-700">
           <div className="flex flex-wrap gap-3 justify-center">
             {unmatchedSources.map((item) => (
               <div
@@ -360,7 +360,7 @@ export default function DragDropVocabulary({
 
       {/* Targets grid */}
       <div
-        className="grid gap-3 justify-center"
+        className="flex flex-wrap gap-3 justify-center"
         style={{ gridTemplateColumns: "repeat(auto-fit, 120px)" }}
       >
         {shuffledTargets.map((item) => (

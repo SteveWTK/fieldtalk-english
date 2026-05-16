@@ -68,6 +68,36 @@ export function playSuccessSound() {
 }
 
 /**
+ * Cheer: triumphant ascending fanfare (C5 → E5 → G5 → C6) plus a sparkle
+ * trill on top. Used to signal completion of a full round / final command.
+ */
+export function playCheerSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  // Main fanfare
+  playTone(ctx, { freq: 523.25, delay: 0, duration: 0.18, vol: 0.13 });
+  playTone(ctx, { freq: 659.25, delay: 0.08, duration: 0.18, vol: 0.13 });
+  playTone(ctx, { freq: 783.99, delay: 0.16, duration: 0.22, vol: 0.14 });
+  playTone(ctx, {
+    freq: 1046.5,
+    delay: 0.26,
+    duration: 0.45,
+    vol: 0.16,
+    type: "triangle",
+  });
+  // Sparkle trill above
+  playTone(ctx, { freq: 1318.5, delay: 0.4, duration: 0.1, vol: 0.09 });
+  playTone(ctx, { freq: 1567.98, delay: 0.5, duration: 0.1, vol: 0.09 });
+  playTone(ctx, {
+    freq: 1975.53,
+    delay: 0.6,
+    duration: 0.18,
+    vol: 0.11,
+    type: "triangle",
+  });
+}
+
+/**
  * Error: soft descending pair (A3 → F#3) at low volume. Brief and unobtrusive.
  */
 export function playErrorSound() {
