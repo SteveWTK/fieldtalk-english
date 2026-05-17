@@ -130,6 +130,7 @@ export default function InteractiveGameFormation({
         wrong: "Tente novamente — ouça com atenção",
         complete: "Jogo completo!",
         playAgain: "Jogar novamente",
+        startAgain: "Recomeçar",
         xpEarned: "XP ganho",
         loading: "Carregando...",
         empty: "Este jogo ainda não tem comandos. Pergunte ao seu professor.",
@@ -146,6 +147,7 @@ export default function InteractiveGameFormation({
         wrong: "Try again — listen carefully",
         complete: "Game complete!",
         playAgain: "Play again",
+        startAgain: "Start again",
         xpEarned: "XP earned",
         loading: "Loading...",
         empty: "This game has no commands yet. Ask your teacher.",
@@ -246,14 +248,15 @@ export default function InteractiveGameFormation({
     }
   }, [currentCmd]);
 
-  // Auto-play next command after a correct answer
+  // Auto-play next command after a correct answer. Kept short so it
+  // chains tightly behind the ball-arrival delay set in handleHit.
   useEffect(() => {
     if (gameState !== "ready") return;
     if (currentCommand === 0) return;
     if (hasPlayedCommand) return;
     const tid = setTimeout(() => {
       playCommand();
-    }, 800);
+    }, 200);
     return () => clearTimeout(tid);
   }, [gameState, currentCommand, hasPlayedCommand, playCommand]);
 
@@ -335,7 +338,9 @@ export default function InteractiveGameFormation({
           playSuccessSound();
         }
       }
-      setTimeout(() => advanceCommand(1), 1800);
+      // Match the ball's CSS transition (700ms) so the next command fires
+      // right as the ball settles on the target slot.
+      setTimeout(() => advanceCommand(1), 700);
     } else {
       setFeedback("wrong");
       if (!isMuted) playErrorSound();
@@ -619,6 +624,16 @@ export default function InteractiveGameFormation({
               <Volume2 className="w-4 h-4" />
             )}
           </button>
+          {(currentCommand > 0 || score > 0 || gameState === "completed") && (
+            <button
+              onClick={resetGame}
+              aria-label={labels.startAgain}
+              title={labels.startAgain}
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
