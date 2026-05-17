@@ -773,32 +773,33 @@ export default function InteractiveGameFormation({
         })}
 
         {/* The ball */}
-        {!dragging && (() => {
-          const ballPosTransformed = transformPosition({
-            x: ballPos.left,
-            y: ballPos.top,
-          });
-          return (
-            <button
-              type="button"
-              onPointerDown={handleBallPointerDown}
-              disabled={gameState !== "playing" || interactionMode !== "drag"}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black shadow-lg transition-all duration-700 ${
-                interactionMode === "drag" && gameState === "playing"
-                  ? "cursor-grab active:cursor-grabbing hover:scale-110"
-                  : "cursor-default"
-              }`}
-              style={{
-                left: ballPosTransformed.left,
-                top: ballPosTransformed.top,
-                touchAction: "none",
-                backgroundImage:
-                  "radial-gradient(circle at 30% 30%, white 25%, #ddd 70%)",
-              }}
-              aria-label="Ball"
-            />
-          );
-        })()}
+        {!dragging &&
+          (() => {
+            const ballPosTransformed = transformPosition({
+              x: ballPos.left,
+              y: ballPos.top,
+            });
+            return (
+              <button
+                type="button"
+                onPointerDown={handleBallPointerDown}
+                disabled={gameState !== "playing" || interactionMode !== "drag"}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black shadow-lg transition-all duration-700 ${
+                  interactionMode === "drag" && gameState === "playing"
+                    ? "cursor-grab active:cursor-grabbing hover:scale-110"
+                    : "cursor-default"
+                }`}
+                style={{
+                  left: ballPosTransformed.left,
+                  top: ballPosTransformed.top,
+                  touchAction: "none",
+                  backgroundImage:
+                    "radial-gradient(circle at 30% 30%, white 25%, #ddd 70%)",
+                }}
+                aria-label="Ball"
+              />
+            );
+          })()}
 
         {/* Round transition badge — brief overlay when a faster round starts. */}
         {roundBadge && (
@@ -834,10 +835,10 @@ export default function InteractiveGameFormation({
       {/* Completion panel */}
       {gameState === "completed" && (
         <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
-          <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+          {/* <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {labels.complete}
-          </h3>
+          </h3> */}
           <p className="text-gray-700 dark:text-gray-300 mb-3">
             {score}/{totalCommands}
           </p>
