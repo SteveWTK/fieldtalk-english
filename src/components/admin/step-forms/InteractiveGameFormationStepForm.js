@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -406,23 +407,21 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
                 min="500"
                 step="250"
                 value={timing.min_ms || 3000}
-                onChange={(e) =>
-                  updateTiming("min_ms", Number(e.target.value))
-                }
+                onChange={(e) => updateTiming("min_ms", Number(e.target.value))}
                 className={inputClass}
               />
             </div>
             <p className="col-span-2 md:col-span-4 text-xs text-gray-500 dark:text-gray-400">
-              Round 1 gets the initial time; each subsequent round subtracts
-              the decrement, floored at the minimum. Timeout counts as a
-              wrong attempt and advances to the next command. A cheer plays
-              after the last correct of each round.
+              Round 1 gets the initial time; each subsequent round subtracts the
+              decrement, floored at the minimum. Timeout counts as a wrong
+              attempt and advances to the next command. A cheer plays after the
+              last correct of each round.
             </p>
           </div>
         ) : (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            No time limit — players answer at their own pace. Enable the
-            timer to introduce rounds with a gradually shortening window.
+            No time limit — players answer at their own pace. Enable the timer
+            to introduce rounds with a gradually shortening window.
           </p>
         )}
       </div>
@@ -618,9 +617,9 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm text-blue-800 dark:text-blue-300">
-        💡 Tip: Pick at least one acceptable target slot per command — tick
-        more than one for positions that share a name (e.g. both centre-backs
-        accept &ldquo;Pass to the centre back&rdquo;). Click mode is forgiving
+        💡 Tip: Pick at least one acceptable target slot per command — tick more
+        than one for positions that share a name (e.g. both centre-backs accept
+        &ldquo;Pass to the centre back&rdquo;). Click mode is forgiving
         (configurable tolerance); drag mode is more tactile but slower.
       </div>
     </div>
