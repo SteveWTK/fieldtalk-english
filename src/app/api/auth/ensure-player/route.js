@@ -52,27 +52,65 @@ export async function POST(request) {
       "";
 
     const supabase = await getSupabaseAdmin();
-    const { error: upsertError } = await supabase.from("players").upsert(
-      {
-        id: user.id,
-        email: user.email,
-        full_name: fullName,
-        user_type: "player",
-        edition,
-        preferred_language: "en",
-      },
-      { onConflict: "id" }
-    );
 
-    if (upsertError) {
-      console.error("[ensure-player] upsert error:", upsertError);
+    // Look up the existing row first. We can't use a blanket upsert because
+    // it would clobber `user_type` (e.g. platform_admin → player) and
+    // `edition` (e.g. wc2026 → players) every time the user signs back in.
+    // Those fields are only allowed to be set when the row is CREATED.
+    const { data: existing, error: selectError } = await supabase
+      .from("players")
+      .select("id, user_type, edition")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("[ensure-player] select error:", selectError);
       return NextResponse.json(
-        { error: upsertError.message || "Could not ensure player row" },
+        { error: selectError.message || "Could not look up player row" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, edition });
+    if (existing) {
+      // Row already there — refresh only the harmless identity fields and
+      // leave user_type / edition exactly as they are.
+      const { error: updateError } = await supabase
+        .from("players")
+        .update({ email: user.email, full_name: fullName })
+        .eq("id", user.id);
+      if (updateError) {
+        console.error("[ensure-player] update error:", updateError);
+        return NextResponse.json(
+          { error: updateError.message || "Could not refresh player row" },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        created: false,
+        edition: existing.edition || edition,
+      });
+    }
+
+    // No row yet — first-time login. Safe to write the defaults.
+    const { error: insertError } = await supabase.from("players").insert({
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+      user_type: "player",
+      edition,
+      preferred_language: "en",
+    });
+
+    if (insertError) {
+      console.error("[ensure-player] insert error:", insertError);
+      return NextResponse.json(
+        { error: insertError.message || "Could not create player row" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, created: true, edition });
   } catch (err) {
     console.error("[ensure-player] unexpected error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

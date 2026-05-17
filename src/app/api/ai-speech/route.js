@@ -16,12 +16,17 @@ export async function POST(request) {
     const lessonId = formData.get("lessonId");
     const expectedText = formData.get("expectedText");
     const language = formData.get("language") || "pt-BR";
+    // "score_only" → just three numeric scores, cheaper model, no verbose
+    // strengths/improvements/encouragement. "full" → existing rich payload.
+    const feedbackMode =
+      formData.get("feedback_mode") === "score_only" ? "score_only" : "full";
 
     console.log("[AI-Speech] Received params:", {
       hasAudio: !!audioFile,
       lessonId,
       expectedText,
       language,
+      feedbackMode,
       audioSize: audioFile?.size,
     });
 
@@ -70,52 +75,49 @@ export async function POST(request) {
     }
 
     // Analyze pronunciation and accuracy
-    const analysisPrompt = createSpeechAnalysisPrompt(
+    const { systemPrompt, userPrompt, model, maxTokens } = buildPromptForMode(
+      feedbackMode,
       transcript,
       expectedText,
       language
     );
 
-    console.log("[AI-Speech] Getting AI feedback...");
+    console.log("[AI-Speech] Getting AI feedback...", { model, maxTokens });
 
     let feedback;
     try {
       const analysis = await openai.chat.completions.create({
-        model: "gpt-4",
+        model,
         messages: [
-          {
-            role: "system",
-            content:
-              "You are a VERY ENCOURAGING expert English pronunciation coach helping BEGINNER Brazilian football players improve their English speaking skills. Be extremely positive and give high scores (80-100) for any reasonable attempt. Focus on praising effort and progress, not perfection. Accept all accent variations (British, American, Australian, etc.) as correct.",
-          },
-          {
-            role: "user",
-            content: analysisPrompt,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
-        temperature: 0.7,
+        temperature: 0.4,
+        max_tokens: maxTokens,
+        response_format: { type: "json_object" },
       });
 
       feedback = JSON.parse(analysis.choices[0].message.content);
       console.log("[AI-Speech] Feedback generated successfully");
     } catch (gptError) {
       console.error("[AI-Speech] GPT analysis error:", gptError);
-      // Provide fallback feedback if GPT fails
-      feedback = {
-        pronunciation_score: 85,
-        accuracy_score: 90,
-        overall_score: 87,
-        strengths: ["You made a great effort!", "Your confidence is showing", "You're communicating well!"],
-        improvements: [
-          "Keep practicing to build more confidence",
-        ],
-        encouragement:
-          "Excellent attempt! You're doing really well. Keep practicing and you'll continue to improve!",
-        specific_tips: [
-          "Keep speaking English as much as possible",
-          "You're on the right track!",
-        ],
-      };
+      // Fallback: a generous score so users aren't punished by API failures.
+      feedback =
+        feedbackMode === "score_only"
+          ? {
+              pronunciation_score: 95,
+              accuracy_score: 95,
+              overall_score: 95,
+            }
+          : {
+              pronunciation_score: 95,
+              accuracy_score: 95,
+              overall_score: 95,
+              strengths: ["Clear attempt", "Good rhythm"],
+              improvements: [],
+              encouragement: "Great work — keep going!",
+              specific_tips: [],
+            };
     }
 
     // Store feedback in database (optional - handle errors gracefully)
@@ -150,40 +152,69 @@ export async function POST(request) {
   }
 }
 
-function createSpeechAnalysisPrompt(transcript, expectedText, language) {
+// Shared scoring rubric. Goal: reward clean reads with 100, dock only for
+// clear errors, and be radically accent-neutral. World football has dozens
+// of valid English accents; this is not an elocution exam.
+const SCORING_RUBRIC = `
+SCORING RUBRIC (be generous — these are language learners, not elocutionists):
+- 100        Perfect or near-perfect: every word recognisable, no clear errors. A clean read by anyone — native or non-native — must reach 100.
+- 95–99      One small slip: a slightly misread word, a hesitation, a stumble that doesn't obscure meaning.
+- 85–94      Two or three clear errors, but the gist is intact.
+- 75–84      Several errors or a word missed; meaning partially conveyed.
+- Below 75   Most words unintelligible or wrong.
+
+ACCENT POLICY — read carefully:
+- ALL English accents are 100% valid: British, American, Australian, Irish, Scottish, Indian, Caribbean, South African, Brazilian-English, etc.
+- "tomahto" vs "tomayto", "shedule" vs "skedule", rhotic vs non-rhotic R, dropped H's, soft T's — ALL CORRECT.
+- Lexical or grammatical synonyms count as correct ("football" ≡ "soccer", "pitch" ≡ "field").
+- A foreign accent on its own NEVER reduces the score. Only reduce when a SPECIFIC word is wrong, missing, or genuinely unintelligible.
+
+BIAS RULES:
+- If you are unsure whether something was an error or just an accent, count it as correct.
+- A read with no clear, identifiable mistake = 100. Do not artificially withhold 100.
+- Use overall_score = round((pronunciation_score + accuracy_score) / 2).
+`;
+
+function buildPromptForMode(mode, transcript, expectedText, language) {
   const feedbackLanguage = language === "en" ? "English" : "Portuguese";
 
-  return `
-Analyze this English pronunciation attempt by a BEGINNER Brazilian football player:
+  // Score-only mode: a small, focused payload using a cheap model. We only
+  // ask for the three numbers, so prompt + completion are both tiny.
+  if (mode === "score_only") {
+    return {
+      model: "gpt-4o-mini",
+      maxTokens: 80,
+      systemPrompt:
+        "You are a generous English pronunciation scorer for football English learners. Reply ONLY with valid JSON containing exactly three integer fields: pronunciation_score, accuracy_score, overall_score. No prose.",
+      userPrompt: `Expected: "${expectedText}"
+Heard:    "${transcript}"
+${SCORING_RUBRIC}
 
-Expected text: "${expectedText}"
-What they said: "${transcript}"
+Return JSON only:
+{ "pronunciation_score": 0, "accuracy_score": 0, "overall_score": 0 }`,
+    };
+  }
 
-IMPORTANT INSTRUCTIONS:
-- This is a BEGINNER student - be VERY encouraging and positive!
-- Give scores between 80-100 for any reasonable attempt (reserve below 75 only for completely incorrect responses)
-- ACCEPT ALL ACCENT VARIATIONS as correct (British, American, Australian, Irish, Scottish, South African, etc.)
-- DO NOT penalize for accent differences - only correct if the word is completely wrong or unintelligible
-- Focus on whether they communicated the message, not on perfect native-like pronunciation
-- Praise their effort and courage to speak English!
+  // Full mode: the verbose payload with strengths / improvements / tips.
+  return {
+    model: "gpt-4o-mini",
+    maxTokens: 500,
+    systemPrompt:
+      "You are an encouraging English pronunciation coach for football-English learners. Be radically accent-neutral and generous. Reply with valid JSON only.",
+    userPrompt: `Expected: "${expectedText}"
+Heard:    "${transcript}"
+${SCORING_RUBRIC}
 
-SCORING GUIDELINES:
-- pronunciation_score: 80-90 for basic attempts, 90-95 for good attempts, 95-100 for excellent attempts
-- accuracy_score: Did they say the right words? Be lenient - accept synonyms and accent variations
-- overall_score: Average of the two, biased towards being encouraging
-
-Provide feedback in ${feedbackLanguage} in this JSON format:
+Reply in ${feedbackLanguage} using EXACTLY this JSON shape:
 {
-  "pronunciation_score": 85,
-  "accuracy_score": 90,
-  "overall_score": 87,
-  "strengths": ["At least 2-3 positive specific things they did well"],
-  "improvements": ["Only 1-2 gentle, simple suggestions if really needed"],
-  "encouragement": "A very positive and motivational message!",
-  "specific_tips": ["1-2 simple, practical tips - be encouraging!"],
-  "next_focus": "One simple thing to work on next - phrase it positively!"
-}
-
-Be extremely encouraging and specific. Praise their effort. Remember: different accents (British 'tomahto' vs American 'tomayto', British 'shedule' vs American 'skedule', etc.) are ALL CORRECT. Only flag true errors where the word is wrong or incomprehensible.
-`;
+  "pronunciation_score": 0,
+  "accuracy_score": 0,
+  "overall_score": 0,
+  "strengths": ["2-3 short specific positives"],
+  "improvements": ["empty array if there were no clear errors; otherwise 1-2 short, concrete pointers — only for clear errors, never for accent"],
+  "encouragement": "one upbeat sentence",
+  "specific_tips": ["0-2 tiny actionable tips, or empty"],
+  "next_focus": "one short phrase, positive framing"
+}`,
+  };
 }

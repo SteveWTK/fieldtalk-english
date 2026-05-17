@@ -104,6 +104,10 @@ export default function AISpeechPractice({
       formData.append("lessonId", lessonId || "demo");
       formData.append("expectedText", expectedText);
       formData.append("language", "pt-BR"); // Get from user settings
+      // Score-only mode: the UI currently displays just the percentage, so
+      // we don't pay tokens for the verbose feedback fields. Switch back
+      // to "full" when strengths/improvements are surfaced again.
+      formData.append("feedback_mode", "score_only");
 
       const response = await fetch("/api/ai-speech", {
         method: "POST",

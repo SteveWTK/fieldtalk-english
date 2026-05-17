@@ -142,11 +142,20 @@ export default function DragDropFormation({
     [draggingCardId]
   );
 
+  // Empty slot rects are small (~44px); fingers often land just past the
+  // edge of the visible slot. Two-stage hit test: prefer an exact rect
+  // hit if there is one, otherwise pick the nearest slot whose centre is
+  // within `dropTolerancePx` of the drop point. Override per step via
+  // formation_config.drop_tolerance_px.
+  const dropTolerancePx = Number(config.drop_tolerance_px) || 40;
   const findSlotAtPoint = (clientX, clientY) => {
+    let nearestSlot = null;
+    let nearestDist = dropTolerancePx;
     for (const slot of slots) {
       const el = slotRefs.current[slot.id];
       if (!el) continue;
       const rect = el.getBoundingClientRect();
+      // Stage 1: exact-rect hit — early return so a direct hit always wins.
       if (
         clientX >= rect.left &&
         clientX <= rect.right &&
@@ -155,8 +164,16 @@ export default function DragDropFormation({
       ) {
         return slot;
       }
+      // Stage 2: distance from slot centre. Keep the closest within tolerance.
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const d = Math.hypot(clientX - cx, clientY - cy);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearestSlot = slot;
+      }
     }
-    return null;
+    return nearestSlot;
   };
 
   const handlePointerUp = useCallback(
