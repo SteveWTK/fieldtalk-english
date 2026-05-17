@@ -47,7 +47,9 @@ import { useIsWide } from "@/lib/hooks/useIsWide";
  *       - id: string
  *       - text: string (English command)
  *       - translation: string (optional)
- *       - target_slot_id: string  ← references a position_slots[].id
+ *       - target_slot_id: string   (single acceptable slot id) — or
+ *       - target_slot_ids: string[] (multiple — use when several slots
+ *         share a position name, e.g. two centre-backs in a 4-3-3)
  *       - audio_url: string (optional pre-recorded; otherwise TTS)
  *       - success_message: string (optional)
  *   - timing: optional speed-progression block
@@ -302,9 +304,19 @@ export default function InteractiveGameFormation({
     }
   };
 
+  // Resolve a command's acceptable slot ids. Supports both `target_slot_ids`
+  // (plural array, preferred) and the legacy `target_slot_id` (single string).
+  const acceptableTargets = (cmd) => {
+    if (!cmd) return [];
+    if (Array.isArray(cmd.target_slot_ids) && cmd.target_slot_ids.length > 0) {
+      return cmd.target_slot_ids;
+    }
+    return cmd.target_slot_id ? [cmd.target_slot_id] : [];
+  };
+
   const handleHit = (targetSlot) => {
     if (!currentCmd || !targetSlot) return;
-    const isCorrect = targetSlot.id === currentCmd.target_slot_id;
+    const isCorrect = acceptableTargets(currentCmd).includes(targetSlot.id);
     setActiveSlotId(targetSlot.id);
 
     if (isCorrect) {
@@ -723,8 +735,10 @@ export default function InteractiveGameFormation({
         {/* Player slots — blank circles. Names from the prior pitch step. */}
         {slots.map((slot) => {
           const isTarget = activeSlotId === slot.id;
+          // Celebrate the actual slot the user clicked; if the command has
+          // several acceptable targets, only the clicked one lights up.
           const isCorrectTarget =
-            feedback === "correct" && currentCmd?.target_slot_id === slot.id;
+            feedback === "correct" && slot.id === activeSlotId;
           const pos = transformPosition(slot);
           return (
             <div
@@ -862,12 +876,13 @@ export default function InteractiveGameFormation({
   );
 }
 
-// Identical TTS strategy to InteractiveGame: try pre-recorded asset first,
-// otherwise fall through to /api/tts.
+// Try a pre-recorded asset first (works for both local /audio/ paths and
+// remote URLs like Supabase Storage). Falls back to /api/tts only if the
+// command has no audio_url or the file can't be reached.
 async function generateCommandAudio(command) {
   if (!command) return null;
 
-  if (command.audio_url && command.audio_url.startsWith("/audio/")) {
+  if (command.audio_url) {
     try {
       const res = await fetch(command.audio_url, { method: "HEAD" });
       if (res.ok) return command.audio_url;

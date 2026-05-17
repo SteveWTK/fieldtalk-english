@@ -125,7 +125,7 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
         id: `cmd-${Date.now()}`,
         text: "",
         translation: "",
-        target_slot_id: slots[0]?.id || "",
+        target_slot_ids: slots[0]?.id ? [slots[0].id] : [],
         audio_url: "",
         success_message: "",
       },
@@ -135,6 +135,28 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
   const updateCommand = (idx, field, value) => {
     const updated = [...commands];
     updated[idx] = { ...updated[idx], [field]: value };
+    updateFormationConfig("commands", updated);
+  };
+
+  // Resolve the acceptable slot ids for a command, supporting both
+  // target_slot_ids (preferred) and the legacy target_slot_id.
+  const targetIdsFor = (cmd) => {
+    if (Array.isArray(cmd?.target_slot_ids) && cmd.target_slot_ids.length > 0) {
+      return cmd.target_slot_ids;
+    }
+    return cmd?.target_slot_id ? [cmd.target_slot_id] : [];
+  };
+
+  const toggleCommandTarget = (cmdIdx, slotId) => {
+    const current = targetIdsFor(commands[cmdIdx]);
+    const next = current.includes(slotId)
+      ? current.filter((id) => id !== slotId)
+      : [...current, slotId];
+    const updated = [...commands];
+    // Write to the new plural field and clear the legacy singular so the
+    // JSON has a single source of truth going forward.
+    const { target_slot_id: _legacy, ...rest } = updated[cmdIdx];
+    updated[cmdIdx] = { ...rest, target_slot_ids: next };
     updateFormationConfig("commands", updated);
   };
 
@@ -521,28 +543,38 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-                <input
-                  type="text"
-                  value={cmd.text || ""}
-                  onChange={(e) => updateCommand(idx, "text", e.target.value)}
-                  placeholder="Pass to the left winger"
-                  className={smallInputClass}
-                />
-                <select
-                  value={cmd.target_slot_id || ""}
-                  onChange={(e) =>
-                    updateCommand(idx, "target_slot_id", e.target.value)
-                  }
-                  className={smallInputClass}
-                >
-                  <option value="">Target slot...</option>
-                  {slots.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label || s.id} ({s.id})
-                    </option>
-                  ))}
-                </select>
+              <input
+                type="text"
+                value={cmd.text || ""}
+                onChange={(e) => updateCommand(idx, "text", e.target.value)}
+                placeholder="Pass to the left winger"
+                className={`${smallInputClass} w-full mb-2`}
+              />
+              <div className="mb-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  Acceptable target slots (tick more than one when several
+                  positions share a name, e.g. two centre-backs):
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {slots.map((s) => {
+                    const checked = targetIdsFor(cmd).includes(s.id);
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => toggleCommandTarget(idx, s.id)}
+                        className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                          checked
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300"
+                        }`}
+                      >
+                        {s.label || s.id}{" "}
+                        <span className="opacity-70">({s.id})</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                 <input
@@ -586,9 +618,10 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm text-blue-800 dark:text-blue-300">
-        💡 Tip: Each command&apos;s target_slot_id must reference a position
-        slot above. Click mode is forgiving (configurable tolerance); drag mode
-        is more tactile but slower.
+        💡 Tip: Pick at least one acceptable target slot per command — tick
+        more than one for positions that share a name (e.g. both centre-backs
+        accept &ldquo;Pass to the centre back&rdquo;). Click mode is forgiving
+        (configurable tolerance); drag mode is more tactile but slower.
       </div>
     </div>
   );
