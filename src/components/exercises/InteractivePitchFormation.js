@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   Volume2,
-  Trophy,
+  // Trophy,
   // Languages,
   CheckCircle,
   RotateCcw,
@@ -452,9 +452,7 @@ export default function InteractivePitchFormation({
             Dismisses on tap or on the first marker click. */}
         {!onboardSeen && (
           <OnboardingHint
-            text={
-              isPortuguese ? "Toque, ouça e repita" : "Tap, listen, repeat"
-            }
+            text={isPortuguese ? "Toque, ouça e repita" : "Tap, listen, repeat"}
             placement={{
               left: "50%",
               top: "12px",
@@ -466,7 +464,7 @@ export default function InteractivePitchFormation({
       </div>
 
       {/* Completion */}
-      {completed && (
+      {/* {completed && (
         <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
           <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -476,7 +474,7 @@ export default function InteractivePitchFormation({
             <CheckCircle className="w-5 h-5" />+{baseXp} {labels.xpEarned}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Hidden audio element */}
       <audio ref={audioRef} className="hidden" />
