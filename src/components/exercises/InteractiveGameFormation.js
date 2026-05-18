@@ -17,9 +17,12 @@ import {
   playSuccessSound,
   playErrorSound,
   playCheerSound,
+  playGoalCheerSound,
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { useIsWide } from "@/lib/hooks/useIsWide";
+import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
+import OnboardingHint from "./OnboardingHint";
 
 /**
  * InteractiveGameFormation — visual sibling to DragDropFormation, but
@@ -187,6 +190,28 @@ export default function InteractiveGameFormation({
   const [timerKey, setTimerKey] = useState(0); // bump to restart the CSS bar
   const prevRoundRef = useRef(0);
 
+  // Onboarding state — 3 sequential hints (button → ball → field). The
+  // play button stops appearing once gameStarted=true; the game flows on
+  // auto-play after that. resetGame() resets both.
+  const { seen: onboardSeen, markSeen: markOnboardSeen } = useOnboardingFlag(
+    "interactive_game_formation"
+  );
+  const [onboardStep, setOnboardStep] = useState(onboardSeen ? null : 0);
+  const [gameStarted, setGameStarted] = useState(
+    Boolean(initial?.currentCommand) || initial?.gameState === "completed"
+  );
+
+  const advanceOnboarding = () => {
+    setOnboardStep((s) => {
+      if (s === null) return null;
+      if (s >= 2) {
+        markOnboardSeen();
+        return null;
+      }
+      return s + 1;
+    });
+  };
+
   const audioRef = useRef(null);
   const pitchRef = useRef(null);
   const slotRefs = useRef({});
@@ -233,6 +258,15 @@ export default function InteractiveGameFormation({
     if (!currentCmd) return;
     setAudioLoading(true);
     setFeedback(null);
+    setGameStarted(true);
+    // Clicking play closes any remaining onboarding hints — user has the gist.
+    setOnboardStep((s) => {
+      if (s !== null) {
+        markOnboardSeen();
+        return null;
+      }
+      return s;
+    });
     try {
       const url = await generateCommandAudio(currentCmd);
       if (url && audioRef.current) {
@@ -246,7 +280,7 @@ export default function InteractiveGameFormation({
       setGameState("playing");
       setHasPlayedCommand(true);
     }
-  }, [currentCmd]);
+  }, [currentCmd, markOnboardSeen]);
 
   // Auto-play next command after a correct answer. Kept short so it
   // chains tightly behind the ball-arrival delay set in handleHit.
@@ -326,13 +360,18 @@ export default function InteractiveGameFormation({
       setFeedback("correct");
       setScore((s) => s + 1);
       moveBallToSlot(targetSlot);
-      // Cheer at the last command of every round (rounds enabled) AND at
-      // the final command of the entire exercise. Otherwise standard chime.
+      // Sound priority:
+      //   1. Slot id "GOAL" (case-insensitive) → stadium crowd cheer
+      //   2. Last command of a round / the game → fanfare cheer
+      //   3. Otherwise → standard chime
+      const isGoal = String(targetSlot.id || "").toLowerCase() === "goal";
       const isLastOfRound =
         timingEnabled && (currentCommand + 1) % commandsPerRound === 0;
       const isLastOfGame = currentCommand + 1 === totalCommands;
       if (!isMuted) {
-        if (isLastOfRound || isLastOfGame) {
+        if (isGoal) {
+          playGoalCheerSound();
+        } else if (isLastOfRound || isLastOfGame) {
           playCheerSound();
         } else {
           playSuccessSound();
@@ -447,6 +486,7 @@ export default function InteractiveGameFormation({
     setActiveSlotId(null);
     setRoundBadge(null);
     prevRoundRef.current = 0;
+    setGameStarted(false);
   };
 
   // ---- Empty-state guard ----
@@ -594,7 +634,7 @@ export default function InteractiveGameFormation({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        {/* <p className="text-sm text-gray-700 dark:text-gray-300">
           {step?.content ||
             (interactionMode === "drag"
               ? labels.instructionDrag
@@ -604,7 +644,7 @@ export default function InteractiveGameFormation({
               {config.formation_name}
             </span>
           )}
-        </p>
+        </p> */}
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-gray-900 dark:text-white">
             {currentCommand + (gameState === "completed" ? 0 : 1)}/
@@ -634,29 +674,51 @@ export default function InteractiveGameFormation({
               <RotateCcw className="w-4 h-4" />
             </button>
           )}
-        </div>
-      </div>
-
-      {/* Command panel */}
-      {gameState !== "completed" && (
-        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 sm:p-4">
-          {gameState === "ready" ? (
-            <div className="text-center">
+          {/* Small play button — only ever shown at the very start (or
+              after a reset). Once gameStarted is true, the game flows on
+              auto-play, so the button doesn't reappear. */}
+          {!gameStarted && gameState === "ready" && (
+            <div className="relative">
               <button
                 onClick={playCommand}
                 disabled={audioLoading}
-                className="inline-flex items-center gap-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-full font-semibold transition-colors"
+                aria-label={labels.play}
+                title={labels.play}
+                className="igf-play-btn flex items-center justify-center w-9 h-9 rounded-full bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-white shadow transition-colors"
               >
                 {audioLoading ? (
-                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Play className="w-5 h-5" />
+                  <Play className="w-4 h-4" fill="currentColor" />
                 )}
-                {audioLoading ? labels.loading : labels.play}
               </button>
+              {/* Onboarding hint 1 — points up at this play button. */}
+              {onboardStep === 0 && (
+                <OnboardingHint
+                  text={
+                    isPortuguese
+                      ? "Clique aqui para começar"
+                      : "Click here to start"
+                  }
+                  placement={{
+                    right: "0",
+                    top: "calc(100% + 14px)",
+                  }}
+                  arrow="up"
+                  onDismiss={advanceOnboarding}
+                />
+              )}
             </div>
-          ) : (
-            <div>
+          )}
+        </div>
+      </div>
+
+      {/* Command panel — only rendered while a command is in play. The
+          initial "ready" state is bare; the play button lives in the
+          header above. */}
+      {gameState === "playing" && (
+        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 sm:p-4">
+          <div>
               <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
                 &ldquo;{currentCmd?.text}&rdquo;
               </p>
@@ -715,7 +777,6 @@ export default function InteractiveGameFormation({
                 </div>
               )}
             </div>
-          )}
         </div>
       )}
 
@@ -809,6 +870,37 @@ export default function InteractiveGameFormation({
               <span className="ml-2 text-amber-300">⚡</span>
             </div>
           </div>
+        )}
+
+        {/* Onboarding hint 2 — points at the ball's starting position. */}
+        {onboardStep === 1 && gameState !== "completed" && (
+          <OnboardingHint
+            text={isPortuguese ? "Esta é a bola" : "Here is the ball"}
+            placement={
+              isHorizontal
+                ? { left: "28%", top: "50%", transform: "translateY(-50%)" }
+                : { left: "50%", top: "70%", transform: "translateX(-50%)" }
+            }
+            arrow={isHorizontal ? "left" : "down"}
+            onDismiss={advanceOnboarding}
+          />
+        )}
+
+        {/* Onboarding hint 3 — sits in the centre of the field. */}
+        {onboardStep === 2 && gameState !== "completed" && (
+          <OnboardingHint
+            text={
+              isPortuguese
+                ? "Toque na posição que você ouvir"
+                : "Tap the position you hear"
+            }
+            placement={{
+              left: "50%",
+              top: "35%",
+              transform: "translateX(-50%)",
+            }}
+            onDismiss={advanceOnboarding}
+          />
         )}
       </div>
 

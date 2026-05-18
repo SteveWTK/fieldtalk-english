@@ -98,6 +98,35 @@ export function playCheerSound() {
 }
 
 /**
+ * Goal cheer: plays a recorded stadium-crowd-roar audio file. Used by
+ * InteractiveGameFormation when the user successfully selects a slot
+ * whose id is "GOAL". Drop the file at /public/audio/effects/goal-cheer.mp3
+ * (any web-playable format is fine — adjust the path if needed).
+ *
+ * If the file is missing or fails to load, we fall back to playCheerSound()
+ * so the user still gets a celebratory sound.
+ */
+export function playGoalCheerSound() {
+  if (typeof window === "undefined") return;
+  try {
+    if (currentAudioFile) {
+      currentAudioFile.pause();
+      currentAudioFile.currentTime = 0;
+    }
+    const audio = new Audio("/audio/effects/goal-cheer.mp3");
+    currentAudioFile = audio;
+    audio.volume = 0.85;
+    audio.onerror = () => playCheerSound();
+    const p = audio.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => playCheerSound());
+    }
+  } catch {
+    playCheerSound();
+  }
+}
+
+/**
  * Error: soft descending pair (A3 → F#3) at low volume. Brief and unobtrusive.
  */
 export function playErrorSound() {

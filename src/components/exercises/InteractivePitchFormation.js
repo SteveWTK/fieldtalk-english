@@ -3,8 +3,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Volume2, Trophy, Languages, CheckCircle, RotateCcw } from "lucide-react";
+import {
+  Volume2,
+  Trophy,
+  // Languages,
+  CheckCircle,
+  RotateCcw,
+} from "lucide-react";
 import { useIsWide } from "@/lib/hooks/useIsWide";
+import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
+import OnboardingHint from "./OnboardingHint";
 
 /**
  * InteractivePitchFormation — visual sibling to DragDropFormation.
@@ -66,8 +74,11 @@ export default function InteractivePitchFormation({
     return new Set();
   });
   const [activeItem, setActiveItem] = useState(null);
-  const [showTranslation, setShowTranslation] = useState(isPortuguese);
+  // const [showTranslation, setShowTranslation] = useState(isPortuguese);
   const [completed, setCompleted] = useState(false);
+
+  const { seen: onboardSeen, markSeen: markOnboardSeen } =
+    useOnboardingFlag("interactive_pitch_formation");
 
   const audioRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
@@ -106,13 +117,15 @@ export default function InteractivePitchFormation({
 
   const labels = isPortuguese
     ? {
-        instruction: "Toque em cada jogador ou área para aprender o vocabulário",
+        instruction:
+          "Toque em cada jogador ou área para aprender o vocabulário",
         progress: "explorados",
         complete: "Excelente! Você explorou tudo.",
         xpEarned: "XP ganho",
         reset: "Recomeçar",
         translate: "Tradução",
-        empty: "Esta atividade ainda não tem conteúdo. Pergunte ao seu professor.",
+        empty:
+          "Esta atividade ainda não tem conteúdo. Pergunte ao seu professor.",
       }
     : {
         instruction: "Tap each player or area to learn the vocabulary",
@@ -143,6 +156,7 @@ export default function InteractivePitchFormation({
   };
 
   const handleClick = (item, kind) => {
+    if (!onboardSeen) markOnboardSeen();
     setClickedIds((prev) => new Set(prev).add(item.id));
     setActiveItem({ ...item, _kind: kind });
     if (item.audio_url) playAudio(item.audio_url);
@@ -306,7 +320,7 @@ export default function InteractivePitchFormation({
   );
 
   const labelText = (item) =>
-    showTranslation && item.label_pt ? item.label_pt : item.label;
+    isPortuguese && item.label_pt ? item.label_pt : item.label;
 
   // Render one clickable marker — used for both players and pitch areas.
   const renderMarker = (item, variant) => {
@@ -346,9 +360,7 @@ export default function InteractivePitchFormation({
           {isClicked && !isActive ? (
             <CheckCircle
               className={
-                variant === "slot"
-                  ? "w-5 h-5"
-                  : "w-3.5 h-3.5 text-emerald-700"
+                variant === "slot" ? "w-5 h-5" : "w-3.5 h-3.5 text-emerald-700"
               }
             />
           ) : (
@@ -374,26 +386,26 @@ export default function InteractivePitchFormation({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        {/* <p className="text-sm text-gray-700 dark:text-gray-300">
           {step?.content || labels.instruction}
           {config.formation_name && (
             <span className="ml-2 px-2 py-0.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 font-medium text-xs">
               {config.formation_name}
             </span>
           )}
-        </p>
+        </p> */}
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-gray-900 dark:text-white">
             {clickedIds.size}/{totalItems} {labels.progress}
           </span>
-          <button
+          {/* <button
             onClick={() => setShowTranslation((v) => !v)}
             className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             aria-label={labels.translate}
           >
             <Languages className="w-3.5 h-3.5" />
             {labels.translate}
-          </button>
+          </button> */}
           {clickedIds.size > 0 && !completed && (
             <button
               onClick={resetAll}
@@ -430,6 +442,22 @@ export default function InteractivePitchFormation({
 
         {slots.map((slot) => renderMarker(slot, "slot"))}
         {areas.map((area) => renderMarker(area, "area"))}
+
+        {/* One-shot onboarding hint — pinned to the top of the pitch.
+            Dismisses on tap or on the first marker click. */}
+        {!onboardSeen && (
+          <OnboardingHint
+            text={
+              isPortuguese ? "Toque, ouça e repita" : "Tap, listen, repeat"
+            }
+            placement={{
+              left: "50%",
+              top: "12px",
+              transform: "translateX(-50%)",
+            }}
+            onDismiss={markOnboardSeen}
+          />
+        )}
       </div>
 
       {/* Completion */}

@@ -428,12 +428,12 @@ export default function AIMultipleChoiceGapFill({
         className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <Target className="w-4 h-4 text-growth-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("choose_best_word")}
             </span>
-          </div>
+          </div> */}
           {/* <div className="flex items-center">
             <button
               onClick={() =>

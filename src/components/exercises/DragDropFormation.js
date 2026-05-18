@@ -10,10 +10,16 @@ import {
   AlertCircle,
   Volume2,
   VolumeX,
+  Hand,
 } from "lucide-react";
-import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
+import {
+  playSuccessSound,
+  playErrorSound,
+  playCheerSound,
+} from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { useIsWide } from "@/lib/hooks/useIsWide";
+import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
 
 /**
  * DragDropFormation Step
@@ -90,6 +96,9 @@ export default function DragDropFormation({
   const [shakeCardId, setShakeCardId] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [completed, setCompleted] = useState(false);
+
+  const { seen: onboardSeen, markSeen: markOnboardSeen } =
+    useOnboardingFlag("drag_drop_formation");
 
   const pitchRef = useRef(null);
   const slotRefs = useRef({});
@@ -194,7 +203,16 @@ export default function DragDropFormation({
           // Correct placement
           setPlacements((prev) => ({ ...prev, [card.id]: targetSlot.id }));
           setErrorMessage(null);
-          if (!isMuted) playSuccessSound();
+          // Dismiss the onboarding demo on the first successful placement —
+          // the user has clearly understood the mechanic.
+          if (!onboardSeen) markOnboardSeen();
+          // Final correct placement of the formation gets the brighter
+          // fanfare; intermediate placements get the standard chime.
+          const willBeLast = Object.keys(placements).length + 1 === totalSlots;
+          if (!isMuted) {
+            if (willBeLast) playCheerSound();
+            else playSuccessSound();
+          }
         } else {
           // Wrong placement — shake and return
           setShakeCardId(card.id);
@@ -417,18 +435,46 @@ export default function DragDropFormation({
     </svg>
   );
 
+  // Toggle the drag-demo overlay until the user has either dismissed it
+  // by tap or completed their first correct drop.
+  const showDragDemo = !onboardSeen && !completed && trayCards.length > 0;
+
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
+      {/* Drag-by-example onboarding overlay. Lets clicks through to the
+          rest of the UI everywhere except on the caption pill, which is
+          itself the dismiss target. */}
+      {showDragDemo && (
+        <div
+          className="absolute inset-0 z-30 pointer-events-none ddf-demo-fade"
+          aria-hidden="true"
+        >
+          <button
+            type="button"
+            onClick={markOnboardSeen}
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-12 bg-emerald-600/95 text-white text-xs sm:text-sm font-medium px-3 py-2 rounded-lg shadow-lg cursor-pointer onboard-hint-enter"
+            aria-label={
+              isPortuguese ? "Arraste para a posição" : "Drag to position"
+            }
+          >
+            {isPortuguese ? "Arraste para a posição" : "Drag to position"}
+          </button>
+          <div className="ddf-hand-anim absolute left-1/2 -translate-x-1/2">
+            <Hand className="w-9 h-9 text-white drop-shadow-lg rotate-[20deg]" />
+          </div>
+        </div>
+      )}
+
       {/* Instruction & progress */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        {/* <p className="text-sm text-gray-700 dark:text-gray-300">
           {step?.content || labels.instruction}
           {config.formation_name && (
             <span className="ml-2 px-2 py-0.5 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 font-medium text-xs">
               {config.formation_name}
             </span>
           )}
-        </p>
+        </p> */}
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-gray-900 dark:text-white">
             {placedCount}/{totalSlots} {labels.progress}
@@ -574,7 +620,8 @@ export default function DragDropFormation({
         </div>
       )} */}
 
-      {/* Custom animations */}
+      {/* Custom animations — one consolidated styled-jsx block (the file
+          may only contain one). */}
       <style jsx>{`
         @keyframes shake {
           0%,
@@ -604,11 +651,59 @@ export default function DragDropFormation({
             opacity: 1;
           }
         }
+        @keyframes ddf-hand-move {
+          0% {
+            bottom: 6%;
+            opacity: 0;
+          }
+          12% {
+            opacity: 1;
+          }
+          60% {
+            bottom: 55%;
+            opacity: 1;
+          }
+          78% {
+            bottom: 55%;
+            opacity: 0;
+          }
+          100% {
+            bottom: 6%;
+            opacity: 0;
+          }
+        }
+        @keyframes ddf-demo-fade {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+        @keyframes onboard-hint-enter {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.94);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+          }
+        }
         :global(.animate-shake) {
           animation: shake 0.5s ease-in-out;
         }
         :global(.animate-pop-in) {
           animation: pop-in 0.3s ease-out;
+        }
+        :global(.ddf-hand-anim) {
+          animation: ddf-hand-move 2.6s ease-in-out infinite;
+        }
+        :global(.ddf-demo-fade) {
+          animation: ddf-demo-fade 0.4s ease-out forwards;
+        }
+        :global(.onboard-hint-enter) {
+          animation: onboard-hint-enter 0.3s ease-out forwards;
         }
       `}</style>
     </div>
