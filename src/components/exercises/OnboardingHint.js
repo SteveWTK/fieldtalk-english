@@ -26,10 +26,14 @@ export default function OnboardingHint({
   tone = "emerald",
   className = "",
 }) {
+  // Tones are full Tailwind classes so the JIT picks them up. The
+  // "emerald" key keeps its name for backwards compat with callers, but
+  // now resolves to a saturated deep blue — pops cleanly against the
+  // green pitch where the original emerald was washing out.
   const toneStyles = {
     emerald: {
-      pill: "bg-emerald-600/95",
-      borderColour: "rgb(5, 150, 105)",
+      pill: "bg-blue-800/95",
+      borderColour: "rgb(30, 64, 175)",
     },
     amber: {
       pill: "bg-amber-500/95",
@@ -89,7 +93,7 @@ export default function OnboardingHint({
       aria-label={text}
     >
       <div
-        className={`relative ${pill} text-white text-xs sm:text-sm font-medium px-3 py-2 rounded-lg shadow-lg cursor-pointer max-w-[16rem] whitespace-normal text-center ${className}`}
+        className={`relative ${pill} text-white text-sm sm:text-base font-semibold px-4 py-2.5 rounded-xl shadow-lg ring-1 ring-white/15 cursor-pointer max-w-[18rem] whitespace-normal text-center ${className}`}
       >
         {text}
         {arrowEl}

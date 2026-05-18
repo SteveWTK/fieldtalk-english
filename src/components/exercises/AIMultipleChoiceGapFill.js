@@ -643,7 +643,7 @@ export default function AIMultipleChoiceGapFill({
             Context: {sentence.context}
           </div>
         )} */}
-        {feedback?.isCorrect && imageUrl && (
+        {imageUrl && (
           <div className="mt-6 mb-2 mx-16 sm:mx-48 md:mx-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
             <Image
               src={imageUrl}

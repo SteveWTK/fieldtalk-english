@@ -452,7 +452,7 @@ export default function DragDropFormation({
           <button
             type="button"
             onClick={markOnboardSeen}
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-12 bg-emerald-600/95 text-white text-xs sm:text-sm font-medium px-3 py-2 rounded-lg shadow-lg cursor-pointer onboard-hint-enter"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-12 bg-blue-800/95 text-white text-sm sm:text-base font-semibold px-4 py-2.5 rounded-xl ring-1 ring-white/15 shadow-lg cursor-pointer onboard-hint-enter"
             aria-label={
               isPortuguese ? "Arraste para a posição" : "Drag to position"
             }

@@ -79,7 +79,23 @@ export default function InteractiveGameFormation({
 }) {
   const { t } = useTranslation();
   const config = step?.formation_config || {};
-  const slots = config.position_slots || [];
+  // Drop any user-added GOAL entry from the visible slot list — we now
+  // render a fixed goal-shaped rectangle for it instead (see GOAL_SLOT
+  // and the rendering block in the pitch container).
+  const slots = (config.position_slots || []).filter((s) => s.id !== "GOAL");
+  // x/y on GOAL_SLOT is where the ball settles when this slot is hit —
+  // it's the visual centre of the goal rectangle. transformPosition rotates
+  // it for landscape mode automatically.
+  const GOAL_SLOT = {
+    id: "GOAL",
+    label: "Goal",
+    label_pt: "Gol",
+    x: "50%",
+    y: "4%",
+  };
+  // Slots used for hit testing — players + the synthetic goal. The goal
+  // element registers its ref under slotRefs.current["GOAL"].
+  const slotsForHit = [...slots, GOAL_SLOT];
   const commands = config.commands || [];
   const interactionMode = config.interaction_mode || "click";
   const clickTolerancePx = Number(config.click_tolerance_px) || 50;
@@ -190,26 +206,26 @@ export default function InteractiveGameFormation({
   const [timerKey, setTimerKey] = useState(0); // bump to restart the CSS bar
   const prevRoundRef = useRef(0);
 
-  // Onboarding state — 3 sequential hints (button → ball → field). The
-  // play button stops appearing once gameStarted=true; the game flows on
-  // auto-play after that. resetGame() resets both.
+  // Onboarding — all 3 hints (ball, field, play button) appear together
+  // on first visit. Any tap on any hint, or clicking play, marks the
+  // step as seen and dismisses them all simultaneously. Easier to scan
+  // than a sequence and removes the risk of starting the game before
+  // reading the other two.
   const { seen: onboardSeen, markSeen: markOnboardSeen } = useOnboardingFlag(
     "interactive_game_formation"
   );
-  const [onboardStep, setOnboardStep] = useState(onboardSeen ? null : 0);
+  const initialOnboardShow =
+    !onboardSeen &&
+    !Boolean(initial?.currentCommand) &&
+    initial?.gameState !== "completed";
+  const [showOnboard, setShowOnboard] = useState(initialOnboardShow);
   const [gameStarted, setGameStarted] = useState(
     Boolean(initial?.currentCommand) || initial?.gameState === "completed"
   );
 
-  const advanceOnboarding = () => {
-    setOnboardStep((s) => {
-      if (s === null) return null;
-      if (s >= 2) {
-        markOnboardSeen();
-        return null;
-      }
-      return s + 1;
-    });
+  const dismissOnboarding = () => {
+    markOnboardSeen();
+    setShowOnboard(false);
   };
 
   const audioRef = useRef(null);
@@ -259,13 +275,10 @@ export default function InteractiveGameFormation({
     setAudioLoading(true);
     setFeedback(null);
     setGameStarted(true);
-    // Clicking play closes any remaining onboarding hints — user has the gist.
-    setOnboardStep((s) => {
-      if (s !== null) {
-        markOnboardSeen();
-        return null;
-      }
-      return s;
+    // Clicking play closes the onboarding hints — user has the gist.
+    setShowOnboard((s) => {
+      if (s) markOnboardSeen();
+      return false;
     });
     try {
       const url = await generateCommandAudio(currentCmd);
@@ -280,7 +293,7 @@ export default function InteractiveGameFormation({
       setGameState("playing");
       setHasPlayedCommand(true);
     }
-  }, [currentCmd, markOnboardSeen]);
+  }, [currentCmd]);
 
   // Auto-play next command after a correct answer. Kept short so it
   // chains tightly behind the ball-arrival delay set in handleHit.
@@ -295,26 +308,36 @@ export default function InteractiveGameFormation({
   }, [gameState, currentCommand, hasPlayedCommand, playCommand]);
 
   // ---- Hit resolution ----
-  const slotRectCentre = (slotId) => {
-    const el = slotRefs.current[slotId];
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
-  };
-
+  // Two-stage hit test:
+  //   1. Exact rect — a click anywhere inside a slot's bounding box wins
+  //      immediately. This makes the wide GOAL rectangle behave naturally
+  //      (clicks anywhere in its area count).
+  //   2. Otherwise fall back to "closest centre within clickTolerancePx" —
+  //      so finger-pads slightly off a small player circle still land.
   const findClickedSlot = (clientX, clientY) => {
-    let best = null;
-    let bestDist = clickTolerancePx;
-    for (const slot of slots) {
-      const c = slotRectCentre(slot.id);
-      if (!c) continue;
-      const d = Math.hypot(clientX - c.cx, clientY - c.cy);
-      if (d <= bestDist) {
-        bestDist = d;
-        best = slot;
+    let nearest = null;
+    let nearestDist = clickTolerancePx;
+    for (const slot of slotsForHit) {
+      const el = slotRefs.current[slot.id];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom
+      ) {
+        return slot;
+      }
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const d = Math.hypot(clientX - cx, clientY - cy);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearest = slot;
       }
     }
-    return best;
+    return nearest;
   };
 
   // Move the ball to a slot using % positions
@@ -692,8 +715,9 @@ export default function InteractiveGameFormation({
                   <Play className="w-4 h-4" fill="currentColor" />
                 )}
               </button>
-              {/* Onboarding hint 1 — points up at this play button. */}
-              {onboardStep === 0 && (
+              {/* Onboarding hint — points up at this play button. Shown
+                  together with the ball + field hints (simultaneous mode). */}
+              {showOnboard && (
                 <OnboardingHint
                   text={
                     isPortuguese
@@ -705,7 +729,7 @@ export default function InteractiveGameFormation({
                     top: "calc(100% + 14px)",
                   }}
                   arrow="up"
-                  onDismiss={advanceOnboarding}
+                  onDismiss={dismissOnboarding}
                 />
               )}
             </div>
@@ -719,64 +743,64 @@ export default function InteractiveGameFormation({
       {gameState === "playing" && (
         <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 sm:p-4">
           <div>
-              <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
-                &ldquo;{currentCmd?.text}&rdquo;
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
+            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+              &ldquo;{currentCmd?.text}&rdquo;
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                onClick={playCommand}
+                disabled={audioLoading}
+                className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {audioLoading ? (
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+                {labels.listen}
+              </button>
+              {currentCmd?.translation && (
                 <button
-                  onClick={playCommand}
-                  disabled={audioLoading}
+                  onClick={() => setShowTranslation((v) => !v)}
                   className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  {audioLoading ? (
-                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                  {labels.listen}
+                  <Languages className="w-4 h-4" />
+                  {labels.translation}
                 </button>
-                {currentCmd?.translation && (
-                  <button
-                    onClick={() => setShowTranslation((v) => !v)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <Languages className="w-4 h-4" />
-                    {labels.translation}
-                  </button>
-                )}
-              </div>
-              {showTranslation && currentCmd?.translation && (
-                <p className="text-center text-accent-700 dark:text-accent-400 italic mt-2 text-sm">
-                  {currentCmd.translation}
-                </p>
-              )}
-              {/* Countdown bar — only when timing is enabled & we're in
-                  the answer window for this command. */}
-              {timingEnabled && currentTimeLimit && !feedback && (
-                <div className="mt-3 h-1.5 rounded-full bg-emerald-200/40 dark:bg-emerald-900/40 overflow-hidden">
-                  <div
-                    key={timerKey}
-                    className="h-full bg-emerald-500 dark:bg-emerald-400 ig-timer-bar"
-                    style={{
-                      animationDuration: `${currentTimeLimit}ms`,
-                    }}
-                  />
-                </div>
-              )}
-              {feedback && (
-                <div
-                  className={`mt-3 text-center text-sm font-semibold ${
-                    feedback === "correct"
-                      ? "text-emerald-700 dark:text-emerald-300"
-                      : "text-red-700 dark:text-red-300"
-                  }`}
-                >
-                  {feedback === "correct"
-                    ? `✅ ${currentCmd?.success_message || labels.correct}`
-                    : `❌ ${labels.wrong}`}
-                </div>
               )}
             </div>
+            {showTranslation && currentCmd?.translation && (
+              <p className="text-center text-accent-700 dark:text-accent-400 italic mt-2 text-sm">
+                {currentCmd.translation}
+              </p>
+            )}
+            {/* Countdown bar — only when timing is enabled & we're in
+                  the answer window for this command. */}
+            {timingEnabled && currentTimeLimit && !feedback && (
+              <div className="mt-3 h-1.5 rounded-full bg-emerald-200/40 dark:bg-emerald-900/40 overflow-hidden">
+                <div
+                  key={timerKey}
+                  className="h-full bg-emerald-500 dark:bg-emerald-400 ig-timer-bar"
+                  style={{
+                    animationDuration: `${currentTimeLimit}ms`,
+                  }}
+                />
+              </div>
+            )}
+            {feedback && (
+              <div
+                className={`mt-3 text-center text-sm font-semibold ${
+                  feedback === "correct"
+                    ? "text-emerald-700 dark:text-emerald-300"
+                    : "text-red-700 dark:text-red-300"
+                }`}
+              >
+                {feedback === "correct"
+                  ? `✅ ${currentCmd?.success_message || labels.correct}`
+                  : `❌ ${labels.wrong}`}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -833,6 +857,73 @@ export default function InteractiveGameFormation({
           );
         })}
 
+        {/* Fixed GOAL slot — a wide rectangle that sits behind the goal
+            line in vertical mode (or to the right of it in landscape),
+            always present regardless of formation. Acceptable targets in
+            a command reference it with target_slot_id: "GOAL". */}
+        {(() => {
+          const isGoalActive = activeSlotId === "GOAL";
+          const isGoalCorrect =
+            feedback === "correct" && activeSlotId === "GOAL";
+          const isGoalWrong = feedback === "wrong" && activeSlotId === "GOAL";
+          // Vertical: rectangle behind the top goal line, ~goal-area width.
+          // Landscape (CW-rotated pitch): same shape on the right edge.
+          const goalRectStyle = isHorizontal
+            ? {
+                right: "0",
+                top: "30%",
+                width: "8%",
+                height: "40%",
+              }
+            : {
+                left: "30%",
+                top: "0",
+                width: "40%",
+                height: "8%",
+              };
+          return (
+            <div
+              ref={(el) => (slotRefs.current["GOAL"] = el)}
+              className={`absolute rounded-md shadow-md transition-all overflow-hidden ring-2 ${
+                isGoalCorrect
+                  ? "bg-emerald-500/85 ring-emerald-200 scale-105"
+                  : isGoalWrong
+                    ? "bg-red-500/85 ring-red-200"
+                    : isGoalActive
+                      ? "bg-slate-700/90 ring-white/90"
+                      : "bg-slate-800/80 ring-white/70"
+              }`}
+              style={{ ...goalRectStyle, pointerEvents: "none" }}
+              aria-label="Goal"
+            >
+              {/* Net pattern — faint diagonal lines for visual texture. */}
+              <svg
+                className="absolute inset-0 w-full h-full opacity-30 pointer-events-none"
+                aria-hidden="true"
+              >
+                <defs>
+                  <pattern
+                    id="goal-net"
+                    patternUnits="userSpaceOnUse"
+                    width="8"
+                    height="8"
+                  >
+                    <path
+                      d="M 0 0 L 8 8 M 8 0 L 0 8"
+                      stroke="white"
+                      strokeWidth="0.6"
+                    />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#goal-net)" />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-white text-xs sm:text-sm font-bold tracking-[0.15em] drop-shadow">
+                {isPortuguese ? "GOL" : "GOAL"}
+              </span>
+            </div>
+          );
+        })()}
+
         {/* The ball */}
         {!dragging &&
           (() => {
@@ -872,35 +963,35 @@ export default function InteractiveGameFormation({
           </div>
         )}
 
-        {/* Onboarding hint 2 — points at the ball's starting position. */}
-        {onboardStep === 1 && gameState !== "completed" && (
-          <OnboardingHint
-            text={isPortuguese ? "Esta é a bola" : "Here is the ball"}
-            placement={
-              isHorizontal
-                ? { left: "28%", top: "50%", transform: "translateY(-50%)" }
-                : { left: "50%", top: "70%", transform: "translateX(-50%)" }
-            }
-            arrow={isHorizontal ? "left" : "down"}
-            onDismiss={advanceOnboarding}
-          />
-        )}
-
-        {/* Onboarding hint 3 — sits in the centre of the field. */}
-        {onboardStep === 2 && gameState !== "completed" && (
-          <OnboardingHint
-            text={
-              isPortuguese
-                ? "Toque na posição que você ouvir"
-                : "Tap the position you hear"
-            }
-            placement={{
-              left: "50%",
-              top: "35%",
-              transform: "translateX(-50%)",
-            }}
-            onDismiss={advanceOnboarding}
-          />
+        {/* Onboarding — ball + field hints appear together with the
+            header "Click to start" hint on first visit. Any tap on any
+            of the three (or clicking play) dismisses all of them. */}
+        {showOnboard && gameState !== "completed" && (
+          <>
+            <OnboardingHint
+              text={isPortuguese ? "Esta é a bola" : "Here is the ball"}
+              placement={
+                isHorizontal
+                  ? { left: "28%", top: "50%", transform: "translateY(-50%)" }
+                  : { left: "50%", top: "70%", transform: "translateX(-50%)" }
+              }
+              arrow={isHorizontal ? "left" : "down"}
+              onDismiss={dismissOnboarding}
+            />
+            <OnboardingHint
+              text={
+                isPortuguese
+                  ? "Toque na posição que você ouvir"
+                  : "Tap the position you hear"
+              }
+              placement={{
+                left: "50%",
+                top: "35%",
+                transform: "translateX(-50%)",
+              }}
+              onDismiss={dismissOnboarding}
+            />
+          </>
         )}
       </div>
 
