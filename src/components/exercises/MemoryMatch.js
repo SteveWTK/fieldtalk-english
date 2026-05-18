@@ -315,7 +315,7 @@ export default function MemoryMatch({
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-center items-start gap-6 lg:gap-8 w-full max-w-7xl">
+      <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-6 lg:gap-8 w-full max-w-7xl">
         {/* Game Grid. flex-shrink-0 stops the matched-pairs panel on the
             right from squeezing it horizontally on wide screens. */}
         <div
