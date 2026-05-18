@@ -44,6 +44,7 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ReplayOnboardingButton from "@/components/ReplayOnboardingButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import AIWritingExercise from "@/components/exercises/AIWritingExercise";
 import AIConversationPractice from "@/components/exercises/AIConversationPractice";
@@ -2933,6 +2934,9 @@ export default function DynamicLessonPage() {
   return (
     <ProtectedRoute>
       <DynamicLessonContent />
+      {/* Admin-only floating button — wipes onboarding flags + reloads
+          so platform admins can replay the hints after tweaking copy. */}
+      <ReplayOnboardingButton />
     </ProtectedRoute>
   );
 }

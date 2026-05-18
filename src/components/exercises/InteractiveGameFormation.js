@@ -725,7 +725,7 @@ export default function InteractiveGameFormation({
                       : "Click here to start"
                   }
                   placement={{
-                    right: "0",
+                    right: "-10px",
                     top: "calc(100% + 14px)",
                   }}
                   arrow="up"
@@ -972,8 +972,8 @@ export default function InteractiveGameFormation({
               text={isPortuguese ? "Esta é a bola" : "Here is the ball"}
               placement={
                 isHorizontal
-                  ? { left: "28%", top: "50%", transform: "translateY(-50%)" }
-                  : { left: "50%", top: "70%", transform: "translateX(-50%)" }
+                  ? { left: "20%", top: "46%", transform: "translateY(-50%)" }
+                  : { left: "32%", top: "70%", transform: "translateX(-50%)" }
               }
               arrow={isHorizontal ? "left" : "down"}
               onDismiss={dismissOnboarding}
@@ -984,11 +984,11 @@ export default function InteractiveGameFormation({
                   ? "Toque na posição que você ouvir"
                   : "Tap the position you hear"
               }
-              placement={{
-                left: "50%",
-                top: "35%",
-                transform: "translateX(-50%)",
-              }}
+              placement={
+                isHorizontal
+                  ? { left: "35%", top: "15%", transform: "translateY(-50%)" }
+                  : { left: "25%", top: "35%", transform: "translateX(-50%)" }
+              }
               onDismiss={dismissOnboarding}
             />
           </>

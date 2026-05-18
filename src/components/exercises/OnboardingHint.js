@@ -93,7 +93,7 @@ export default function OnboardingHint({
       aria-label={text}
     >
       <div
-        className={`relative ${pill} text-white text-sm sm:text-base font-semibold px-4 py-2.5 rounded-xl shadow-lg ring-1 ring-white/15 cursor-pointer max-w-[18rem] whitespace-normal text-center ${className}`}
+        className={`relative ${pill} text-white text-sm sm:text-base font-semibold px-3 py-2 rounded-xl shadow-lg ring-1 ring-white/15 cursor-pointer max-w-[18rem] whitespace-normal text-center ${className}`}
       >
         {text}
         {arrowEl}

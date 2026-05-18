@@ -19,8 +19,9 @@ export const BRANCHES = {
     alt: "Cultura Inglesa",
   },
   fortaleza: {
-    logoSrc: "/logos/cultura-inglesa-logo-arrows.png",
+    logoSrc: "/logos/cultura-inglesa-logo-arrows.jpeg",
     alt: "Cultura Inglesa Fortaleza",
+    slug: "fortaleza",
   },
 };
 
