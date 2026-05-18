@@ -97,8 +97,13 @@ export default function DragDropFormation({
   const [errorMessage, setErrorMessage] = useState(null);
   const [completed, setCompleted] = useState(false);
 
-  const { seen: onboardSeen, markSeen: markOnboardSeen } =
-    useOnboardingFlag("drag_drop_formation");
+  // Per-step opt-in: replay this hint every visit (e.g. if the step type
+  // appears twice in one lesson).
+  const replayOnboarding = step?.replay_onboarding === true;
+  const { seen: onboardSeen, markSeen: markOnboardSeen } = useOnboardingFlag(
+    "drag_drop_formation",
+    { force: replayOnboarding }
+  );
 
   const pitchRef = useRef(null);
   const slotRefs = useRef({});

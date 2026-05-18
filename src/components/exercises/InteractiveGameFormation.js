@@ -211,8 +211,12 @@ export default function InteractiveGameFormation({
   // step as seen and dismisses them all simultaneously. Easier to scan
   // than a sequence and removes the risk of starting the game before
   // reading the other two.
+  // Per-step opt-in: replay the hints every visit (handy if the step
+  // type appears twice in one lesson).
+  const replayOnboarding = step?.replay_onboarding === true;
   const { seen: onboardSeen, markSeen: markOnboardSeen } = useOnboardingFlag(
-    "interactive_game_formation"
+    "interactive_game_formation",
+    { force: replayOnboarding }
   );
   const initialOnboardShow =
     !onboardSeen &&

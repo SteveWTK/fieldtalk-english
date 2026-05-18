@@ -77,8 +77,13 @@ export default function InteractivePitchFormation({
   // const [showTranslation, setShowTranslation] = useState(isPortuguese);
   const [completed, setCompleted] = useState(false);
 
-  const { seen: onboardSeen, markSeen: markOnboardSeen } =
-    useOnboardingFlag("interactive_pitch_formation");
+  // Lesson author can force the hint to replay every time this step is
+  // visited (handy when a step type appears twice in one lesson).
+  const replayOnboarding = step?.replay_onboarding === true;
+  const { seen: onboardSeen, markSeen: markOnboardSeen } = useOnboardingFlag(
+    "interactive_pitch_formation",
+    { force: replayOnboarding }
+  );
 
   const audioRef = useRef(null);
   const onCompleteRef = useRef(onComplete);

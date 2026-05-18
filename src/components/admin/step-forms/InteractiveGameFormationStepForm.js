@@ -203,6 +203,25 @@ export default function InteractiveGameFormationStepForm({ step, onChange }) {
         />
       </div>
 
+      {/* Replay onboarding — tick when the same step type appears more
+          than once in a lesson and the user should see the hint again. */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+          <input
+            type="checkbox"
+            checked={step.replay_onboarding === true}
+            onChange={(e) => updateField("replay_onboarding", e.target.checked)}
+            className="w-4 h-4"
+          />
+          Replay onboarding hint for this step
+        </label>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Default off — each step type shows its onboarding once per user.
+          Tick this if the step appears again later in the lesson and the
+          user should see the instructions again.
+        </p>
+      </div>
+
       {/* Formation settings */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-3">
