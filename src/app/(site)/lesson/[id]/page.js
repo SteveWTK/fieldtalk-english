@@ -63,6 +63,7 @@ import InteractivePitchFormation from "@/components/exercises/InteractivePitchFo
 import InteractiveGameFormation from "@/components/exercises/InteractiveGameFormation";
 import TimelineDrag from "@/components/exercises/TimelineDrag";
 import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
+import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
 import Link from "next/link";
 
@@ -1998,6 +1999,20 @@ function DynamicLessonContent() {
         return (
           <DragDropVocabulary
             key={`ddvocab-${currentStepData.id || currentStep}`}
+            step={currentStepData}
+            userLanguage={userLanguage}
+            onComplete={(xp) => {
+              setXpEarned((prev) => prev + xp);
+              setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              setStepCompleted(true);
+            }}
+          />
+        );
+
+      case "drag_drop_groups":
+        return (
+          <DragDropGroups
+            key={`ddgroups-${currentStepData.id || currentStep}`}
             step={currentStepData}
             userLanguage={userLanguage}
             onComplete={(xp) => {

@@ -37,6 +37,7 @@ import InteractivePitchFormationStepForm from "@/components/admin/step-forms/Int
 import InteractiveGameFormationStepForm from "@/components/admin/step-forms/InteractiveGameFormationStepForm";
 import TimelineDragStepForm from "@/components/admin/step-forms/TimelineDragStepForm";
 import DragDropVocabularyStepForm from "@/components/admin/step-forms/DragDropVocabularyStepForm";
+import DragDropGroupsStepForm from "@/components/admin/step-forms/DragDropGroupsStepForm";
 import JSONStepForm from "@/components/admin/step-forms/JSONStepForm";
 
 function LessonEditorContent() {
@@ -77,6 +78,7 @@ function LessonEditorContent() {
     },
     { value: "timeline_drag", label: "Timeline Drag" },
     { value: "drag_drop_vocab", label: "Drag & Drop Vocabulary" },
+    { value: "drag_drop_groups", label: "Drag & Drop Groups" },
     { value: "conversation_vote", label: "Conversation Vote" },
     { value: "completion", label: "Completion" },
   ];
@@ -225,6 +227,8 @@ function LessonEditorContent() {
             allSteps={lesson.content?.steps || []}
           />
         );
+      case "drag_drop_groups":
+        return <DragDropGroupsStepForm {...commonProps} />;
       case "completion":
         return <CompletionStepForm {...commonProps} />;
       case "interactive_pitch":
