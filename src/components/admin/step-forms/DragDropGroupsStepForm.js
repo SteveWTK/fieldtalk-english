@@ -289,6 +289,29 @@ export default function DragDropGroupsStepForm({ step, onChange }) {
                   </select>
                 )}
               </div>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={card.image_url || ""}
+                  onChange={(e) =>
+                    updateCard(idx, "image_url", e.target.value)
+                  }
+                  placeholder="Image URL (optional — e.g. country flag)"
+                  className={`${smallInputClass} flex-1`}
+                />
+                {card.image_url && (
+                  /* Tiny live preview so admins can verify the URL */
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={card.image_url}
+                    alt=""
+                    className="h-6 w-9 rounded-sm object-cover border border-gray-300 dark:border-gray-600"
+                    onError={(e) => {
+                      e.currentTarget.style.visibility = "hidden";
+                    }}
+                  />
+                )}
+              </div>
             </div>
           ))}
           {cards.length === 0 && (

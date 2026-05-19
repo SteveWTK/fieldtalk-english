@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { RotateCcw, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import {
   playSuccessSound,
@@ -33,6 +34,8 @@ import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
  *       - id: string
  *       - label: string
  *       - group: string (used in match_group mode — references a container.id)
+ *       - image_url: string (optional — e.g. a country flag; renders left of
+ *         the label inside the pill)
  */
 export default function DragDropGroups({
   step,
@@ -256,11 +259,13 @@ export default function DragDropGroups({
   }
 
   // Render a card pill — used both in the tray and when placed in a slot.
+  // When card.image_url is set (e.g. a country flag), it sits to the left
+  // of the label inside the pill.
   const renderCard = (card, opts = {}) => {
     const { isPlaced = false, isShaking = false, isDragging = false } = opts;
     return (
       <div
-        className={`select-none touch-none px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium text-xs sm:text-sm shadow-sm border-2 transition-colors whitespace-nowrap ${
+        className={`inline-flex items-center gap-2 select-none touch-none pl-1.5 pr-3 py-1 sm:pl-2 sm:pr-4 sm:py-1.5 rounded-full font-medium text-xs sm:text-sm shadow-sm border-2 transition-colors whitespace-nowrap ${
           isShaking ? "animate-shake" : ""
         } ${isDragging ? "opacity-50" : ""} ${
           isPlaced
@@ -268,7 +273,24 @@ export default function DragDropGroups({
             : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:border-accent-500 cursor-grab active:cursor-grabbing"
         }`}
       >
-        {card.label}
+        {card.image_url && (
+          <span className="relative inline-block w-7 h-5 sm:w-8 sm:h-6 rounded-sm overflow-hidden shrink-0 ring-1 ring-black/10">
+            <Image
+              src={card.image_url}
+              alt=""
+              fill
+              sizes="32px"
+              className="object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          </span>
+        )}
+        {/* If there's an image and no label, fall back gracefully. */}
+        {(card.label || !card.image_url) && (
+          <span>{card.label || card.id}</span>
+        )}
       </div>
     );
   };
