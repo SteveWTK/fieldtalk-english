@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   Play,
   Pause,
@@ -431,6 +432,24 @@ export default function AudioComprehension({
 
   return (
     <div className="space-y-6">
+      {/* Optional step-level image — rendered above the audio player at
+          full step width. Mirrors the ai_gap_fill image_url pattern. */}
+      {step?.image_url && (
+        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+          <Image
+            src={step.image_url}
+            alt=""
+            width={800}
+            height={500}
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="w-full h-auto object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
       {/* Audio Player */}
       <div className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-xl p-6">
         <audio ref={audioRef} src={audioConfig.audio_url} preload="metadata" />
