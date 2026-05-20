@@ -10,7 +10,11 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
+import {
+  playSuccessSound,
+  playErrorSound,
+  playCheerSound,
+} from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 
 function shuffle(array) {
@@ -203,6 +207,9 @@ export default function MemoryMatch({
         if (matched.length + 1 === cards.length / 2) {
           setTimeout(() => {
             setIsComplete(true);
+            // Brighter fanfare for full completion — matches the cheer
+            // used at the end of round/lesson elsewhere.
+            if (!isMuted) playCheerSound();
             if (onComplete) {
               const xpEarned = Math.max(50, 100 - attempts * 2);
               onComplete(xpEarned);

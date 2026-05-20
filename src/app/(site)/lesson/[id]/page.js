@@ -633,16 +633,20 @@ function DynamicLessonContent() {
         "✅ Lesson completion successful, navigating to lessons page..."
       );
 
+      // Pass the just-completed lesson id so /lesson can select the right
+      // pillar and highlight the next lesson (or first of next pillar).
+      const returnUrl = `/lesson?completed=${encodeURIComponent(lesson.id)}`;
+
       // Small delay to ensure database operations complete
       setTimeout(() => {
-        router.push("/lesson");
+        router.push(returnUrl);
       }, 500);
     } catch (error) {
       console.error("❌ Error marking lesson complete:", error);
       setCompleting(false);
 
       // Even if completion fails, still allow navigation
-      router.push("/lesson");
+      router.push(`/lesson?completed=${encodeURIComponent(lesson.id)}`);
     }
   };
 

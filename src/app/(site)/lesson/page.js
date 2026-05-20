@@ -2,9 +2,10 @@
 // src/app/(site)/lesson/page.js
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Target,
   Globe,
@@ -39,6 +40,13 @@ function PlayerLessonsMenu() {
   // AND localStorage hasn't recorded a dismissal). Decided in useEffect
   // below once data has loaded.
   const [showStartPrompt, setShowStartPrompt] = useState(false);
+  // After the user finishes a lesson and is bounced back here with
+  // `?completed=<lessonId>`, this holds the id of the lesson card we want
+  // to highlight (typically the next one). Cleared on subsequent visits.
+  const [highlightLessonId, setHighlightLessonId] = useState(null);
+
+  const searchParams = useSearchParams();
+  const completedParam = searchParams.get("completed");
 
   const { user } = useAuth();
   // All visible strings now come from the locale files via t().
@@ -69,6 +77,55 @@ function PlayerLessonsMenu() {
     if (loading || !user) return;
     setShowStartPrompt((completions?.length || 0) === 0);
   }, [loading, user, completions]);
+
+  // When we land here from a finished lesson with `?completed=<id>`,
+  // figure out which pillar to show and which lesson card to highlight:
+  //   - Same pillar if there's a next lesson after the completed one.
+  //   - Otherwise the next pillar (by sort_order), with its first lesson.
+  useEffect(() => {
+    if (loading || !user) return;
+    if (!completedParam) return;
+    if (!pillars || pillars.length === 0) return;
+
+    // Find the pillar that contains the just-completed lesson.
+    const sourcePillar = pillars.find((p) =>
+      (p.lessons || []).some((l) => l.id === completedParam)
+    );
+    if (!sourcePillar) return;
+
+    // Sort lessons within the pillar to know the "next" one.
+    const lessonsSorted = [...(sourcePillar.lessons || [])].sort(
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+    );
+    const idx = lessonsSorted.findIndex((l) => l.id === completedParam);
+    const nextInPillar = idx >= 0 ? lessonsSorted[idx + 1] : null;
+
+    if (nextInPillar) {
+      // Stay on this pillar; highlight the next lesson.
+      setSelectedPillar(sourcePillar.name);
+      setHighlightLessonId(nextInPillar.id);
+      return;
+    }
+
+    // Last lesson of the pillar — find the next pillar by sort_order.
+    const pillarsSorted = [...pillars].sort(
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+    );
+    const pIdx = pillarsSorted.findIndex((p) => p.name === sourcePillar.name);
+    const nextPillar = pIdx >= 0 ? pillarsSorted[pIdx + 1] : null;
+
+    if (nextPillar) {
+      const firstNextLesson = [...(nextPillar.lessons || [])].sort(
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+      )[0];
+      setSelectedPillar(nextPillar.name);
+      setHighlightLessonId(firstNextLesson?.id || null);
+    } else {
+      // No further pillars — just stay on the completed lesson's pillar.
+      setSelectedPillar(sourcePillar.name);
+      setHighlightLessonId(null);
+    }
+  }, [loading, user, completedParam, pillars]);
 
   // Loading state
   if (loading) {
@@ -347,10 +404,13 @@ function PlayerLessonsMenu() {
                   const status = getLessonStatus(lesson);
                   const isClickable =
                     status !== "locked" && status !== "construction";
-                  // Pulse a soft emerald ring on the first lesson card while
-                  // the "Start here" prompt is up, to visually anchor the
-                  // prompt's downward arrow to the right card.
-                  const highlight = showStartPrompt && lessonIndex === 0;
+                  // Pulse the card in two cases:
+                  //   1. First-visit "Start here" prompt (first lesson).
+                  //   2. The user just completed a lesson elsewhere and
+                  //      this is the suggested next one.
+                  const highlight =
+                    (showStartPrompt && lessonIndex === 0) ||
+                    (highlightLessonId && lesson.id === highlightLessonId);
 
                   return (
                     <div
@@ -390,6 +450,20 @@ function PlayerLessonsMenu() {
                             </div>
                           </div>
                         </div>
+                        {lesson.image_url && (
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ml-3 shrink-0">
+                            <Image
+                              src={lesson.image_url}
+                              alt=""
+                              fill
+                              sizes="(max-width: 640px) 64px, 80px"
+                              className="object-cover"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          </div>
+                        )}
                         {isClickable ? (
                           <Link
                             href={`/lesson/${lesson.id}`}
@@ -544,7 +618,11 @@ function PlayerLessonsMenu() {
 export default function PlayerDashboard() {
   return (
     <ProtectedRoute>
-      <PlayerLessonsMenu />
+      {/* useSearchParams (used inside PlayerLessonsMenu for ?completed=…)
+          needs a Suspense boundary for Next.js static rendering. */}
+      <Suspense fallback={null}>
+        <PlayerLessonsMenu />
+      </Suspense>
     </ProtectedRoute>
   );
 }

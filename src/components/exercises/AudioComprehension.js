@@ -432,16 +432,17 @@ export default function AudioComprehension({
 
   return (
     <div className="space-y-6">
-      {/* Optional step-level image — rendered above the audio player at
-          full step width. Mirrors the ai_gap_fill image_url pattern. */}
+      {/* Optional step-level image — full width on phones, constrained
+          and centred on laptops/desktops so it doesn't dominate the step.
+          Mirrors the ai_gap_fill image_url pattern. */}
       {step?.image_url && (
-        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 lg:max-w-md lg:mx-auto">
           <Image
             src={step.image_url}
             alt=""
             width={800}
             height={500}
-            sizes="(max-width: 768px) 100vw, 768px"
+            sizes="(max-width: 1024px) 100vw, 448px"
             className="w-full h-auto object-cover"
             onError={(e) => {
               e.target.style.display = "none";
