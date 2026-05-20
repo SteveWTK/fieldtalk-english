@@ -91,6 +91,39 @@ export default function InteractivePitchFormation({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Prefetch every marker's audio file when the step mounts so the first
+  // tap on each marker plays without lag. Throwaway Audio() instances
+  // with preload="auto" warm both the HTTP cache and the browser's media
+  // pipeline while the user reads the onboarding hint.
+  const markerAudioKey = [...slots, ...areas]
+    .map((item) => item?.audio_url || "")
+    .join("|");
+  useEffect(() => {
+    if (!markerAudioKey) return;
+    const urls = markerAudioKey.split("|").filter(Boolean);
+    if (urls.length === 0) return;
+    const audios = urls.map((url) => {
+      try {
+        const a = new Audio();
+        a.preload = "auto";
+        a.src = url;
+        try {
+          a.load();
+        } catch {
+          // ignore — some platforms throw if load() called eagerly
+        }
+        return a;
+      } catch {
+        return null;
+      }
+    });
+    return () => {
+      audios.forEach((a) => {
+        if (a) a.src = "";
+      });
+    };
+  }, [markerAudioKey]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {

@@ -453,7 +453,10 @@ export default function AudioComprehension({
 
       {/* Audio Player */}
       <div className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-xl p-6">
-        <audio ref={audioRef} src={audioConfig.audio_url} preload="metadata" />
+        {/* preload="auto" tells the browser to start downloading the
+            audio as soon as the step appears, so the user doesn't wait
+            for the file when they click play. */}
+        <audio ref={audioRef} src={audioConfig.audio_url} preload="auto" />
 
         {audioError && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">

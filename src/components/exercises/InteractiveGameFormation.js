@@ -240,6 +240,41 @@ export default function InteractiveGameFormation({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Prefetch every command's audio file when the step mounts so the
+  // first-listen lag disappears. We create throwaway Audio() instances
+  // with preload="auto" — the browser downloads them in the background
+  // while the user reads the onboarding hints, and by the time playback
+  // is triggered the file is already in the browser's media cache.
+  const audioUrlsKey = commands
+    .map((c) => c?.audio_url || "")
+    .join("|");
+  useEffect(() => {
+    if (!audioUrlsKey) return;
+    const urls = audioUrlsKey.split("|").filter(Boolean);
+    if (urls.length === 0) return;
+    const audios = urls.map((url) => {
+      try {
+        const a = new Audio();
+        a.preload = "auto";
+        a.src = url;
+        try {
+          a.load();
+        } catch {
+          // ignore — some platforms throw if load() called eagerly
+        }
+        return a;
+      } catch {
+        return null;
+      }
+    });
+    return () => {
+      // Release on unmount so we don't hold downloads open after navigation.
+      audios.forEach((a) => {
+        if (a) a.src = "";
+      });
+    };
+  }, [audioUrlsKey]);
+
   const currentCmd = commands[currentCommand];
   const totalCommands = commands.length;
 
@@ -297,7 +332,7 @@ export default function InteractiveGameFormation({
       setGameState("playing");
       setHasPlayedCommand(true);
     }
-  }, [currentCmd]);
+  }, [currentCmd, markOnboardSeen]);
 
   // Auto-play next command after a correct answer. Kept short so it
   // chains tightly behind the ball-arrival delay set in handleHit.

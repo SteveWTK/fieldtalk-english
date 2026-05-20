@@ -112,6 +112,39 @@ export default function DragDropVocabulary({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Prefetch every item's audio file on mount so the first card pick-up
+  // plays without lag. Throwaway Audio() instances with preload="auto"
+  // populate the browser's media cache while the user is reading the
+  // initial card layout.
+  const itemAudioKey = items
+    .map((item) => item?.audio_url || "")
+    .join("|");
+  useEffect(() => {
+    if (!itemAudioKey) return;
+    const urls = itemAudioKey.split("|").filter(Boolean);
+    if (urls.length === 0) return;
+    const audios = urls.map((url) => {
+      try {
+        const a = new Audio();
+        a.preload = "auto";
+        a.src = url;
+        try {
+          a.load();
+        } catch {
+          // ignore — some platforms throw if load() called eagerly
+        }
+        return a;
+      } catch {
+        return null;
+      }
+    });
+    return () => {
+      audios.forEach((a) => {
+        if (a) a.src = "";
+      });
+    };
+  }, [itemAudioKey]);
+
   const matchedCount = Object.keys(matches).length;
   const totalItems = items.length;
   const isComplete = matchedCount === totalItems && totalItems > 0;
