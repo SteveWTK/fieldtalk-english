@@ -116,9 +116,7 @@ export default function DragDropVocabulary({
   // plays without lag. Throwaway Audio() instances with preload="auto"
   // populate the browser's media cache while the user is reading the
   // initial card layout.
-  const itemAudioKey = items
-    .map((item) => item?.audio_url || "")
-    .join("|");
+  const itemAudioKey = items.map((item) => item?.audio_url || "").join("|");
   useEffect(() => {
     if (!itemAudioKey) return;
     const urls = itemAudioKey.split("|").filter(Boolean);
@@ -321,7 +319,7 @@ export default function DragDropVocabulary({
               }}
             />
           ) : (
-            <span className="text-center text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-center text-[16px] font-bold text-gray-700 dark:text-gray-300">
               {item.translation}
             </span>
           )}
