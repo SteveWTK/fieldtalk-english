@@ -1922,11 +1922,11 @@ function DynamicLessonContent() {
       case "audio_comprehension":
         return (
           <div className="space-y-4">
-            {currentStepData.content && (
+            {/* {currentStepData.content && (
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
                 {currentStepData.content}
               </p>
-            )}
+            )} */}
             <AudioComprehension
               step={currentStepData}
               lessonId={lessonId}

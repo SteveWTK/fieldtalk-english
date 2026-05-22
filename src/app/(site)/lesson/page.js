@@ -2,10 +2,10 @@
 // src/app/(site)/lesson/page.js
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Target,
   Globe,
@@ -46,7 +46,13 @@ function PlayerLessonsMenu() {
   const [highlightLessonId, setHighlightLessonId] = useState(null);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
   const completedParam = searchParams.get("completed");
+  // Tracks which completedParam value we've already auto-applied for, so
+  // re-renders of this page (e.g. the parent's pillars reference changing)
+  // can't snap the user back to the auto-selected pillar after they've
+  // clicked a different pillar card themselves.
+  const appliedCompletedRef = useRef(null);
 
   const { user } = useAuth();
   // All visible strings now come from the locale files via t().
@@ -86,6 +92,11 @@ function PlayerLessonsMenu() {
     if (loading || !user) return;
     if (!completedParam) return;
     if (!pillars || pillars.length === 0) return;
+    // Only auto-apply once per unique completedParam value. Without this
+    // guard, a parent-render-induced new `pillars` reference would re-fire
+    // the effect and snap the user back to the auto-selected pillar even
+    // after they've clicked a different pillar card.
+    if (appliedCompletedRef.current === completedParam) return;
 
     // Find the pillar that contains the just-completed lesson.
     const sourcePillar = pillars.find((p) =>
@@ -104,28 +115,35 @@ function PlayerLessonsMenu() {
       // Stay on this pillar; highlight the next lesson.
       setSelectedPillar(sourcePillar.name);
       setHighlightLessonId(nextInPillar.id);
-      return;
-    }
-
-    // Last lesson of the pillar — find the next pillar by sort_order.
-    const pillarsSorted = [...pillars].sort(
-      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
-    );
-    const pIdx = pillarsSorted.findIndex((p) => p.name === sourcePillar.name);
-    const nextPillar = pIdx >= 0 ? pillarsSorted[pIdx + 1] : null;
-
-    if (nextPillar) {
-      const firstNextLesson = [...(nextPillar.lessons || [])].sort(
-        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
-      )[0];
-      setSelectedPillar(nextPillar.name);
-      setHighlightLessonId(firstNextLesson?.id || null);
     } else {
-      // No further pillars — just stay on the completed lesson's pillar.
-      setSelectedPillar(sourcePillar.name);
-      setHighlightLessonId(null);
+      // Last lesson of the pillar — find the next pillar by sort_order.
+      const pillarsSorted = [...pillars].sort(
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+      );
+      const pIdx = pillarsSorted.findIndex(
+        (p) => p.name === sourcePillar.name
+      );
+      const nextPillar = pIdx >= 0 ? pillarsSorted[pIdx + 1] : null;
+
+      if (nextPillar) {
+        const firstNextLesson = [...(nextPillar.lessons || [])].sort(
+          (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+        )[0];
+        setSelectedPillar(nextPillar.name);
+        setHighlightLessonId(firstNextLesson?.id || null);
+      } else {
+        // No further pillars — just stay on the completed lesson's pillar.
+        setSelectedPillar(sourcePillar.name);
+        setHighlightLessonId(null);
+      }
     }
-  }, [loading, user, completedParam, pillars]);
+
+    // Mark this completedParam as applied so we don't re-run for it…
+    appliedCompletedRef.current = completedParam;
+    // …and strip it from the URL so a refresh doesn't restart the effect
+    // and the user's current selection persists naturally.
+    router.replace("/lesson", { scroll: false });
+  }, [loading, user, completedParam, pillars, router]);
 
   // Loading state
   if (loading) {
