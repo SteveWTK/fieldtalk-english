@@ -10,6 +10,7 @@ import {
   playCheerSound,
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 /**
  * DragDropGroups Step
@@ -47,7 +48,7 @@ export default function DragDropGroups({
   const cards = config.cards || [];
   const validation =
     config.validation === "match_group" ? "match_group" : "free";
-  const baseXp = step?.xp_reward || 30;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 
@@ -113,8 +114,45 @@ export default function DragDropGroups({
       setCompleted(true);
       if (!isMuted) playCheerSound();
       onCompleteRef.current?.(baseXp);
+
+      // When this step is flagged as a prediction (e.g. "Predict the
+      // finish — Group A"), save the user's final placement to the
+      // predictions table so the dashboard can show it and the admin
+      // can later mark it correct / award bonus XP.
+      if (step?.save_as_prediction) {
+        // Normalise to { cardId: containerId } — matches the canonical
+        // answer shape the resolve endpoint expects.
+        const flatPlacements = {};
+        for (const [cardId, p] of Object.entries(placements)) {
+          if (p?.containerId) flatPlacements[cardId] = p.containerId;
+        }
+        // Fire-and-forget — never block the user's lesson flow on this.
+        fetch("/api/predictions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            step_id: step.id,
+            prediction_type: step.prediction_type || "group_finish",
+            data: {
+              title: step.title || "",
+              placements: flatPlacements,
+              cards: cards.map((c) => ({
+                id: c.id,
+                label: c.label,
+                image_url: c.image_url || null,
+              })),
+              containers: containers.map((c) => ({
+                id: c.id,
+                label: c.label,
+              })),
+            },
+          }),
+        }).catch(() => {
+          // ignore — saved-prediction failure shouldn't impact lesson XP
+        });
+      }
     }
-  }, [isComplete, completed, baseXp, isMuted]);
+  }, [isComplete, completed, baseXp, isMuted, step, placements, cards, containers]);
 
   // Find which container the pointer is inside (if any).
   const findContainerAtPoint = (clientX, clientY) => {

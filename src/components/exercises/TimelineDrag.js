@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 /**
  * TimelineDrag Step
@@ -49,7 +50,7 @@ export default function TimelineDrag({
   const markerInterval = config.year_marker_interval || 10;
   const tolerance = config.tolerance_years ?? 2;
   const events = config.events || [];
-  const baseXp = step?.xp_reward || 30;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 

@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 import {
   Play,
   Pause,
@@ -46,7 +47,7 @@ export default function AudioComprehension({
   const questions = step?.questions || [];
   const transcriptReveal = audioConfig.transcript_reveal || "after_completion";
   const maxReplaysForFullXp = audioConfig.max_replays_for_full_xp || 3;
-  const baseXp = step?.xp_reward || 20;
+  const baseXp = getStepXp(step);
 
   // Audio state
   const audioRef = useRef(null);

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useIsWide } from "@/lib/hooks/useIsWide";
 import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 import OnboardingHint from "./OnboardingHint";
 
 /**
@@ -49,7 +50,7 @@ export default function InteractivePitchFormation({
   const config = step?.formation_config || {};
   const slots = config.position_slots || [];
   const areas = config.click_areas || [];
-  const baseXp = step?.xp_reward || 25;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const isHorizontal = useIsWide(1024);
 

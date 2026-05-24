@@ -144,6 +144,30 @@ export default function DragDropGroupsStepForm({ step, onChange }) {
         </div>
       </div>
 
+      {/* Save as prediction — only meaningful in free-placement mode,
+          since match-group has a canonical correct answer already. */}
+      {validation === "free" && (
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={step.save_as_prediction === true}
+              onChange={(e) =>
+                updateField("save_as_prediction", e.target.checked)
+              }
+              className="w-4 h-4"
+            />
+            Save as prediction
+          </label>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            When ticked, the user&apos;s final placement is sent to their
+            Predictions Centre on the dashboard. An admin can later set the
+            canonical answer at <code>/admin/predictions</code> to award
+            bonus XP based on how many positions they got right.
+          </p>
+        </div>
+      )}
+
       {/* Containers */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <div className="flex justify-between items-center mb-3">

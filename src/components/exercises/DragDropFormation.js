@@ -20,6 +20,7 @@ import {
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { useIsWide } from "@/lib/hooks/useIsWide";
 import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 /**
  * DragDropFormation Step
@@ -52,7 +53,7 @@ export default function DragDropFormation({
   const config = step?.formation_config || {};
   const slots = config.position_slots || [];
   const cards = config.player_cards || [];
-  const baseXp = step?.xp_reward || 30;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
   const isHorizontal = useIsWide(1024);

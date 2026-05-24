@@ -22,6 +22,7 @@ import {
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { useIsWide } from "@/lib/hooks/useIsWide";
 import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 import OnboardingHint from "./OnboardingHint";
 
 /**
@@ -101,7 +102,7 @@ export default function InteractiveGameFormation({
   const clickTolerancePx = Number(config.click_tolerance_px) || 50;
   const ballStart = config.ball_start || { x: "50%", y: "85%" };
 
-  const baseXp = step?.xp_reward || 40;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
   const isHorizontal = useIsWide(1024);

@@ -41,6 +41,7 @@ import {
   markLessonComplete,
   getPlayerPreferredLanguage,
 } from "@/lib/supabase/queries";
+import { awardXp } from "@/lib/xp/awardXp";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -621,13 +622,31 @@ function DynamicLessonContent() {
     try {
       console.log("🏁 Starting lesson completion process...");
 
+      const durationMs = Date.now() - startTime;
       await markLessonComplete(
         user.id,
         lesson.id,
         Math.round((completedSteps.size / steps.length) * 100),
         xpEarned,
-        Date.now() - startTime
+        durationMs
       );
+
+      // Log the lesson-completion XP event for the audit trail. eventOnly
+      // is true because markLessonComplete already bumped player_progress
+      // .total_xp itself — we don't want to double-count.
+      if (xpEarned > 0) {
+        awardXp({
+          amount: xpEarned,
+          source: "lesson_completion",
+          sourceId: lesson.id,
+          metadata: {
+            duration_ms: durationMs,
+            completed_steps: completedSteps.size,
+            total_steps: steps.length,
+          },
+          eventOnly: true,
+        });
+      }
 
       console.log(
         "✅ Lesson completion successful, navigating to lessons page..."
@@ -2710,7 +2729,7 @@ function DynamicLessonContent() {
 
                   {currentStepData.achievements && (
                     <div className="text-left max-w-md mx-auto space-y-2 mb-6">
-                      <h4 className="font-semibold text-center mb-3">
+                      <h4 className="font-semibold text-center text-gray-800 dark:text-gray-200 mb-3">
                         {t("achievements")}
                       </h4>
                       {currentStepData.achievements.map(

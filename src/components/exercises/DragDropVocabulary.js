@@ -23,6 +23,7 @@ import {
   playAudioFile,
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 /**
  * DragDropVocabulary Step
@@ -51,7 +52,7 @@ export default function DragDropVocabulary({
   const config = step?.vocab_config || {};
   const items = config.items || [];
   const displayMode = config.display_mode || "auto";
-  const baseXp = step?.xp_reward || 30;
+  const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
 
