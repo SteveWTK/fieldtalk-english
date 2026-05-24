@@ -54,32 +54,33 @@ function HeaderBase({
     site: {
       en: [
         // { href: "/lesson", label: "Home" },
-        // { href: "/dashboard", label: "Dashboard" },
         { href: "/lesson", label: "Lessons" },
+        { href: "/dashboard", label: "Dashboard" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
       ],
       pt: [
         // { href: "/", label: "Início" },
-        // { href: "/dashboard", label: "Painel" },
         { href: "/lesson", label: "Aulas" },
+        { href: "/dashboard", label: "Painel" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
         // { href: "/settings", label: "Settings" },
       ],
       es: [
         // { href: "/", label: "Inicio" },
-        // { href: "/dashboard", label: "Panel" },
         { href: "/lesson", label: "Lecciones" },
+        { href: "/dashboard", label: "Panel" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
         // { href: "/settings", label: "Settings" },
       ],
       fr: [
         // { href: "/", label: "Accueil" },
-        // { href: "/dashboard", label: "Tableau de bord" },
         { href: "/lesson", label: "Leçons" },
+        { href: "/dashboard", label: "Tableau de bord" },
+
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
