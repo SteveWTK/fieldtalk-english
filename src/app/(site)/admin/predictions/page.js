@@ -40,6 +40,7 @@ function AdminPredictionsContent() {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const supabase = createClient();
 
       // Pull every prediction (RLS would block normal users; admin only
@@ -186,9 +187,7 @@ function StepResolver({ step, onResolved }) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h3 className="font-bold text-base">{step.title || step.step_id}</h3>
         <div className="text-xs text-white/60">
-          <span className="font-bold text-white">
-            {step.pending} pending
-          </span>
+          <span className="font-bold text-white">{step.pending} pending</span>
           {step.resolved > 0 && (
             <>
               {" / "}
