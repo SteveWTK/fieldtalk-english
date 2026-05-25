@@ -117,16 +117,27 @@ export default function DragDropGroups({
 
       // When this step is flagged as a prediction (e.g. "Predict the
       // finish — Group A"), save the user's final placement to the
-      // predictions table so the dashboard can show it and the admin
+      // predictions table so the Ultimate Team can show it and the admin
       // can later mark it correct / award bonus XP.
-      if (step?.save_as_prediction) {
+      //
+      // Accepts the flag on the step root OR nested inside groups_config
+      // (defensive — admins editing JSON sometimes drop it in the wrong
+      // place). Logging both branches so DevTools shows exactly why a
+      // prediction did or didn't fire.
+      const shouldSavePrediction =
+        step?.save_as_prediction === true ||
+        step?.groups_config?.save_as_prediction === true;
+
+      if (shouldSavePrediction) {
         // Normalise to { cardId: containerId } — matches the canonical
         // answer shape the resolve endpoint expects.
         const flatPlacements = {};
         for (const [cardId, p] of Object.entries(placements)) {
           if (p?.containerId) flatPlacements[cardId] = p.containerId;
         }
-        // Fire-and-forget — never block the user's lesson flow on this.
+        console.log("[predictions] saving for step", step?.id, {
+          placements: flatPlacements,
+        });
         fetch("/api/predictions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -147,9 +158,31 @@ export default function DragDropGroups({
               })),
             },
           }),
-        }).catch(() => {
-          // ignore — saved-prediction failure shouldn't impact lesson XP
-        });
+        })
+          .then(async (res) => {
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              console.warn(
+                "[predictions] save failed",
+                res.status,
+                json
+              );
+            } else {
+              console.log("[predictions] saved OK");
+            }
+          })
+          .catch((err) => {
+            console.warn("[predictions] network error", err);
+          });
+      } else if (config.validation === "free" && step?.id) {
+        // Free-placement step but no save_as_prediction flag — log a
+        // breadcrumb so admins can confirm whether the toggle is set in
+        // the lesson JSON when expected.
+        console.log(
+          "[predictions] step",
+          step.id,
+          "is free-placement but save_as_prediction is not set"
+        );
       }
     }
   }, [isComplete, completed, baseXp, isMuted, step, placements, cards, containers]);

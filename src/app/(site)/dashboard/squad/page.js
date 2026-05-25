@@ -21,6 +21,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerCollection } from "@/lib/hooks/useStickerData";
 import { usePlayerSquad } from "@/lib/hooks/usePlayerSquad";
 import { getFormation, isPositionCompatible } from "@/lib/squads/squadConfig";
+import { useIsWide } from "@/lib/hooks/useIsWide";
 import StickerCard from "@/components/stickers/StickerCard";
 
 function SquadBuilderContent() {
@@ -266,10 +267,18 @@ function SquadBuilderContent() {
 }
 
 /**
- * Landscape pitch with the formation slots. Each slot:
+ * Pitch with the formation slots. Layout flips to landscape on
+ * viewports ≥ 1024px; portrait on smaller screens so 11 cards stay
+ * legible without horizontal cramping.
+ *
+ * Each slot:
  *  - empty       → dashed circle, position label, ringed in emerald if
  *                  the currently-selected sticker would fit here
- *  - filled      → mini StickerCard, tappable to remove
+ *  - filled      → mini StickerCard. Tap brings it to the front (z-30 +
+ *                  scale) and reveals a small × button to remove. Tap
+ *                  again or anywhere else to defocus.
+ *                  If a sticker is selected from the tray AND it's
+ *                  compatible, tapping a filled slot swaps directly.
  *  - "shake"     → momentarily shakes when an invalid placement is tried
  */
 function SquadPitch({
@@ -280,72 +289,70 @@ function SquadPitch({
   onSlotClick,
   shakeSlotId,
 }) {
-  // CW rotation: same convention used by DragDropFormation in landscape.
-  const rotate = (s) => {
+  const isHorizontal = useIsWide(1024);
+  const [focusedSlotId, setFocusedSlotId] = useState(null);
+
+  // CW rotation for landscape; identity for portrait.
+  const transform = (s) => {
+    if (!isHorizontal) return { left: s.x, top: s.y };
     const xv = parseFloat(s.x);
     const yv = parseFloat(s.y);
     return { left: `${100 - yv}%`, top: `${xv}%` };
   };
 
+  // Slot tap router: focus-first when there's no selection and the slot
+  // is filled; otherwise delegate to the existing place/remove logic.
+  const handleTap = (slot) => {
+    const occupantId = positions[slot.id];
+    if (occupantId && !selectedSticker) {
+      setFocusedSlotId((prev) => (prev === slot.id ? null : slot.id));
+      return;
+    }
+    setFocusedSlotId(null);
+    onSlotClick(slot);
+  };
+
   return (
     <div
       className="relative w-full mx-auto rounded-2xl overflow-hidden shadow-md border border-white/10"
-      style={{ aspectRatio: "7 / 5", maxWidth: "880px" }}
+      style={{
+        aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
+        maxWidth: isHorizontal ? "880px" : "440px",
+      }}
+      onClick={() => setFocusedSlotId(null)}
     >
-      <svg
-        viewBox="0 0 140 100"
-        preserveAspectRatio="none"
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      >
-        <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
-        <rect
-          x="8"
-          y="8"
-          width="124"
-          height="84"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <line
-          x1="70"
-          y1="8"
-          x2="70"
-          y2="92"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <circle
-          cx="70"
-          cy="50"
-          r="8"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
-        <rect
-          x="8"
-          y="28"
-          width="14"
-          height="44"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <rect
-          x="118"
-          y="28"
-          width="14"
-          height="44"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-      </svg>
+      {isHorizontal ? (
+        <svg
+          viewBox="0 0 140 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        >
+          <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
+          <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
+          <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+        </svg>
+      ) : (
+        <svg
+          viewBox="0 0 100 140"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        >
+          <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
+          <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
+          <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+        </svg>
+      )}
 
       {slots.map((slot) => {
-        const pos = rotate(slot);
+        const pos = transform(slot);
         const occupantId = positions[slot.id];
         const occupant = occupantId ? stickersById[occupantId] : null;
         const fitsSelection =
@@ -353,15 +360,19 @@ function SquadPitch({
           (slot.accepts || []).includes(selectedSticker.position) &&
           !occupant;
         const isShaking = shakeSlotId === slot.id;
+        const isFocused = focusedSlotId === slot.id;
 
         return (
           <button
             key={slot.id}
             type="button"
-            onClick={() => onSlotClick(slot)}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all rounded-xl ${
+            onClick={(e) => {
+              e.stopPropagation();
+              handleTap(slot);
+            }}
+            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl transition-transform ${
               isShaking ? "sq-shake" : ""
-            }`}
+            } ${isFocused ? "z-30 scale-[1.4]" : "z-10"}`}
             style={{ left: pos.left, top: pos.top }}
             aria-label={slot.label}
           >
@@ -371,11 +382,25 @@ function SquadPitch({
                   fitsSelection ? "ring-2 ring-emerald-300 rounded-xl" : ""
                 }`}
               >
-                <StickerCard sticker={occupant} size="sm" owned />
+                <StickerCard sticker={occupant} size="xs" owned />
+                {isFocused && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFocusedSlotId(null);
+                      onSlotClick(slot);
+                    }}
+                    aria-label="Remove from squad"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 hover:bg-red-400 text-white flex items-center justify-center shadow ring-2 ring-[#070707]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             ) : (
               <div
-                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dashed flex items-center justify-center text-xs sm:text-sm font-bold transition-colors ${
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed flex items-center justify-center text-[10px] sm:text-xs font-bold transition-colors ${
                   fitsSelection
                     ? "border-emerald-300 bg-emerald-500/20 text-emerald-100"
                     : "border-white/45 bg-white/5 text-white/55"

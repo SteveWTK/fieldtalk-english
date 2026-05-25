@@ -14,12 +14,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { useIsWide } from "@/lib/hooks/useIsWide";
 import Link from "next/link";
 import {
   Trophy,
   Sparkles,
   Package,
   ChevronRight,
+  ChevronLeft,
   Crosshair,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -114,6 +116,18 @@ function DashboardContent() {
       </div>
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+        {/* Top-of-page nav row — Back to lessons link sits to the left
+            so users can hop back into the lesson flow easily. */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/lesson"
+            className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to lessons
+          </Link>
+        </div>
+
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">
           <div className="flex items-center gap-4">
@@ -319,16 +333,23 @@ function DashboardContent() {
 }
 
 /**
- * Read-only landscape pitch for the dashboard. Slots come from the
- * shared squadConfig so the layout always matches what /dashboard/squad
- * uses. Filled slots show the placed sticker; empty slots show a
- * dashed placeholder with the position label.
+ * Read-only pitch for the dashboard. Slots come from the shared
+ * squadConfig so the layout always matches /dashboard/squad. Layout
+ * flips to landscape on viewports ≥ 1024px; portrait on smaller screens
+ * so 11 cards remain legible without horizontal cramping.
+ *
+ * Tapping a placed card brings it to the front (z-30 + slight scale)
+ * so users can inspect a specific player on a crowded pitch. Tap again
+ * or tap elsewhere to defocus.
  */
 function DashboardPitch({ positions = {}, stickersById = {} }) {
   const formationConfig = getFormation("4-3-3");
-  // CW rotation: new_left = 100 - y, new_top = x — same convention used
-  // by the squad builder and DragDropFormation in landscape mode.
-  const rotate = (s) => {
+  const isHorizontal = useIsWide(1024);
+  const [focusedSlotId, setFocusedSlotId] = useState(null);
+
+  // CW rotation for landscape; identity for portrait.
+  const transform = (s) => {
+    if (!isHorizontal) return { left: s.x, top: s.y };
     const xv = parseFloat(s.x);
     const yv = parseFloat(s.y);
     return { left: `${100 - yv}%`, top: `${xv}%` };
@@ -337,74 +358,66 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
   return (
     <div
       className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md"
-      style={{ aspectRatio: "7 / 5" }}
+      style={{
+        aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
+        maxWidth: isHorizontal ? "100%" : "360px",
+      }}
+      onClick={() => setFocusedSlotId(null)}
     >
-      <svg
-        viewBox="0 0 140 100"
-        preserveAspectRatio="none"
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      >
-        <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
-        <rect
-          x="8"
-          y="8"
-          width="124"
-          height="84"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <line
-          x1="70"
-          y1="8"
-          x2="70"
-          y2="92"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <circle
-          cx="70"
-          cy="50"
-          r="8"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
-        <rect
-          x="8"
-          y="28"
-          width="14"
-          height="44"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-        <rect
-          x="118"
-          y="28"
-          width="14"
-          height="44"
-          fill="none"
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth="0.4"
-        />
-      </svg>
+      {isHorizontal ? (
+        <svg
+          viewBox="0 0 140 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        >
+          <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
+          <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
+          <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+        </svg>
+      ) : (
+        <svg
+          viewBox="0 0 100 140"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        >
+          <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
+          <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
+          <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+        </svg>
+      )}
 
       {formationConfig.slots.map((slot) => {
-        const pos = rotate(slot);
+        const pos = transform(slot);
         const occupantId = positions[slot.id];
         const occupant = occupantId ? stickersById[occupantId] : null;
+        const isFocused = focusedSlotId === slot.id;
         return (
           <div
             key={slot.id}
-            className="absolute -translate-x-1/2 -translate-y-1/2"
+            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform ${
+              isFocused ? "z-30 scale-[1.35]" : "z-10"
+            }`}
             style={{ left: pos.left, top: pos.top }}
+            onClick={(e) => {
+              if (!occupant) return;
+              e.stopPropagation();
+              setFocusedSlotId((prev) => (prev === slot.id ? null : slot.id));
+            }}
           >
             {occupant ? (
-              <StickerCard sticker={occupant} owned size="sm" />
+              <div className={occupant ? "cursor-pointer" : ""}>
+                <StickerCard sticker={occupant} owned size="xs" />
+              </div>
             ) : (
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-white/40 bg-white/5 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-white/40">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 border-dashed border-white/40 bg-white/5 flex items-center justify-center text-[9px] sm:text-[10px] font-semibold text-white/40">
                 {slot.label}
               </div>
             )}

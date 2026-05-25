@@ -46,6 +46,9 @@ import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ReplayOnboardingButton from "@/components/ReplayOnboardingButton";
+import PackProgressBanner from "@/components/PackProgressBanner";
+import { usePlayerProgress } from "@/lib/hooks/usePlayerData";
+import { useAppSettings } from "@/lib/hooks/useAppSettings";
 import { useTranslation } from "@/hooks/useTranslation";
 import AIWritingExercise from "@/components/exercises/AIWritingExercise";
 import AIConversationPractice from "@/components/exercises/AIConversationPractice";
@@ -88,6 +91,19 @@ function DynamicLessonContent() {
   const [xpEarned, setXpEarned] = useState(0);
   const [startTime] = useState(Date.now());
   const [completing, setCompleting] = useState(false);
+
+  // Live pack-progress wiring: baseline XP from player_progress at mount
+  // + this session's accumulated xpEarned = the user's effective total.
+  // Drives the top bar and the side banner.
+  const { progress: playerProgress } = usePlayerProgress(user?.id);
+  const { settings: appSettings } = useAppSettings();
+  const baselineXp = playerProgress?.total_xp || 0;
+  const effectiveXp = baselineXp + xpEarned;
+  const packXpCost = appSettings?.pack_xp_cost || 200;
+  const packProgressPct = Math.round(
+    ((effectiveXp % packXpCost) / packXpCost) * 100
+  );
+  const xpToNextPack = Math.max(0, packXpCost - (effectiveXp % packXpCost));
   const [showTranslation, setShowTranslation] = useState(false);
   const [translations, setTranslations] = useState({});
   const [translating, setTranslating] = useState(false);
@@ -609,6 +625,42 @@ function DynamicLessonContent() {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     }
+  };
+
+  // Save accumulated XP + lesson completion when the user exits *from
+  // the completion step* via any route (Ultimate Team button, header
+  // back arrow, etc.). From earlier steps this is just plain navigation
+  // — partial XP isn't persisted mid-lesson (it would feel like a
+  // forced commit).
+  const handleNavigateAway = async (destination) => {
+    if (!user) {
+      router.push(destination);
+      return;
+    }
+    const isOnCompletion = currentStepData?.type === "completion";
+    if (isOnCompletion && xpEarned > 0 && !completing) {
+      setCompleting(true);
+      try {
+        await markLessonComplete(
+          user.id,
+          lesson.id,
+          Math.round((completedSteps.size / steps.length) * 100),
+          xpEarned,
+          Date.now() - startTime
+        );
+        // Event-only — markLessonComplete already bumped the running total.
+        awardXp({
+          amount: xpEarned,
+          source: "lesson_completion",
+          sourceId: lesson.id,
+          metadata: { exited_via: destination },
+          eventOnly: true,
+        });
+      } catch (err) {
+        console.error("[lesson] save-on-exit failed:", err);
+      }
+    }
+    router.push(destination);
   };
 
   const handleLessonComplete = async () => {
@@ -2758,20 +2810,30 @@ function DynamicLessonContent() {
                   </p>
                 </div>
 
-                <button
-                  onClick={handleLessonComplete}
-                  disabled={completing}
-                  className="bg-gradient-to-r from-primary-500 to-accent-500 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {completing ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>{t("saving_progress")}</span>
-                    </div>
-                  ) : (
-                    t("return_to_lessons")
-                  )}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+                  <button
+                    onClick={handleLessonComplete}
+                    disabled={completing}
+                    className="bg-gradient-to-r from-primary-500 to-accent-500 text-whites px-6 sm:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {completing ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>{t("saving_progress")}</span>
+                      </div>
+                    ) : (
+                      t("return_to_lessons")
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNavigateAway("/dashboard")}
+                    disabled={completing}
+                    className="bg-accent-800 hover:bg-accent-700 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Go to Ultimate Team
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2811,12 +2873,17 @@ function DynamicLessonContent() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 min-h-screen">
+      {/* Side rail showing live progress toward the next sticker pack.
+          Updates as each step's XP is awarded — flashes a celebratory
+          state when the user crosses a pack threshold mid-lesson. */}
+      <PackProgressBanner effectiveXp={effectiveXp} packXpCost={packXpCost} />
+
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-[16px] lg:text-lg my-1 sm:my-[6px]">
             <button
-              onClick={() => router.push("/lesson")}
+              onClick={() => handleNavigateAway("/lesson")}
               className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -2863,22 +2930,24 @@ function DynamicLessonContent() {
           </div>
         </div> */}
 
-        {/* Progress Bar */}
+        {/* Top bar — progress towards the next sticker pack. The
+            lesson-step counter sits underneath as a secondary indicator. */}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
           <div
-            className="bg-gradient-to-r from-primary-500 to-accent-500 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+            style={{ width: `${packProgressPct}%` }}
           ></div>
         </div>
         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
           <span>
+            {xpToNextPack === 0
+              ? "🎉 New pack ready!"
+              : `${xpToNextPack} XP to your next pack`}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             {t("step_of_total")
               .replace("{current}", currentStep + 1)
               .replace("{total}", steps.length)}
-          </span>
-          <span>
-            {Math.round(progress)}
-            {t("percent_complete")}
           </span>
         </div>
       </div>
@@ -2974,7 +3043,7 @@ export default function DynamicLessonPage() {
       <DynamicLessonContent />
       {/* Admin-only floating button — wipes onboarding flags + reloads
           so platform admins can replay the hints after tweaking copy. */}
-      <ReplayOnboardingButton />
+      {/* <ReplayOnboardingButton /> */}
     </ProtectedRoute>
   );
 }

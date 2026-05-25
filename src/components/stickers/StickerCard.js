@@ -38,11 +38,13 @@ export default function StickerCard({
   const rarity = getRarity(sticker.rating);
 
   const dims =
-    size === "sm"
-      ? { w: "w-20", h: "h-28", name: "text-[10px]", num: "text-xl" }
-      : size === "lg"
-        ? { w: "w-40", h: "h-56", name: "text-base", num: "text-5xl" }
-        : { w: "w-28", h: "h-40", name: "text-xs", num: "text-3xl" };
+    size === "xs"
+      ? { w: "w-12", h: "h-16", name: "text-[8px]", num: "text-sm" }
+      : size === "sm"
+        ? { w: "w-20", h: "h-28", name: "text-[10px]", num: "text-xl" }
+        : size === "lg"
+          ? { w: "w-40", h: "h-56", name: "text-base", num: "text-5xl" }
+          : { w: "w-28", h: "h-40", name: "text-xs", num: "text-3xl" };
 
   const stars = Array.from({ length: 5 }, (_, i) => i < sticker.rating);
 

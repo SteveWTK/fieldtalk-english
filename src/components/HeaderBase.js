@@ -55,7 +55,7 @@ function HeaderBase({
       en: [
         // { href: "/lesson", label: "Home" },
         { href: "/lesson", label: "Lessons" },
-        { href: "/dashboard", label: "Dashboard" },
+        { href: "/dashboard", label: "Ultimate Team" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
@@ -63,7 +63,7 @@ function HeaderBase({
       pt: [
         // { href: "/", label: "Início" },
         { href: "/lesson", label: "Aulas" },
-        { href: "/dashboard", label: "Painel" },
+        { href: "/dashboard", label: "Ultimate Team" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
         // { href: "/settings", label: "Settings" },
@@ -71,7 +71,7 @@ function HeaderBase({
       es: [
         // { href: "/", label: "Inicio" },
         { href: "/lesson", label: "Lecciones" },
-        { href: "/dashboard", label: "Panel" },
+        { href: "/dashboard", label: "Ultimate Team" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
         // { href: "/settings", label: "Settings" },
@@ -80,7 +80,6 @@ function HeaderBase({
         // { href: "/", label: "Accueil" },
         { href: "/lesson", label: "Leçons" },
         { href: "/dashboard", label: "Tableau de bord" },
-
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         // { href: "/settings", label: "Settings" },
