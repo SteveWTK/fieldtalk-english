@@ -16,7 +16,7 @@
 // (Update SUPABASE_FLAG_BASE to match the exact bucket + path you
 // uploaded the files to — file names are expected to be `<code2>.png`,
 // e.g. `us.png`, `gb-eng.png`.)
-const FLAG_SOURCE = "flagcdn"; // "flagcdn" | "supabase"
+const FLAG_SOURCE = "supabase"; // "flagcdn" | "supabase"
 
 const SUPABASE_FLAG_BASE =
   "https://ojxmpejjvwfaxtlmcnuq.supabase.co/storage/v1/object/public/flags";
@@ -43,6 +43,10 @@ export const WC_NATIONS = [
   { code3: "per", code2: "pe", name: "Peru" },
   { code3: "chi", code2: "cl", name: "Chile" },
   { code3: "ven", code2: "ve", name: "Venezuela" },
+  { code3: "pan", code2: "pa", name: "Panama" },
+  { code3: "hti", code2: "ht", name: "Haiti" },
+  { code3: "cuw", code2: "cw", name: "Curaçao" },
+
   // Europe — UEFA
   { code3: "eng", code2: "gb-eng", name: "England" },
   { code3: "fra", code2: "fr", name: "France" },
@@ -52,7 +56,11 @@ export const WC_NATIONS = [
   { code3: "ned", code2: "nl", name: "Netherlands" },
   { code3: "prt", code2: "pt", name: "Portugal" },
   { code3: "bel", code2: "be", name: "Belgium" },
+  { code3: "cze", code2: "cz", name: "Czechia" },
+
   { code3: "hrv", code2: "hr", name: "Croatia" },
+  { code3: "bih", code2: "ba", name: "Bosnia and Herzegovina" },
+
   { code3: "srb", code2: "rs", name: "Serbia" },
   { code3: "pol", code2: "pl", name: "Poland" },
   { code3: "dnk", code2: "dk", name: "Denmark" },
@@ -74,15 +82,24 @@ export const WC_NATIONS = [
   { code3: "tun", code2: "tn", name: "Tunisia" },
   { code3: "alg", code2: "dz", name: "Algeria" },
   { code3: "cmr", code2: "cm", name: "Cameroon" },
+  { code3: "zaf", code2: "za", name: "South Africa" },
+  { code3: "tun", code2: "tn", name: "Tunisia" },
+  { code3: "cod", code2: "cd", name: "DR Congo" },
+  { code3: "cpv", code2: "cv", name: "Cabo Verde" },
+
   // Asia — AFC
   { code3: "jpn", code2: "jp", name: "Japan" },
   { code3: "kor", code2: "kr", name: "South Korea" },
   { code3: "irn", code2: "ir", name: "Iran" },
+  { code3: "jor", code2: "jo", name: "Jordan" },
+
   { code3: "sau", code2: "sa", name: "Saudi Arabia" },
   { code3: "aus", code2: "au", name: "Australia" },
   { code3: "qat", code2: "qa", name: "Qatar" },
   { code3: "uae", code2: "ae", name: "UAE" },
   { code3: "irq", code2: "iq", name: "Iraq" },
+  { code3: "uzb", code2: "uz", name: "Uzbekistan" },
+
   // Oceania — OFC
   { code3: "nzl", code2: "nz", name: "New Zealand" },
 ];
