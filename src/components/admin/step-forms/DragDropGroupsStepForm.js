@@ -147,24 +147,62 @@ export default function DragDropGroupsStepForm({ step, onChange }) {
       {/* Save as prediction — only meaningful in free-placement mode,
           since match-group has a canonical correct answer already. */}
       {validation === "free" && (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              type="checkbox"
-              checked={step.save_as_prediction === true}
-              onChange={(e) =>
-                updateField("save_as_prediction", e.target.checked)
-              }
-              className="w-4 h-4"
-            />
-            Save as prediction
-          </label>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            When ticked, the user&apos;s final placement is sent to their
-            Predictions Centre on the dashboard. An admin can later set the
-            canonical answer at <code>/admin/predictions</code> to award
-            bonus XP based on how many positions they got right.
-          </p>
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+          <div>
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={step.save_as_prediction === true}
+                onChange={(e) =>
+                  updateField("save_as_prediction", e.target.checked)
+                }
+                className="w-4 h-4"
+              />
+              Save as prediction
+            </label>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              When ticked, the user&apos;s final placement is sent to their
+              Predictions Centre on the Ultimate Team. An admin can later
+              set the canonical answer at <code>/admin/predictions</code>{" "}
+              to award bonus XP based on how many positions they got right.
+            </p>
+          </div>
+
+          {step.save_as_prediction === true && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Prediction deadline
+              </label>
+              <input
+                type="date"
+                value={
+                  step.prediction_deadline
+                    ? String(step.prediction_deadline).slice(0, 10)
+                    : ""
+                }
+                onChange={(e) => {
+                  // Normalise to an ISO string (UTC midnight on the
+                  // chosen day) so server-side comparisons are sane.
+                  const v = e.target.value;
+                  if (!v) {
+                    updateField("prediction_deadline", "");
+                  } else {
+                    updateField(
+                      "prediction_deadline",
+                      new Date(`${v}T00:00:00Z`).toISOString()
+                    );
+                  }
+                }}
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Optional. After this date the prediction step locks and
+                users can no longer edit their submission. The deadline
+                is captured on each user&apos;s first save — changing it
+                here later won&apos;t shift anyone&apos;s existing lock.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

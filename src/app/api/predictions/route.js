@@ -27,6 +27,18 @@ export async function POST(request) {
     const stepId = String(body.step_id || "").trim();
     const predictionType = String(body.prediction_type || "group_finish").trim();
     const data = body.data;
+    // Optional ISO string set on first save from step.prediction_deadline.
+    // We store it once and never let the client change it on update — so
+    // an admin editing the step later can't retroactively shift a user's
+    // lock-in date.
+    const clientDeadlineRaw = body.deadline_at;
+    let clientDeadlineAt = null;
+    if (clientDeadlineRaw) {
+      const parsed = new Date(clientDeadlineRaw);
+      if (Number.isFinite(parsed.getTime())) {
+        clientDeadlineAt = parsed.toISOString();
+      }
+    }
 
     if (!stepId) {
       return NextResponse.json({ error: "Missing step_id" }, { status: 400 });
@@ -94,10 +106,13 @@ export async function POST(request) {
       );
     }
 
-    // Block re-submission once a prediction has been resolved.
+    // Read the existing row (if any) so we can:
+    //   1. block updates once resolved
+    //   2. enforce the deadline server-side
+    //   3. preserve deadline_at on update (client can't shift it)
     const { data: existing } = await supabase
       .from("predictions")
-      .select("resolved")
+      .select("resolved, deadline_at")
       .eq("player_id", user.id)
       .eq("step_id", stepId)
       .maybeSingle();
@@ -107,6 +122,19 @@ export async function POST(request) {
         { status: 409 }
       );
     }
+    const effectiveDeadline = existing?.deadline_at || clientDeadlineAt;
+    if (
+      effectiveDeadline &&
+      Date.now() > new Date(effectiveDeadline).getTime()
+    ) {
+      return NextResponse.json(
+        {
+          error: "Prediction deadline has passed — submissions are locked.",
+          deadline_at: effectiveDeadline,
+        },
+        { status: 423 } // Locked
+      );
+    }
 
     const { error: upsertError } = await supabase.from("predictions").upsert(
       {
@@ -114,6 +142,10 @@ export async function POST(request) {
         step_id: stepId,
         prediction_type: predictionType,
         data,
+        // Only set deadline_at on first insert. Preserves the original
+        // lock-in date across updates and ignores any change the client
+        // might try to slip in.
+        deadline_at: existing?.deadline_at || clientDeadlineAt,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "player_id,step_id" }
@@ -136,7 +168,10 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      deadline_at: existing?.deadline_at || clientDeadlineAt || null,
+    });
   } catch (err) {
     console.error("[predictions] unexpected error:", err);
     return NextResponse.json(

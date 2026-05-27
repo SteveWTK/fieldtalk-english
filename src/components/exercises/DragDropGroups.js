@@ -3,7 +3,14 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { RotateCcw, AlertCircle, Volume2, VolumeX } from "lucide-react";
+import {
+  RotateCcw,
+  AlertCircle,
+  Volume2,
+  VolumeX,
+  CheckCircle,
+  Lock,
+} from "lucide-react";
 import {
   playSuccessSound,
   playErrorSound,
@@ -11,6 +18,8 @@ import {
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
+import { useAuth } from "@/components/AuthProvider";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * DragDropGroups Step
@@ -51,6 +60,16 @@ export default function DragDropGroups({
   const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
+  const { user } = useAuth();
+
+  // Prediction-step flag: explicit step-level toggle OR (defensive)
+  // inside groups_config. When set, the user commits via a Save button
+  // — completion / XP / cheer fire on save, not on placing the last card.
+  const isPredictionStep =
+    step?.save_as_prediction === true ||
+    step?.groups_config?.save_as_prediction === true;
+  const stepDeadlineIso =
+    step?.prediction_deadline || step?.groups_config?.prediction_deadline || null;
 
   const labels = isPortuguese
     ? {
@@ -86,6 +105,17 @@ export default function DragDropGroups({
   const [errorMessage, setErrorMessage] = useState(null);
   const [completed, setCompleted] = useState(false);
 
+  // Prediction-step state. `submitted` is true once the user has saved
+  // their prediction (it survives reloads because we restore from DB).
+  // `savedDeadlineAt` is the locked-in deadline echoed back by the API.
+  // `submitting` / `saveError` / `justSaved` drive the Save button.
+  const [restoring, setRestoring] = useState(isPredictionStep);
+  const [submitted, setSubmitted] = useState(false);
+  const [savedDeadlineAt, setSavedDeadlineAt] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [justSaved, setJustSaved] = useState(false);
+
   const containerRefs = useRef({});
   const onCompleteRef = useRef(onComplete);
 
@@ -98,8 +128,11 @@ export default function DragDropGroups({
   const placedCount = Object.keys(placements).length;
   const totalCards = cards.length;
 
-  // Completion check: free → all placed; match → all placed AND all correct.
-  const isComplete = (() => {
+  // "All cards placed" — the visual readiness signal. Distinct from
+  // "completed" (= XP awarded). For prediction steps, completion is
+  // gated on the explicit Save click; for non-prediction steps it
+  // fires automatically when placement is finished.
+  const allPlaced = (() => {
     if (totalCards === 0) return false;
     if (placedCount !== totalCards) return false;
     if (validation === "free") return true;
@@ -109,83 +142,82 @@ export default function DragDropGroups({
     });
   })();
 
+  // Effective deadline: locked-in value from DB takes priority; fall
+  // back to whatever the step JSON currently advertises (in case this
+  // is a fresh first-time render before any save).
+  const effectiveDeadlineMs = (() => {
+    const iso = savedDeadlineAt || stepDeadlineIso;
+    if (!iso) return null;
+    const t = new Date(iso).getTime();
+    return Number.isFinite(t) ? t : null;
+  })();
+  const isLocked =
+    isPredictionStep &&
+    effectiveDeadlineMs !== null &&
+    Date.now() > effectiveDeadlineMs;
+
+  // Restore the user's saved prediction (if any) for this step on mount.
+  // Non-prediction steps skip this and render normally.
   useEffect(() => {
-    if (isComplete && !completed) {
+    if (!isPredictionStep) {
+      setRestoring(false);
+      return;
+    }
+    if (!user?.id || !step?.id) {
+      setRestoring(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("predictions")
+          .select("data, deadline_at")
+          .eq("player_id", user.id)
+          .eq("step_id", step.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) {
+          console.warn("[predictions] restore error:", error);
+          setRestoring(false);
+          return;
+        }
+        if (data) {
+          const flat = data.data?.placements || {};
+          const restored = {};
+          for (const [cardId, containerId] of Object.entries(flat)) {
+            // 1-slot containers (Predict the finish): slotIndex is
+            // always 0. Multi-slot recovery isn't required for the
+            // current group_finish use case.
+            restored[cardId] = { containerId, slotIndex: 0 };
+          }
+          setPlacements(restored);
+          setSubmitted(true);
+          setSavedDeadlineAt(data.deadline_at || null);
+        }
+      } catch (err) {
+        console.warn("[predictions] restore exception:", err);
+      } finally {
+        if (!cancelled) setRestoring(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isPredictionStep, user?.id, step?.id]);
+
+  // Non-prediction steps: completion fires automatically when all
+  // cards are correctly placed. (Prediction-step completion fires on
+  // the explicit Save click; see handleSavePrediction below.)
+  useEffect(() => {
+    if (isPredictionStep) return;
+    if (allPlaced && !completed) {
       setCompleted(true);
       if (!isMuted) playCheerSound();
       onCompleteRef.current?.(baseXp);
-
-      // When this step is flagged as a prediction (e.g. "Predict the
-      // finish — Group A"), save the user's final placement to the
-      // predictions table so the Ultimate Team can show it and the admin
-      // can later mark it correct / award bonus XP.
-      //
-      // Accepts the flag on the step root OR nested inside groups_config
-      // (defensive — admins editing JSON sometimes drop it in the wrong
-      // place). Logging both branches so DevTools shows exactly why a
-      // prediction did or didn't fire.
-      const shouldSavePrediction =
-        step?.save_as_prediction === true ||
-        step?.groups_config?.save_as_prediction === true;
-
-      if (shouldSavePrediction) {
-        // Normalise to { cardId: containerId } — matches the canonical
-        // answer shape the resolve endpoint expects.
-        const flatPlacements = {};
-        for (const [cardId, p] of Object.entries(placements)) {
-          if (p?.containerId) flatPlacements[cardId] = p.containerId;
-        }
-        console.log("[predictions] saving for step", step?.id, {
-          placements: flatPlacements,
-        });
-        fetch("/api/predictions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            step_id: step.id,
-            prediction_type: step.prediction_type || "group_finish",
-            data: {
-              title: step.title || "",
-              placements: flatPlacements,
-              cards: cards.map((c) => ({
-                id: c.id,
-                label: c.label,
-                image_url: c.image_url || null,
-              })),
-              containers: containers.map((c) => ({
-                id: c.id,
-                label: c.label,
-              })),
-            },
-          }),
-        })
-          .then(async (res) => {
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              console.warn(
-                "[predictions] save failed",
-                res.status,
-                json
-              );
-            } else {
-              console.log("[predictions] saved OK");
-            }
-          })
-          .catch((err) => {
-            console.warn("[predictions] network error", err);
-          });
-      } else if (config.validation === "free" && step?.id) {
-        // Free-placement step but no save_as_prediction flag — log a
-        // breadcrumb so admins can confirm whether the toggle is set in
-        // the lesson JSON when expected.
-        console.log(
-          "[predictions] step",
-          step.id,
-          "is free-placement but save_as_prediction is not set"
-        );
-      }
     }
-  }, [isComplete, completed, baseXp, isMuted, step, placements, cards, containers]);
+  }, [allPlaced, completed, baseXp, isMuted, isPredictionStep]);
 
   // Find which container the pointer is inside (if any).
   const findContainerAtPoint = (clientX, clientY) => {
@@ -309,8 +341,84 @@ export default function DragDropGroups({
 
   const resetAll = () => {
     setPlacements({});
-    setCompleted(false);
+    // Resetting placements while editing a saved prediction lets the user
+    // start over — they re-submit via the Save button to commit.
+    if (!isPredictionStep) setCompleted(false);
     setErrorMessage(null);
+    setSaveError(null);
+    setJustSaved(false);
+  };
+
+  // Commit the prediction. Lesson-step XP + cheer fire here, not on
+  // placement, so the user has room to reset and rearrange until they
+  // tap Save. Allows re-save (with new placements) until the deadline.
+  const handleSavePrediction = async () => {
+    if (!step?.id) return;
+    if (isLocked) return;
+    setSubmitting(true);
+    setSaveError(null);
+    setJustSaved(false);
+
+    const flatPlacements = {};
+    for (const [cardId, p] of Object.entries(placements)) {
+      if (p?.containerId) flatPlacements[cardId] = p.containerId;
+    }
+
+    try {
+      const res = await fetch("/api/predictions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step_id: step.id,
+          prediction_type: step.prediction_type || "group_finish",
+          deadline_at: stepDeadlineIso, // server preserves existing if already set
+          data: {
+            title: step.title || "",
+            placements: flatPlacements,
+            cards: cards.map((c) => ({
+              id: c.id,
+              label: c.label,
+              image_url: c.image_url || null,
+            })),
+            containers: containers.map((c) => ({
+              id: c.id,
+              label: c.label,
+            })),
+          },
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.warn("[predictions] save failed", res.status, json);
+        setSaveError(json.error || "Could not save");
+        setSubmitting(false);
+        return;
+      }
+      console.log("[predictions] saved OK");
+      // Echoed deadline_at takes priority — locks the row's first-save
+      // value across subsequent updates.
+      if (json.deadline_at) setSavedDeadlineAt(json.deadline_at);
+      const wasFirstSave = !submitted;
+      setSubmitted(true);
+      setJustSaved(true);
+      setSubmitting(false);
+      // Fire the lesson-step completion (XP + cheer) only on the first
+      // successful save — re-saves don't grant the XP twice.
+      if (wasFirstSave && !completed) {
+        setCompleted(true);
+        if (!isMuted) playCheerSound();
+        onCompleteRef.current?.(baseXp);
+      } else if (!isMuted) {
+        // Re-save still gets a light chime for feedback.
+        playSuccessSound();
+      }
+      // Brief "Saved ✓" indicator before reverting to the steady state.
+      setTimeout(() => setJustSaved(false), 1800);
+    } catch (err) {
+      console.warn("[predictions] network error", err);
+      setSaveError("Network error — please try again");
+      setSubmitting(false);
+    }
   };
 
   // Look up which card sits in a specific slot.
@@ -364,6 +472,21 @@ export default function DragDropGroups({
         )}
       </div>
     );
+  };
+
+  // Format a deadline timestamp for the status banner. Falls back to
+  // the raw ISO string if the locale formatter trips.
+  const formatDeadline = (ms, ptLocale) => {
+    if (!ms) return null;
+    try {
+      return new Date(ms).toLocaleDateString(ptLocale ? "pt-BR" : "en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch {
+      return String(new Date(ms).toISOString().slice(0, 10));
+    }
   };
 
   // Responsive grid columns based on container count.
@@ -424,6 +547,82 @@ export default function DragDropGroups({
         </div>
       )}
 
+      {/* Prediction-step status banner. Three states:
+            - Locked (deadline has passed) — red lock-style notice
+            - Submitted (already saved, can still edit) — green
+            - Draft (no save yet)                       — quiet hint  */}
+      {isPredictionStep && !restoring && (
+        <div
+          className={`flex items-start gap-2 px-3 py-2 rounded-lg text-sm border ${
+            isLocked
+              ? "bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800"
+              : submitted
+                ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
+                : "bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-200 border-blue-200 dark:border-blue-800"
+          }`}
+        >
+          {isLocked ? (
+            <Lock className="w-4 h-4 mt-0.5 shrink-0" />
+          ) : submitted ? (
+            <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          )}
+          <div className="flex-1">
+            {isLocked ? (
+              <>
+                <p className="font-semibold">
+                  {isPortuguese
+                    ? "Bloqueado — a fase de grupos começou."
+                    : "Locked — group stage has started."}
+                </p>
+                <p className="text-xs opacity-80">
+                  {isPortuguese
+                    ? "Sua predição não pode mais ser editada."
+                    : "Your prediction can no longer be edited."}
+                </p>
+              </>
+            ) : submitted ? (
+              <>
+                <p className="font-semibold">
+                  {isPortuguese
+                    ? "Predição salva ✓"
+                    : "Prediction saved ✓"}
+                </p>
+                {effectiveDeadlineMs && (
+                  <p className="text-xs opacity-80">
+                    {isPortuguese
+                      ? `Você pode alterá-la até ${formatDeadline(
+                          effectiveDeadlineMs,
+                          isPortuguese
+                        )}.`
+                      : `You can change it until ${formatDeadline(
+                          effectiveDeadlineMs,
+                          isPortuguese
+                        )}.`}
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="font-semibold">
+                  {isPortuguese
+                    ? "Arraste cada equipe e toque em Salvar quando estiver pronto."
+                    : "Drag each team into place, then tap Save when you're ready."}
+                </p>
+                {effectiveDeadlineMs && (
+                  <p className="text-xs opacity-80">
+                    {isPortuguese
+                      ? `Prazo: ${formatDeadline(effectiveDeadlineMs, isPortuguese)}`
+                      : `Deadline: ${formatDeadline(effectiveDeadlineMs, isPortuguese)}`}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Containers */}
       <div className={`grid gap-3 ${containersGridCols}`}>
         {containers.map((container) => {
@@ -467,24 +666,70 @@ export default function DragDropGroups({
         })}
       </div>
 
-      {/* Tray */}
-      {trayCards.length > 0 && !completed && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-wrap gap-2 justify-center">
-            {trayCards.map((card) => {
-              const isShaking = shakeCardId === card.id;
-              const isDragging = draggingCardId === card.id;
-              return (
-                <div
-                  key={card.id}
-                  onPointerDown={(e) => handlePointerDown(e, card.id)}
-                  style={{ touchAction: "none" }}
-                >
-                  {renderCard(card, { isShaking, isDragging })}
-                </div>
-              );
-            })}
+      {/* Tray — hidden when:
+            - non-prediction step has been auto-completed, OR
+            - prediction step is locked (deadline passed)              */}
+      {trayCards.length > 0 &&
+        (isPredictionStep ? !isLocked : !completed) && (
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-wrap gap-2 justify-center">
+              {trayCards.map((card) => {
+                const isShaking = shakeCardId === card.id;
+                const isDragging = draggingCardId === card.id;
+                return (
+                  <div
+                    key={card.id}
+                    onPointerDown={(e) => handlePointerDown(e, card.id)}
+                    style={{ touchAction: "none" }}
+                  >
+                    {renderCard(card, { isShaking, isDragging })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
+        )}
+
+      {/* Save button — prediction steps only. Disabled until every card
+          is placed; hides entirely once the deadline has passed. */}
+      {isPredictionStep && !isLocked && (
+        <div className="flex flex-col items-center gap-2">
+          {saveError && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+              <AlertCircle className="w-4 h-4" />
+              {saveError}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleSavePrediction}
+            disabled={!allPlaced || submitting}
+            className={`px-6 py-2.5 rounded-full font-bold text-sm sm:text-base tracking-wide transition-all ${
+              justSaved
+                ? "bg-emerald-500 text-white"
+                : "bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-[#070707]"
+            }`}
+          >
+            {submitting ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                {isPortuguese ? "Salvando…" : "Saving…"}
+              </span>
+            ) : justSaved ? (
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4" />
+                {isPortuguese ? "Salvo" : "Saved"}
+              </span>
+            ) : submitted ? (
+              isPortuguese
+                ? "Atualizar predição"
+                : "Update your prediction"
+            ) : isPortuguese ? (
+              "Salvar predição"
+            ) : (
+              "Save your prediction"
+            )}
+          </button>
         </div>
       )}
 
