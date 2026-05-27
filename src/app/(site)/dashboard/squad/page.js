@@ -370,10 +370,13 @@ function SquadPitch({
               e.stopPropagation();
               handleTap(slot);
             }}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl transition-transform duration-200 ${
+            // Focus swaps the card from "xs" to "md" so the full player
+            // details (name, number, position, rating) render crisply —
+            // instead of CSS-scaling an xs card and pixelating its text.
+            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl transition-[z-index] ${
               isShaking ? "sq-shake" : ""
             } ${
-              isFocused ? "z-30 scale-[2.4] drop-shadow-2xl" : "z-10"
+              isFocused ? "z-30 drop-shadow-2xl" : "z-10"
             }`}
             style={{ left: pos.left, top: pos.top }}
             aria-label={slot.label}
@@ -384,7 +387,11 @@ function SquadPitch({
                   fitsSelection ? "ring-2 ring-emerald-300 rounded-xl" : ""
                 }`}
               >
-                <StickerCard sticker={occupant} size="xs" owned />
+                <StickerCard
+                  sticker={occupant}
+                  size={isFocused ? "md" : "xs"}
+                  owned
+                />
                 {isFocused && (
                   <button
                     type="button"

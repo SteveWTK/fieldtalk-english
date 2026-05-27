@@ -10,12 +10,23 @@
 // Adding a missing nation: append a row. Removing one: delete the row.
 // The profile picker reads this directly.
 //
-// FLAG_URL_BUILDER is the one-stop URL helper — if you later host flags
-// yourself (e.g. in a Supabase `flags/` bucket), change just this
-// function and every flag in the app picks up the new source.
+// Flag art source — FLAG_SOURCE is the single switch that decides where
+// flag images come from. Flip to "supabase" to serve them from our own
+// Storage bucket if flagcdn.com is unreliable on the deploy platform.
+// (Update SUPABASE_FLAG_BASE to match the exact bucket + path you
+// uploaded the files to — file names are expected to be `<code2>.png`,
+// e.g. `us.png`, `gb-eng.png`.)
+const FLAG_SOURCE = "flagcdn"; // "flagcdn" | "supabase"
 
-export const FLAG_URL_BUILDER = (code2, size = 80) =>
-  `https://flagcdn.com/w${size}/${code2}.png`;
+const SUPABASE_FLAG_BASE =
+  "https://ojxmpejjvwfaxtlmcnuq.supabase.co/storage/v1/object/public/flags";
+
+export const FLAG_URL_BUILDER = (code2, size = 80) => {
+  if (FLAG_SOURCE === "supabase") {
+    return `${SUPABASE_FLAG_BASE}/${code2}.png`;
+  }
+  return `https://flagcdn.com/w${size}/${code2}.png`;
+};
 
 export const WC_NATIONS = [
   // Hosts (confirmed)

@@ -27,6 +27,7 @@ import {
   Crosshair,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAppSettings } from "@/lib/hooks/useAppSettings";
@@ -43,6 +44,7 @@ import StickerCard from "@/components/stickers/StickerCard";
 
 function DashboardContent() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { profile, progress, loading } = usePlayerDashboard(user?.id);
   const { settings } = useAppSettings();
 
@@ -177,16 +179,26 @@ function DashboardContent() {
             {/* Name + cumulative XP + progress towards next pack */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setProfileModalOpen(true)}
-                  className="text-left hover:text-white/90"
-                  aria-label="Edit profile"
-                >
-                  <h1 className="text-lg sm:text-xl font-bold truncate">
-                    {fullName}
-                  </h1>
-                </button>
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(true)}
+                    className="text-left hover:text-white/90 min-w-0"
+                    aria-label={t("edit_profile", "Edit profile")}
+                  >
+                    <h1 className="text-lg sm:text-xl font-bold truncate">
+                      {fullName}
+                    </h1>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(true)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-emerald-500/20 border border-white/15 hover:border-emerald-400/60 text-white/80 hover:text-emerald-200 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap shrink-0"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    {t("edit_profile", "Edit profile")}
+                  </button>
+                </div>
                 <span className="text-xs text-white/60">
                   <span className="font-bold text-white">
                     {totalXp.toLocaleString()}
@@ -471,8 +483,11 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
         return (
           <div
             key={slot.id}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ${
-              isFocused ? "z-30 scale-[2.2] drop-shadow-2xl" : "z-10"
+            // Focus swaps the card from "xs" to "md" so the full name,
+            // shirt number, position and rating render crisply — instead
+            // of CSS-scaling an xs card and pixelating its text.
+            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-[z-index] ${
+              isFocused ? "z-30 drop-shadow-2xl" : "z-10"
             }`}
             style={{ left: pos.left, top: pos.top }}
             onClick={(e) => {
@@ -482,8 +497,12 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
             }}
           >
             {occupant ? (
-              <div className={occupant ? "cursor-pointer" : ""}>
-                <StickerCard sticker={occupant} owned size="xs" />
+              <div className="cursor-pointer">
+                <StickerCard
+                  sticker={occupant}
+                  owned
+                  size={isFocused ? "md" : "xs"}
+                />
               </div>
             ) : (
               <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 border-dashed border-white/40 bg-white/5 flex items-center justify-center text-[9px] sm:text-[10px] font-semibold text-white/40">
