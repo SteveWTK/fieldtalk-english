@@ -641,21 +641,23 @@ function DynamicLessonContent() {
     if (isOnCompletion && xpEarned > 0 && !completing) {
       setCompleting(true);
       try {
-        await markLessonComplete(
+        const completionResult = await markLessonComplete(
           user.id,
           lesson.id,
           Math.round((completedSteps.size / steps.length) * 100),
           xpEarned,
           Date.now() - startTime
         );
-        // Event-only — markLessonComplete already bumped the running total.
-        awardXp({
-          amount: xpEarned,
-          source: "lesson_completion",
-          sourceId: lesson.id,
-          metadata: { exited_via: destination },
-          eventOnly: true,
-        });
+        // First-completion gate — re-doing a lesson must not re-grant XP.
+        if (completionResult?.isFirstCompletion) {
+          awardXp({
+            amount: xpEarned,
+            source: "lesson_completion",
+            sourceId: lesson.id,
+            metadata: { exited_via: destination },
+            eventOnly: true,
+          });
+        }
       } catch (err) {
         console.error("[lesson] save-on-exit failed:", err);
       }
@@ -675,7 +677,7 @@ function DynamicLessonContent() {
       console.log("🏁 Starting lesson completion process...");
 
       const durationMs = Date.now() - startTime;
-      await markLessonComplete(
+      const completionResult = await markLessonComplete(
         user.id,
         lesson.id,
         Math.round((completedSteps.size / steps.length) * 100),
@@ -683,10 +685,12 @@ function DynamicLessonContent() {
         durationMs
       );
 
-      // Log the lesson-completion XP event for the audit trail. eventOnly
-      // is true because markLessonComplete already bumped player_progress
-      // .total_xp itself — we don't want to double-count.
-      if (xpEarned > 0) {
+      // Log the lesson-completion XP audit event ONLY when this is the
+      // first time the user has finished this lesson. Re-completions
+      // re-record the score / time / activity-date but never grant
+      // additional XP. eventOnly because markLessonComplete already
+      // bumped player_progress.total_xp on first completion.
+      if (completionResult?.isFirstCompletion && xpEarned > 0) {
         awardXp({
           amount: xpEarned,
           source: "lesson_completion",
@@ -1057,6 +1061,7 @@ function DynamicLessonContent() {
               imageUrl={currentStepData.image_url || null}
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
+              step={currentStepData}
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
@@ -1206,6 +1211,7 @@ function DynamicLessonContent() {
             vocabulary={translatedVocabulary}
             lessonId={lessonId}
             stepId={currentStepData.id || `step-${currentStep}`}
+            step={currentStepData}
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
               setCompletedSteps((prev) => new Set([...prev, currentStep]));

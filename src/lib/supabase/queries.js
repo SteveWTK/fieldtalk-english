@@ -311,18 +311,37 @@ export async function markLessonComplete(
   });
 
   try {
-    // Step 1: Insert lesson completion
-    console.log("Step 1: Inserting lesson completion...");
+    // Step 0: Has this player completed this lesson before?
+    // If yes, the re-completion gets recorded (score/time can update)
+    // but NO additional XP is awarded — XP per lesson is a one-shot.
+    console.log("Step 0: Checking for existing completion...");
+    const { data: existingCompletion } = await supabase
+      .from("lesson_completions")
+      .select("id, xp_earned")
+      .eq("player_id", playerId)
+      .eq("lesson_id", lessonId)
+      .maybeSingle();
+
+    const isFirstCompletion = !existingCompletion;
+    const xpToAward = isFirstCompletion ? xpEarned : 0;
+    console.log("First completion?", isFirstCompletion, "XP awarded:", xpToAward);
+
+    // Step 1: Upsert lesson completion. On re-do we keep the original
+    // xp_earned value (we don't overwrite it with 0).
+    console.log("Step 1: Upserting lesson completion...");
+    const completionPayload = {
+      player_id: playerId,
+      lesson_id: lessonId,
+      score: score,
+      time_spent: timeSpent,
+      completed_at: new Date().toISOString(),
+    };
+    if (isFirstCompletion) {
+      completionPayload.xp_earned = xpEarned;
+    }
     const { data: completionData, error: completionError } = await supabase
       .from("lesson_completions")
-      .upsert({
-        player_id: playerId,
-        lesson_id: lessonId,
-        score: score,
-        xp_earned: xpEarned,
-        time_spent: timeSpent,
-        completed_at: new Date().toISOString(),
-      })
+      .upsert(completionPayload)
       .select()
       .single();
 
@@ -331,7 +350,19 @@ export async function markLessonComplete(
       throw completionError;
     }
 
-    console.log("✅ Lesson completion inserted:", completionData);
+    console.log("✅ Lesson completion upserted:", completionData);
+
+    // If this is a re-completion, skip the progress-XP bookkeeping
+    // entirely — there's nothing to add and the streak/level was
+    // already handled the first time around.
+    if (!isFirstCompletion) {
+      return {
+        completion: completionData,
+        progress: null,
+        isFirstCompletion: false,
+        xpAwarded: 0,
+      };
+    }
 
     // Step 2: Get current progress
     console.log("Step 2: Fetching current player progress...");
@@ -385,7 +416,12 @@ export async function markLessonComplete(
         }
 
         console.log("✅ New progress created:", newProgress);
-        return { completion: completionData, progress: newProgress };
+        return {
+          completion: completionData,
+          progress: newProgress,
+          isFirstCompletion: true,
+          xpAwarded: xpEarned,
+        };
       } else {
         throw progressFetchError;
       }
@@ -454,7 +490,12 @@ export async function markLessonComplete(
     console.log("✅ Progress updated successfully:", progressResult);
     console.log("=== LESSON COMPLETION SUCCESS ===");
 
-    return { completion: completionData, progress: progressResult };
+    return {
+      completion: completionData,
+      progress: progressResult,
+      isFirstCompletion: true,
+      xpAwarded: xpEarned,
+    };
   } catch (error) {
     console.error("❌ LESSON COMPLETION FAILED:", {
       message: error.message,

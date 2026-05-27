@@ -18,7 +18,6 @@ import { useIsWide } from "@/lib/hooks/useIsWide";
 import Link from "next/link";
 import {
   Trophy,
-  Sparkles,
   Package,
   ChevronRight,
   ChevronLeft,
@@ -35,8 +34,8 @@ import {
 import { usePlayerSquad } from "@/lib/hooks/usePlayerSquad";
 import { usePlayerPredictions } from "@/lib/hooks/usePlayerPredictions";
 import { getFormation } from "@/lib/squads/squadConfig";
-import { xpProgress } from "@/lib/xp/levels";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
+import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
 
 function DashboardContent() {
@@ -45,13 +44,18 @@ function DashboardContent() {
   const { settings } = useAppSettings();
 
   const totalXp = progress?.total_xp || 0;
-  const xp = xpProgress(totalXp);
   const packXpCost = settings?.pack_xp_cost || 200;
   const {
     packsAvailable,
     xpToNextPack,
     refresh: refreshPacks,
   } = usePackInventory(user?.id, packXpCost, totalXp);
+  // Hero progress bar = how far through the current pack threshold.
+  // (Levels removed — pack progress is now the primary "you're making
+  // progress" signal alongside total XP and squad value.)
+  const heroPackProgressPct = Math.round(
+    ((totalXp % packXpCost) / packXpCost) * 100
+  );
   const { collection, refresh: refreshCollection } = usePlayerCollection(
     user?.id
   );
@@ -135,30 +139,34 @@ function DashboardContent() {
             <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg sm:text-xl shrink-0 ring-2 ring-white/15">
               {initials || "?"}
             </div>
-            {/* Name + level */}
+            {/* Name + cumulative XP + progress towards next pack */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <h1 className="text-lg sm:text-xl font-bold truncate">
                   {fullName}
                 </h1>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-800/80 text-xs font-semibold tracking-wide">
-                  <Sparkles className="w-3 h-3" />
-                  Level {xp.level}
+                <span className="text-xs text-white/60">
+                  <span className="font-bold text-white">
+                    {totalXp.toLocaleString()}
+                  </span>{" "}
+                  XP
                 </span>
               </div>
               <div className="mt-3">
                 <div className="h-2 rounded-full bg-white/10 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-[width] duration-500"
-                    style={{ width: `${xp.pct}%` }}
+                    style={{ width: `${heroPackProgressPct}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-white/60 mt-1.5">
-                  <span>{totalXp.toLocaleString()} XP</span>
                   <span>
-                    {xp.toNextLevel > 0
-                      ? `${xp.toNextLevel.toLocaleString()} to Level ${xp.level + 1}`
-                      : "Max level"}
+                    {packsAvailable > 0
+                      ? `🎉 ${packsAvailable} pack${packsAvailable === 1 ? "" : "s"} ready`
+                      : `${xpToNextPack} XP to your next pack`}
+                  </span>
+                  <span className="text-white/40">
+                    Squad value {squadValue}/{squadMax}
                   </span>
                 </div>
               </div>
@@ -318,6 +326,9 @@ function DashboardContent() {
                 </>
               )}
             </section>
+
+            {/* Leaderboard — top 10 ranked by Squad value or XP. */}
+            <Leaderboard defaultSort="squad_value" />
           </div>
         </div>
       </main>

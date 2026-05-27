@@ -16,6 +16,7 @@ import {
   playCheerSound,
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 function shuffle(array) {
   const newArray = [...array];
@@ -31,8 +32,14 @@ export default function MemoryMatch({
   onComplete,
   lessonId,
   stepId,
+  step,
 }) {
   const { isMuted, toggleMute } = useSoundPreference();
+  // Single source of truth for XP: step.xp_reward (lesson JSON) takes
+  // precedence, falling back to the centralised default in
+  // stepTypeDefaults.js (currently 40 for memory_match). Attempts then
+  // scale this base downward rather than overwriting it.
+  const baseXp = getStepXp(step);
 
   // Include stepId in the storage key so two memory_match steps in the same
   // lesson don't share state. Falls back to "default" only when neither is
@@ -211,7 +218,12 @@ export default function MemoryMatch({
             // used at the end of round/lesson elsewhere.
             if (!isMuted) playCheerSound();
             if (onComplete) {
-              const xpEarned = Math.max(50, 100 - attempts * 2);
+              // Apply the attempts penalty as a fraction of baseXp so
+              // editing the lesson's xp_reward scales the whole reward.
+              // 50% floor — no matter how many attempts, the user gets
+              // at least half the step's XP for finishing.
+              const attemptsFactor = Math.max(0.5, 1 - attempts * 0.02);
+              const xpEarned = Math.max(1, Math.round(baseXp * attemptsFactor));
               onComplete(xpEarned);
             }
           }, 1000);

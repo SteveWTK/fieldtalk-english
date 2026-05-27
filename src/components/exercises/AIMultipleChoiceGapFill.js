@@ -22,6 +22,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/components/AuthProvider";
 import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 export default function AIMultipleChoiceGapFill({
   sentences,
@@ -30,7 +31,12 @@ export default function AIMultipleChoiceGapFill({
   englishVariant = "british",
   voiceGender = "male",
   imageUrl = null,
+  step,
 }) {
+  // Single source of truth for XP: step.xp_reward (lesson JSON) takes
+  // precedence; the centralised default in stepTypeDefaults.js fills in
+  // if it's omitted. Attempts and hints scale this base downward.
+  const baseXp = getStepXp(step);
   const { user } = useAuth();
   const { t } = useTranslation(user);
   const { isMuted, toggleMute } = useSoundPreference();
@@ -231,13 +237,18 @@ export default function AIMultipleChoiceGapFill({
 
     if (allAnswered && !completed) {
       setCompleted(true);
-      // Calculate XP based on attempts and hint usage
+      // Penalties applied as fractions of baseXp so that changing the
+      // lesson's xp_reward scales the entire reward. 30% floor — even
+      // with many attempts and hints the user gets a minimum third of
+      // the step's nominal XP for finishing.
       const totalAttempts = Object.values(attempts).reduce((a, b) => a + b, 0);
       const totalHints = Object.values(hintUsage).reduce((a, b) => a + b, 0);
-      const baseXP = 100;
-      const attemptPenalty = Math.min(totalAttempts * 5, 30);
-      const hintPenalty = Math.min(totalHints * 10, 40);
-      const finalXP = Math.max(baseXP - attemptPenalty - hintPenalty, 30);
+      const attemptsFactor = Math.max(0.7, 1 - totalAttempts * 0.05);
+      const hintsFactor = Math.max(0.6, 1 - totalHints * 0.1);
+      const finalXP = Math.max(
+        Math.round(baseXp * 0.3),
+        Math.round(baseXp * attemptsFactor * hintsFactor)
+      );
 
       if (onComplete) {
         setTimeout(() => onComplete(finalXP), 1000);
