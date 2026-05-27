@@ -87,6 +87,51 @@ export function usePlayerCollection(userId) {
   return { collection, loading, refresh };
 }
 
+/**
+ * Returns the set of sticker_ids in the user's most recent pack
+ * opening. The album page uses this to flag "NEW" stickers so the user
+ * can see what they just pulled.
+ *
+ * Bumps when a new pack lands — pass `tickToRefresh` from the parent
+ * (e.g. immediately after PackOpeningModal's onClose) to refresh.
+ */
+export function useLatestPackStickerIds(userId, tickToRefresh = 0) {
+  const [stickerIds, setStickerIds] = useState([]);
+  const [openedAt, setOpenedAt] = useState(null);
+
+  useEffect(() => {
+    if (!userId) {
+      setStickerIds([]);
+      setOpenedAt(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("pack_openings")
+        .select("sticker_ids, opened_at")
+        .eq("player_id", userId)
+        .order("opened_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        setStickerIds([]);
+        setOpenedAt(null);
+      } else {
+        setStickerIds(data.sticker_ids || []);
+        setOpenedAt(data.opened_at || null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, tickToRefresh]);
+
+  return { stickerIds, openedAt };
+}
+
 export function usePackInventory(userId, packXpCost, totalXp) {
   const [packsOpened, setPacksOpened] = useState(0);
   const [loading, setLoading] = useState(true);

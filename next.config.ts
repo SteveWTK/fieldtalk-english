@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
         hostname: "ojxmpejjvwfaxtlmcnuq.supabase.co",
         pathname: "/storage/v1/object/**",
       },
+      // Country flag CDN (CC0). Used by the profile-avatar flag picker
+      // and anywhere else we want a fast flag image without managing
+      // assets ourselves. Swap to a Supabase bucket later if preferred —
+      // see src/lib/flags/wcNations.js (FLAG_URL_BUILDER).
+      {
+        protocol: "https",
+        hostname: "flagcdn.com",
+        pathname: "/**",
+      },
     ],
     // Modern formats: next/image will serve WebP/AVIF when the browser
     // supports them. Older formats fall back automatically.

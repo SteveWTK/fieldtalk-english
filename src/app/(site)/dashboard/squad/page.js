@@ -370,9 +370,11 @@ function SquadPitch({
               e.stopPropagation();
               handleTap(slot);
             }}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl transition-transform ${
+            className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl transition-transform duration-200 ${
               isShaking ? "sq-shake" : ""
-            } ${isFocused ? "z-30 scale-[1.4]" : "z-10"}`}
+            } ${
+              isFocused ? "z-30 scale-[2.4] drop-shadow-2xl" : "z-10"
+            }`}
             style={{ left: pos.left, top: pos.top }}
             aria-label={slot.label}
           >

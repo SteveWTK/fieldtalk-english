@@ -14,6 +14,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import {
   useFullStickerRoster,
   usePlayerCollection,
+  useLatestPackStickerIds,
 } from "@/lib/hooks/useStickerData";
 import StickerCard from "@/components/stickers/StickerCard";
 
@@ -22,6 +23,13 @@ function AlbumContent() {
   const { stickers, loading: rosterLoading } = useFullStickerRoster();
   const { collection, loading: collectionLoading } = usePlayerCollection(
     user?.id
+  );
+  // Stickers in the user's most recent pack opening — rendered with a
+  // green NEW ribbon in the album until they open another pack.
+  const { stickerIds: latestPackIds } = useLatestPackStickerIds(user?.id);
+  const latestPackSet = useMemo(
+    () => new Set(latestPackIds || []),
+    [latestPackIds]
   );
 
   // sticker_id → { quantity } for fast lookup in the grid
@@ -98,14 +106,21 @@ function AlbumContent() {
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   {items.map((sticker) => {
                     const qty = ownedById.get(sticker.id) || 0;
+                    const isFromLatestPack = latestPackSet.has(sticker.id);
                     return (
-                      <StickerCard
-                        key={sticker.id}
-                        sticker={sticker}
-                        owned={qty > 0}
-                        quantity={qty}
-                        size="sm"
-                      />
+                      <div key={sticker.id} className="relative">
+                        <StickerCard
+                          sticker={sticker}
+                          owned={qty > 0}
+                          quantity={qty}
+                          size="sm"
+                        />
+                        {isFromLatestPack && qty > 0 && (
+                          <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide">
+                            NEW
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

@@ -14,7 +14,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useIsWide } from "@/lib/hooks/useIsWide";
+import ProfileEditModal from "@/components/ProfileEditModal";
+import { Pencil } from "lucide-react";
 import Link from "next/link";
 import {
   Trophy,
@@ -67,6 +70,13 @@ function DashboardContent() {
   const { counts: predictionCounts } = usePlayerPredictions(user?.id);
   const squadMax = 55;
   const [packModalOpen, setPackModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  // Local overrides for name + avatar so the hero updates immediately
+  // after the modal saves, without waiting for a full profile refetch.
+  const [profileOverride, setProfileOverride] = useState({
+    full_name: null,
+    avatar_url: null,
+  });
 
   const handlePackModalClose = ({ refetch } = {}) => {
     setPackModalOpen(false);
@@ -79,11 +89,16 @@ function DashboardContent() {
     }
   };
 
+  // Profile override (set when the edit modal saves) wins over the
+  // freshly-loaded profile so the UI updates instantly without a
+  // refetch. Falls through to user_metadata then the email prefix.
   const fullName =
-    profile?.full_name ||
+    (profileOverride.full_name ?? profile?.full_name) ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
     "Player";
+  const avatarUrl =
+    profileOverride.avatar_url ?? profile?.avatar_url ?? "";
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -135,16 +150,43 @@ function DashboardContent() {
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">
           <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg sm:text-xl shrink-0 ring-2 ring-white/15">
-              {initials || "?"}
-            </div>
+            {/* Avatar — image if set, otherwise initials on a gradient. */}
+            <button
+              type="button"
+              onClick={() => setProfileModalOpen(true)}
+              aria-label="Edit profile"
+              className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0 ring-2 ring-white/15 hover:ring-emerald-400 transition-shadow"
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={fullName}
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-blue-700 text-white font-bold text-lg sm:text-xl">
+                  {initials || "?"}
+                </span>
+              )}
+              <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <Pencil className="w-4 h-4" />
+              </span>
+            </button>
             {/* Name + cumulative XP + progress towards next pack */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold truncate">
-                  {fullName}
-                </h1>
+                <button
+                  type="button"
+                  onClick={() => setProfileModalOpen(true)}
+                  className="text-left hover:text-white/90"
+                  aria-label="Edit profile"
+                >
+                  <h1 className="text-lg sm:text-xl font-bold truncate">
+                    {fullName}
+                  </h1>
+                </button>
                 <span className="text-xs text-white/60">
                   <span className="font-bold text-white">
                     {totalXp.toLocaleString()}
@@ -339,6 +381,22 @@ function DashboardContent() {
         open={packModalOpen}
         onClose={handlePackModalClose}
       />
+
+      {/* Profile editor — display name + flag avatar picker. Updates
+          locally via profileOverride so the hero strip refreshes
+          immediately on save. */}
+      <ProfileEditModal
+        open={profileModalOpen}
+        initialName={fullName}
+        initialAvatarUrl={avatarUrl}
+        onClose={() => setProfileModalOpen(false)}
+        onSaved={(next) =>
+          setProfileOverride({
+            full_name: next.full_name ?? "",
+            avatar_url: next.avatar_url ?? "",
+          })
+        }
+      />
     </div>
   );
 }
@@ -413,8 +471,8 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
         return (
           <div
             key={slot.id}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform ${
-              isFocused ? "z-30 scale-[1.35]" : "z-10"
+            className={`absolute -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ${
+              isFocused ? "z-30 scale-[2.2] drop-shadow-2xl" : "z-10"
             }`}
             style={{ left: pos.left, top: pos.top }}
             onClick={(e) => {
