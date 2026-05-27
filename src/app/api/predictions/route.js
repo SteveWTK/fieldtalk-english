@@ -60,6 +60,40 @@ export async function POST(request) {
 
     const supabase = await getSupabaseAdmin();
 
+    // ── Defensive pre-check ──
+    // predictions.player_id references players(id). If the auth user
+    // has no players row (can happen with old test accounts predating
+    // ensure-player), the upsert would 500 with a foreign-key violation.
+    // Surface a clearer message so the caller knows what to fix.
+    const { data: playerRow, error: playerError } = await supabase
+      .from("players")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (playerError) {
+      console.error("[predictions] player lookup error:", playerError);
+      return NextResponse.json(
+        {
+          error: "Could not verify player record",
+          details: {
+            code: playerError.code,
+            hint: playerError.hint,
+            message: playerError.message,
+          },
+        },
+        { status: 500 }
+      );
+    }
+    if (!playerRow) {
+      return NextResponse.json(
+        {
+          error:
+            "No players row for this user. Sign out and back in once so /api/auth/ensure-player can create it, then retry.",
+        },
+        { status: 412 }
+      );
+    }
+
     // Block re-submission once a prediction has been resolved.
     const { data: existing } = await supabase
       .from("predictions")
@@ -86,8 +120,18 @@ export async function POST(request) {
     );
     if (upsertError) {
       console.error("[predictions] upsert error:", upsertError);
+      // Return the full Postgres error shape so the browser console
+      // shows code / hint / details — much faster than digging into
+      // Vercel logs while iterating.
       return NextResponse.json(
-        { error: upsertError.message || "Could not save prediction" },
+        {
+          error: upsertError.message || "Could not save prediction",
+          details: {
+            code: upsertError.code,
+            hint: upsertError.hint,
+            details: upsertError.details,
+          },
+        },
         { status: 500 }
       );
     }
@@ -95,6 +139,12 @@ export async function POST(request) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[predictions] unexpected error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Server error",
+        details: { message: err?.message, stack: err?.stack?.split("\n")[0] },
+      },
+      { status: 500 }
+    );
   }
 }
