@@ -1,13 +1,18 @@
 // components/exercises/AISpeechPractice.js
 import React, { useState, useRef } from "react";
 import { Mic, MicOff, Play, RotateCcw, Pause, Volume2 } from "lucide-react";
+import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 export default function AISpeechPractice({
   // prompt,
   expectedText,
   lessonId,
-  // onComplete,
+  onComplete,
+  step,
 }) {
+  // XP = step's base (from getStepXp) scaled by the AI's overall_score.
+  // 50% floor so any submission still grants something; cap at base.
+  const baseXp = getStepXp(step);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -361,26 +366,33 @@ export default function AISpeechPractice({
             )}
           </div> */}
 
-          {/* <div className="mt-6 flex justify-center space-x-4">
+          <div className="mt-6 flex justify-center gap-3 flex-wrap">
             <button
               onClick={resetRecording}
-              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600"
+              className="bg-gray-500 text-white px-5 py-2.5 rounded-lg hover:bg-gray-600 text-sm sm:text-base"
             >
               Practice Again
             </button>
             {onComplete && (
               <button
                 onClick={() => {
-                  // Award XP based on performance and move to next activity
-                  const xp = Math.max(20, feedback?.overall_score || 50);
+                  // XP = baseXp scaled by overall_score (0-100), with a
+                  // 50% floor so any submission grants something.
+                  const score = Number(feedback?.overall_score) || 0;
+                  const scaled = Math.round(baseXp * (score / 100));
+                  const xp = Math.max(Math.round(baseXp * 0.5), scaled);
                   onComplete(xp);
                 }}
-                className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-semibold"
+                className="bg-emerald-500 hover:bg-emerald-400 text-[#070707] font-bold px-5 py-2.5 rounded-lg text-sm sm:text-base"
               >
-                Continue to Next Activity →
+                Continue →
               </button>
             )}
-          </div> */}
+          </div>
+          {/* Feedback details preserved for future use:
+              {feedback.strengths?.length > 0 && (...) }
+              {feedback.improvements?.length > 0 && (...) }
+              etc. */}
         </div>
       )}
     </div>

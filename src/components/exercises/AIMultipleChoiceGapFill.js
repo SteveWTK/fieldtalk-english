@@ -230,33 +230,36 @@ export default function AIMultipleChoiceGapFill({
       }
     }
 
-    // Check if all complete
-    const allAnswered = sentences.every(
-      (s) => showFeedback[s.id]?.isCorrect || false
-    );
-
-    if (allAnswered && !completed) {
-      setCompleted(true);
-      // Penalties applied as fractions of baseXp so that changing the
-      // lesson's xp_reward scales the entire reward. 30% floor — even
-      // with many attempts and hints the user gets a minimum third of
-      // the step's nominal XP for finishing.
-      const totalAttempts = Object.values(attempts).reduce((a, b) => a + b, 0);
-      const totalHints = Object.values(hintUsage).reduce((a, b) => a + b, 0);
-      const attemptsFactor = Math.max(0.7, 1 - totalAttempts * 0.05);
-      const hintsFactor = Math.max(0.6, 1 - totalHints * 0.1);
-      const finalXP = Math.max(
-        Math.round(baseXp * 0.3),
-        Math.round(baseXp * attemptsFactor * hintsFactor)
-      );
-
-      if (onComplete) {
-        setTimeout(() => onComplete(finalXP), 1000);
-      }
-    }
-
+    // Completion check moved to a useEffect below — running it inline
+    // here read `showFeedback` from STALE state (React batches setState
+    // updates), so the final sentence was never counted as answered and
+    // onComplete never fired. Watching the state instead fixes it.
     return isCorrect;
   };
+
+  // Watch for the "every sentence is correctly answered" state and fire
+  // onComplete (with attempts/hints scaled XP) exactly once.
+  React.useEffect(() => {
+    if (completed) return;
+    if (!sentences || sentences.length === 0) return;
+    const allCorrect = sentences.every(
+      (s) => showFeedback[s.id]?.isCorrect === true
+    );
+    if (!allCorrect) return;
+
+    setCompleted(true);
+    const totalAttempts = Object.values(attempts).reduce((a, b) => a + b, 0);
+    const totalHints = Object.values(hintUsage).reduce((a, b) => a + b, 0);
+    const attemptsFactor = Math.max(0.7, 1 - totalAttempts * 0.05);
+    const hintsFactor = Math.max(0.6, 1 - totalHints * 0.1);
+    const finalXP = Math.max(
+      Math.round(baseXp * 0.3),
+      Math.round(baseXp * attemptsFactor * hintsFactor)
+    );
+    if (onComplete) {
+      setTimeout(() => onComplete(finalXP), 1000);
+    }
+  }, [showFeedback, sentences, completed, attempts, hintUsage, baseXp, onComplete]);
 
   const getAIHint = async (sentenceId, sentence) => {
     const currentHintCount = hintUsage[sentenceId] || 0;

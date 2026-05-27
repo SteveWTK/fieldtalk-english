@@ -1138,6 +1138,7 @@ function DynamicLessonContent() {
               lessonId={lessonId}
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
+              step={currentStepData}
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));

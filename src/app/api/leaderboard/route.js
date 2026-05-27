@@ -29,6 +29,11 @@ export async function GET(request) {
       Math.max(1, Number(url.searchParams.get("limit") || 20)),
       100
     );
+    // Edition scoping. If the request specifies one we honour it; if
+    // not, we default to the caller's own players.edition so the WC2026
+    // dashboard naturally shows the WC2026 leaderboard. Pass
+    // `?edition=all` to bypass the filter entirely (admin use only).
+    const editionParam = url.searchParams.get("edition");
 
     // Auth — identify the caller so we can flag their row.
     const cookieStore = await cookies();
@@ -52,12 +57,30 @@ export async function GET(request) {
 
     const supabase = await getSupabaseAdmin();
 
-    // Pull players + their progress + their squads. Filter out admin
-    // accounts so the leaderboard only ranks actual players.
-    const { data: players, error: playersError } = await supabase
+    // Resolve the edition to filter on. Explicit ?edition=... wins,
+    // otherwise we look at the caller's row. "all" disables filtering.
+    let edition = editionParam;
+    if (!edition && currentUserId) {
+      const { data: me } = await supabase
+        .from("players")
+        .select("edition")
+        .eq("id", currentUserId)
+        .maybeSingle();
+      edition = me?.edition || null;
+    }
+
+    // Pull players + their progress + their squads. Admin accounts are
+    // included on purpose — during the early WC2026 demo they're
+    // legitimate test users and would otherwise vanish from their own
+    // leaderboard. Tighten later by adding .neq("user_type",
+    // "platform_admin") once there's a real player cohort.
+    let playersQuery = supabase
       .from("players")
-      .select("id, full_name, email, user_type")
-      .neq("user_type", "platform_admin");
+      .select("id, full_name, email, user_type, edition");
+    if (edition && edition !== "all") {
+      playersQuery = playersQuery.eq("edition", edition);
+    }
+    const { data: players, error: playersError } = await playersQuery;
     if (playersError) {
       return NextResponse.json(
         { error: playersError.message || "Could not load players" },
@@ -156,7 +179,7 @@ export async function GET(request) {
           }
         : null;
 
-    return NextResponse.json({ entries, you, sort });
+    return NextResponse.json({ entries, you, sort, edition });
   } catch (err) {
     console.error("[leaderboard] unexpected error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
