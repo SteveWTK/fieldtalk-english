@@ -167,6 +167,10 @@ export default function ProfileEditModal({
                   fill
                   sizes="56px"
                   className="object-cover"
+                  // Already sized server-side (≤2MB user upload). Skip
+                  // Vercel's image optimizer so it doesn't burn quota
+                  // re-encoding every fresh upload.
+                  unoptimized
                 />
               </div>
             )}
@@ -248,6 +252,10 @@ export default function ProfileEditModal({
                     fill
                     sizes="80px"
                     className="object-cover"
+                    // 48 small PNGs in a grid — fetch straight from
+                    // source. Optimization gives nothing back here and
+                    // would burn a slot per nation on the Vercel quota.
+                    unoptimized
                   />
                   {isSelected && (
                     <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/40">

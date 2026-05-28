@@ -166,6 +166,11 @@ function DashboardContent() {
                   fill
                   sizes="64px"
                   className="object-cover"
+                  // Avatars are flag PNGs or already-sized uploads — no
+                  // benefit from Vercel's optimizer, and skipping it
+                  // keeps every new sticker / lesson image from
+                  // pushing us past the quota.
+                  unoptimized
                 />
               ) : (
                 <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-blue-700 text-white font-bold text-lg sm:text-xl">
