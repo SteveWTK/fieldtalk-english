@@ -58,26 +58,37 @@ export default function PackOpeningModal({ open, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+      // overflow-y-auto on the outer backdrop lets the user scroll the
+      // 7 revealed cards on tall phones without trapping content above
+      // the fold. items-start + py-* gives the modal a comfortable top
+      // anchor instead of dead-centring an overflowing block.
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm"
       onClick={() => phase !== "opening" && onClose?.({ refetch: phase === "revealed" })}
       role="dialog"
       aria-modal="true"
     >
+      {/* Viewport-fixed close affordance so users on mobile always have
+          a clear way back to Ultimate Team — icon-only is too easy to
+          miss after scrolling through the cards. Sits above the modal
+          via z-[60] so the X stays clickable regardless of scroll. */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose?.({ refetch: phase === "revealed" });
+        }}
+        disabled={phase === "opening"}
+        aria-label="Back to Ultimate Team"
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-[60] inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs sm:text-sm font-semibold border border-white/20 shadow-lg disabled:opacity-30 transition-colors"
+      >
+        <X className="w-4 h-4" />
+        <span>Close</span>
+      </button>
+      <div className="min-h-full flex items-start sm:items-center justify-center p-4 py-12 sm:py-8">
       <div
         className="relative w-full max-w-3xl rounded-2xl bg-[#0b0b0b] border border-white/10 p-5 sm:p-7 text-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close — disabled during the open request so the user can't
-            dismiss mid-write and lose the visual feedback. */}
-        <button
-          type="button"
-          onClick={() => onClose?.({ refetch: phase === "revealed" })}
-          disabled={phase === "opening"}
-          aria-label="Close"
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
 
         {phase === "opening" && (
           <div className="py-16 flex flex-col items-center text-center gap-4">
@@ -166,6 +177,7 @@ export default function PackOpeningModal({ open, onClose }) {
             animation: reveal-stagger 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           }
         `}</style>
+      </div>
       </div>
     </div>
   );

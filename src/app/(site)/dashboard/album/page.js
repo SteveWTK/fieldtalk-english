@@ -6,9 +6,9 @@
 // country, sorted by rating within each group.
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ArrowRightLeft, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import {
@@ -18,12 +18,19 @@ import {
 } from "@/lib/hooks/useStickerData";
 import StickerCard from "@/components/stickers/StickerCard";
 
+// Must stay in sync with XP_PER_RATING on the server route — the
+// number rendered on each trade button reads from this map.
+const TRADE_IN_XP_BY_RATING = { 1: 5, 2: 10, 3: 20, 4: 40, 5: 80 };
+
 function AlbumContent() {
   const { user } = useAuth();
   const { stickers, loading: rosterLoading } = useFullStickerRoster();
-  const { collection, loading: collectionLoading } = usePlayerCollection(
-    user?.id
-  );
+  const { collection, loading: collectionLoading, refresh: refreshCollection } =
+    usePlayerCollection(user?.id);
+  const [pendingId, setPendingId] = useState(null);
+  const [tradingId, setTradingId] = useState(null);
+  const [sessionXp, setSessionXp] = useState(0);
+  const [errorMsg, setErrorMsg] = useState(null);
   // Stickers in the user's most recent pack opening — rendered with a
   // green NEW ribbon in the album until they open another pack.
   const { stickerIds: latestPackIds } = useLatestPackStickerIds(user?.id);
@@ -54,6 +61,43 @@ function AlbumContent() {
   const ownedCount = ownedById.size;
   const totalCount = stickers.length;
   const pct = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
+
+  // Two-click trade-in: first click on a sticker arms the confirm
+  // button; a second click within ~3s commits. Anything else cancels.
+  // Keeps the action deliberate without forcing a modal for every
+  // single dupe.
+  const armConfirm = (stickerId) => {
+    setErrorMsg(null);
+    setPendingId(stickerId);
+    setTimeout(() => {
+      setPendingId((curr) => (curr === stickerId ? null : curr));
+    }, 3000);
+  };
+
+  const handleTradeIn = async (sticker) => {
+    if (!sticker?.id) return;
+    setTradingId(sticker.id);
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/stickers/trade-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sticker_id: sticker.id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErrorMsg(json.error || "Could not trade in sticker");
+        return;
+      }
+      setSessionXp((x) => x + (json.xpAwarded || 0));
+      refreshCollection();
+    } catch {
+      setErrorMsg("Network error — please try again");
+    } finally {
+      setTradingId(null);
+      setPendingId(null);
+    }
+  };
 
   if (rosterLoading || collectionLoading) {
     return (
@@ -86,6 +130,31 @@ function AlbumContent() {
           Sticker Album
         </h1>
 
+        {/* Trade-in helper strip — only renders once the user has earned
+            anything in this session, plus a persistent hint about how
+            it works. */}
+        <div className="flex items-center justify-between gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-xs sm:text-sm">
+          <div className="flex items-center gap-2 text-white/70">
+            <ArrowRightLeft className="w-4 h-4 text-emerald-300" />
+            <span>
+              Got duplicates? Tap{" "}
+              <span className="font-semibold text-emerald-300">+XP</span> on any
+              card you own twice or more to trade one in.
+            </span>
+          </div>
+          {sessionXp > 0 && (
+            <div className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 font-semibold">
+              <Sparkles className="w-3.5 h-3.5" />+{sessionXp} XP this session
+            </div>
+          )}
+        </div>
+
+        {errorMsg && (
+          <div className="rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-xs sm:text-sm px-3 py-2">
+            {errorMsg}
+          </div>
+        )}
+
         {/* Country sections */}
         {grouped.length === 0 ? (
           <p className="text-white/50">No stickers in the roster yet.</p>
@@ -107,8 +176,13 @@ function AlbumContent() {
                   {items.map((sticker) => {
                     const qty = ownedById.get(sticker.id) || 0;
                     const isFromLatestPack = latestPackSet.has(sticker.id);
+                    const canTrade = qty > 1;
+                    const xpForThis =
+                      TRADE_IN_XP_BY_RATING[sticker.rating] || 0;
+                    const isPending = pendingId === sticker.id;
+                    const isTrading = tradingId === sticker.id;
                     return (
-                      <div key={sticker.id} className="relative">
+                      <div key={sticker.id} className="relative flex flex-col items-center">
                         <StickerCard
                           sticker={sticker}
                           owned={qty > 0}
@@ -119,6 +193,37 @@ function AlbumContent() {
                           <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide">
                             NEW
                           </span>
+                        )}
+                        {canTrade && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              isPending
+                                ? handleTradeIn(sticker)
+                                : armConfirm(sticker.id)
+                            }
+                            disabled={isTrading}
+                            className={`mt-1 w-full px-1.5 py-1 rounded-md text-[10px] font-bold leading-tight tracking-wide transition-colors border ${
+                              isPending
+                                ? "bg-emerald-500 hover:bg-emerald-400 text-[#062013] border-emerald-300 animate-pulse"
+                                : "bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-200 border-emerald-500/40"
+                            } disabled:opacity-60 disabled:cursor-wait`}
+                            title={
+                              isPending
+                                ? "Tap to confirm — earns XP, loses one duplicate"
+                                : `Trade one duplicate for +${xpForThis} XP`
+                            }
+                          >
+                            {isTrading ? (
+                              <span className="inline-flex items-center justify-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              </span>
+                            ) : isPending ? (
+                              `Confirm +${xpForThis} XP`
+                            ) : (
+                              `+${xpForThis} XP`
+                            )}
+                          </button>
                         )}
                       </div>
                     );

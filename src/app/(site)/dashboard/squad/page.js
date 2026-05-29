@@ -18,7 +18,10 @@ import Link from "next/link";
 import { ChevronLeft, AlertCircle, Trophy, X } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { usePlayerCollection } from "@/lib/hooks/useStickerData";
+import {
+  usePlayerCollection,
+  useLatestPackStickerIds,
+} from "@/lib/hooks/useStickerData";
 import { usePlayerSquad } from "@/lib/hooks/usePlayerSquad";
 import { getFormation, isPositionCompatible } from "@/lib/squads/squadConfig";
 import { useIsWide } from "@/lib/hooks/useIsWide";
@@ -28,6 +31,14 @@ function SquadBuilderContent() {
   const { user } = useAuth();
   const { collection, loading: collectionLoading } = usePlayerCollection(
     user?.id
+  );
+  // Stickers pulled in the user's most recent pack. We surface a NEW
+  // ribbon on the tray cards so the user can spot fresh pulls when
+  // they jump into the squad builder right after opening a pack.
+  const { stickerIds: latestPackIds } = useLatestPackStickerIds(user?.id);
+  const latestPackSet = useMemo(
+    () => new Set(latestPackIds || []),
+    [latestPackIds]
   );
   const {
     positions,
@@ -226,6 +237,7 @@ function SquadBuilderContent() {
                 if (!sticker) return null;
                 const isPlaced = placedIds.has(sticker.id);
                 const isSelected = selectedStickerId === sticker.id;
+                const isFromLatestPack = latestPackSet.has(sticker.id);
                 return (
                   <button
                     type="button"
@@ -248,6 +260,11 @@ function SquadBuilderContent() {
                       quantity={quantity}
                       size="sm"
                     />
+                    {isFromLatestPack && (
+                      <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide z-10">
+                        NEW
+                      </span>
+                    )}
                     {isPlaced && (
                       <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
                         <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/90 text-[10px] font-bold text-white">

@@ -42,6 +42,11 @@ import {
   getPlayerPreferredLanguage,
 } from "@/lib/supabase/queries";
 import { awardXp } from "@/lib/xp/awardXp";
+import {
+  getResume,
+  setResume,
+  clearResume,
+} from "@/lib/lessons/resume";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -89,6 +94,11 @@ function DynamicLessonContent() {
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [isPlaying, setIsPlaying] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  // How much of `xpEarned` has already been pushed to player_progress.
+  // Increases whenever the mid-lesson "Open pack" CTA fires a partial
+  // commit. Used by handleLessonComplete to avoid double-crediting on
+  // the final completion bump.
+  const [committedXp, setCommittedXp] = useState(0);
   const [startTime] = useState(Date.now());
   const [completing, setCompleting] = useState(false);
 
@@ -170,6 +180,57 @@ function DynamicLessonContent() {
       fetchLesson();
     }
   }, [lessonId, user]);
+
+  // Resume — restore step + already-committed XP if the user previously
+  // left this lesson mid-way (e.g. tapped "Open" on the pack-unlock
+  // banner). Runs once per (user, lesson, lesson-loaded) combo and
+  // bails if there's nothing saved so a normal fresh start still
+  // begins at step 0.
+  //
+  // localStorage gives us the step. We also reconcile with the server
+  // by summing prior "lesson_partial" XP events — that way an opened
+  // pack from a different device still counts as already-committed
+  // and we won't double-credit on completion.
+  const appliedResumeRef = useRef(false);
+  useEffect(() => {
+    if (appliedResumeRef.current) return;
+    if (!user?.id || !lesson?.id) return;
+    appliedResumeRef.current = true;
+
+    const local = getResume(user.id, lesson.id);
+    const supabase = createClient();
+    (async () => {
+      let serverCommitted = 0;
+      try {
+        const { data } = await supabase
+          .from("player_xp_events")
+          .select("amount")
+          .eq("player_id", user.id)
+          .eq("source", "lesson_partial")
+          .eq("source_id", lesson.id);
+        serverCommitted = (data || []).reduce(
+          (sum, r) => sum + (Number(r.amount) || 0),
+          0
+        );
+      } catch (err) {
+        console.warn("[lesson] resume server-check failed:", err);
+      }
+
+      const committed = Math.max(serverCommitted, local?.committedXp || 0);
+      if (committed > 0) {
+        setCommittedXp(committed);
+        setXpEarned(committed);
+      }
+      if (local?.currentStep && local.currentStep > 0) {
+        setCurrentStep(local.currentStep);
+        // Mark all earlier steps as completed so navigation +
+        // progress UI reflect where the user actually was.
+        setCompletedSteps(
+          new Set(Array.from({ length: local.currentStep }, (_, i) => i))
+        );
+      }
+    })();
+  }, [user, lesson]);
 
   // Translation utility function
   const translateContent = async (content, key) => {
@@ -616,6 +677,37 @@ function DynamicLessonContent() {
     }
   };
 
+  // Mid-lesson "Open pack" CTA on the celebration banner. Commit the
+  // XP earned so far (so the unlocked pack is actually available in
+  // the Pack Vault) and stash a localStorage breadcrumb so when the
+  // user comes back to /lesson/[id] we drop them at the same step
+  // they were on instead of step 1.
+  const handleOpenPackMidLesson = async () => {
+    if (!user || !lesson) {
+      router.push("/dashboard");
+      return;
+    }
+    const delta = Math.max(0, xpEarned - committedXp);
+    if (delta > 0) {
+      try {
+        await awardXp({
+          amount: delta,
+          source: "lesson_partial",
+          sourceId: lesson.id,
+          metadata: { current_step: currentStep },
+        });
+      } catch (err) {
+        console.error("[lesson] partial XP commit failed:", err);
+      }
+    }
+    setCommittedXp(xpEarned);
+    setResume(user.id, lesson.id, {
+      currentStep,
+      committedXp: xpEarned,
+    });
+    router.push("/dashboard");
+  };
+
   const handlePrevious = () => {
     setSelectedAnswer("");
     setSelectedAnswers({});
@@ -646,17 +738,26 @@ function DynamicLessonContent() {
           lesson.id,
           Math.round((completedSteps.size / steps.length) * 100),
           xpEarned,
-          Date.now() - startTime
+          Date.now() - startTime,
+          committedXp
         );
         // First-completion gate — re-doing a lesson must not re-grant XP.
-        if (completionResult?.isFirstCompletion) {
+        const additionalXp = Math.max(0, xpEarned - committedXp);
+        if (completionResult?.isFirstCompletion && additionalXp > 0) {
           awardXp({
-            amount: xpEarned,
+            amount: additionalXp,
             source: "lesson_completion",
             sourceId: lesson.id,
-            metadata: { exited_via: destination },
+            metadata: {
+              exited_via: destination,
+              already_committed: committedXp,
+              full_xp: xpEarned,
+            },
             eventOnly: true,
           });
+        }
+        if (completionResult?.isFirstCompletion) {
+          clearResume(user.id, lesson.id);
         }
       } catch (err) {
         console.error("[lesson] save-on-exit failed:", err);
@@ -682,7 +783,8 @@ function DynamicLessonContent() {
         lesson.id,
         Math.round((completedSteps.size / steps.length) * 100),
         xpEarned,
-        durationMs
+        durationMs,
+        committedXp
       );
 
       // Log the lesson-completion XP audit event ONLY when this is the
@@ -690,18 +792,29 @@ function DynamicLessonContent() {
       // re-record the score / time / activity-date but never grant
       // additional XP. eventOnly because markLessonComplete already
       // bumped player_progress.total_xp on first completion.
-      if (completionResult?.isFirstCompletion && xpEarned > 0) {
+      //
+      // The amount logged is the delta — any XP already committed via
+      // a mid-lesson "Open pack" partial commit has its own
+      // lesson_partial event, so totalling player_xp_events still
+      // matches player_progress.total_xp.
+      const additionalXp = Math.max(0, xpEarned - committedXp);
+      if (completionResult?.isFirstCompletion && additionalXp > 0) {
         awardXp({
-          amount: xpEarned,
+          amount: additionalXp,
           source: "lesson_completion",
           sourceId: lesson.id,
           metadata: {
             duration_ms: durationMs,
             completed_steps: completedSteps.size,
             total_steps: steps.length,
+            already_committed: committedXp,
+            full_xp: xpEarned,
           },
           eventOnly: true,
         });
+      }
+      if (completionResult?.isFirstCompletion) {
+        clearResume(user.id, lesson.id);
       }
 
       console.log(
@@ -2883,7 +2996,11 @@ function DynamicLessonContent() {
       {/* Side rail showing live progress toward the next sticker pack.
           Updates as each step's XP is awarded — flashes a celebratory
           state when the user crosses a pack threshold mid-lesson. */}
-      <PackProgressBanner effectiveXp={effectiveXp} packXpCost={packXpCost} />
+      <PackProgressBanner
+        effectiveXp={effectiveXp}
+        packXpCost={packXpCost}
+        onOpenClick={handleOpenPackMidLesson}
+      />
 
       {/* Header */}
       <div className="mb-6">

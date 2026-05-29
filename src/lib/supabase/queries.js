@@ -294,12 +294,20 @@ export async function getPlayerLessonCompletions(playerId) {
 }
 
 // MUCH BETTER ERROR DEBUGGING: Step by step with detailed logging
+//
+// `xpAlreadyAwarded` (default 0) is the amount of `xpEarned` that has
+// already been pushed to player_progress.total_xp before completion —
+// e.g. via a mid-lesson "open pack" partial commit. We still record
+// lesson_completions.xp_earned with the full xpEarned (so the lesson's
+// final score is correct), but the running total only bumps by the
+// remaining delta to avoid double-crediting.
 export async function markLessonComplete(
   playerId,
   lessonId,
   score,
   xpEarned,
-  timeSpent
+  timeSpent,
+  xpAlreadyAwarded = 0
 ) {
   console.log("=== STARTING LESSON COMPLETION ===");
   console.log("Input params:", {
@@ -308,6 +316,7 @@ export async function markLessonComplete(
     score,
     xpEarned,
     timeSpent,
+    xpAlreadyAwarded,
   });
 
   try {
@@ -323,8 +332,17 @@ export async function markLessonComplete(
       .maybeSingle();
 
     const isFirstCompletion = !existingCompletion;
-    const xpToAward = isFirstCompletion ? xpEarned : 0;
-    console.log("First completion?", isFirstCompletion, "XP awarded:", xpToAward);
+    // Net XP to apply to player_progress on first completion. Already-
+    // committed XP (e.g. mid-lesson pack unlock) is subtracted so it
+    // isn't double-counted; never goes negative.
+    const xpDelta = Math.max(0, xpEarned - (xpAlreadyAwarded || 0));
+    const xpToAward = isFirstCompletion ? xpDelta : 0;
+    console.log(
+      "First completion?",
+      isFirstCompletion,
+      "XP delta to add to total:",
+      xpToAward
+    );
 
     // Step 1: Upsert lesson completion. On re-do we keep the original
     // xp_earned value (we don't overwrite it with 0).
@@ -382,10 +400,12 @@ export async function markLessonComplete(
 
       if (progressFetchError.code === "PGRST116") {
         console.log("No progress record found, will create new one...");
-        // Create new progress record
+        // Create new progress record. We use xpToAward (the delta after
+        // subtracting any already-committed partial XP) rather than the
+        // raw xpEarned for the same anti-double-count reason.
         const newProgressData = {
           player_id: playerId,
-          total_xp: xpEarned,
+          total_xp: xpToAward,
           current_level: 1,
           survival_progress: 0,
           precision_progress: 0,
@@ -420,7 +440,7 @@ export async function markLessonComplete(
           completion: completionData,
           progress: newProgress,
           isFirstCompletion: true,
-          xpAwarded: xpEarned,
+          xpAwarded: xpToAward,
         };
       } else {
         throw progressFetchError;
@@ -432,7 +452,10 @@ export async function markLessonComplete(
     // Step 3: Calculate new progress values
     console.log("Step 3: Calculating new progress values...");
     const currentXp = currentProgress?.total_xp || 0;
-    const newTotalXp = currentXp + xpEarned;
+    // Bump by the *delta* — partial XP from a mid-lesson pack unlock
+    // was already added when the user clicked Open, so we add only
+    // what hasn't been credited yet.
+    const newTotalXp = currentXp + xpToAward;
     const newLevel = Math.floor(newTotalXp / 500) + 1;
     const today = new Date().toISOString().split("T")[0];
 
@@ -494,7 +517,7 @@ export async function markLessonComplete(
       completion: completionData,
       progress: progressResult,
       isFirstCompletion: true,
-      xpAwarded: xpEarned,
+      xpAwarded: xpToAward,
     };
   } catch (error) {
     console.error("❌ LESSON COMPLETION FAILED:", {

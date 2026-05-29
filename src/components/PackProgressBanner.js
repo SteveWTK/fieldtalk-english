@@ -27,6 +27,11 @@ import { Package, Sparkles, X } from "lucide-react";
 export default function PackProgressBanner({
   effectiveXp = 0,
   packXpCost = 200,
+  // Optional click handler for the celebration "Open" CTA. When given,
+  // we use a <button> so the parent can commit partial XP, persist
+  // resume state, etc. before navigating. Falls back to a Link to
+  // /dashboard so this component still works standalone.
+  onOpenClick,
 }) {
   const cost = Math.max(1, Number(packXpCost) || 200);
   const xp = Math.max(0, Number(effectiveXp) || 0);
@@ -79,12 +84,22 @@ export default function PackProgressBanner({
               7 fresh stickers waiting in your Ultimate Team
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="shrink-0 px-3 py-2 rounded-full bg-[#062013] hover:bg-black text-white text-xs sm:text-sm font-bold tracking-wide"
-          >
-            Open →
-          </Link>
+          {onOpenClick ? (
+            <button
+              type="button"
+              onClick={onOpenClick}
+              className="shrink-0 px-3 py-2 rounded-full bg-[#062013] hover:bg-black text-white text-xs sm:text-sm font-bold tracking-wide"
+            >
+              Open →
+            </button>
+          ) : (
+            <Link
+              href="/dashboard"
+              className="shrink-0 px-3 py-2 rounded-full bg-[#062013] hover:bg-black text-white text-xs sm:text-sm font-bold tracking-wide"
+            >
+              Open →
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setDismissed(true)}
