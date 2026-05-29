@@ -11,10 +11,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Sparkles, Package } from "lucide-react";
+import Link from "next/link";
+import { X, Sparkles, Package, ArrowRight } from "lucide-react";
 import StickerCard from "./StickerCard";
 
-export default function PackOpeningModal({ open, onClose }) {
+/**
+ * resumeAction — optional `{ href, label }` set by the dashboard when
+ * the user arrived here via the mid-lesson "Open" banner. Surfaces a
+ * primary "Resume lesson" CTA after the reveal so they can hop back
+ * to their exact step without scanning the page.
+ */
+export default function PackOpeningModal({ open, onClose, resumeAction }) {
   const [phase, setPhase] = useState("opening"); // opening | revealed | error
   const [stickers, setStickers] = useState([]);
   const [packsRemaining, setPacksRemaining] = useState(0);
@@ -140,14 +147,37 @@ export default function PackOpeningModal({ open, onClose }) {
               ))}
             </div>
 
-            <div className="mt-6 flex justify-center">
-              <button
-                type="button"
-                onClick={() => onClose?.({ refetch: true })}
-                className="px-6 py-2.5 rounded-full bg-white text-[#070707] font-bold text-sm tracking-wide hover:scale-[1.02] transition-transform"
-              >
-                Done
-              </button>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3 items-center justify-center">
+              {resumeAction?.href ? (
+                <>
+                  {/* Resume becomes the *primary* action when the user
+                      came from a mid-lesson pack unlock — that's the
+                      flow they're most likely to want to continue. */}
+                  <Link
+                    href={resumeAction.href}
+                    onClick={() => onClose?.({ refetch: true })}
+                    className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold text-sm tracking-wide transition-colors order-1 sm:order-2"
+                  >
+                    {resumeAction.label || "Resume lesson"}
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => onClose?.({ refetch: true })}
+                    className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-semibold text-sm tracking-wide transition-colors order-2 sm:order-1"
+                  >
+                    Stay in Ultimate Team
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onClose?.({ refetch: true })}
+                  className="px-6 py-2.5 rounded-full bg-white text-[#070707] font-bold text-sm tracking-wide hover:scale-[1.02] transition-transform"
+                >
+                  Done
+                </button>
+              )}
             </div>
           </>
         )}

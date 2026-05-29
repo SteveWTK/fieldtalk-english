@@ -199,7 +199,11 @@ function AlbumContent() {
                           size="sm"
                         />
                         {isFromLatestPack && qty > 0 && (
-                          <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide">
+                          // Top-right matches the Pack Opened modal so
+                          // the badge feels consistent across surfaces,
+                          // and avoids covering the position badge in
+                          // the card's top-left corner.
+                          <span className="absolute -top-1 right-0 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide">
                             NEW
                           </span>
                         )}

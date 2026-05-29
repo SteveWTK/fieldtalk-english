@@ -13,12 +13,13 @@
 // exists; placeholders are explicit so it's obvious what's coming next.
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useIsWide } from "@/lib/hooks/useIsWide";
 import ProfileEditModal from "@/components/ProfileEditModal";
-import { Pencil } from "lucide-react";
+import { Pencil, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Trophy,
   Package,
@@ -29,6 +30,7 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { listResumes } from "@/lib/lessons/resume";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAppSettings } from "@/lib/hooks/useAppSettings";
 import {
@@ -45,8 +47,16 @@ import StickerCard from "@/components/stickers/StickerCard";
 function DashboardContent() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { profile, progress, loading } = usePlayerDashboard(user?.id);
   const { settings } = useAppSettings();
+  // Pending lesson resume — populated from localStorage. When set we
+  // surface a "Resume your lesson" CTA at the top of the dashboard
+  // AND (when the pack modal closes) a follow-up button inside it,
+  // so a user who came here via the mid-lesson "Open" banner has
+  // multiple obvious paths back to where they were.
+  const [pendingResume, setPendingResume] = useState(null);
 
   const totalXp = progress?.total_xp || 0;
   const packXpCost = settings?.pack_xp_cost || 200;
@@ -90,6 +100,33 @@ function DashboardContent() {
       refreshCollection();
     }
   };
+
+  // Read any resumable lesson once the user is known. Re-runs after a
+  // pack modal close so when the user finishes opening their reveal
+  // the "Resume your lesson" banner reflects the (possibly cleared)
+  // state without needing a hard refresh.
+  useEffect(() => {
+    if (!user?.id) {
+      setPendingResume(null);
+      return;
+    }
+    const list = listResumes(user.id);
+    setPendingResume(list[0] || null);
+  }, [user, packModalOpen]);
+
+  // Auto-open the pack modal when the lesson page sends us here via
+  // ?openPack=1. We strip the param afterwards so a refresh doesn't
+  // re-trigger the open.
+  useEffect(() => {
+    if (!searchParams) return;
+    if (searchParams.get("openPack") !== "1") return;
+    setPackModalOpen(true);
+    router.replace("/dashboard");
+  }, [searchParams, router]);
+
+  const resumeHref = pendingResume
+    ? `/lesson/${pendingResume.lessonId}`
+    : null;
 
   // Profile override (set when the edit modal saves) wins over the
   // freshly-loaded profile so the UI updates instantly without a
@@ -148,6 +185,38 @@ function DashboardContent() {
             Back to lessons
           </Link>
         </div>
+
+        {/* Resume-lesson banner — appears whenever the user has an
+            in-flight lesson saved (typically because they opened a
+            mid-lesson sticker pack). Gives them a one-tap path back
+            to the exact step they were on, instead of having to find
+            the lesson again from the lesson list. */}
+        {pendingResume && resumeHref && (
+          <Link
+            href={resumeHref}
+            className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-transparent border border-emerald-400/40 hover:border-emerald-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="shrink-0 w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-emerald-200" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-wider text-emerald-200/80 font-semibold">
+                  Pick up where you left off
+                </p>
+                <p className="text-sm sm:text-base font-bold text-white truncate">
+                  {pendingResume.lessonTitle
+                    ? `Resume — ${pendingResume.lessonTitle}`
+                    : "Resume your lesson"}
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500 group-hover:bg-emerald-400 text-[#062013] text-xs sm:text-sm font-bold tracking-wide">
+              Resume
+              <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
+        )}
 
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">
@@ -397,6 +466,16 @@ function DashboardContent() {
       <PackOpeningModal
         open={packModalOpen}
         onClose={handlePackModalClose}
+        resumeAction={
+          pendingResume && resumeHref
+            ? {
+                href: resumeHref,
+                label: pendingResume.lessonTitle
+                  ? `Resume — ${pendingResume.lessonTitle}`
+                  : "Resume lesson",
+              }
+            : null
+        }
       />
 
       {/* Profile editor — display name + flag avatar picker. Updates
@@ -442,43 +521,50 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
   };
 
   return (
+    // Outer container is NOT overflow-hidden — that's what lets a
+    // focused (md-sized) card spill past the pitch boundary near a
+    // corner slot instead of getting clipped. The pitch SVG art is
+    // clipped by an inner rounded layer; the slot layer sits above
+    // it with overflow:visible.
     <div
-      className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md"
+      className="relative w-full mx-auto"
       style={{
         aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
         maxWidth: isHorizontal ? "100%" : "360px",
       }}
       onClick={() => setFocusedSlotId(null)}
     >
-      {isHorizontal ? (
-        <svg
-          viewBox="0 0 140 100"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        >
-          <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
-          <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
-          <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-        </svg>
-      ) : (
-        <svg
-          viewBox="0 0 100 140"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        >
-          <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
-          <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
-          <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-        </svg>
-      )}
+      <div className="absolute inset-0 rounded-xl overflow-hidden shadow-md">
+        {isHorizontal ? (
+          <svg
+            viewBox="0 0 140 100"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          >
+            <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
+            <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
+            <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 100 140"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          >
+            <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
+            <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
+            <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          </svg>
+        )}
+      </div>
 
       {formationConfig.slots.map((slot) => {
         const pos = transform(slot);

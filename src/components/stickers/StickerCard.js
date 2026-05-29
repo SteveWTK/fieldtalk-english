@@ -63,18 +63,33 @@ export default function StickerCard({
       title={`${sticker.name} — ${sticker.country} — ${rarity.label}`}
     >
       {sticker.image_url ? (
-        <Image
-          src={sticker.image_url}
-          alt={sticker.name}
-          fill
-          sizes="200px"
-          className="object-cover"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
+        <>
+          <Image
+            src={sticker.image_url}
+            alt={sticker.name}
+            fill
+            sizes="200px"
+            className="object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+          {/* Image cards keep the absolute star strip — the gradient
+              over the artwork is what makes the stars legible. */}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 px-1 pb-0.5 bg-gradient-to-t from-black/70 to-transparent pt-2">
+            {stars.map((on, i) => (
+              <Star
+                key={i}
+                className={`w-2.5 h-2.5 ${on ? "fill-yellow-400 text-yellow-400" : "text-white/30"}`}
+              />
+            ))}
+          </div>
+        </>
       ) : (
         // Fallback art: full country colour with shirt number + name.
+        // The stars are a flex item at the END of the column rather
+        // than an absolute overlay, so the country-code text never
+        // gets covered by them — that bug was very visible at md/lg.
         <div
           className="absolute inset-0 flex flex-col"
           style={{ backgroundColor: palette.primary, color: palette.text }}
@@ -92,7 +107,7 @@ export default function StickerCard({
           </div>
           {/* Name + country code */}
           <div
-            className="px-1.5 py-1 border-t"
+            className="px-1.5 pt-1 border-t"
             style={{ borderColor: palette.secondary }}
           >
             <p
@@ -106,18 +121,18 @@ export default function StickerCard({
               {sticker.country_code}
             </p>
           </div>
+          {/* Stars row — sits below the country code as part of the
+              flex column so the two never overlap regardless of size. */}
+          <div className="flex justify-center gap-0.5 px-1 py-0.5 bg-black/20">
+            {stars.map((on, i) => (
+              <Star
+                key={i}
+                className={`w-2.5 h-2.5 ${on ? "fill-yellow-400 text-yellow-400" : "text-white/30"}`}
+              />
+            ))}
+          </div>
         </div>
       )}
-
-      {/* Rating stars across the bottom */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 px-1 pb-0.5 bg-gradient-to-t from-black/70 to-transparent pt-2">
-        {stars.map((on, i) => (
-          <Star
-            key={i}
-            className={`w-2.5 h-2.5 ${on ? "fill-yellow-400 text-yellow-400" : "text-white/30"}`}
-          />
-        ))}
-      </div>
 
       {/* Position badge — top-left */}
       <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/65 text-white text-[10px] font-bold tracking-wide">

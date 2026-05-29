@@ -704,8 +704,12 @@ function DynamicLessonContent() {
     setResume(user.id, lesson.id, {
       currentStep,
       committedXp: xpEarned,
+      lessonTitle: lesson.title || null,
     });
-    router.push("/dashboard");
+    // ?openPack=1 tells the dashboard to auto-open the pack modal so
+    // the user lands directly on the reveal instead of having to find
+    // the "Open a pack" button in the Pack Vault tile.
+    router.push("/dashboard?openPack=1");
   };
 
   const handlePrevious = () => {

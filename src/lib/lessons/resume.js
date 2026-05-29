@@ -7,10 +7,12 @@
 // The XP itself is committed on the server when the user leaves —
 // look up player_xp_events with source="lesson_partial" to see what
 // has already been credited. This file only tracks the *step* + a
-// quick echo of the committed amount so the resume restore is cheap.
+// quick echo of the committed amount + the lesson title for UI labels
+// so the dashboard can prompt "Resume your lesson — <title>".
 "use client";
 
-const KEY = (userId, lessonId) => `ft_lesson_resume_${userId}_${lessonId}`;
+const PREFIX = (userId) => `ft_lesson_resume_${userId}_`;
+const KEY = (userId, lessonId) => `${PREFIX(userId)}${lessonId}`;
 
 export function getResume(userId, lessonId) {
   if (typeof window === "undefined" || !userId || !lessonId) return null;
@@ -22,6 +24,7 @@ export function getResume(userId, lessonId) {
     return {
       currentStep: Number.isFinite(parsed.currentStep) ? parsed.currentStep : 0,
       committedXp: Number.isFinite(parsed.committedXp) ? parsed.committedXp : 0,
+      lessonTitle: typeof parsed.lessonTitle === "string" ? parsed.lessonTitle : null,
       savedAt: Number.isFinite(parsed.savedAt) ? parsed.savedAt : 0,
     };
   } catch {
@@ -29,7 +32,11 @@ export function getResume(userId, lessonId) {
   }
 }
 
-export function setResume(userId, lessonId, { currentStep, committedXp }) {
+export function setResume(
+  userId,
+  lessonId,
+  { currentStep, committedXp, lessonTitle }
+) {
   if (typeof window === "undefined" || !userId || !lessonId) return;
   try {
     window.localStorage.setItem(
@@ -37,6 +44,7 @@ export function setResume(userId, lessonId, { currentStep, committedXp }) {
       JSON.stringify({
         currentStep: Number(currentStep) || 0,
         committedXp: Number(committedXp) || 0,
+        lessonTitle: typeof lessonTitle === "string" ? lessonTitle : null,
         savedAt: Date.now(),
       })
     );
@@ -53,4 +61,40 @@ export function clearResume(userId, lessonId) {
   } catch {
     // ignore
   }
+}
+
+/**
+ * List every resumable lesson for this user, newest first. Used by
+ * the dashboard so we can surface a "Resume your lesson" banner /
+ * post-pack-open CTA without having to know the lesson id up front.
+ */
+export function listResumes(userId) {
+  if (typeof window === "undefined" || !userId) return [];
+  const prefix = PREFIX(userId);
+  const out = [];
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const lessonId = key.slice(prefix.length);
+      try {
+        const parsed = JSON.parse(window.localStorage.getItem(key));
+        if (!parsed || typeof parsed !== "object") continue;
+        out.push({
+          lessonId,
+          currentStep: Number(parsed.currentStep) || 0,
+          committedXp: Number(parsed.committedXp) || 0,
+          lessonTitle:
+            typeof parsed.lessonTitle === "string" ? parsed.lessonTitle : null,
+          savedAt: Number(parsed.savedAt) || 0,
+        });
+      } catch {
+        // Skip malformed entries.
+      }
+    }
+  } catch {
+    return [];
+  }
+  out.sort((a, b) => b.savedAt - a.savedAt);
+  return out;
 }

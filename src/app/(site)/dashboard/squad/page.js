@@ -261,7 +261,11 @@ function SquadBuilderContent() {
                       size="sm"
                     />
                     {isFromLatestPack && (
-                      <span className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide z-10">
+                      // Top-right corner of the sm-sized tray card,
+                      // matching the Pack Opened modal placement so
+                      // the badge sits in the same spot wherever a
+                      // user sees a freshly-pulled sticker.
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide z-10">
                         NEW
                       </span>
                     )}
@@ -330,43 +334,49 @@ function SquadPitch({
   };
 
   return (
+    // Outer pitch is overflow-visible so a focused (md-sized) card on
+    // a corner slot can spill into the page background instead of
+    // being clipped at the rounded edge. The pitch art + border are
+    // clipped by an inner rounded layer underneath.
     <div
-      className="relative w-full mx-auto rounded-2xl overflow-hidden shadow-md border border-white/10"
+      className="relative w-full mx-auto"
       style={{
         aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
         maxWidth: isHorizontal ? "880px" : "440px",
       }}
       onClick={() => setFocusedSlotId(null)}
     >
-      {isHorizontal ? (
-        <svg
-          viewBox="0 0 140 100"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        >
-          <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
-          <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
-          <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-        </svg>
-      ) : (
-        <svg
-          viewBox="0 0 100 140"
-          preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        >
-          <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
-          <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
-          <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-          <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-        </svg>
-      )}
+      <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-md border border-white/10">
+        {isHorizontal ? (
+          <svg
+            viewBox="0 0 140 100"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          >
+            <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
+            <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
+            <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 100 140"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          >
+            <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
+            <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
+            <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+          </svg>
+        )}
+      </div>
 
       {slots.map((slot) => {
         const pos = transform(slot);
