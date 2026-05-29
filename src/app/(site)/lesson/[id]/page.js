@@ -76,6 +76,38 @@ import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
 import Link from "next/link";
 
+// Step types where Next is gated on the user having interacted with
+// the step at least once (mark complete via onComplete / checkAnswer
+// / setCompletedSteps). Anything not listed here — vocabulary,
+// scenarios, cultural insights, plain content, video, etc. — is
+// treated as informational so the user can move on whenever they
+// like. The list is a *whitelist* on purpose: a missing step type
+// defaults to "Next enabled" so we never strand users on an
+// unfinishable step.
+const ATTEMPT_REQUIRED_TYPES = new Set([
+  "gap_fill",
+  "gap_fill_advanced",
+  "situational",
+  "situational_challenges",
+  "ai_writing",
+  "ai_conversation",
+  "ai_gap_fill",
+  "ai_listening_challenge",
+  "ai_speech_practice",
+  "memory_match",
+  "interactive_pitch",
+  "interactive_game",
+  "audio_recognition",
+  "audio_comprehension",
+  "drag_drop_formation",
+  "interactive_pitch_formation",
+  "interactive_game_formation",
+  "timeline_drag",
+  "drag_drop_vocab",
+  "drag_drop_groups",
+  "conversation_vote",
+]);
+
 function DynamicLessonContent() {
   const params = useParams();
   const router = useRouter();
@@ -2213,6 +2245,11 @@ function DynamicLessonContent() {
           <DragDropGroups
             key={`ddgroups-${currentStepData.id || currentStep}`}
             step={currentStepData}
+            // Namespacing the prediction row with the lesson id prevents
+            // two lessons that reuse the same step.id (e.g. authored as
+            // "predict-the-finish" in both) from sharing a single
+            // predictions row and showing the wrong saved state.
+            lessonId={lesson?.id}
             userLanguage={userLanguage}
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
@@ -3133,33 +3170,60 @@ function DynamicLessonContent() {
           )}
         </div> */}
 
-        <button
-          onClick={
-            currentStep === steps.length - 1 ? handleLessonComplete : handleNext
-          }
-          disabled={
+        {(() => {
+          // Per-step attempt gate. "Attempted" === marked complete in
+          // completedSteps (every interactive step pushes the index
+          // there on submit/place/finish), so going back to a step
+          // already done leaves Next unlocked.
+          const isAttemptRequired = ATTEMPT_REQUIRED_TYPES.has(
+            currentStepData?.type
+          );
+          const hasAttempted = completedSteps.has(currentStep);
+          const nextBlockedByAttempt =
+            isAttemptRequired && !hasAttempted &&
+            currentStep < steps.length - 1;
+          const disabled =
             completing ||
+            nextBlockedByAttempt ||
             (currentStep === steps.length - 1 &&
-              currentStepData?.type !== "completion")
-          }
-          className="flex items-center space-x-2 px-6 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {completing ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{t("completing")}</span>
-            </>
-          ) : (
-            <>
-              {/* <span>
-                {currentStep === steps.length - 1
-                  ? t("complete_lesson")
-                  : t("next_activity")}
-              </span> */}
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+              currentStepData?.type !== "completion");
+          return (
+            <div className="flex flex-col items-end gap-1">
+              {nextBlockedByAttempt && (
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  {userLanguage === "pt"
+                    ? "Faça uma tentativa para continuar"
+                    : "Have a go at this step to continue"}
+                </p>
+              )}
+              <button
+                onClick={
+                  currentStep === steps.length - 1
+                    ? handleLessonComplete
+                    : handleNext
+                }
+                disabled={disabled}
+                className="flex items-center space-x-2 px-6 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {completing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>{t("completing")}</span>
+                  </>
+                ) : (
+                  <>
+                    {/* <span>
+                      {currentStep === steps.length - 1
+                        ? t("complete_lesson")
+                        : t("next_activity")}
+                    </span> */}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

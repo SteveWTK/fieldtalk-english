@@ -1,7 +1,7 @@
 // components/exercises/DragDropGroups.js
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import {
   RotateCcw,
@@ -51,16 +51,40 @@ export default function DragDropGroups({
   step,
   onComplete,
   userLanguage = "en",
+  // Optional — when provided, predictions are stored under a key
+  // namespaced with the lesson id so two lessons that happen to use
+  // the same step.id (e.g. "predict-the-finish") don't clobber each
+  // other's prediction rows.
+  lessonId,
 }) {
   const config = step?.groups_config || {};
   const containers = config.containers || [];
-  const cards = config.cards || [];
+  const rawCards = config.cards || [];
   const validation =
     config.validation === "match_group" ? "match_group" : "free";
   const baseXp = getStepXp(step);
   const isPortuguese = userLanguage === "pt";
   const { isMuted, toggleMute } = useSoundPreference();
   const { user } = useAuth();
+
+  // Stable, randomised order of cards for the tray. Fisher-Yates,
+  // recomputed only when the step itself changes so the order doesn't
+  // jitter on every re-render. Both match-group and free-validation
+  // steps benefit — for "Which group?" it forces the user to read the
+  // labels, for predictions it just feels less rote.
+  const cards = useMemo(() => {
+    const arr = Array.isArray(rawCards) ? [...rawCards] : [];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step?.id]);
+
+  // Prediction key = lesson::step. Falls back to the bare step.id when
+  // no lessonId is passed so existing rows / older callers keep working.
+  const predictionStepKey = lessonId && step?.id ? `${lessonId}::${step.id}` : step?.id;
 
   // Prediction-step flag: explicit step-level toggle OR (defensive)
   // inside groups_config. When set, the user commits via a Save button
@@ -163,7 +187,7 @@ export default function DragDropGroups({
       setRestoring(false);
       return;
     }
-    if (!user?.id || !step?.id) {
+    if (!user?.id || !predictionStepKey) {
       setRestoring(false);
       return;
     }
@@ -175,7 +199,7 @@ export default function DragDropGroups({
           .from("predictions")
           .select("data, deadline_at")
           .eq("player_id", user.id)
-          .eq("step_id", step.id)
+          .eq("step_id", predictionStepKey)
           .maybeSingle();
         if (cancelled) return;
         if (error) {
@@ -205,7 +229,7 @@ export default function DragDropGroups({
     return () => {
       cancelled = true;
     };
-  }, [isPredictionStep, user?.id, step?.id]);
+  }, [isPredictionStep, user?.id, predictionStepKey]);
 
   // Non-prediction steps: completion fires automatically when all
   // cards are correctly placed. (Prediction-step completion fires on
@@ -353,7 +377,7 @@ export default function DragDropGroups({
   // placement, so the user has room to reset and rearrange until they
   // tap Save. Allows re-save (with new placements) until the deadline.
   const handleSavePrediction = async () => {
-    if (!step?.id) return;
+    if (!predictionStepKey) return;
     if (isLocked) return;
     setSubmitting(true);
     setSaveError(null);
@@ -369,7 +393,7 @@ export default function DragDropGroups({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          step_id: step.id,
+          step_id: predictionStepKey,
           prediction_type: step.prediction_type || "group_finish",
           deadline_at: stepDeadlineIso, // server preserves existing if already set
           data: {
