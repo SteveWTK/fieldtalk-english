@@ -22,6 +22,7 @@ const PALETTES = {
   mex: { primary: "#006847", secondary: "#CE1126", text: "#FFFFFF" },
   usa: { primary: "#3C3B6E", secondary: "#B22234", text: "#FFFFFF" },
   can: { primary: "#FF0000", secondary: "#FFFFFF", text: "#FFFFFF" },
+  por: { primary: "#006600", secondary: "#FF0000", text: "#FFFFFF" },
 
   // ──────────────────────────────────────────────────────────────────────
   // GROUP A — Mexico (already), South Korea, South Africa, Czech Republic
