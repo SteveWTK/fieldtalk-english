@@ -1,13 +1,14 @@
 // src/components/Leaderboard.js
 //
 // Top-N leaderboard tile, used on the Ultimate Team dashboard.
-// Two ranking modes via a small toggle:
+// Three ranking modes via a small toggle:
 //   - "squad"  → by squad value (sum of placed sticker ratings)
 //   - "xp"     → by total XP accumulated
+//   - "album"  → by % of the active sticker roster collected
 //
-// Always shows both metrics in each row so the user can see where they
-// stand on the other ranking too. If the user isn't in the visible top
-// slice, an extra "you" row appears at the bottom showing their rank.
+// Each row shows the primary metric prominently plus one secondary
+// number for context. If the user isn't in the visible top slice, an
+// extra "you" row appears at the bottom showing their rank.
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -61,7 +62,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
           <Trophy className="w-3.5 h-3.5" />
           Leaderboard
         </div>
-        {/* Tiny mode toggle — square pill with two states. */}
+        {/* Tiny mode toggle — square pill with three states. */}
         <div className="flex rounded-full bg-white/5 p-0.5 text-[10px] sm:text-xs">
           <button
             type="button"
@@ -84,6 +85,17 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
             }`}
           >
             XP
+          </button>
+          <button
+            type="button"
+            onClick={() => setSort("album")}
+            className={`px-2 py-1 rounded-full font-semibold transition-colors ${
+              sort === "album"
+                ? "bg-emerald-500 text-[#070707]"
+                : "text-white/60 hover:text-white"
+            }`}
+          >
+            Album
           </button>
         </div>
       </div>
@@ -122,15 +134,31 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
 }
 
 function LeaderboardRow({ entry, primary }) {
-  const { rank, name, totalXp, squadValue, isYou } = entry;
-  const primaryValue =
-    primary === "squad_value"
-      ? `${squadValue}`
-      : totalXp.toLocaleString();
-  const secondaryLabel =
-    primary === "squad_value"
-      ? `${totalXp.toLocaleString()} XP`
-      : `Squad ${squadValue}`;
+  const {
+    rank,
+    name,
+    totalXp,
+    squadValue,
+    albumOwned = 0,
+    albumTotal = 0,
+    albumPct = 0,
+    isYou,
+  } = entry;
+  // Primary = the big number on the right (the metric we're sorting on).
+  // Secondary = a quieter context line below it. For album we surface
+  // the "X / Y" raw count so the user can see absolute progress too.
+  let primaryValue;
+  let secondaryLabel;
+  if (primary === "squad_value") {
+    primaryValue = `${squadValue}`;
+    secondaryLabel = `${totalXp.toLocaleString()} XP`;
+  } else if (primary === "album") {
+    primaryValue = `${albumPct}%`;
+    secondaryLabel = `${albumOwned}/${albumTotal} collected`;
+  } else {
+    primaryValue = totalXp.toLocaleString();
+    secondaryLabel = `Squad ${squadValue}`;
+  }
 
   return (
     <li

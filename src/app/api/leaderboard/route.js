@@ -1,20 +1,22 @@
 // src/app/api/leaderboard/route.js
 //
-// Returns the top players ranked by either squad value or total XP.
-// Uses the admin client to read across all users (RLS keeps player_xp
-// and squad rows private otherwise). The current user's row is flagged
-// in the response so the UI can highlight it even if they aren't in
-// the visible top slice.
+// Returns the top players ranked by squad value, total XP, or
+// album-completion percentage. Uses the admin client to read across
+// all users (RLS keeps player_xp and squad rows private otherwise).
+// The current user's row is flagged in the response so the UI can
+// highlight it even if they aren't in the visible top slice.
 //
 // Query params:
-//   sort=squad_value | xp   (default "squad_value")
-//   limit=20                (default 20, max 100)
+//   sort=squad_value | xp | album   (default "squad_value")
+//   limit=20                        (default 20, max 100)
 //
 // Response:
 //   {
-//     entries: [{ id, name, totalXp, squadValue, isYou }],
-//     you?:    { rank, totalXp, squadValue }      // when current user
-//                                                     isn't in the slice
+//     entries: [{ id, name, totalXp, squadValue, albumOwned,
+//                 albumTotal, albumPct, isYou }],
+//     you?:    { rank, totalXp, squadValue, albumOwned,
+//                albumTotal, albumPct }   // when current user isn't
+//                                            in the visible slice
 //   }
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
@@ -24,7 +26,9 @@ import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 export async function GET(request) {
   try {
     const url = new URL(request.url);
-    const sort = url.searchParams.get("sort") === "xp" ? "xp" : "squad_value";
+    const sortRaw = url.searchParams.get("sort");
+    const sort =
+      sortRaw === "xp" || sortRaw === "album" ? sortRaw : "squad_value";
     const limit = Math.min(
       Math.max(1, Number(url.searchParams.get("limit") || 20)),
       100
@@ -93,23 +97,37 @@ export async function GET(request) {
 
     const playerIds = players.map((p) => p.id);
 
-    const [progressRes, squadsRes, stickerRes] = await Promise.all([
-      supabase
-        .from("player_progress")
-        .select("player_id, total_xp")
-        .in("player_id", playerIds),
-      supabase
-        .from("player_squads")
-        .select("player_id, positions")
-        .in("player_id", playerIds),
-      supabase.from("sticker_players").select("id, rating"),
-    ]);
+    const [progressRes, squadsRes, stickerRes, collectionsRes] =
+      await Promise.all([
+        supabase
+          .from("player_progress")
+          .select("player_id, total_xp")
+          .in("player_id", playerIds),
+        supabase
+          .from("player_squads")
+          .select("player_id, positions")
+          .in("player_id", playerIds),
+        // Active stickers only — matches the album view, so the
+        // denominator a user sees here is the same one they see on
+        // /dashboard/album. Inactive/retired stickers are excluded.
+        supabase.from("sticker_players").select("id, rating, is_active"),
+        supabase
+          .from("player_stickers")
+          .select("player_id, sticker_id, quantity")
+          .in("player_id", playerIds),
+      ]);
 
-    if (progressRes.error || squadsRes.error || stickerRes.error) {
+    if (
+      progressRes.error ||
+      squadsRes.error ||
+      stickerRes.error ||
+      collectionsRes.error
+    ) {
       console.error("[leaderboard] sub-fetch error:", {
         progress: progressRes.error,
         squads: squadsRes.error,
         stickers: stickerRes.error,
+        collections: collectionsRes.error,
       });
       return NextResponse.json(
         { error: "Could not load leaderboard data" },
@@ -117,9 +135,16 @@ export async function GET(request) {
       );
     }
 
-    // Sticker → rating lookup
+    // Sticker → rating, and the set of active sticker ids. The active
+    // set defines the denominator for album-completion percentage so
+    // retired cards can't drag everyone's % down.
     const ratingById = new Map();
-    for (const s of stickerRes.data || []) ratingById.set(s.id, s.rating || 0);
+    const activeStickerIds = new Set();
+    for (const s of stickerRes.data || []) {
+      ratingById.set(s.id, s.rating || 0);
+      if (s.is_active !== false) activeStickerIds.add(s.id);
+    }
+    const albumTotal = activeStickerIds.size;
 
     // player_id → total_xp lookup
     const xpById = new Map();
@@ -136,18 +161,51 @@ export async function GET(request) {
       squadValueById.set(sq.player_id, sum);
     }
 
-    // Build the ranked list
-    const enriched = players.map((p) => ({
-      id: p.id,
-      name: p.full_name || p.email?.split("@")[0] || "Player",
-      totalXp: xpById.get(p.id) || 0,
-      squadValue: squadValueById.get(p.id) || 0,
-    }));
+    // player_id → count of distinct active stickers owned (quantity ≥ 1).
+    // A player can hold a row with quantity 0 after trading a final
+    // duplicate (shouldn't happen — we guard ≥2 in trade-in — but be
+    // defensive), so we filter on quantity > 0.
+    const albumOwnedById = new Map();
+    for (const row of collectionsRes.data || []) {
+      if (!row.player_id || !row.sticker_id) continue;
+      if ((row.quantity || 0) <= 0) continue;
+      if (!activeStickerIds.has(row.sticker_id)) continue;
+      albumOwnedById.set(
+        row.player_id,
+        (albumOwnedById.get(row.player_id) || 0) + 1
+      );
+    }
 
-    // Sort by chosen metric; tiebreak by the other metric for stability.
+    // Build the ranked list
+    const enriched = players.map((p) => {
+      const albumOwned = albumOwnedById.get(p.id) || 0;
+      const albumPct =
+        albumTotal > 0
+          ? Math.min(100, Math.round((albumOwned / albumTotal) * 100))
+          : 0;
+      return {
+        id: p.id,
+        name: p.full_name || p.email?.split("@")[0] || "Player",
+        totalXp: xpById.get(p.id) || 0,
+        squadValue: squadValueById.get(p.id) || 0,
+        albumOwned,
+        albumTotal,
+        albumPct,
+      };
+    });
+
+    // Sort by chosen metric; tiebreak by total XP for stability.
     enriched.sort((a, b) => {
       if (sort === "squad_value") {
         if (b.squadValue !== a.squadValue) return b.squadValue - a.squadValue;
+        return b.totalXp - a.totalXp;
+      }
+      if (sort === "album") {
+        // Compare owned counts (integer) rather than albumPct so two
+        // players with very small denominators don't tie at 100% by
+        // coincidence. albumTotal is the same for everyone in the
+        // same edition so this is equivalent to comparing %.
+        if (b.albumOwned !== a.albumOwned) return b.albumOwned - a.albumOwned;
         return b.totalXp - a.totalXp;
       }
       if (b.totalXp !== a.totalXp) return b.totalXp - a.totalXp;
@@ -165,6 +223,9 @@ export async function GET(request) {
       name: e.name,
       totalXp: e.totalXp,
       squadValue: e.squadValue,
+      albumOwned: e.albumOwned,
+      albumTotal: e.albumTotal,
+      albumPct: e.albumPct,
       isYou: e.id === currentUserId,
     }));
 
@@ -175,6 +236,9 @@ export async function GET(request) {
             name: enriched[youIndex].name,
             totalXp: enriched[youIndex].totalXp,
             squadValue: enriched[youIndex].squadValue,
+            albumOwned: enriched[youIndex].albumOwned,
+            albumTotal: enriched[youIndex].albumTotal,
+            albumPct: enriched[youIndex].albumPct,
             isYou: true,
           }
         : null;

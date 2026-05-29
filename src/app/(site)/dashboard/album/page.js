@@ -119,16 +119,25 @@ function AlbumContent() {
             <ChevronLeft className="w-4 h-4" />
             Dashboard
           </Link>
-          <div className="text-sm text-white/60">
-            <span className="font-bold text-white">{ownedCount}</span> /{" "}
-            {totalCount} collected{" "}
-            <span className="text-white/40">({pct}%)</span>
-          </div>
         </header>
 
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
           Sticker Album
         </h1>
+
+        {/* Album-completion progress card — matches the leaderboard's
+            "album" sort so the % the user sees here is the same one
+            they see ranked publicly. Milestone ticks give the bar
+            shape and turn the next round number into a clear target.
+            Hidden entirely when the roster is empty (totalCount = 0)
+            so a brand-new edition doesn't show a 0% goal post. */}
+        {totalCount > 0 && (
+          <AlbumProgress
+            ownedCount={ownedCount}
+            totalCount={totalCount}
+            pct={pct}
+          />
+        )}
 
         {/* Trade-in helper strip — only renders once the user has earned
             anything in this session, plus a persistent hint about how
@@ -235,6 +244,95 @@ function AlbumContent() {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * Prominent progress card at the top of the album.
+ *
+ *   - Big % on the right, "X / Y stickers collected" on the left.
+ *   - Gradient bar with milestone ticks at 25 / 50 / 75 / 100.
+ *   - A short hint below: either "N more to hit M%" (motivation
+ *     towards the next milestone) or a finish-line message when the
+ *     album is complete.
+ */
+function AlbumProgress({ ownedCount, totalCount, pct }) {
+  const milestones = [25, 50, 75, 100];
+  const nextMilestone = milestones.find((m) => pct < m) || 100;
+  const targetCount = Math.ceil((nextMilestone / 100) * totalCount);
+  const remainingToMilestone = Math.max(0, targetCount - ownedCount);
+  const isComplete = pct >= 100;
+
+  return (
+    <section className="rounded-2xl bg-gradient-to-br from-emerald-500/10 via-white/5 to-white/0 border border-emerald-400/20 backdrop-blur-sm p-4 sm:p-5">
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] uppercase tracking-wider text-emerald-200/80 font-semibold">
+            Album progress
+          </p>
+          <p className="text-sm sm:text-base text-white/80 mt-0.5">
+            <span className="font-bold text-white">{ownedCount}</span>
+            <span className="text-white/40"> / {totalCount}</span> stickers
+            collected
+          </p>
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-3xl sm:text-4xl font-black leading-none text-white">
+            {pct}
+            <span className="text-base font-bold text-white/50">%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bar + milestone ticks. Ticks live INSIDE the track so they
+          visually overlay regardless of % — the filled portion picks
+          them up in white-on-white, the unfilled portion shows them
+          dimmed. */}
+      <div className="relative mt-3 h-2.5 rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-200 transition-[width] duration-700 ease-out"
+          style={{ width: `${Math.min(100, pct)}%` }}
+        />
+        {milestones.slice(0, -1).map((m) => (
+          <span
+            key={m}
+            aria-hidden
+            className="absolute top-0 bottom-0 w-px bg-white/40 mix-blend-overlay"
+            style={{ left: `${m}%` }}
+          />
+        ))}
+      </div>
+
+      {/* Milestone label row — kept subtle so the bar reads first. */}
+      <div className="mt-1.5 flex justify-between text-[10px] text-white/40 font-semibold tabular-nums">
+        <span>0%</span>
+        <span className={pct >= 25 ? "text-emerald-300" : ""}>25%</span>
+        <span className={pct >= 50 ? "text-emerald-300" : ""}>50%</span>
+        <span className={pct >= 75 ? "text-emerald-300" : ""}>75%</span>
+        <span className={pct >= 100 ? "text-emerald-300" : ""}>100%</span>
+      </div>
+
+      {/* Motivation line — concrete next-step prompt. */}
+      <p className="mt-3 text-xs sm:text-sm text-white/70">
+        {isComplete ? (
+          <span className="text-emerald-300 font-bold">
+            🏆 Album complete — every active sticker collected!
+          </span>
+        ) : remainingToMilestone === 0 ? (
+          <>
+            <span className="font-bold text-white">{nextMilestone}%</span> in
+            reach — open another pack to push past it.
+          </>
+        ) : (
+          <>
+            <span className="font-bold text-white">{remainingToMilestone}</span>{" "}
+            more sticker{remainingToMilestone === 1 ? "" : "s"} to hit{" "}
+            <span className="font-bold text-emerald-300">{nextMilestone}%</span>
+            .
+          </>
+        )}
+      </p>
+    </section>
   );
 }
 
