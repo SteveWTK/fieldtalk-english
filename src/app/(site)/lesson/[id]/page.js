@@ -152,6 +152,9 @@ function DynamicLessonContent() {
   const [userPreferredLanguage, setUserPreferredLanguage] = useState("en");
   const [userEnglishVariant, setUserEnglishVariant] = useState("british");
   const [userVoiceGender, setUserVoiceGender] = useState("male");
+  // Platform admins bypass the per-step "attempt required" gate on the
+  // Next button so we can scroll quickly through lessons during QA.
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
@@ -188,13 +191,14 @@ function DynamicLessonContent() {
           try {
             const { data, error } = await createClient()
               .from("players")
-              .select("english_variant, voice_gender")
+              .select("english_variant, voice_gender, user_type")
               .eq("id", user.id)
               .single();
 
             if (!error && data) {
               setUserEnglishVariant(data.english_variant || "british");
               setUserVoiceGender(data.voice_gender || "male");
+              setIsPlatformAdmin(data.user_type === "platform_admin");
             }
           } catch (error) {
             console.error("Error fetching user preferences:", error);
@@ -3179,8 +3183,13 @@ function DynamicLessonContent() {
             currentStepData?.type
           );
           const hasAttempted = completedSteps.has(currentStep);
+          // Platform admins bypass the gate entirely so QA / content
+          // review can step through lessons without having to complete
+          // every interactive activity.
           const nextBlockedByAttempt =
-            isAttemptRequired && !hasAttempted &&
+            !isPlatformAdmin &&
+            isAttemptRequired &&
+            !hasAttempted &&
             currentStep < steps.length - 1;
           const disabled =
             completing ||
