@@ -363,7 +363,7 @@ export default function TimelineDrag({
     <div
       className="relative bg-gradient-to-r from-blue-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex-1"
       style={{
-        minHeight: "200px",
+        minHeight: "250px",
         minWidth: layoutMode === "tablet" ? "180px" : undefined,
       }}
     >
@@ -458,11 +458,11 @@ export default function TimelineDrag({
           <p className="text-sm text-gray-700 dark:text-gray-300">
             {step?.content || labels.instruction}
           </p>
-          {tolerance > 0 && (
+          {/* {tolerance > 0 && (
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {labels.toleranceHint(tolerance)}
             </p>
-          )}
+          )} */}
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-gray-900 dark:text-white">
