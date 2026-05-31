@@ -66,12 +66,119 @@ function SquadBuilderContent() {
   // Lookup table for the tray: each unique sticker the user owns, with
   // quantity. (Duplicates collapse to one tray entry — quantity is just
   // a future "tradable" hint; each instance can only be placed once.)
+  // first_obtained_at lets us sort the tray by recency.
   const trayItems = useMemo(() => {
     return (collection || []).map((row) => ({
       sticker: row.sticker,
       quantity: row.quantity || 1,
+      firstObtainedAt: row.first_obtained_at || null,
     }));
   }, [collection]);
+
+  // How the tray below the pitch is grouped. Testers found the default
+  // (insertion order from packs opened) felt random; this filter lets
+  // them pick a mental model — rating, position, country, or recency.
+  const [sortMode, setSortMode] = useState("rating");
+
+  // Group + sort the tray items into labelled sections. Each section
+  // has a label (the group header) and a list of items already sorted
+  // within the group.
+  const traySections = useMemo(() => {
+    const items = trayItems.filter((t) => t.sticker);
+    if (items.length === 0) return [];
+
+    const byName = (a, b) =>
+      (a.sticker.name || "").localeCompare(b.sticker.name || "");
+    const byRatingDesc = (a, b) =>
+      (b.sticker.rating || 0) - (a.sticker.rating || 0);
+
+    if (sortMode === "rating") {
+      // 5★ first → 1★. Within a rating, sort alphabetically.
+      const buckets = new Map();
+      for (const item of items) {
+        const r = item.sticker.rating || 0;
+        if (!buckets.has(r)) buckets.set(r, []);
+        buckets.get(r).push(item);
+      }
+      return [...buckets.keys()]
+        .sort((a, b) => b - a)
+        .map((r) => ({
+          label: `${"★".repeat(r)}${r >= 1 ? " " : ""}${r}-star`,
+          items: buckets.get(r).sort(byName),
+        }));
+    }
+
+    if (sortMode === "position") {
+      // Group into the four canonical pitch lines; within a group sort
+      // by raw position then by rating so e.g. defenders cluster as
+      // CB/LB/RB and the strongest of each are at the top.
+      const group = (pos) => {
+        if (pos === "GK") return { order: 0, label: "Goalkeepers" };
+        if (["CB", "LB", "RB", "DF"].includes(pos))
+          return { order: 1, label: "Defenders" };
+        if (["CM", "DM", "AM", "MF"].includes(pos))
+          return { order: 2, label: "Midfielders" };
+        return { order: 3, label: "Forwards" };
+      };
+      const buckets = new Map();
+      for (const item of items) {
+        const g = group(item.sticker.position);
+        if (!buckets.has(g.order)) buckets.set(g.order, { label: g.label, items: [] });
+        buckets.get(g.order).items.push(item);
+      }
+      return [...buckets.keys()]
+        .sort((a, b) => a - b)
+        .map((k) => ({
+          label: buckets.get(k).label,
+          items: buckets.get(k).items.sort((a, b) => {
+            const posCmp = (a.sticker.position || "").localeCompare(
+              b.sticker.position || ""
+            );
+            return posCmp !== 0 ? posCmp : byRatingDesc(a, b);
+          }),
+        }));
+    }
+
+    if (sortMode === "country") {
+      const buckets = new Map();
+      for (const item of items) {
+        const key = item.sticker.country || "—";
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(item);
+      }
+      return [...buckets.keys()]
+        .sort((a, b) => a.localeCompare(b))
+        .map((key) => ({
+          label: key,
+          items: buckets.get(key).sort(byRatingDesc),
+        }));
+    }
+
+    if (sortMode === "newest") {
+      // "From your last pack" wins outright (caters to "just opened a
+      // pack, where are my new cards?"). Everything else falls back to
+      // first_obtained_at desc so older pulls are at the bottom.
+      const latest = [];
+      const rest = [];
+      for (const item of items) {
+        if (latestPackSet.has(item.sticker.id)) latest.push(item);
+        else rest.push(item);
+      }
+      latest.sort(byRatingDesc);
+      rest.sort((a, b) => {
+        const at = new Date(a.firstObtainedAt || 0).getTime();
+        const bt = new Date(b.firstObtainedAt || 0).getTime();
+        return bt - at;
+      });
+      const sections = [];
+      if (latest.length)
+        sections.push({ label: "From your last pack", items: latest });
+      if (rest.length) sections.push({ label: "Earlier", items: rest });
+      return sections;
+    }
+
+    return [{ label: null, items }];
+  }, [trayItems, sortMode, latestPackSet]);
 
   const selectedSticker = useMemo(() => {
     if (!selectedStickerId) return null;
@@ -220,65 +327,112 @@ function SquadBuilderContent() {
 
         {/* Tray */}
         <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
             <h2 className="font-bold text-base sm:text-lg">Your Collection</h2>
             <span className="text-xs text-white/50 font-semibold">
               {placedCount}/{slots.length} placed
             </span>
           </div>
+
+          {/* Order-by toggle — hidden when the user has nothing in
+              their tray yet, so a brand-new collector doesn't see a
+              control that does nothing. */}
+          {trayItems.length > 0 && (
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/50 font-semibold">
+                Order by
+              </span>
+              <div className="flex rounded-full bg-white/5 p-0.5 text-[10px] sm:text-xs">
+                {[
+                  { id: "rating", label: "Rating" },
+                  { id: "position", label: "Position" },
+                  { id: "country", label: "Country" },
+                  { id: "newest", label: "Newest" },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSortMode(opt.id)}
+                    className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                      sortMode === opt.id
+                        ? "bg-emerald-500 text-[#070707]"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {trayItems.length === 0 ? (
             <p className="text-sm text-white/50">
               You haven&apos;t opened any packs yet — head back to the
               dashboard and open one to start your squad.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {trayItems.map(({ sticker, quantity }) => {
-                if (!sticker) return null;
-                const isPlaced = placedIds.has(sticker.id);
-                const isSelected = selectedStickerId === sticker.id;
-                const isFromLatestPack = latestPackSet.has(sticker.id);
-                return (
-                  <button
-                    type="button"
-                    key={sticker.id}
-                    onClick={() => handleTrayClick(sticker)}
-                    disabled={isPlaced}
-                    className={`relative rounded-xl transition-transform ${
-                      isPlaced
-                        ? "cursor-not-allowed"
-                        : "hover:scale-[1.04] active:scale-[0.98]"
-                    } ${
-                      isSelected
-                        ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-[#070707]"
-                        : ""
-                    }`}
-                  >
-                    <StickerCard
-                      sticker={sticker}
-                      owned={!isPlaced}
-                      quantity={quantity}
-                      size="sm"
-                    />
-                    {isFromLatestPack && (
-                      // Top-right corner of the sm-sized tray card,
-                      // matching the Pack Opened modal placement so
-                      // the badge sits in the same spot wherever a
-                      // user sees a freshly-pulled sticker.
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide z-10">
-                        NEW
+            <div className="space-y-4">
+              {traySections.map((section, sectionIdx) => (
+                <div key={section.label || sectionIdx}>
+                  {section.label && (
+                    <h3 className="text-[10px] sm:text-xs uppercase tracking-wider text-white/50 font-bold mb-2 flex items-center gap-2">
+                      <span>{section.label}</span>
+                      <span className="text-white/30 normal-case tracking-normal font-semibold">
+                        {section.items.length}
                       </span>
-                    )}
-                    {isPlaced && (
-                      <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
-                        <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/90 text-[10px] font-bold text-white">
-                          IN SQUAD
-                        </span>
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                    </h3>
+                  )}
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {section.items.map(({ sticker, quantity }) => {
+                      if (!sticker) return null;
+                      const isPlaced = placedIds.has(sticker.id);
+                      const isSelected = selectedStickerId === sticker.id;
+                      const isFromLatestPack = latestPackSet.has(sticker.id);
+                      return (
+                        <button
+                          type="button"
+                          key={sticker.id}
+                          onClick={() => handleTrayClick(sticker)}
+                          disabled={isPlaced}
+                          className={`relative rounded-xl transition-transform ${
+                            isPlaced
+                              ? "cursor-not-allowed"
+                              : "hover:scale-[1.04] active:scale-[0.98]"
+                          } ${
+                            isSelected
+                              ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-[#070707]"
+                              : ""
+                          }`}
+                        >
+                          <StickerCard
+                            sticker={sticker}
+                            owned={!isPlaced}
+                            quantity={quantity}
+                            size="sm"
+                          />
+                          {isFromLatestPack && (
+                            // Top-right corner of the sm-sized tray card,
+                            // matching the Pack Opened modal placement so
+                            // the badge sits in the same spot wherever a
+                            // user sees a freshly-pulled sticker.
+                            <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] font-bold text-white shadow ring-2 ring-[#070707] tracking-wide z-10">
+                              NEW
+                            </span>
+                          )}
+                          {isPlaced && (
+                            <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/90 text-[10px] font-bold text-white">
+                                IN SQUAD
+                              </span>
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>
