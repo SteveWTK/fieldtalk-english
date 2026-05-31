@@ -434,9 +434,9 @@ export default function InteractivePitchFormation({
           )}
         </p> */}
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          {/* <span className="font-semibold text-gray-900 dark:text-white">
             {clickedIds.size}/{totalItems} {labels.progress}
-          </span>
+          </span> */}
           {/* <button
             onClick={() => setShowTranslation((v) => !v)}
             className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
