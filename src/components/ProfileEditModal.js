@@ -159,21 +159,23 @@ export default function ProfileEditModal({
           <div className="flex items-center gap-3">
             {/* Live preview — only shown when the current avatarUrl is
                 NOT one of the flag options. Keeps the modal compact. */}
-            {avatarUrl && !avatarUrl.includes("/flags/") && !avatarUrl.includes("flagcdn.com") && (
-              <div className="relative w-14 h-14 rounded-full overflow-hidden ring-2 ring-white/15 shrink-0">
-                <Image
-                  src={avatarUrl}
-                  alt="Your photo"
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                  // Already sized server-side (≤2MB user upload). Skip
-                  // Vercel's image optimizer so it doesn't burn quota
-                  // re-encoding every fresh upload.
-                  unoptimized
-                />
-              </div>
-            )}
+            {avatarUrl &&
+              !avatarUrl.includes("/flags/") &&
+              !avatarUrl.includes("flagcdn.com") && (
+                <div className="relative w-14 h-14 rounded-full overflow-hidden ring-2 ring-white/15 shrink-0">
+                  <Image
+                    src={avatarUrl}
+                    alt="Your photo"
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                    // Already sized server-side (≤2MB user upload). Skip
+                    // Vercel's image optimizer so it doesn't burn quota
+                    // re-encoding every fresh upload.
+                    unoptimized
+                  />
+                </div>
+              )}
             <input
               ref={fileInputRef}
               type="file"
@@ -200,7 +202,9 @@ export default function ProfileEditModal({
               )}
             </button>
             <p className="text-[11px] text-white/40 leading-tight">
-              JPEG, PNG or WebP.<br />Max 2MB.
+              JPEG, PNG or WebP.
+              <br />
+              Max 2MB.
             </p>
           </div>
         </div>
@@ -236,7 +240,7 @@ export default function ProfileEditModal({
               gap-y-0 (per the user request) gives a tight vertical
               stack where every flag renders in full and the row spends
               its pixels on the flag, not the surrounding ring. */}
-          <div className="grid grid-cols-5 sm:grid-cols-7 gap-x-2 gap-y-0 overflow-y-auto pr-1">
+          <div className="grid grid-cols-5 sm:grid-cols-7 gap-x-2 gap-y-2 overflow-y-auto pr-1">
             {WC_NATIONS.map((nation) => {
               const url = FLAG_URL_BUILDER(nation.code2);
               const isSelected = avatarUrl === url;
