@@ -22,20 +22,28 @@ export function LanguageProvider({ children }) {
   const { user } = useAuth();
   const userId = user?.id;
 
-  // Load language from localStorage on mount.
-  // Default is English — we no longer detect browser language. Cultura
-  // Inglesa's pedagogical preference is target-language immersion, so even
-  // Brazilian users see English UI on first visit. Users who explicitly
-  // toggle to another language have that preference honoured on return.
+  // Load language from localStorage on mount, falling back to a
+  // browser-language heuristic so first-visit Brazilian users land in
+  // Portuguese (most receptionists and sales staff being shown the
+  // demo aren't comfortable in English). Non-Brazilian browsers get
+  // English. Users who explicitly toggle override this and the
+  // localStorage write below pins their preference for return visits.
+  //
+  // Detection signal: navigator.language. Brazilian browsers report
+  // "pt-BR" or "pt" reliably; anyone outside Brazil typically reports
+  // their local locale (en-*, es-*, fr-*, …) which falls through to
+  // English. Servers with no `navigator` fall through to English too.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storedLang = localStorage.getItem("preferredLanguage");
     if (storedLang && SUPPORTED.includes(storedLang)) {
       setLangState(storedLang);
-    } else {
-      setLangState("en");
-      localStorage.setItem("preferredLanguage", "en");
+      return;
     }
+    const browserLang = (navigator.language || "").toLowerCase();
+    const defaultLang = browserLang.startsWith("pt") ? "pt" : "en";
+    setLangState(defaultLang);
+    localStorage.setItem("preferredLanguage", defaultLang);
   }, []);
 
   // Optional one-time DB → context seed: when an authenticated user lands and

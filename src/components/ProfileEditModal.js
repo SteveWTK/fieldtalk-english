@@ -230,7 +230,13 @@ export default function ProfileEditModal({
               </button>
             )}
           </div>
-          <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 overflow-y-auto pr-1">
+          {/* Cell ratio matches typical flag proportions (~5:3) so the
+              cropping that aspect-square + object-cover used to inflict
+              on wider-than-tall flags goes away. object-contain plus
+              gap-y-0 (per the user request) gives a tight vertical
+              stack where every flag renders in full and the row spends
+              its pixels on the flag, not the surrounding ring. */}
+          <div className="grid grid-cols-5 sm:grid-cols-7 gap-x-2 gap-y-0 overflow-y-auto pr-1">
             {WC_NATIONS.map((nation) => {
               const url = FLAG_URL_BUILDER(nation.code2);
               const isSelected = avatarUrl === url;
@@ -240,7 +246,7 @@ export default function ProfileEditModal({
                   type="button"
                   onClick={() => setAvatarUrl(url)}
                   title={nation.name}
-                  className={`relative aspect-square rounded-lg overflow-hidden ring-2 transition-all ${
+                  className={`relative aspect-[5/3] rounded-md overflow-hidden ring-2 transition-all ${
                     isSelected
                       ? "ring-emerald-400 scale-105"
                       : "ring-white/10 hover:ring-white/40"
@@ -251,7 +257,7 @@ export default function ProfileEditModal({
                     alt={nation.name}
                     fill
                     sizes="80px"
-                    className="object-cover"
+                    className="object-contain"
                     // 48 small PNGs in a grid — fetch straight from
                     // source. Optimization gives nothing back here and
                     // would burn a slot per nation on the Vercel quota.
