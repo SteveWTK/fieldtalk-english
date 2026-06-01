@@ -236,11 +236,10 @@ export default function ProfileEditModal({
           </div>
           {/* Cell ratio matches typical flag proportions (~5:3) so the
               cropping that aspect-square + object-cover used to inflict
-              on wider-than-tall flags goes away. object-contain plus
-              gap-y-0 (per the user request) gives a tight vertical
-              stack where every flag renders in full and the row spends
-              its pixels on the flag, not the surrounding ring. */}
-          <div className="grid grid-cols-5 sm:grid-cols-7 gap-x-2 gap-y-2 overflow-y-auto pr-1">
+              on wider-than-tall flags goes away. object-contain shows
+              every flag in full; symmetric gap-2 keeps rows + columns
+              evenly spaced so the grid breathes without feeling sparse. */}
+          <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 overflow-y-auto pr-1">
             {WC_NATIONS.map((nation) => {
               const url = FLAG_URL_BUILDER(nation.code2);
               const isSelected = avatarUrl === url;
