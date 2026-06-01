@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function LandingLayout({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   // Read language from the root-level LanguageProvider so the landing
   // pages share the same toggle state as the rest of the site.
   const { lang, setLang } = useLanguage();

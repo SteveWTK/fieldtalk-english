@@ -2,7 +2,7 @@
 // src/app/(site)/lesson/page.js
 "use client";
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -31,6 +31,8 @@ import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useTranslation } from "@/hooks/useTranslation";
 import FirstLessonPrompt from "@/components/FirstLessonPrompt";
+import PaywallCard from "@/components/PaywallCard";
+import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -71,6 +73,20 @@ function PlayerLessonsMenu() {
     loading,
     refetchProgress,
   } = usePlayerDashboard(userId);
+
+  // Per-edition access status. Drives:
+  //   - the inline paywall banner at the top of the list
+  //   - the "edition_paywall" lesson card state (locked + nudges to
+  //     /pricing instead of letting the user open the lesson)
+  // Platform admins get hasAccess: true from the API regardless, so
+  // QA isn't blocked.
+  const access = usePlayerAccess(profile?.edition);
+  const previewLessonSet = useMemo(
+    () => new Set(access.previewLessonIds || []),
+    [access.previewLessonIds]
+  );
+  const showInlinePaywall =
+    !!user && !access.loading && !access.hasAccess;
 
   // Show the "Start here" prompt only when:
   //   - data has loaded
@@ -222,6 +238,15 @@ function PlayerLessonsMenu() {
 
     const lessonIndex = pillarLessons.findIndex((l) => l.id === lesson.id);
 
+    // Edition paywall — applies AFTER the preview lesson. The first
+    // lesson per pillar is in previewLessonSet, so it never reaches
+    // here. Unlocking a paid edition flips access.hasAccess to true
+    // and this branch never trips.
+    const isPreview = previewLessonSet.has(lesson.id);
+    if (!access.loading && !access.hasAccess && !isPreview) {
+      return "edition_paywall";
+    }
+
     // First lesson is always available
     if (lessonIndex === 0) {
       return "current";
@@ -265,6 +290,10 @@ function PlayerLessonsMenu() {
         return <Play className="w-5 h-5 text-blue-500" />;
       case "locked":
         return <Lock className="w-5 h-5 text-gray-400" />;
+      case "edition_paywall":
+        // Emerald lock distinguishes "paid content" from sequence-
+        // locked content (grey). Tapping the card routes to /pricing.
+        return <Lock className="w-5 h-5 text-emerald-400" />;
       case "construction":
         return <Construction className="w-5 h-5 text-white" />;
       default:
@@ -404,6 +433,17 @@ function PlayerLessonsMenu() {
             </div>
 
             <div className="space-y-4">
+              {/* Inline paywall — sits above the cards when the user
+                  is signed in but hasn't unlocked the edition yet, so
+                  the route to /pricing is one tap from anywhere on
+                  the list. Hidden once they have access. */}
+              {showInlinePaywall && (
+                <PaywallCard
+                  edition={profile?.edition || "wc2026"}
+                  variant="inline"
+                />
+              )}
+
               {/* Start-here prompt — only mounts when shouldShow is true.
                   Sits above the first lesson card with a downward arrow. */}
               <FirstLessonPrompt
@@ -421,7 +461,9 @@ function PlayerLessonsMenu() {
                 currentLessons.map((lesson, lessonIndex) => {
                   const status = getLessonStatus(lesson);
                   const isClickable =
-                    status !== "locked" && status !== "construction";
+                    status !== "locked" &&
+                    status !== "construction" &&
+                    status !== "edition_paywall";
                   // Pulse the card in two cases:
                   //   1. First-visit "Start here" prompt (first lesson).
                   //   2. The user just completed a lesson elsewhere and
@@ -500,6 +542,17 @@ function PlayerLessonsMenu() {
                           >
                             <Construction className="w-5 h-5" />
                           </button>
+                        ) : status === "edition_paywall" ? (
+                          // Tapping a paywalled card routes to /pricing
+                          // (carrying the edition slug) rather than
+                          // letting the user open a locked lesson.
+                          <Link
+                            href={`/pricing?edition=${encodeURIComponent(profile?.edition || "wc2026")}`}
+                            className="p-2 text-emerald-400 hover:bg-emerald-500/15 rounded-lg transition-colors ml-4"
+                            aria-label="Unlock with subscription"
+                          >
+                            <Lock className="w-5 h-5" />
+                          </Link>
                         ) : (
                           <div className="p-2 text-gray-400 ml-4">
                             <Lock className="w-5 h-5" />

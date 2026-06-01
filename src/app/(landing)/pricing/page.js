@@ -1,188 +1,211 @@
+// src/app/(landing)/pricing/page.js
+//
+// Edition-aware pricing page. Defaults to WC2026 but takes a
+// ?edition=<slug> URL param so future editions can reuse this page
+// rather than spawning per-edition pages.
+//
+// Visual language matches /wc2026 + /join — dark surface (#070707),
+// emerald/amber ambient glows, white text, sleek minimal cards. Hero
+// stays compact so the primary one-off card is visible above the fold
+// on mobile.
+//
+// Auth: viewing is open; clicking "Buy" while signed out routes the
+// user to /join?edition=<edition> rather than /signup so they land on
+// the streamlined fan-edition signup with the right edition tag
+// pre-applied.
+
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Check,
-  X,
-  Zap,
   Trophy,
   Building2,
   Users,
   Mail,
   ArrowRight,
-  // Flame,
   Star,
   Shield,
+  ChevronDown,
+  Loader2,
+  X,
+  Tag,
+  KeyRound,
+  Calendar,
 } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
 
+// EN/PT copy. Same translation-map shape as before so the lang toggle
+// stays one-click and adding a third language is a single object.
 const translations = {
   en: {
     hero: {
-      title: "Choose Your",
-      titleHighlight: "Training Plan",
-      subtitle: "Start free and upgrade when you're ready to go pro",
+      eyebrow: "Pricing",
+      titleHighlight: "Full access to",
     },
-    toggle: {
-      monthly: "Monthly",
-      yearly: "Yearly",
-      save: "Save 17%",
+    primary: {
+      flag: "One-time",
+      cta: "Get the WC2026 edition",
+      // {accessEndDate} is substituted at render time from
+      // edition.oneTimeAccessEnd so the on-page copy stays in sync
+      // with the actual access cutoff — change the date in
+      // editions.js and this string follows.
+      accessNote: "Full access through {accessEndDate}",
+      features: [
+        "All lessons across every pillar",
+        "Sticker packs + Ultimate Squad builder",
+        "Group-stage predictions with bonus XP",
+        "All WC2026 content updates",
+      ],
     },
-    plans: {
-      explorer: {
-        name: "Explorer",
-        price: "Free",
-        period: "forever",
-        description: "Perfect for getting started with football English",
-        features: [
-          { text: "3 sessions per pillar", included: true },
-          { text: "Basic vocabulary challenges", included: true },
-          { text: "Progress tracking", included: true },
-          { text: "Community access", included: true },
-          { text: "Unlimited sessions", included: false },
-          { text: "AI pronunciation feedback", included: false },
-          { text: "Streak rewards & badges", included: false },
-          { text: "Offline access", included: false },
-        ],
-        cta: "Start Free",
-        popular: false,
-      },
-      pro: {
-        name: "Pro",
-        priceMonthly: "R$29",
-        priceYearly: "R$290",
-        periodMonthly: "/month",
-        periodYearly: "/year",
-        description: "Full access to accelerate your English training",
-        features: [
-          { text: "Unlimited sessions & challenges", included: true },
-          { text: "All vocabulary & conversation modules", included: true },
-          { text: "Advanced progress analytics", included: true },
-          { text: "AI pronunciation feedback", included: true },
-          { text: "Streak rewards & badges", included: true },
-          { text: "Offline access", included: true },
-          { text: "Priority support", included: true },
-          { text: "Early access to new content", included: true },
-        ],
-        cta: "Go Pro",
-        popular: true,
+    secondary: {
+      heading: "Or subscribe to every FieldTalk edition",
+      sub: "WC2026 plus every future edition (Champions League, Premier League, more) while you're subscribed.",
+      cta: "Subscribe",
+    },
+    promoHint: {
+      title: "Got a coupon?",
+      body: 'Cultura Inglesa and partner-school students: enter your discount code at Stripe Checkout, on the line that says "Add promotion code".',
+    },
+    schoolCode: {
+      button: "Have a school code?",
+      buttonSub: "Redeem it and unlock access instantly.",
+      modalTitle: "Redeem your school code",
+      modalBody:
+        "Enter the code your school or club gave you. We'll unlock the edition on your account.",
+      placeholder: "e.g. CULTURA-RECIFE-2026",
+      submit: "Redeem code",
+      submitting: "Redeeming…",
+      successTitle: "You're in!",
+      successBody: "Access granted. Heading to your dashboard…",
+      errors: {
+        unknown_code:
+          "We don't recognise that code. Check with your teacher / coordinator.",
+        expired: "That code has expired. Ask your school for a new one.",
+        no_seats: "All seats on that code have already been claimed.",
+        already_redeemed:
+          "You've already redeemed this code — you're good to go.",
+        not_signed_in:
+          "Sign in first so we can attach the code to your account.",
+        generic: "Something went wrong. Please try again.",
       },
     },
     b2b: {
-      title: "For Clubs & Academies",
-      subtitle: "Custom solutions for your organization",
-      description:
-        "Get tailored English training for your players with dedicated support, custom content, and team management features.",
-      features: [
-        "Custom content for your club",
-        "Player progress dashboards",
-        "Dedicated account manager",
-        "Flexible billing options",
+      eyebrow: "For schools, branches & clubs",
+      title: "Buy seats in bulk for your students",
+      body: "Get N logins at a discounted rate, give your students a single code, and track their progress from one admin dashboard. Affiliates earn a commission on every direct sale too.",
+      bullets: [
+        "Bulk pricing for 20+ seats",
+        "One code, distributed to your cohort",
+        "Affiliate programme for partner schools",
+        "Custom branding on request",
       ],
-      cta: "Contact Sales",
-      email: "partnerships@fieldtalk.app",
+      cta: "Contact partnerships",
+      email: "partnerships@fieldtalkenglish.com",
     },
     faq: {
-      title: "Questions?",
+      title: "Questions",
       items: [
         {
-          q: "Can I switch plans anytime?",
-          a: "Yes! Upgrade to Pro anytime. Downgrade takes effect at the end of your billing period.",
+          q: "What's the difference between the one-off and the subscription?",
+          a: "The one-off purchase gives you full access to the WC2026 edition through {accessEndDate} — perfect for the tournament window. The subscription gives you access to WC2026 PLUS every future edition (Champions League, Premier League, etc.) for as long as you're subscribed.",
+        },
+        {
+          q: "How do coupon codes work?",
+          a: 'Stripe Checkout has a built-in "Add promotion code" field. Enter your code there — the discount applies automatically.',
+        },
+        {
+          q: "Can I cancel my subscription anytime?",
+          a: "Yes. You can cancel from the Customer Portal at any time. Access stays until the end of the period you've already paid for.",
         },
         {
           q: "What payment methods do you accept?",
-          a: "We accept all major credit cards and PIX (for Brazilian users).",
-        },
-        {
-          q: "Is there a refund policy?",
-          a: "Yes, we offer a 7-day money-back guarantee if you're not satisfied.",
+          a: "All major credit cards and PIX (Brazilian users). Stripe handles the payment securely; we never see your card details.",
         },
       ],
     },
   },
   pt: {
     hero: {
-      title: "Escolha Seu",
-      titleHighlight: "Plano de Treino",
-      subtitle: "Comece grátis e faça upgrade quando estiver pronto para o Pro",
+      eyebrow: "Planos",
+      titleHighlight: "Acesso completo ao",
     },
-    toggle: {
-      monthly: "Mensal",
-      yearly: "Anual",
-      save: "Economize 17%",
+    primary: {
+      flag: "Compra única",
+      cta: "Pegar a Edição WC2026",
+      accessNote: "Acesso total até {accessEndDate}",
+      features: [
+        "Todas as lições de todos os pilares",
+        "Pacotes de figurinhas + montagem do Squad",
+        "Predições da fase de grupos com XP bônus",
+        "Todas as atualizações da WC2026",
+      ],
     },
-    plans: {
-      explorer: {
-        name: "Explorer",
-        price: "Grátis",
-        period: "para sempre",
-        description: "Perfeito para começar com inglês do futebol",
-        features: [
-          { text: "3 sessões por pilar", included: true },
-          { text: "Desafios básicos de vocabulário", included: true },
-          { text: "Acompanhamento de progresso", included: true },
-          { text: "Acesso à comunidade", included: true },
-          { text: "Sessões ilimitadas", included: false },
-          { text: "Feedback de pronúncia com IA", included: false },
-          { text: "Recompensas e badges de sequência", included: false },
-          { text: "Acesso offline", included: false },
-        ],
-        cta: "Começar Grátis",
-        popular: false,
-      },
-      pro: {
-        name: "Pro",
-        priceMonthly: "R$29",
-        priceYearly: "R$290",
-        periodMonthly: "/mês",
-        periodYearly: "/ano",
-        description: "Acesso completo para acelerar seu treino de inglês",
-        features: [
-          { text: "Sessões e desafios ilimitados", included: true },
-          {
-            text: "Todos os módulos de vocabulário e conversação",
-            included: true,
-          },
-          { text: "Análises avançadas de progresso", included: true },
-          { text: "Feedback de pronúncia com IA", included: true },
-          { text: "Recompensas e badges de sequência", included: true },
-          { text: "Acesso offline", included: true },
-          { text: "Suporte prioritário", included: true },
-          { text: "Acesso antecipado a novos conteúdos", included: true },
-        ],
-        cta: "Ir Pro",
-        popular: true,
+    secondary: {
+      heading: "Ou assine todas as edições FieldTalk",
+      sub: "WC2026 mais todas as edições futuras (Champions League, Premier League e mais) enquanto estiver assinante.",
+      cta: "Assinar",
+    },
+    promoHint: {
+      title: "Tem um cupom?",
+      body: 'Alunos das Culturas Inglesas e escolas parceiras: insira o código de desconto no Stripe Checkout, no campo "Adicionar código promocional".',
+    },
+    schoolCode: {
+      button: "Tem um código da escola?",
+      buttonSub: "Resgate e libere o acesso imediatamente.",
+      modalTitle: "Resgate seu código da escola",
+      modalBody:
+        "Insira o código que sua escola ou clube te deu. Vamos liberar a edição na sua conta.",
+      placeholder: "ex: CULTURA-RECIFE-2026",
+      submit: "Resgatar código",
+      submitting: "Resgatando…",
+      successTitle: "Pronto!",
+      successBody: "Acesso liberado. Indo para o painel…",
+      errors: {
+        unknown_code:
+          "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
+        expired: "Esse código expirou. Peça um novo à sua escola.",
+        no_seats: "Todas as vagas desse código já foram usadas.",
+        already_redeemed: "Você já resgatou esse código — está tudo certo.",
+        not_signed_in:
+          "Entre primeiro para que possamos vincular o código à sua conta.",
+        generic: "Algo deu errado. Tente novamente.",
       },
     },
     b2b: {
-      title: "Para Clubes e Academias",
-      subtitle: "Soluções personalizadas para sua organização",
-      description:
-        "Obtenha treinamento de inglês personalizado para seus jogadores com suporte dedicado, conteúdo customizado e recursos de gestão de equipe.",
-      features: [
-        "Conteúdo personalizado para seu clube",
-        "Dashboards de progresso dos jogadores",
-        "Gerente de conta dedicado",
-        "Opções flexíveis de faturamento",
+      eyebrow: "Para escolas, Culturas e clubes",
+      title: "Compre logins em volume para seus alunos",
+      body: "Receba N logins com desconto, dê um único código aos seus alunos e acompanhe o progresso deles num painel administrativo. Escolas parceiras também ganham comissão como afiliadas.",
+      bullets: [
+        "Preço por volume para 20+ assentos",
+        "Um código, distribuído à sua turma",
+        "Programa de afiliados para escolas parceiras",
+        "Branding personalizado sob demanda",
       ],
-      cta: "Falar com Vendas",
-      email: "parcerias@fieldtalk.app",
+      cta: "Falar com parcerias",
+      email: "partnerships@fieldtalkenglish.com",
     },
     faq: {
-      title: "Perguntas?",
+      title: "Perguntas",
       items: [
         {
-          q: "Posso trocar de plano a qualquer momento?",
-          a: "Sim! Faça upgrade para Pro a qualquer momento. O downgrade entra em vigor no final do seu período de cobrança.",
+          q: "Qual a diferença entre a compra única e a assinatura?",
+          a: "A compra única dá acesso total à Edição WC2026 até {accessEndDate} — perfeito para a janela da Copa. A assinatura dá acesso à WC2026 MAIS todas as edições futuras (Champions League, Premier League, etc.) enquanto você estiver assinando.",
+        },
+        {
+          q: "Como funcionam os cupons?",
+          a: 'O Stripe Checkout tem um campo "Adicionar código promocional". Digite seu código lá — o desconto se aplica automaticamente.',
+        },
+        {
+          q: "Posso cancelar a assinatura a qualquer momento?",
+          a: "Sim. Você pode cancelar pelo Portal do Cliente quando quiser. O acesso continua até o fim do período já pago.",
         },
         {
           q: "Quais formas de pagamento vocês aceitam?",
-          a: "Aceitamos todos os principais cartões de crédito e PIX.",
-        },
-        {
-          q: "Existe política de reembolso?",
-          a: "Sim, oferecemos garantia de devolução do dinheiro em 7 dias se você não estiver satisfeito.",
+          a: "Todos os principais cartões e PIX (para usuários brasileiros). O Stripe processa o pagamento com segurança — nunca vemos seus dados de cartão.",
         },
       ],
     },
@@ -191,296 +214,513 @@ const translations = {
 
 export default function PricingPage() {
   const router = useRouter();
-  const [isYearly, setIsYearly] = useState(false);
-  const [lang, setLang] = useState("pt"); // Default to Portuguese for Brazil
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
 
+  const editionId =
+    (searchParams?.get("edition") || "wc2026").trim() || "wc2026";
+  const edition = getEdition(editionId);
+
+  const [lang, setLang] = useState("pt");
   const copy = translations[lang] || translations.en;
 
-  const handleSubscribe = async (plan) => {
-    if (plan === "explorer") {
-      router.push("/signup");
+  // Format the edition's one-time access cutoff for the current
+  // language ("31 August 2026" / "31 de agosto de 2026"). When a
+  // translation string contains {accessEndDate}, fill() swaps it in
+  // — that way changing oneTimeAccessEnd in editions.js is the only
+  // edit needed when we shift the date.
+  const accessEndDate = useMemo(() => {
+    if (!edition?.oneTimeAccessEnd) return null;
+    try {
+      return new Intl.DateTimeFormat(lang === "pt" ? "pt-BR" : "en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(edition.oneTimeAccessEnd));
+    } catch {
+      return null;
+    }
+  }, [edition, lang]);
+
+  const fill = (s) =>
+    accessEndDate && typeof s === "string"
+      ? s.replace("{accessEndDate}", accessEndDate)
+      : s;
+
+  const { oneTimeOffering, subscriptionOfferings } = useMemo(() => {
+    const all = listOfferingsForEdition(editionId);
+    return {
+      oneTimeOffering: all.find((o) => o.mode === "one_time") || null,
+      subscriptionOfferings: all
+        .filter((o) => o.mode === "subscription")
+        .sort((a, b) =>
+          a.interval === "monthly" ? -1 : b.interval === "monthly" ? 1 : 0
+        ),
+    };
+  }, [editionId]);
+
+  const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [schoolCodeOpen, setSchoolCodeOpen] = useState(false);
+
+  // Signed-out → route to the streamlined fan-edition signup with
+  // the edition tag pre-applied. After signup users land on /lesson
+  // and can navigate back to /pricing to complete the buy.
+  const handleBuy = async (offeringId) => {
+    if (!user) {
+      router.push(`/join?edition=${encodeURIComponent(editionId)}`);
       return;
     }
-
-    // For Pro plan, redirect to signup first, then they can upgrade
-    // In a real flow, you'd check if user is logged in first
-    router.push("/signup?plan=pro");
+    setCheckoutLoading(offeringId);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offering: offeringId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        console.error("[pricing] checkout failed:", data);
+        alert(data.error || "Could not start checkout. Please try again.");
+        return;
+      }
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("[pricing] checkout exception:", err);
+      alert("Network error. Please try again.");
+    } finally {
+      setCheckoutLoading(null);
+    }
   };
 
+  if (!edition) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white/70 p-6">
+        Unknown edition: {editionId}.{" "}
+        <Link href="/pricing" className="underline ml-1">
+          Try /pricing
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen">
-      {/* Language Toggle */}
-      <div className="absolute top-4 right-4 flex gap-2">
+    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden">
+      {/* Ambient glows — same vocabulary as /wc2026 and /join for
+          visual continuity across the funnel. */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(16,185,129,0.20), rgba(16,185,129,0) 70%)",
+          }}
+        />
+        <div
+          className="absolute bottom-[-25%] right-[-15%] w-[55vw] h-[55vw] rounded-full blur-3xl opacity-60"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(234,179,8,0.12), rgba(234,179,8,0) 70%)",
+          }}
+        />
+      </div>
+
+      {/* Top-right lang toggle. Floating so it doesn't take vertical
+          space away from the hero. */}
+      <div className="absolute top-4 right-4 z-20 flex gap-1 text-[10px] sm:text-xs">
         <button
           onClick={() => setLang("en")}
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "en"
-              ? "bg-accent-600 text-white"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+              ? "bg-emerald-500 text-[#062013]"
+              : "bg-white/5 text-white/60 hover:text-white"
           }`}
         >
           EN
         </button>
         <button
           onClick={() => setLang("pt")}
-          className={`px-3 py-1 rounded-full text-sm ${
+          className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "pt"
-              ? "bg-accent-600 text-white"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+              ? "bg-emerald-500 text-[#062013]"
+              : "bg-white/5 text-white/60 hover:text-white"
           }`}
         >
           PT
         </button>
       </div>
 
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            {copy.hero.title}{" "}
-            <span className="bg-gradient-to-r from-accent-600 to-accent-500 bg-clip-text text-transparent">
-              {copy.hero.titleHighlight}
+      <main className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
+        {/* Hero — compact, centred. Eyebrow + headline only; no
+            subtitle so the primary card sits high on mobile. */}
+        <section className="text-center pt-2">
+          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-emerald-300/80 font-semibold mb-2 sm:mb-3">
+            {copy.hero.eyebrow}
+          </p>
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            {copy.hero.titleHighlight}{" "}
+            <span className="bg-gradient-to-r from-emerald-300 to-emerald-200 bg-clip-text text-transparent">
+              {edition.name}
             </span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            {copy.hero.subtitle}
-          </p>
+        </section>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <span
-              className={`text-sm font-medium ${
-                !isYearly ? "text-gray-900 dark:text-white" : "text-gray-500"
-              }`}
-            >
-              {copy.toggle.monthly}
-            </span>
-            <button
-              onClick={() => setIsYearly(!isYearly)}
-              className={`relative w-14 h-7 rounded-full transition-colors ${
-                isYearly ? "bg-accent-600" : "bg-gray-300 dark:bg-gray-600"
-              }`}
-            >
-              <span
-                className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
-                  isYearly ? "translate-x-8" : "translate-x-1"
-                }`}
-              />
-            </button>
-            <span
-              className={`text-sm font-medium ${
-                isYearly ? "text-gray-900 dark:text-white" : "text-gray-500"
-              }`}
-            >
-              {copy.toggle.yearly}
-            </span>
-            {isYearly && (
-              <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-                {copy.toggle.save}
-              </span>
-            )}
-          </div>
-        </div>
-      </section>
+        {/* Primary one-off card. Centred (max-w-md), pulled to the
+            top so the price + CTA are above the fold on a 375px
+            iPhone after the compact hero. */}
+        {oneTimeOffering && (
+          <section className="max-w-md mx-auto">
+            <div className="relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-emerald-400/30 p-5 sm:p-7 shadow-[0_0_40px_rgba(16,185,129,0.08)]">
+              {/* Floating "One-time" pill */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500 text-[10px] sm:text-xs font-bold text-[#062013] tracking-wider uppercase shadow">
+                  <Star className="w-3.5 h-3.5" /> {copy.primary.flag}
+                </span>
+              </div>
 
-      {/* Pricing Cards */}
-      <section className="py-16 bg-white dark:bg-gray-900 -mt-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Explorer Plan */}
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+              {/* Icon + label */}
+              <div className="flex items-center gap-3 mb-4 sm:mb-5 mt-1">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                  <Trophy className="w-5 h-5 text-emerald-300" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {copy.plans.explorer.name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {copy.plans.explorer.description}
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-bold leading-tight">
+                    {oneTimeOffering.label}
+                  </h2>
+                  <p className="text-xs text-white/50 mt-0.5">
+                    {oneTimeOffering.description}
                   </p>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                  {copy.plans.explorer.price}
+              {/* Price + access window */}
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="text-4xl sm:text-5xl font-black tracking-tight">
+                  {oneTimeOffering.displayPrice}
                 </span>
-                <span className="text-gray-500 ml-2">
-                  {copy.plans.explorer.period}
+                <span className="text-sm text-white/40">
+                  {oneTimeOffering.displayInterval}
                 </span>
               </div>
+              <p className="flex items-center gap-1.5 text-xs text-emerald-200/80 mb-5">
+                <Calendar className="w-3.5 h-3.5" />
+                {fill(copy.primary.accessNote)}
+              </p>
 
-              <ul className="space-y-3 mb-8">
-                {copy.plans.explorer.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    {feature.included ? (
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              {/* Features */}
+              <ul className="space-y-2 mb-6">
+                {copy.primary.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm">
+                    <Check className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5" />
+                    <span className="text-white/80">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA */}
+              <button
+                onClick={() => handleBuy(oneTimeOffering.id)}
+                disabled={checkoutLoading !== null}
+                className="w-full py-3 px-5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
+              >
+                {checkoutLoading === oneTimeOffering.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading…
+                  </>
+                ) : (
+                  <>
+                    {copy.primary.cta}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Secondary subscription cards — quieter so they don't
+            compete with the primary WC2026 offer. */}
+        {subscriptionOfferings.length > 0 && (
+          <section className="max-w-3xl mx-auto">
+            <div className="text-center mb-5">
+              <h3 className="text-base sm:text-lg font-bold text-white/85">
+                {copy.secondary.heading}
+              </h3>
+              <p className="text-xs sm:text-sm text-white/50 max-w-xl mx-auto mt-1.5">
+                {copy.secondary.sub}
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+              {subscriptionOfferings.map((offering) => (
+                <div
+                  key={offering.id}
+                  className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors p-5"
+                >
+                  <h4 className="font-bold text-base text-white">
+                    {offering.label}
+                  </h4>
+                  <p className="text-xs text-white/45 mt-0.5 mb-4">
+                    {offering.description}
+                  </p>
+                  <div className="flex items-baseline gap-1.5 mb-4">
+                    <span className="text-2xl sm:text-3xl font-black">
+                      {offering.displayPrice}
+                    </span>
+                    <span className="text-xs text-white/40">
+                      {offering.displayInterval}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleBuy(offering.id)}
+                    disabled={checkoutLoading !== null}
+                    className="w-full py-2 px-4 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {checkoutLoading === offering.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <X className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                      copy.secondary.cta
                     )}
-                    <span
-                      className={
-                        feature.included
-                          ? "text-gray-700 dark:text-gray-300"
-                          : "text-gray-400 dark:text-gray-500"
-                      }
-                    >
-                      {feature.text}
-                    </span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Promo-code hint + school-code button.
+            Two-column on sm+, stacked on mobile. */}
+        <section className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.04] border border-white/10 p-4">
+            <Tag className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0" />
+            <div className="text-xs sm:text-sm">
+              <p className="font-semibold text-white mb-1">
+                {copy.promoHint.title}
+              </p>
+              <p className="text-white/55 leading-relaxed">
+                {copy.promoHint.body}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSchoolCodeOpen(true)}
+            className="flex items-start gap-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/10 border border-dashed border-emerald-400/40 hover:border-emerald-300/70 p-4 text-left transition-colors"
+          >
+            <KeyRound className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0" />
+            <div className="text-xs sm:text-sm">
+              <p className="font-semibold text-white mb-1">
+                {copy.schoolCode.button}
+              </p>
+              <p className="text-white/55 leading-relaxed">
+                {copy.schoolCode.buttonSub}
+              </p>
+            </div>
+          </button>
+        </section>
+
+        {/* B2B */}
+        <section className="max-w-3xl mx-auto">
+          <div className="relative rounded-3xl bg-gradient-to-br from-emerald-500/15 via-white/[0.04] to-amber-400/10 border border-white/10 p-6 sm:p-8 overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-4 h-4 text-emerald-300" />
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
+                  {copy.b2b.eyebrow}
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold mb-3">
+                {copy.b2b.title}
+              </h2>
+              <p className="text-sm text-white/65 mb-5 leading-relaxed">
+                {copy.b2b.body}
+              </p>
+
+              <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
+                {copy.b2b.bullets.map((b, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <span className="text-white/80">{b}</span>
                   </li>
                 ))}
               </ul>
 
-              <button
-                onClick={() => handleSubscribe("explorer")}
-                className="w-full py-3 px-6 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              <a
+                href={`mailto:${copy.b2b.email}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#062013] font-bold text-sm hover:bg-white/90 transition-colors"
               >
-                {copy.plans.explorer.cta}
-              </button>
+                <Mail className="w-4 h-4" />
+                {copy.b2b.cta}
+              </a>
             </div>
-
-            {/* Pro Plan */}
-            <div className="relative bg-gradient-to-b from-accent-50 to-white dark:from-accent-900/20 dark:to-gray-800 rounded-2xl shadow-xl border-2 border-accent-500 p-8">
-              {/* Popular Badge */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-accent-500 text-white text-sm font-medium px-4 py-1 rounded-full flex items-center gap-1">
-                  <Star className="w-4 h-4" /> Popular
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-accent-100 dark:bg-accent-900/50 flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-accent-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {copy.plans.pro.name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {copy.plans.pro.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                  {isYearly
-                    ? copy.plans.pro.priceYearly
-                    : copy.plans.pro.priceMonthly}
-                </span>
-                <span className="text-gray-500 ml-2">
-                  {isYearly
-                    ? copy.plans.pro.periodYearly
-                    : copy.plans.pro.periodMonthly}
-                </span>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {copy.plans.pro.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-accent-500 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {feature.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => handleSubscribe("pro")}
-                className="w-full py-3 px-6 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
-                {copy.plans.pro.cta}
-                <ArrowRight className="w-5 h-5" />
-              </button>
+            {/* Decorative icon — hidden on small screens to save space */}
+            <div className="hidden sm:flex absolute right-6 bottom-6 w-16 h-16 rounded-full bg-white/5 items-center justify-center pointer-events-none">
+              <Users className="w-7 h-7 text-white/30" />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* B2B Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-primary-600 to-accent-600 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
-            </div>
-
-            <div className="relative grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Building2 className="w-8 h-8" />
-                  <span className="text-sm font-medium uppercase tracking-wide opacity-90">
-                    {copy.b2b.subtitle}
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  {copy.b2b.title}
-                </h2>
-                <p className="text-white/90 mb-6">{copy.b2b.description}</p>
-
-                <ul className="space-y-3 mb-8">
-                  {copy.b2b.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-accent-300" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <a
-                    href={`mailto:${copy.b2b.email}`}
-                    className="inline-flex items-center justify-center gap-2 bg-white text-primary-600 font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors"
-                  >
-                    <Mail className="w-5 h-5" />
-                    {copy.b2b.cta}
-                  </a>
-                  <Link
-                    href="/clubs"
-                    className="inline-flex items-center justify-center gap-2 border-2 border-white/50 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/10 transition-colors"
-                  >
-                    <Users className="w-5 h-5" />
-                    Learn More
-                  </Link>
-                </div>
-              </div>
-
-              <div className="hidden md:flex justify-center">
-                <div className="w-64 h-64 bg-white/10 rounded-full flex items-center justify-center">
-                  <Shield className="w-32 h-32 text-white/50" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 bg-white dark:bg-gray-900">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
+        {/* FAQ */}
+        <section className="max-w-2xl mx-auto pb-6">
+          <h2 className="text-lg sm:text-xl font-bold text-center mb-4">
             {copy.faq.title}
           </h2>
-          <div className="space-y-4">
-            {copy.faq.items.map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6"
+          <div className="space-y-2">
+            {copy.faq.items.map((item, i) => (
+              <details
+                key={i}
+                className="group rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/15 transition-colors"
               >
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {item.q}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">{item.a}</p>
-              </div>
+                <summary className="cursor-pointer list-none p-4 flex items-start justify-between gap-3 font-semibold text-white text-sm">
+                  <span>{item.q}</span>
+                  <ChevronDown className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="px-4 pb-4 text-white/65 text-sm leading-relaxed">
+                  {fill(item.a)}
+                </p>
+              </details>
             ))}
           </div>
+        </section>
+      </main>
+
+      {schoolCodeOpen && (
+        <SchoolCodeModal
+          copy={copy.schoolCode}
+          isSignedIn={!!user}
+          onClose={() => setSchoolCodeOpen(false)}
+          onSuccess={() => {
+            setTimeout(() => router.push("/dashboard"), 1200);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Dark-themed modal for school-code redemption. Calls
+ * /api/seat-license/redeem and maps function-level reason codes to
+ * the localised messages in `copy.errors`.
+ */
+function SchoolCodeModal({ copy, isSignedIn, onClose, onSuccess }) {
+  const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+    if (!isSignedIn) {
+      setError(copy.errors.not_signed_in);
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/seat-license/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        if (data.reason === "already_redeemed") {
+          setSuccess(true);
+          onSuccess?.();
+          return;
+        }
+        setError(copy.errors[data.reason] || copy.errors.generic);
+        return;
+      }
+      setSuccess(true);
+      onSuccess?.();
+    } catch {
+      setError(copy.errors.generic);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      onClick={() => !submitting && onClose?.()}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl bg-[#0b0b0b] border border-white/10 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={submitting}
+          aria-label="Close"
+          className="absolute top-3 right-3 p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+            <KeyRound className="w-5 h-5 text-emerald-300" />
+          </div>
+          <h2 className="text-base sm:text-lg font-bold text-white">
+            {copy.modalTitle}
+          </h2>
         </div>
-      </section>
+
+        {success ? (
+          <div className="py-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-3">
+              <Shield className="w-7 h-7 text-emerald-300" />
+            </div>
+            <p className="text-base font-bold text-white mb-1">
+              {copy.successTitle}
+            </p>
+            <p className="text-sm text-white/60">{copy.successBody}</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <p className="text-sm text-white/60 mb-4">{copy.modalBody}</p>
+
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder={copy.placeholder}
+              autoFocus
+              disabled={submitting}
+              className="w-full px-3 py-2.5 rounded-lg border border-white/15 bg-white/5 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 mb-3 font-mono uppercase tracking-wide"
+            />
+
+            {error && (
+              <div className="mb-3 p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting || !code.trim()}
+              className="w-full py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {copy.submitting}
+                </>
+              ) : (
+                copy.submit
+              )}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

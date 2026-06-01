@@ -1,5 +1,6 @@
 // src/app/layout.js
 // import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
@@ -42,6 +43,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const rewardfulKey = process.env.NEXT_PUBLIC_REWARDFUL_API_KEY;
   return (
     <html
       lang="en"
@@ -49,6 +51,26 @@ export default function RootLayout({ children }) {
     >
       <meta name="apple-mobile-web-app-title" content="FieldTalk" />
       <body className={inter.className}>
+        {/* Rewardful — affiliate tracking. Renders only when the API
+            key is configured so dev / preview deploys without the env
+            var don't load it. The script reads ?via= from the URL,
+            drops a rewardful.referral cookie, and /api/checkout passes
+            it through to Stripe as client_reference_id. No further
+            client wiring needed. */}
+        {rewardfulKey ? (
+          <>
+            <Script
+              id="rewardful-init"
+              strategy="beforeInteractive"
+            >{`(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`}</Script>
+            <Script
+              src="https://r.wdfrl.com/rw.js"
+              data-rewardful={rewardfulKey}
+              strategy="afterInteractive"
+              async
+            />
+          </>
+        ) : null}
         <AuthProvider>
           <LanguageProvider>{children}</LanguageProvider>
         </AuthProvider>

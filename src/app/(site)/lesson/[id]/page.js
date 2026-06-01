@@ -74,6 +74,11 @@ import TimelineDrag from "@/components/exercises/TimelineDrag";
 import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
 import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
+import PaywallCard from "@/components/PaywallCard";
+import {
+  usePlayerAccess,
+  canViewLesson,
+} from "@/lib/access/usePlayerAccess";
 import Link from "next/link";
 
 // Step types where Next is gated on the user having interacted with
@@ -155,6 +160,17 @@ function DynamicLessonContent() {
   // Platform admins bypass the per-step "attempt required" gate on the
   // Next button so we can scroll quickly through lessons during QA.
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  // Edition access. We pass the lesson's pillar edition once we have
+  // it so the access check is scoped to the right product — falls
+  // back to null while lesson data is loading. Platform admins are
+  // marked hasAccess: true server-side so QA isn't blocked.
+  const lessonEdition = lesson?.pillar?.edition || null;
+  const access = usePlayerAccess(lessonEdition);
+  const lessonAllowed =
+    !lessonEdition ||
+    canViewLesson(access, lesson?.id) ||
+    access.isAdmin;
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
@@ -542,6 +558,19 @@ function DynamicLessonContent() {
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Access gate — if the signed-in user hasn't paid for this lesson's
+  // edition (and it isn't one of the free-preview lessons), render
+  // the paywall in place of the lesson content. Sits before the
+  // `currentStepData` guard so we don't run the step-rendering code
+  // path for users who can't view this lesson.
+  if (!access.loading && !lessonAllowed) {
+    return (
+      <div className="min-h-screen bg-[#070707] text-white px-4 py-10 sm:py-14">
+        <PaywallCard edition={lessonEdition || "wc2026"} variant="full" />
       </div>
     );
   }
