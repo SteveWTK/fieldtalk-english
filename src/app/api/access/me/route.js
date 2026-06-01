@@ -116,6 +116,10 @@ export async function GET(request) {
 }
 
 async function fetchPreviewLessonIds(supabase, edition) {
+  // Lessons that admins have explicitly flagged as preview via the
+  // `lessons.is_preview` column. Toggle via the Supabase table editor
+  // (or a SQL UPDATE) to change what's available to unpaid users —
+  // no code change needed.
   const { data: pillars, error: pillarsErr } = await supabase
     .from("pillars")
     .select("id")
@@ -125,17 +129,10 @@ async function fetchPreviewLessonIds(supabase, edition) {
   const pillarIds = pillars.map((p) => p.id);
   const { data: lessons, error: lessonsErr } = await supabase
     .from("lessons")
-    .select("id, pillar_id, sort_order")
+    .select("id")
+    .eq("is_preview", true)
     .in("pillar_id", pillarIds);
   if (lessonsErr || !lessons) return [];
 
-  // First lesson per pillar by sort_order.
-  const byPillar = new Map();
-  for (const l of lessons) {
-    const current = byPillar.get(l.pillar_id);
-    if (!current || (l.sort_order ?? 0) < (current.sort_order ?? 0)) {
-      byPillar.set(l.pillar_id, l);
-    }
-  }
-  return [...byPillar.values()].map((l) => l.id);
+  return lessons.map((l) => l.id);
 }

@@ -33,6 +33,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import FirstLessonPrompt from "@/components/FirstLessonPrompt";
 import PaywallCard from "@/components/PaywallCard";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
+import WelcomeOnboarding, {
+  hasSeenWelcomeOnboarding,
+} from "@/components/WelcomeOnboarding";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -81,6 +84,20 @@ function PlayerLessonsMenu() {
   // Platform admins get hasAccess: true from the API regardless, so
   // QA isn't blocked.
   const access = usePlayerAccess(profile?.edition);
+
+  // First-visit WC2026 welcome flow. Only mounts when:
+  //   - data has loaded
+  //   - user is signed in to a wc2026 player row
+  //   - localStorage doesn't already have a "seen" flag for this user
+  // Dismissing the modal stamps localStorage so subsequent visits
+  // skip it. Replay via clearWelcomeOnboarding(userId) (admin hatch).
+  const [showWelcome, setShowWelcome] = useState(false);
+  useEffect(() => {
+    if (loading || !user?.id || !profile) return;
+    if (profile.edition !== "wc2026") return;
+    if (hasSeenWelcomeOnboarding(user.id)) return;
+    setShowWelcome(true);
+  }, [loading, user, profile]);
   const previewLessonSet = useMemo(
     () => new Set(access.previewLessonIds || []),
     [access.previewLessonIds]
@@ -330,6 +347,15 @@ function PlayerLessonsMenu() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* First-visit WC2026 welcome — fullscreen overlay, mounts
+          before any other content so the user lands directly in the
+          intro flow. */}
+      {showWelcome && (
+        <WelcomeOnboarding
+          userId={user?.id}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
       {/* <h1 className="text-2xl font-bold text-primary-900 dark:text-white">
         World Cup 2026 Edition
       </h1> */}
