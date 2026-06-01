@@ -12,10 +12,11 @@
 //                     StickerCard component (no placeholder art).
 //   4. Ready        — trophy + "Start journey" CTA.
 //
-// One-shot: dismissal sets a per-user localStorage flag so the modal
-// doesn't keep re-appearing. The flag is namespaced so we can add a
-// second onboarding (e.g. Champions League edition) without
-// conflicts.
+// One-shot: dismissal POSTs /api/onboarding/complete which flips
+// players.onboarding_completed to true. Admins can re-arm any user
+// by toggling that column back to false in the Supabase table editor
+// (e.g. for Cultura directors and other invited testers who joined
+// before this flow existed).
 //
 // Translations stay local to this component — adding a third
 // language is one extra entry in COPY. If we add many more,
@@ -212,26 +213,6 @@ const COPY = {
   },
 };
 
-const STORAGE_KEY = (userId) => `ft_onboarding_wc2026_seen_${userId}`;
-
-export function hasSeenWelcomeOnboarding(userId) {
-  if (typeof window === "undefined" || !userId) return false;
-  try {
-    return window.localStorage.getItem(STORAGE_KEY(userId)) === "1";
-  } catch {
-    return false;
-  }
-}
-
-export function clearWelcomeOnboarding(userId) {
-  if (typeof window === "undefined" || !userId) return;
-  try {
-    window.localStorage.removeItem(STORAGE_KEY(userId));
-  } catch {
-    /* ignore */
-  }
-}
-
 export default function WelcomeOnboarding({ userId, onClose }) {
   const { userLanguage } = useTranslation();
   // useLanguage's setLang updates the LanguageContext, localStorage,
@@ -242,14 +223,20 @@ export default function WelcomeOnboarding({ userId, onClose }) {
   const [slide, setSlide] = useState(1);
 
   const close = () => {
-    if (userId && typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(STORAGE_KEY(userId), "1");
-      } catch {
-        /* ignore */
-      }
-    }
+    // Optimistic UX — hide the modal immediately so dismissal feels
+    // snappy, then mark the flag in the background. A failed flag
+    // write isn't catastrophic; the user simply sees the modal again
+    // on their next visit and tries again.
     onClose?.();
+    if (userId) {
+      fetch("/api/onboarding/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }).catch((err) => {
+        console.warn("[onboarding] mark-complete failed:", err);
+      });
+    }
   };
 
   // Lock scrolling while the modal is up.

@@ -33,9 +33,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import FirstLessonPrompt from "@/components/FirstLessonPrompt";
 import PaywallCard from "@/components/PaywallCard";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
-import WelcomeOnboarding, {
-  hasSeenWelcomeOnboarding,
-} from "@/components/WelcomeOnboarding";
+import WelcomeOnboarding from "@/components/WelcomeOnboarding";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -88,14 +86,15 @@ function PlayerLessonsMenu() {
   // First-visit WC2026 welcome flow. Only mounts when:
   //   - data has loaded
   //   - user is signed in to a wc2026 player row
-  //   - localStorage doesn't already have a "seen" flag for this user
-  // Dismissing the modal stamps localStorage so subsequent visits
-  // skip it. Replay via clearWelcomeOnboarding(userId) (admin hatch).
+  //   - players.onboarding_completed is not yet true
+  // Dismissing the modal POSTs /api/onboarding/complete which flips
+  // the flag. Admins can re-arm any user by setting the column back
+  // to false in the Supabase table editor.
   const [showWelcome, setShowWelcome] = useState(false);
   useEffect(() => {
     if (loading || !user?.id || !profile) return;
     if (profile.edition !== "wc2026") return;
-    if (hasSeenWelcomeOnboarding(user.id)) return;
+    if (profile.onboarding_completed === true) return;
     setShowWelcome(true);
   }, [loading, user, profile]);
   const previewLessonSet = useMemo(

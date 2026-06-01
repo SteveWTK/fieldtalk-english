@@ -46,11 +46,11 @@ export default function PackProgressBanner({
 
   useEffect(() => {
     if (packsEarned > prevPacksRef.current) {
+      // No auto-dismiss — the celebration banner sticks around until
+      // the user clicks Open or the × themselves. Gives them control
+      // over a moment they've earned, instead of yanking it away.
       setCelebrating(true);
       setDismissed(false);
-      const tid = setTimeout(() => setCelebrating(false), 4500);
-      prevPacksRef.current = packsEarned;
-      return () => clearTimeout(tid);
     }
     prevPacksRef.current = packsEarned;
   }, [packsEarned]);
