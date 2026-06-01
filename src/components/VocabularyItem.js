@@ -116,10 +116,10 @@ export default function VocabularyItem({
             <Image
               src={item.image_url}
               alt={item.word || item.english || ""}
-              width={56}
+              width={72}
               height={56}
               sizes="56px"
-              className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+              className="w-18 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
