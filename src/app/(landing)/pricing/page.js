@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -212,7 +212,39 @@ const translations = {
   },
 };
 
+// Lightweight fallback shown while the route hydrates. Matches the
+// dark theme + ambient glows of the real page so there's no flash.
+function PricingPageFallback() {
+  return (
+    <div className="min-h-screen bg-[#070707] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(16,185,129,0.20), rgba(16,185,129,0) 70%)",
+          }}
+        />
+      </div>
+      <div className="relative z-10 min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    </div>
+  );
+}
+
+// `useSearchParams()` triggers Next 15's static-generation bailout,
+// which requires a Suspense boundary at the route's default export.
+// We wrap the actual page below so the bailout has somewhere to land.
 export default function PricingPage() {
+  return (
+    <Suspense fallback={<PricingPageFallback />}>
+      <PricingPageContent />
+    </Suspense>
+  );
+}
+
+function PricingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
