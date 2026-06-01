@@ -27,8 +27,6 @@ import {
   ArrowRight,
   ArrowLeft,
   X,
-  Sparkles,
-  Trophy,
   Target,
   BookOpen,
   Layers,
@@ -379,7 +377,9 @@ function SlideOne({ copy }) {
   return (
     <div className="onb-fade-up">
       <div className="mb-5 inline-flex items-baseline gap-0">
-        <span className="text-5xl sm:text-6xl mr-2 onb-bounce inline-block">⚽</span>
+        <span className="text-5xl sm:text-6xl mr-2 onb-bounce inline-block">
+          ⚽
+        </span>
       </div>
       <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1">
         Field<span className="text-emerald-400">Talk</span>
