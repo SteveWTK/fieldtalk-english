@@ -151,6 +151,8 @@ const COPY = {
       headline: ["All set to", "play!"],
       subtitle:
         "Learn English, make predictions, collect players, build your team, and chase the world ranking. Your World Cup starts now.",
+      homeTip:
+        "📱 On your phone? Add FieldTalk to your home screen from your browser's menu — one tap and you're back in.",
       cta: "🚀 Start your journey",
     },
   },
@@ -208,6 +210,8 @@ const COPY = {
       headline: ["Tudo pronto para", "jogar!"],
       subtitle:
         "Aprenda inglês, dê seus palpites, colecione jogadores, monte seu time e dispute o ranking mundial. Sua Copa começa agora.",
+      homeTip:
+        "📱 No celular? Adicione o FieldTalk à tela inicial pelo menu do seu navegador — um toque e você volta direto pra jornada.",
       cta: "🚀 Iniciar jornada",
     },
   },
@@ -488,6 +492,13 @@ function SlideFour({ copy }) {
       <p className="text-sm sm:text-base text-white/65 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
         {copy.subtitle}
       </p>
+
+      {/* "Save to home screen" nudge — soft amber pill so it reads as
+          a tip rather than a CTA. Mostly relevant on mobile; on desktop
+          it doesn't hurt to know about it for any future tablet use. */}
+      <div className="mt-5 mx-auto max-w-sm rounded-2xl bg-amber-300/10 border border-amber-300/30 px-4 py-3 text-xs sm:text-sm text-amber-100/90 leading-relaxed">
+        {copy.homeTip}
+      </div>
 
       <Animations />
     </div>

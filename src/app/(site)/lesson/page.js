@@ -334,9 +334,12 @@ function PlayerLessonsMenu() {
       case "locked":
         return <Lock className="w-5 h-5 text-gray-400" />;
       case "edition_paywall":
-        // Emerald lock distinguishes "paid content" from sequence-
-        // locked content (grey). Tapping the card routes to /pricing.
-        return <Lock className="w-5 h-5 text-emerald-400" />;
+        // Sparkles in gold/amber distinguishes "Full edition content"
+        // from sequence-locked content (grey Lock). Two different
+        // shapes (sparkles vs lock) read at a glance — users can tell
+        // "I need to unlock this with progress" from "I need to
+        // purchase the edition" without looking twice.
+        return <Sparkles className="w-5 h-5 text-amber-300" />;
       case "construction":
         return <Construction className="w-5 h-5 text-white" />;
       default:
@@ -638,15 +641,19 @@ function PlayerLessonsMenu() {
                             <Construction className="w-5 h-5" />
                           </button>
                         ) : status === "edition_paywall" ? (
-                          // Tapping a paywalled card routes to /pricing
-                          // (carrying the edition slug) rather than
-                          // letting the user open a locked lesson.
+                          // Paywall pill — gold "Full edition" badge
+                          // routes to /pricing carrying the edition
+                          // slug. Distinct shape + colour from the
+                          // grey sequential lock so users can tell at
+                          // a glance whether they need to progress
+                          // through earlier lessons or buy the edition.
                           <Link
                             href={`/pricing?edition=${encodeURIComponent(profile?.edition || "wc2026")}`}
-                            className="p-2 text-emerald-400 hover:bg-emerald-500/15 rounded-lg transition-colors ml-4"
-                            aria-label="Unlock with subscription"
+                            className="ml-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-300/15 hover:bg-amber-300/25 border border-amber-300/40 hover:border-amber-300/70 text-amber-200 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap"
+                            aria-label="Get the full edition to unlock"
                           >
-                            <Lock className="w-5 h-5" />
+                            <Sparkles className="w-3 h-3" />
+                            {userLanguage === "pt" ? "Edição completa" : "Full edition"}
                           </Link>
                         ) : (
                           <div className="p-2 text-gray-400 ml-4">

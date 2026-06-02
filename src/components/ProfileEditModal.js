@@ -234,12 +234,13 @@ export default function ProfileEditModal({
               </button>
             )}
           </div>
-          {/* Cell ratio matches typical flag proportions (~5:3) so the
-              cropping that aspect-square + object-cover used to inflict
-              on wider-than-tall flags goes away. object-contain shows
-              every flag in full; symmetric gap-2 keeps rows + columns
-              evenly spaced so the grid breathes without feeling sparse. */}
-          <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 overflow-y-auto pr-1">
+          {/* Explicit row height (h-10 / h-12) rather than aspect-[5/3]:
+              aspect-ratio cells could compute heights small enough that
+              the 8px gap-y looked invisible. Fixed heights give every
+              row the same crisp 40-48px strip, with symmetric gap-2
+              between both axes. object-contain still shows every flag
+              in full inside the ring. */}
+          <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 overflow-y-auto pr-1 pb-2">
             {WC_NATIONS.map((nation) => {
               const url = FLAG_URL_BUILDER(nation.code2);
               const isSelected = avatarUrl === url;
@@ -249,7 +250,7 @@ export default function ProfileEditModal({
                   type="button"
                   onClick={() => setAvatarUrl(url)}
                   title={nation.name}
-                  className={`relative aspect-[5/3] rounded-md overflow-hidden ring-2 transition-all ${
+                  className={`relative h-10 sm:h-12 rounded-md overflow-hidden ring-2 transition-all ${
                     isSelected
                       ? "ring-emerald-400 scale-105"
                       : "ring-white/10 hover:ring-white/40"

@@ -48,15 +48,16 @@ export async function POST(request) {
     }
 
     // Body is optional — the welcome modal calls this with no body.
-    // Empty-body case (the modal's path) writes only the flag itself.
+    // Empty-body case (the modal's path) writes ONLY the boolean flag.
+    // Earlier versions also wrote onboarding_completed_at + updated_at
+    // — those are leftovers from the Habitat schema and may not exist
+    // on FieldTalk's players table; including them in the update payload
+    // caused Supabase to reject the whole statement, which is what made
+    // the flag stick at false even after the modal completed.
     const body = await request.json().catch(() => ({}));
     const { role, level, goals } = body || {};
 
-    const update = {
-      onboarding_completed: true,
-      onboarding_completed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    const update = { onboarding_completed: true };
     if (typeof role === "string" && role.trim()) {
       update.onboarding_role = role;
     }
@@ -74,12 +75,22 @@ export async function POST(request) {
       .eq("id", user.id);
 
     if (updateError) {
-      console.error(
-        "[onboarding/complete] update error:",
-        updateError
-      );
+      // Spread the PostgrestError so the log shows code/hint/message
+      // rather than "{}". The most likely cause if this fires is the
+      // onboarding_completed column not existing on the players table
+      // — run PLAYERS_ONBOARDING_SCHEMA.sql in Supabase to add it.
+      console.error("[onboarding/complete] update error:", {
+        message: updateError.message,
+        code: updateError.code,
+        hint: updateError.hint,
+        details: updateError.details,
+      });
       return NextResponse.json(
-        { error: updateError.message || "Could not update profile" },
+        {
+          error: updateError.message || "Could not update profile",
+          hint:
+            "If this references onboarding_completed, run PLAYERS_ONBOARDING_SCHEMA.sql in Supabase to add the column.",
+        },
         { status: 500 }
       );
     }
