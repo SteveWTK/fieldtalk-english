@@ -1,5 +1,5 @@
 // src/lib/hooks/usePlayerData.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getPlayerProfile,
   getPlayerProgress,
@@ -40,25 +40,30 @@ export function usePlayerProgress(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  // Hoisted out of useEffect so the returned `refetch` actually points
+  // at it. The previous shape declared fetchProgress inside the effect
+  // closure, so the `refetch: () => fetchProgress()` arrow at the
+  // bottom referenced a name that wasn't in scope — calling it
+  // silently did nothing, leaving total_xp displays stale after
+  // events like pack opens or completion bumps.
+  const fetchProgress = useCallback(async () => {
     if (!userId) return;
-
-    async function fetchProgress() {
-      try {
-        setLoading(true);
-        const data = await getPlayerProgress(userId);
-        setProgress(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setLoading(true);
+      const data = await getPlayerProgress(userId);
+      setProgress(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    fetchProgress();
   }, [userId]);
 
-  return { progress, loading, error, refetch: () => fetchProgress() };
+  useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
+
+  return { progress, loading, error, refetch: fetchProgress };
 }
 
 export function usePillarsAndLessons(edition = null) {

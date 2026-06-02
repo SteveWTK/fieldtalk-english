@@ -49,7 +49,12 @@ function DashboardContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { profile, progress, loading } = usePlayerDashboard(user?.id);
+  const {
+    profile,
+    progress,
+    loading,
+    refetchProgress,
+  } = usePlayerDashboard(user?.id);
   const { settings } = useAppSettings();
   // Pending lesson resume — populated from localStorage. When set we
   // surface a "Resume your lesson" CTA at the top of the dashboard
@@ -93,11 +98,15 @@ function DashboardContent() {
   const handlePackModalClose = ({ refetch } = {}) => {
     setPackModalOpen(false);
     if (refetch) {
-      // After a successful open, refetch the counts so the dashboard
-      // numbers (and the album when the user navigates there) reflect
-      // the new state immediately.
+      // After a successful open, refetch everything that could have
+      // shifted: pack count, collection, AND total XP. The XP refetch
+      // matters because the user may have arrived on the dashboard
+      // before markLessonComplete's bump propagated, or via a
+      // mid-lesson partial commit that just landed — either way we
+      // want the hero's "X XP to next pack" to reflect reality.
       refreshPacks();
       refreshCollection();
+      refetchProgress?.();
     }
   };
 

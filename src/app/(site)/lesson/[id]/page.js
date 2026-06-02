@@ -139,13 +139,21 @@ function DynamicLessonContent() {
   const [startTime] = useState(Date.now());
   const [completing, setCompleting] = useState(false);
 
-  // Live pack-progress wiring: baseline XP from player_progress at mount
-  // + this session's accumulated xpEarned = the user's effective total.
-  // Drives the top bar and the side banner.
+  // Live pack-progress wiring. baselineXp is total_xp at mount; that
+  // value already includes any prior lesson_partial commits (because
+  // awardXp lesson_partial bumped total_xp at the time of commit).
+  // So the correct "current effective total" is:
+  //   baselineXp + (xpEarned - committedXp)
+  // where xpEarned − committedXp is the XP earned in this session
+  // that has NOT yet been pushed to total_xp. Without the subtraction
+  // we'd double-count any committed partial XP, which made the side
+  // banner overstate, false-fire pack unlocks, and produce the "No
+  // packs available" server response when the user tried to open.
   const { progress: playerProgress } = usePlayerProgress(user?.id);
   const { settings: appSettings } = useAppSettings();
   const baselineXp = playerProgress?.total_xp || 0;
-  const effectiveXp = baselineXp + xpEarned;
+  const uncommittedXpEarned = Math.max(0, xpEarned - committedXp);
+  const effectiveXp = baselineXp + uncommittedXpEarned;
   const packXpCost = appSettings?.pack_xp_cost || 200;
   const packProgressPct = Math.round(
     ((effectiveXp % packXpCost) / packXpCost) * 100
