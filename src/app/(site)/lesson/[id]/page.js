@@ -233,6 +233,36 @@ function DynamicLessonContent() {
     }
   }, [lessonId, user]);
 
+  // Next lesson in the same pillar (= same unit). Drives the
+  // streamlined completion flow: rather than bouncing every finished
+  // lesson back to /lesson, we route directly to the next lesson's
+  // step 1 if there is one. Only the FINAL lesson of a unit kicks
+  // the user back to /lesson (where the next unit is highlighted).
+  const [nextLessonInPillar, setNextLessonInPillar] = useState(null);
+  useEffect(() => {
+    if (!lesson?.pillar_id || lesson?.sort_order === undefined) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("lessons")
+          .select("id, title, sort_order")
+          .eq("pillar_id", lesson.pillar_id)
+          .gt("sort_order", lesson.sort_order ?? 0)
+          .order("sort_order", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled) setNextLessonInPillar(data || null);
+      } catch (err) {
+        console.warn("[lesson] next-lesson lookup failed:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lesson?.pillar_id, lesson?.sort_order]);
+
   // Resume — restore step + already-committed XP if the user previously
   // left this lesson mid-way (e.g. tapped "Open" on the pack-unlock
   // banner). Runs once per (user, lesson, lesson-loaded) combo and
@@ -887,12 +917,16 @@ function DynamicLessonContent() {
       }
 
       console.log(
-        "✅ Lesson completion successful, navigating to lessons page..."
+        "✅ Lesson completion successful, navigating onward..."
       );
 
-      // Pass the just-completed lesson id so /lesson can select the right
-      // pillar and highlight the next lesson (or first of next pillar).
-      const returnUrl = `/lesson?completed=${encodeURIComponent(lesson.id)}`;
+      // Streamlined flow: if there's another lesson in this unit, go
+      // straight to its step 1 — no /lesson detour. Only the final
+      // lesson of a unit kicks the user back to /lesson, where the
+      // next unit's hero CTA is shown via ?completed=<id>.
+      const returnUrl = nextLessonInPillar
+        ? `/lesson/${nextLessonInPillar.id}`
+        : `/lesson?completed=${encodeURIComponent(lesson.id)}`;
 
       // Small delay to ensure database operations complete
       setTimeout(() => {
@@ -902,8 +936,13 @@ function DynamicLessonContent() {
       console.error("❌ Error marking lesson complete:", error);
       setCompleting(false);
 
-      // Even if completion fails, still allow navigation
-      router.push(`/lesson?completed=${encodeURIComponent(lesson.id)}`);
+      // Even if completion fails, still allow navigation — use the
+      // same next-lesson-or-/lesson rule so the user isn't stranded.
+      router.push(
+        nextLessonInPillar
+          ? `/lesson/${nextLessonInPillar.id}`
+          : `/lesson?completed=${encodeURIComponent(lesson.id)}`
+      );
     }
   };
 
@@ -3015,8 +3054,16 @@ function DynamicLessonContent() {
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>{t("saving_progress")}</span>
                       </div>
+                    ) : nextLessonInPillar ? (
+                      // Mid-unit completion — going directly to the
+                      // next lesson, so the button reads as a forward
+                      // move rather than a "return".
+                      t("continue_learning")
                     ) : (
-                      t("return_to_lessons")
+                      // End-of-unit (or end-of-content) — kicks the
+                      // user back to /lesson where the hero CTA points
+                      // at the next unit.
+                      t("go_to_next_unit")
                     )}
                   </button>
                   <button
@@ -3267,10 +3314,23 @@ function DynamicLessonContent() {
   );
 }
 
+function DynamicLessonPageInner() {
+  // Read the route param HERE (not inside DynamicLessonContent) so we
+  // can use it as a React key on the inner component. Keying on the
+  // lesson id forces a full unmount + remount whenever the route's
+  // dynamic segment changes — without this, App Router preserves
+  // useState across /lesson/a → /lesson/b navigations and stale XP
+  // (baselineXp, xpEarned, committedXp) leaks between lessons.
+  // usePlayerProgress also re-runs its fetch on remount, so the
+  // baseline reflects the just-bumped total_xp.
+  const params = useParams();
+  return <DynamicLessonContent key={String(params?.id || "noid")} />;
+}
+
 export default function DynamicLessonPage() {
   return (
     <ProtectedRoute>
-      <DynamicLessonContent />
+      <DynamicLessonPageInner />
       {/* Admin-only floating button — wipes onboarding flags + reloads
           so platform admins can replay the hints after tweaking copy. */}
       {/* <ReplayOnboardingButton /> */}

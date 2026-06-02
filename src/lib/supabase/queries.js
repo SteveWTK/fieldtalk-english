@@ -357,14 +357,27 @@ export async function markLessonComplete(
     if (isFirstCompletion) {
       completionPayload.xp_earned = xpEarned;
     }
+    // onConflict names the unique constraint Supabase should use to
+    // resolve the upsert. Without it, the call falls back to the
+    // primary key (`id`) — which isn't in the payload — so a
+    // re-completion hits the (player_id, lesson_id) unique constraint
+    // and the whole call fails with a PostgrestError whose fields are
+    // non-enumerable, surfacing as the misleading "{}" in console logs.
     const { data: completionData, error: completionError } = await supabase
       .from("lesson_completions")
-      .upsert(completionPayload)
+      .upsert(completionPayload, { onConflict: "player_id,lesson_id" })
       .select()
       .single();
 
     if (completionError) {
-      console.error("❌ Lesson completion failed:", completionError);
+      // Spread to enumerable so the log shows real fields (code, hint,
+      // message, details) instead of {} for PostgrestError instances.
+      console.error("❌ Lesson completion failed:", {
+        message: completionError.message,
+        code: completionError.code,
+        hint: completionError.hint,
+        details: completionError.details,
+      });
       throw completionError;
     }
 

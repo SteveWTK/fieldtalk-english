@@ -21,6 +21,9 @@ import {
   MessageSquare,
   Mic,
   Construction,
+  Trophy,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import AnimatedProgressBar from "@/components/AnimatedProgressBar";
 // import AnimatedCounter from "@/components/AnimatedCounter";
@@ -48,6 +51,12 @@ function PlayerLessonsMenu() {
   // to highlight (typically the next one). Cleared on subsequent visits.
   const [highlightLessonId, setHighlightLessonId] = useState(null);
 
+  // End-of-unit jump target — set when the just-completed lesson was the
+  // last in its unit AND there's a next unit. Drives the "Continue to
+  // [Next Unit] →" hero CTA, which links directly to step 1 of that
+  // next unit's first lesson (one click, no card-hunting).
+  const [endOfUnitJump, setEndOfUnitJump] = useState(null);
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const completedParam = searchParams.get("completed");
@@ -59,7 +68,7 @@ function PlayerLessonsMenu() {
 
   const { user } = useAuth();
   // All visible strings now come from the locale files via t().
-  const { t } = useTranslation(user);
+  const { t, userLanguage } = useTranslation(user);
 
   // Use the actual logged-in user's ID
   const userId = user?.id;
@@ -144,9 +153,13 @@ function PlayerLessonsMenu() {
     const nextInPillar = idx >= 0 ? lessonsSorted[idx + 1] : null;
 
     if (nextInPillar) {
-      // Stay on this pillar; highlight the next lesson.
+      // Stay on this pillar; highlight the next lesson. (The lesson
+      // page now skips this case in the streamlined flow — it routes
+      // straight to the next lesson — but we keep it for direct URL
+      // navigation and admin debug.)
       setSelectedPillar(sourcePillar.name);
       setHighlightLessonId(nextInPillar.id);
+      setEndOfUnitJump(null);
     } else {
       // Last lesson of the pillar — find the next pillar by sort_order.
       const pillarsSorted = [...pillars].sort(
@@ -163,10 +176,24 @@ function PlayerLessonsMenu() {
         )[0];
         setSelectedPillar(nextPillar.name);
         setHighlightLessonId(firstNextLesson?.id || null);
+        // Stash the next-unit info for the hero CTA + card highlight.
+        // unitPillarName is the lookup key for highlighting the matching
+        // unit card; unitName is the human-facing display string.
+        if (firstNextLesson) {
+          setEndOfUnitJump({
+            unitName: nextPillar.display_name || nextPillar.name,
+            unitPillarName: nextPillar.name,
+            lessonId: firstNextLesson.id,
+            lessonTitle: firstNextLesson.title || null,
+          });
+        } else {
+          setEndOfUnitJump(null);
+        }
       } else {
-        // No further pillars — just stay on the completed lesson's pillar.
+        // No further pillars — they've finished everything.
         setSelectedPillar(sourcePillar.name);
         setHighlightLessonId(null);
+        setEndOfUnitJump(null);
       }
     }
 
@@ -370,6 +397,42 @@ function PlayerLessonsMenu() {
         </p>
       </div> */}
 
+      {/* End-of-unit hero CTA — sits ABOVE the unit cards so it's
+          the first thing a user sees after completing the final
+          lesson of a unit. Points them at the highlighted next-unit
+          card (which carries an emerald glow). Clicking that card
+          uses the existing #lessons anchor jump, so the page
+          smoothly scrolls down to reveal the next unit's lesson
+          list with its first lesson already highlighted. */}
+      {endOfUnitJump && (
+        <div className="mb-6 sm:mb-8 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-amber-300/10 border border-emerald-400/50 px-4 sm:px-6 py-4 sm:py-5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="shrink-0 w-11 h-11 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-amber-200" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-wider text-emerald-200 font-semibold flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3" />
+                  {userLanguage === "pt"
+                    ? "Unidade concluída!"
+                    : "Unit complete!"}
+                </p>
+                <p className="text-sm sm:text-base font-bold text-white">
+                  {userLanguage === "pt"
+                    ? `Toque em ${endOfUnitJump.unitName} para começar a próxima unidade`
+                    : `Tap ${endOfUnitJump.unitName} to start the next unit`}
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-emerald-300 shrink-0 onb-arrow-nudge" aria-hidden />
+          </div>
+          {/* Animations declared in the single styled-jsx block at
+              the bottom of this component — Next.js only allows one
+              <style jsx> tree per render. */}
+        </div>
+      )}
+
       {/* Pillars Navigation */}
       <div className="bg-white dark:bg-primary-800 rounded-xl p-6 shadow-sm mb-8">
         {/* <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
@@ -378,14 +441,21 @@ function PlayerLessonsMenu() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {pillars.map((pillar, index) => {
             const IconComponent = getIconComponent(pillar.icon);
+            // The "start the next unit" highlight — emerald ring +
+            // soft glow + a small pulse so the user's eye lands on
+            // this card after the end-of-unit hero CTA above.
+            const isStartNextUnit =
+              endOfUnitJump?.unitPillarName === pillar.name;
             return (
               <button
                 key={pillar.name}
                 onClick={() => setSelectedPillar(pillar.name)}
                 className={`p-6 rounded-xl border-2 transition-all duration-200 overflow-hidden text-left ${
-                  selectedPillar === pillar.name
-                    ? "border-accent-500 bg-accent-50/20 dark:bg-accent-900/20"
-                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                  isStartNextUnit
+                    ? "border-emerald-400 bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.25)] start-next-unit-pulse next-attention"
+                    : selectedPillar === pillar.name
+                      ? "border-accent-500 bg-accent-50/20 dark:bg-accent-900/20"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                 }`}
               >
                 <Link href="#lessons">
@@ -508,7 +578,7 @@ function PlayerLessonsMenu() {
                             : status === "construction"
                               ? "border-primary-200 bg-primary-50/50 dark:bg-primary-900/20 opacity-75"
                               : "border-primary-200 dark:border-primary-700"
-                      } ${highlight ? "fl-first-lesson-pulse" : ""}`}
+                      } ${highlight ? "fl-first-lesson-pulse next-attention" : ""}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-grow">
@@ -690,8 +760,10 @@ function PlayerLessonsMenu() {
         </div>
       )}
 
-      {/* Pulse ring used by the first lesson card while the Start-here
-          prompt is visible. Soft emerald glow that breathes ~2s loop. */}
+      {/* Single styled-jsx block for the whole page — Next.js only
+          permits one <style jsx> tree per component render, so the
+          end-of-unit CTA's keyframes live here alongside the
+          Start-here pulse rather than inline. */}
       <style jsx global>{`
         @keyframes fl-first-lesson-pulse {
           0%,
@@ -705,6 +777,56 @@ function PlayerLessonsMenu() {
         .fl-first-lesson-pulse {
           animation: fl-first-lesson-pulse 2s ease-out infinite;
           border-color: rgb(16 185 129) !important;
+        }
+
+        /* End-of-unit CTA: nudging arrow + pulsing glow on the
+           highlighted next-unit card. */
+        @keyframes onb-arrow-nudge {
+          0%, 100% { transform: translateX(0); }
+          50%      { transform: translateX(6px); }
+        }
+        .onb-arrow-nudge {
+          animation: onb-arrow-nudge 1.4s ease-in-out infinite;
+        }
+        @keyframes start-next-unit-pulse {
+          0%, 100% {
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
+          }
+          50% {
+            box-shadow: 0 0 36px rgba(16, 185, 129, 0.45);
+          }
+        }
+        .start-next-unit-pulse {
+          animation: start-next-unit-pulse 2.2s ease-in-out infinite;
+        }
+
+        /* Gentle attention wiggle — same vocabulary as the vocab
+           cards (translate ±2px + rotate ±0.4deg) but on a slightly
+           longer cycle so the highlighted next-unit and next-lesson
+           cards read as "ready when you are" rather than "alert". */
+        @keyframes next-attention {
+          0%, 18%, 30%, 100% {
+            transform: translateX(0) rotate(0);
+          }
+          20% { transform: translateX(-2px) rotate(-0.4deg); }
+          22% { transform: translateX(2px)  rotate(0.4deg); }
+          24% { transform: translateX(-2px) rotate(-0.4deg); }
+          26% { transform: translateX(2px)  rotate(0.4deg); }
+        }
+        .next-attention {
+          animation: next-attention 3.6s ease-in-out infinite;
+        }
+        /* When a card carries both the pulse + the wiggle, compose
+           the animations so neither cancels the other. */
+        .start-next-unit-pulse.next-attention {
+          animation:
+            start-next-unit-pulse 2.2s ease-in-out infinite,
+            next-attention 3.6s ease-in-out infinite;
+        }
+        .fl-first-lesson-pulse.next-attention {
+          animation:
+            fl-first-lesson-pulse 2s ease-out infinite,
+            next-attention 3.6s ease-in-out infinite;
         }
       `}</style>
     </div>
