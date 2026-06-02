@@ -15,7 +15,7 @@
 // currently shown — paste straight into the partner invoice spreadsheet.
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -39,14 +39,7 @@ import { downloadCSV } from "@/lib/admin/codes";
 function defaultRange() {
   const now = new Date();
   const since = new Date(now.getFullYear(), now.getMonth(), 1);
-  const until = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-    23,
-    59,
-    59
-  );
+  const until = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   return { since: toInputDate(since), until: toInputDate(until) };
 }
 
@@ -176,7 +169,7 @@ function SeatLicensesDashboardContent() {
             <span className="text-emerald-300 font-semibold">
               Redemptions in range
             </span>{" "}
-            column is what to invoice — that's how many of the codes you
+            column is what to invoice — that&apos;s how many of the codes you
             issued were actually redeemed within the selected period.
           </p>
         </header>
@@ -291,9 +284,7 @@ function SeatLicensesDashboardContent() {
                   <th className="text-right px-3 py-3 font-semibold hidden sm:table-cell">
                     Licences
                   </th>
-                  <th className="text-right px-3 py-3 font-semibold">
-                    Seats
-                  </th>
+                  <th className="text-right px-3 py-3 font-semibold">Seats</th>
                   <th className="text-right px-3 py-3 font-semibold">
                     In range
                   </th>
@@ -325,10 +316,7 @@ function SeatLicensesDashboardContent() {
 }
 
 function Stat({ label, value, tone = "neutral" }) {
-  const colour =
-    tone === "emerald"
-      ? "text-emerald-300"
-      : "text-white";
+  const colour = tone === "emerald" ? "text-emerald-300" : "text-white";
   return (
     <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
       <p className="text-[10px] uppercase tracking-wider text-white/50 mb-1">
@@ -350,9 +338,7 @@ function PartnerRow({ partner, isOpen, onToggle }) {
         onClick={onToggle}
       >
         <td className="px-4 py-3">
-          <div className="font-semibold text-white">
-            {partner.partner_name}
-          </div>
+          <div className="font-semibold text-white">{partner.partner_name}</div>
           <div className="text-[11px] text-white/45 mt-0.5">
             {partner.editions.join(" / ")}
             {partner.contact_email ? ` · ${partner.contact_email}` : ""}
@@ -398,9 +384,7 @@ function DrilldownDetails({ partner }) {
           Capacity
         </p>
         <p>
-          <span className="font-semibold text-white">
-            {partner.seats_used}
-          </span>{" "}
+          <span className="font-semibold text-white">{partner.seats_used}</span>{" "}
           of {partner.seats_total} seats used ·{" "}
           <span className="text-emerald-300">{remaining} remaining</span>
         </p>

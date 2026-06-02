@@ -13,7 +13,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Download, Sparkles, AlertTriangle, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Download,
+  Sparkles,
+  AlertTriangle,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -116,9 +122,9 @@ function PromoCodesAdminContent() {
             Bulk-generate Stripe discount codes
           </h1>
           <p className="text-sm text-white/55 mt-2 max-w-lg leading-relaxed">
-            Issues single-use promotion codes against an existing Stripe
-            coupon. Each code redeems once and can be downloaded as a CSV
-            for the partner to distribute.
+            Issues single-use promotion codes against an existing Stripe coupon.
+            Each code redeems once and can be downloaded as a CSV for the
+            partner to distribute.
           </p>
         </header>
 
@@ -139,9 +145,9 @@ function PromoCodesAdminContent() {
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono text-sm"
             />
             <p className="mt-1 text-[11px] text-white/40">
-              Find this in Stripe → Coupons → click the coupon → ID below
-              the name. Coupon defines the discount amount; this tool just
-              issues codes for it.
+              Find this in Stripe → Coupons → click the coupon → ID below the
+              name. Coupon defines the discount amount; this tool just issues
+              codes for it.
             </p>
           </div>
 
@@ -216,7 +222,7 @@ function PromoCodesAdminContent() {
             </p>
             <p className="text-sm text-white/65 mb-4">
               Each code redeems exactly once at Stripe Checkout via the
-              "Add promotion code" field.
+              &quot;Add promotion code&quot; field.
             </p>
             <button
               type="button"
