@@ -58,6 +58,37 @@ function AlbumContent() {
     return [...map.entries()].map(([country, items]) => ({ country, items }));
   }, [stickers]);
 
+  // Legacy / pre-launch ("FieldTalk Beta") stickers the user owns but
+  // which aren't part of the current active roster. They render in a
+  // separate section at the bottom of the album so test users keep
+  // visibility of their early collection without those cards
+  // diluting the official WC2026 album-completion percentage.
+  const activeStickerIds = useMemo(
+    () => new Set(stickers.map((s) => s.id)),
+    [stickers]
+  );
+  const legacyOwned = useMemo(() => {
+    return (collection || [])
+      .filter(
+        (row) => row.sticker?.id && !activeStickerIds.has(row.sticker.id)
+      )
+      .map((row) => ({
+        sticker: row.sticker,
+        quantity: row.quantity || 1,
+      }));
+  }, [collection, activeStickerIds]);
+  const legacyByCountry = useMemo(() => {
+    const map = new Map();
+    for (const item of legacyOwned) {
+      const c = item.sticker?.country || "—";
+      if (!map.has(c)) map.set(c, []);
+      map.get(c).push(item);
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([country, items]) => ({ country, items }));
+  }, [legacyOwned]);
+
   const ownedCount = ownedById.size;
   const totalCount = stickers.length;
   const pct = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
@@ -245,6 +276,86 @@ function AlbumContent() {
               </section>
             );
           })
+        )}
+
+        {/* FieldTalk Beta — pre-launch collection */}
+        {legacyOwned.length > 0 && (
+          <section className="rounded-2xl bg-amber-300/[0.06] border border-amber-300/30 backdrop-blur-sm p-4 sm:p-5 space-y-4">
+            <header>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-amber-200/80 font-semibold mb-1">
+                FieldTalk Beta
+              </p>
+              <h2 className="font-bold text-base sm:text-lg">
+                Pre-launch collection
+              </h2>
+              <p className="text-xs sm:text-sm text-white/55 mt-1 max-w-md leading-relaxed">
+                Cards earned before the official FIFA squads were
+                confirmed. Kept here as a memento — they still count
+                for your squad value and can be traded in for XP.
+              </p>
+            </header>
+
+            {legacyByCountry.map(({ country, items }) => (
+              <div key={country}>
+                <h3 className="font-semibold text-sm text-white/80 mb-2">
+                  {country}
+                </h3>
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  {items.map(({ sticker, quantity }) => {
+                    const canTrade = quantity > 1;
+                    const xpForThis =
+                      TRADE_IN_XP_BY_RATING[sticker.rating] || 0;
+                    const isPending = pendingId === sticker.id;
+                    const isTrading = tradingId === sticker.id;
+                    return (
+                      <div
+                        key={sticker.id}
+                        className="relative flex flex-col items-center"
+                      >
+                        <StickerCard
+                          sticker={sticker}
+                          owned
+                          quantity={quantity}
+                          size="sm"
+                        />
+                        {canTrade && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              isPending
+                                ? handleTradeIn(sticker)
+                                : armConfirm(sticker.id)
+                            }
+                            disabled={isTrading}
+                            className={`mt-1 w-full px-1.5 py-1 rounded-md text-[10px] font-bold leading-tight tracking-wide transition-colors border ${
+                              isPending
+                                ? "bg-emerald-500 hover:bg-emerald-400 text-[#062013] border-emerald-300 animate-pulse"
+                                : "bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-200 border-emerald-500/40"
+                            } disabled:opacity-60 disabled:cursor-wait`}
+                            title={
+                              isPending
+                                ? "Tap to confirm — earns XP, loses one duplicate"
+                                : `Trade one duplicate for +${xpForThis} XP`
+                            }
+                          >
+                            {isTrading ? (
+                              <span className="inline-flex items-center justify-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              </span>
+                            ) : isPending ? (
+                              `Confirm +${xpForThis} XP`
+                            ) : (
+                              `+${xpForThis} XP`
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </section>
         )}
       </main>
     </div>

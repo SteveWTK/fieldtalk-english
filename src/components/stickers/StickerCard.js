@@ -54,13 +54,25 @@ export default function StickerCard({
       : `0 0 0 2px ${rarity.ring}`,
   };
 
+  // A sticker is "legacy" / "beta" when it's been retired from the
+  // active roster — either via the explicit edition tag we may add on
+  // sticker_players, or via the simpler is_active = false flag the
+  // existing schema already supports. Both signals are honoured so
+  // the badge works with either migration path.
+  const isLegacy =
+    sticker.edition === "beta" || sticker.is_active === false;
+
   return (
     <div
       className={`${dims.w} ${dims.h} relative rounded-xl overflow-hidden shrink-0 ${
         owned ? "" : "opacity-30 grayscale"
       } ${className}`}
       style={ringStyle}
-      title={`${sticker.name} — ${sticker.country} — ${rarity.label}`}
+      title={
+        isLegacy
+          ? `${sticker.name} — ${sticker.country} — ${rarity.label} · FieldTalk Beta`
+          : `${sticker.name} — ${sticker.country} — ${rarity.label}`
+      }
     >
       {sticker.image_url ? (
         <>
@@ -143,6 +155,17 @@ export default function StickerCard({
       {owned && quantity > 1 && (
         <div className="absolute top-1 right-1 min-w-[20px] h-5 px-1 rounded-full bg-amber-500 text-black text-[10px] font-bold flex items-center justify-center shadow">
           ×{quantity}
+        </div>
+      )}
+
+      {/* Legacy / "FieldTalk Beta" badge — sits in the bottom-left so
+          it stays clear of the position pill (top-left), quantity
+          badge (top-right) and rating stars (centred at bottom). Soft
+          amber so it reads as a nostalgic memento rather than an
+          error or warning. */}
+      {isLegacy && (
+        <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-amber-400/85 text-[#1a0e00] text-[9px] font-black uppercase tracking-wider leading-none shadow z-10">
+          Beta
         </div>
       )}
     </div>
