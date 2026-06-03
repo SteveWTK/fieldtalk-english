@@ -357,21 +357,45 @@ export async function markLessonComplete(
     if (isFirstCompletion) {
       completionPayload.xp_earned = xpEarned;
     }
-    // onConflict names the unique constraint Supabase should use to
-    // resolve the upsert. Without it, the call falls back to the
-    // primary key (`id`) — which isn't in the payload — so a
-    // re-completion hits the (player_id, lesson_id) unique constraint
-    // and the whole call fails with a PostgrestError whose fields are
-    // non-enumerable, surfacing as the misleading "{}" in console logs.
-    const { data: completionData, error: completionError } = await supabase
-      .from("lesson_completions")
-      .upsert(completionPayload, { onConflict: "player_id,lesson_id" })
-      .select()
-      .single();
+    // Explicit insert-or-update keyed on the existing-completion check
+    // we already did above. The previous `.upsert(..., { onConflict:
+    // "player_id,lesson_id" })` shape depended on the table having a
+    // unique constraint with exactly that name; if the schema
+    // doesn't carry that constraint Supabase rejects the whole call,
+    // which surfaced as a hang on the Completion step. Doing the
+    // INSERT / UPDATE separately removes the schema dependency.
+    let completionData;
+    let completionError;
+    if (existingCompletion) {
+      // Re-completion — update score/time/completed_at, leave the
+      // original xp_earned intact (first-completion XP is the canonical
+      // record; re-doing the lesson doesn't re-credit).
+      const updateResult = await supabase
+        .from("lesson_completions")
+        .update({
+          score: score,
+          time_spent: timeSpent,
+          completed_at: completionPayload.completed_at,
+        })
+        .eq("id", existingCompletion.id)
+        .select()
+        .single();
+      completionData = updateResult.data;
+      completionError = updateResult.error;
+    } else {
+      // First completion — fresh insert with the full XP figure.
+      const insertResult = await supabase
+        .from("lesson_completions")
+        .insert(completionPayload)
+        .select()
+        .single();
+      completionData = insertResult.data;
+      completionError = insertResult.error;
+    }
 
     if (completionError) {
-      // Spread to enumerable so the log shows real fields (code, hint,
-      // message, details) instead of {} for PostgrestError instances.
+      // Spread to enumerable fields so PostgrestError instances log
+      // their useful contents instead of "{}".
       console.error("❌ Lesson completion failed:", {
         message: completionError.message,
         code: completionError.code,
@@ -395,13 +419,16 @@ export async function markLessonComplete(
       };
     }
 
-    // Step 2: Get current progress
+    // Step 2: Get current progress. maybeSingle() returns null+no-error
+    // when the row doesn't exist yet (rather than throwing PGRST116),
+    // which is exactly the "first session for this user" path we want
+    // to fall through to the create-new-row branch below.
     console.log("Step 2: Fetching current player progress...");
     const { data: currentProgress, error: progressFetchError } = await supabase
       .from("player_progress")
       .select("*")
       .eq("player_id", playerId)
-      .single();
+      .maybeSingle();
 
     if (progressFetchError) {
       console.error("❌ Progress fetch error details:", {
@@ -410,54 +437,53 @@ export async function markLessonComplete(
         hint: progressFetchError.hint,
         code: progressFetchError.code,
       });
+      throw progressFetchError;
+    }
 
-      if (progressFetchError.code === "PGRST116") {
-        console.log("No progress record found, will create new one...");
-        // Create new progress record. We use xpToAward (the delta after
-        // subtracting any already-committed partial XP) rather than the
-        // raw xpEarned for the same anti-double-count reason.
-        const newProgressData = {
-          player_id: playerId,
-          total_xp: xpToAward,
-          current_level: 1,
-          survival_progress: 0,
-          precision_progress: 0,
-          fluency_progress: 0,
-          current_streak: 1,
-          longest_streak: 1,
-          last_activity_date: new Date().toISOString().split("T")[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+    if (!currentProgress) {
+      console.log("No progress record found, will create new one...");
+      // Create new progress record. We use xpToAward (the delta after
+      // subtracting any already-committed partial XP) rather than the
+      // raw xpEarned for the same anti-double-count reason.
+      const newProgressData = {
+        player_id: playerId,
+        total_xp: xpToAward,
+        current_level: 1,
+        survival_progress: 0,
+        precision_progress: 0,
+        fluency_progress: 0,
+        current_streak: 1,
+        longest_streak: 1,
+        last_activity_date: new Date().toISOString().split("T")[0],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-        console.log("Creating new progress with:", newProgressData);
+      console.log("Creating new progress with:", newProgressData);
 
-        const { data: newProgress, error: createError } = await supabase
-          .from("player_progress")
-          .insert(newProgressData)
-          .select()
-          .single();
+      const { data: newProgress, error: createError } = await supabase
+        .from("player_progress")
+        .insert(newProgressData)
+        .select()
+        .single();
 
-        if (createError) {
-          console.error("❌ Failed to create new progress:", {
-            message: createError.message,
-            details: createError.details,
-            hint: createError.hint,
-            code: createError.code,
-          });
-          throw createError;
-        }
-
-        console.log("✅ New progress created:", newProgress);
-        return {
-          completion: completionData,
-          progress: newProgress,
-          isFirstCompletion: true,
-          xpAwarded: xpToAward,
-        };
-      } else {
-        throw progressFetchError;
+      if (createError) {
+        console.error("❌ Failed to create new progress:", {
+          message: createError.message,
+          details: createError.details,
+          hint: createError.hint,
+          code: createError.code,
+        });
+        throw createError;
       }
+
+      console.log("✅ New progress created:", newProgress);
+      return {
+        completion: completionData,
+        progress: newProgress,
+        isFirstCompletion: true,
+        xpAwarded: xpToAward,
+      };
     }
 
     console.log("✅ Current progress found:", currentProgress);

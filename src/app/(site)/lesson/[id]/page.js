@@ -881,6 +881,13 @@ function DynamicLessonContent() {
 
     setCompleting(true);
 
+    // Streamlined-flow destination is computed up-front so both the
+    // success and failure paths route the same way — the difference
+    // is whether the DB writes landed, not where the user ends up.
+    const returnUrl = nextLessonInPillar
+      ? `/lesson/${nextLessonInPillar.id}`
+      : `/lesson?completed=${encodeURIComponent(lesson.id)}`;
+
     try {
       console.log("🏁 Starting lesson completion process...");
 
@@ -895,15 +902,10 @@ function DynamicLessonContent() {
       );
 
       // Log the lesson-completion XP audit event ONLY when this is the
-      // first time the user has finished this lesson. Re-completions
-      // re-record the score / time / activity-date but never grant
-      // additional XP. eventOnly because markLessonComplete already
-      // bumped player_progress.total_xp on first completion.
-      //
-      // The amount logged is the delta — any XP already committed via
-      // a mid-lesson "Open pack" partial commit has its own
-      // lesson_partial event, so totalling player_xp_events still
-      // matches player_progress.total_xp.
+      // first time the user has finished this lesson AND there was
+      // some additional XP past the partial commit. If everything was
+      // already committed via lesson_partial mid-lesson, no extra
+      // event is needed — the running total is correct either way.
       const additionalXp = Math.max(0, xpEarned - committedXp);
       if (completionResult?.isFirstCompletion && additionalXp > 0) {
         awardXp({
@@ -924,33 +926,26 @@ function DynamicLessonContent() {
         clearResume(user.id, lesson.id);
       }
 
-      console.log(
-        "✅ Lesson completion successful, navigating onward..."
-      );
-
-      // Streamlined flow: if there's another lesson in this unit, go
-      // straight to its step 1 — no /lesson detour. Only the final
-      // lesson of a unit kicks the user back to /lesson, where the
-      // next unit's hero CTA is shown via ?completed=<id>.
-      const returnUrl = nextLessonInPillar
-        ? `/lesson/${nextLessonInPillar.id}`
-        : `/lesson?completed=${encodeURIComponent(lesson.id)}`;
-
-      // Small delay to ensure database operations complete
-      setTimeout(() => {
-        router.push(returnUrl);
-      }, 500);
+      console.log("✅ Lesson completion successful, navigating onward...");
     } catch (error) {
-      console.error("❌ Error marking lesson complete:", error);
+      // Spread enumerable fields so PostgrestError instances log
+      // visibly. We still navigate — never strand the user on the
+      // completion screen because a write blipped.
+      console.error("❌ Error marking lesson complete:", {
+        message: error?.message,
+        code: error?.code,
+        hint: error?.hint,
+        details: error?.details,
+        stack: error?.stack,
+      });
+    } finally {
+      // Always clear the loading state BEFORE navigating, in either
+      // direction. The previous shape relied on the page unmounting
+      // on router.push to drop the spinner — if that navigation was
+      // ever slow or blocked, the user got stuck on a perpetual
+      // "Saving…" button. Now the spinner clears regardless.
       setCompleting(false);
-
-      // Even if completion fails, still allow navigation — use the
-      // same next-lesson-or-/lesson rule so the user isn't stranded.
-      router.push(
-        nextLessonInPillar
-          ? `/lesson/${nextLessonInPillar.id}`
-          : `/lesson?completed=${encodeURIComponent(lesson.id)}`
-      );
+      router.push(returnUrl);
     }
   };
 
