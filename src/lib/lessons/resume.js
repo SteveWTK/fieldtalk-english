@@ -14,6 +14,16 @@
 const PREFIX = (userId) => `ft_lesson_resume_${userId}_`;
 const KEY = (userId, lessonId) => `${PREFIX(userId)}${lessonId}`;
 
+function normaliseCompletedSteps(value) {
+  if (!Array.isArray(value)) return null;
+  const seen = new Set();
+  for (const raw of value) {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) seen.add(n);
+  }
+  return seen.size > 0 ? [...seen].sort((a, b) => a - b) : [];
+}
+
 export function getResume(userId, lessonId) {
   if (typeof window === "undefined" || !userId || !lessonId) return null;
   try {
@@ -25,6 +35,10 @@ export function getResume(userId, lessonId) {
       currentStep: Number.isFinite(parsed.currentStep) ? parsed.currentStep : 0,
       committedXp: Number.isFinite(parsed.committedXp) ? parsed.committedXp : 0,
       lessonTitle: typeof parsed.lessonTitle === "string" ? parsed.lessonTitle : null,
+      // null = legacy entry (pre-completedSteps field); caller falls
+      // back to "all earlier steps". Empty array = explicitly "no
+      // steps completed yet" (e.g. user opened pack on step 0).
+      completedSteps: normaliseCompletedSteps(parsed.completedSteps),
       savedAt: Number.isFinite(parsed.savedAt) ? parsed.savedAt : 0,
     };
   } catch {
@@ -35,7 +49,7 @@ export function getResume(userId, lessonId) {
 export function setResume(
   userId,
   lessonId,
-  { currentStep, committedXp, lessonTitle }
+  { currentStep, committedXp, lessonTitle, completedSteps }
 ) {
   if (typeof window === "undefined" || !userId || !lessonId) return;
   try {
@@ -45,6 +59,14 @@ export function setResume(
         currentStep: Number(currentStep) || 0,
         committedXp: Number(committedXp) || 0,
         lessonTitle: typeof lessonTitle === "string" ? lessonTitle : null,
+        // Persist the exact set of completed step indices so the
+        // Next-button attempt gate doesn't re-block steps the user
+        // had already finished — important for prediction steps
+        // where the only completion signal is the save-button
+        // onComplete callback, which doesn't re-fire when the
+        // lesson reloads and the saved prediction is restored
+        // from the predictions table.
+        completedSteps: normaliseCompletedSteps(completedSteps) || [],
         savedAt: Date.now(),
       })
     );

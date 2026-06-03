@@ -313,11 +313,18 @@ function DynamicLessonContent() {
       }
       if (local?.currentStep && local.currentStep > 0) {
         setCurrentStep(local.currentStep);
-        // Mark all earlier steps as completed so navigation +
-        // progress UI reflect where the user actually was.
-        setCompletedSteps(
-          new Set(Array.from({ length: local.currentStep }, (_, i) => i))
-        );
+        // Restore the EXACT completed-step set if we have one (new
+        // resume entries from after the prediction-step fix). Older
+        // entries that pre-date that change don't carry the array, so
+        // we fall back to "all earlier steps completed" — the same
+        // behaviour as before.
+        if (Array.isArray(local.completedSteps)) {
+          setCompletedSteps(new Set(local.completedSteps));
+        } else {
+          setCompletedSteps(
+            new Set(Array.from({ length: local.currentStep }, (_, i) => i))
+          );
+        }
       }
     })();
   }, [user, lesson]);
@@ -808,6 +815,12 @@ function DynamicLessonContent() {
       currentStep,
       committedXp: xpEarned,
       lessonTitle: lesson.title || null,
+      // Capture the in-flight completion state so when the user
+      // returns, the Next-button attempt gate isn't re-blocking
+      // steps they've already finished (notably prediction steps,
+      // whose only completion signal is the save-button onComplete
+      // callback — that doesn't re-fire on lesson reload).
+      completedSteps: Array.from(completedSteps),
     });
     // ?openPack=1 tells the dashboard to auto-open the pack modal so
     // the user lands directly on the reveal instead of having to find
