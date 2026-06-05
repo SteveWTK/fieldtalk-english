@@ -20,11 +20,11 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  Check,
+  // Check,
   Trophy,
-  Building2,
-  Users,
-  Mail,
+  // Building2,
+  // Users,
+  // Mail,
   ArrowRight,
   Star,
   Shield,
@@ -77,12 +77,12 @@ const translations = {
     // hold a discount coupon that their place to use it is the Stripe
     // Checkout that opens after they click — no need to fish for it
     // on this page.
-    couponHint: "Got a discount coupon? Add it at the next step on Stripe Checkout.",
+    couponHint:
+      "Got a discount coupon? Add it at the next step on Stripe Checkout.",
     fullAccess: {
       eyebrow: "Got a Full Access code?",
       heading: "Skip checkout — redeem here",
-      body:
-        "Students of Cultura Inglesa, partner schools and pre-paid cohorts: paste the code your coordinator gave you and we'll unlock the edition on your account right away.",
+      // body: "Students of Cultura Inglesa, partner schools and pre-paid cohorts: paste the code your coordinator gave you and we'll unlock the edition on your account right away.",
       placeholder: "e.g. CC-CEARA-2026A-X9K3F2",
       submit: "Redeem code",
       submitting: "Redeeming…",
@@ -163,8 +163,7 @@ const translations = {
     fullAccess: {
       eyebrow: "Tem um código de Acesso Completo?",
       heading: "Pule o checkout — resgate aqui",
-      body:
-        "Alunos das Culturas Inglesas, escolas parceiras e turmas pré-pagas: cole o código que seu coordenador te deu e liberamos a edição na sua conta imediatamente.",
+      // body: "Alunos das Culturas Inglesas, escolas parceiras e turmas pré-pagas: cole o código que seu coordenador te deu e liberamos a edição na sua conta imediatamente.",
       placeholder: "ex: CC-CEARA-2026A-X9K3F2",
       submit: "Resgatar código",
       submitting: "Resgatando…",
@@ -461,14 +460,14 @@ function PricingPageContent() {
               </p>
 
               {/* Features */}
-              <ul className="space-y-2 mb-6">
+              {/* <ul className="space-y-2 mb-6">
                 {copy.primary.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-sm">
                     <Check className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5" />
                     <span className="text-white/80">{f}</span>
                   </li>
                 ))}
-              </ul>
+              </ul> */}
 
               {/* CTA */}
               <button
@@ -493,8 +492,8 @@ function PricingPageContent() {
                   button so users with a Cultura/partner promo code
                   know exactly where it goes (Stripe Checkout's
                   built-in field, after they click above). */}
-              <p className="mt-3 flex items-start gap-1.5 text-[11px] sm:text-xs text-white/55 leading-relaxed">
-                <Tag className="w-3.5 h-3.5 text-emerald-300/70 mt-0.5 shrink-0" />
+              <p className="mt-3 flex items-start gap-1.5 text-[15px] sm:text-[16px] text-white/55 leading-relaxed">
+                <Tag className="w-4 h-4 text-emerald-300/70 mt-0.5 shrink-0" />
                 <span>{copy.couponHint}</span>
               </p>
             </div>
@@ -569,7 +568,7 @@ function PricingPageContent() {
             the inline FullAccessPanel below the primary card.) */}
 
         {/* B2B */}
-        <section className="max-w-3xl mx-auto">
+        {/* <section className="max-w-3xl mx-auto">
           <div className="relative rounded-3xl bg-gradient-to-br from-emerald-500/15 via-white/[0.04] to-amber-400/10 border border-white/10 p-6 sm:p-8 overflow-hidden">
             <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
             <div className="relative">
@@ -603,12 +602,12 @@ function PricingPageContent() {
                 {copy.b2b.cta}
               </a>
             </div>
-            {/* Decorative icon — hidden on small screens to save space */}
+
             <div className="hidden sm:flex absolute right-6 bottom-6 w-16 h-16 rounded-full bg-white/5 items-center justify-center pointer-events-none">
               <Users className="w-7 h-7 text-white/30" />
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* FAQ */}
         <section className="max-w-2xl mx-auto pb-6">
@@ -633,7 +632,6 @@ function PricingPageContent() {
           </div>
         </section>
       </main>
-
     </div>
   );
 }
