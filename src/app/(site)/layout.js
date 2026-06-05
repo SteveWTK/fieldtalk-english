@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
+import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GuestPrompts from "@/components/guest/GuestPrompts";
 
@@ -46,6 +47,10 @@ function SiteLayoutContent({ children }) {
 
       {/* Guest user CTAs - floating buttons, modals, banners */}
       <GuestPrompts />
+
+      {/* Standard footer — copyright + standard links, plus an
+          admin shortcut that only platform_admin users see. */}
+      <Footer />
     </div>
   );
 }

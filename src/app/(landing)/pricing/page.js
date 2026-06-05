@@ -30,7 +30,6 @@ import {
   Shield,
   ChevronDown,
   Loader2,
-  X,
   Tag,
   KeyRound,
   Calendar,
@@ -66,25 +65,27 @@ const translations = {
       sub: "WC2026 plus every future edition (Champions League, Premier League, more) while you're subscribed.",
       cta: "Subscribe",
     },
-    promoHint: {
-      title: "Got a coupon?",
-      body: 'Cultura Inglesa and partner-school students: enter your discount code at Stripe Checkout, on the line that says "Add promotion code".',
-    },
-    schoolCode: {
-      button: "Have a school code?",
-      buttonSub: "Redeem it and unlock access instantly.",
-      modalTitle: "Redeem your school code",
-      modalBody:
-        "Enter the code your school or club gave you. We'll unlock the edition on your account.",
-      placeholder: "e.g. CULTURA-RECIFE-2026",
+    // Tiny caption under the Buy button reassuring users who already
+    // hold a discount coupon that their place to use it is the Stripe
+    // Checkout that opens after they click — no need to fish for it
+    // on this page.
+    couponHint: "Got a discount coupon? Add it at the next step on Stripe Checkout.",
+    fullAccess: {
+      eyebrow: "Got a Full Access code?",
+      heading: "Skip checkout — redeem here",
+      body:
+        "Students of Cultura Inglesa, partner schools and pre-paid cohorts: paste the code your coordinator gave you and we'll unlock the edition on your account right away.",
+      placeholder: "e.g. CC-CEARA-2026A-X9K3F2",
       submit: "Redeem code",
       submitting: "Redeeming…",
       successTitle: "You're in!",
       successBody: "Access granted. Heading to your dashboard…",
+      signedOutNote: "Sign up first so the code can attach to your account.",
+      signedOutCta: "Create your account",
       errors: {
         unknown_code:
           "We don't recognise that code. Check with your teacher / coordinator.",
-        expired: "That code has expired. Ask your school for a new one.",
+        expired: "That code has expired. Ask for a new one.",
         no_seats: "All seats on that code have already been claimed.",
         already_redeemed:
           "You've already redeemed this code — you're good to go.",
@@ -149,25 +150,25 @@ const translations = {
       sub: "WC2026 mais todas as edições futuras (Champions League, Premier League e mais) enquanto estiver assinante.",
       cta: "Assinar",
     },
-    promoHint: {
-      title: "Tem um cupom?",
-      body: 'Alunos das Culturas Inglesas e escolas parceiras: insira o código de desconto no Stripe Checkout, no campo "Adicionar código promocional".',
-    },
-    schoolCode: {
-      button: "Tem um código da escola?",
-      buttonSub: "Resgate e libere o acesso imediatamente.",
-      modalTitle: "Resgate seu código da escola",
-      modalBody:
-        "Insira o código que sua escola ou clube te deu. Vamos liberar a edição na sua conta.",
-      placeholder: "ex: CULTURA-RECIFE-2026",
+    couponHint:
+      "Tem um cupom de desconto? Adicione no próximo passo, no Stripe Checkout.",
+    fullAccess: {
+      eyebrow: "Tem um código de Acesso Completo?",
+      heading: "Pule o checkout — resgate aqui",
+      body:
+        "Alunos das Culturas Inglesas, escolas parceiras e turmas pré-pagas: cole o código que seu coordenador te deu e liberamos a edição na sua conta imediatamente.",
+      placeholder: "ex: CC-CEARA-2026A-X9K3F2",
       submit: "Resgatar código",
       submitting: "Resgatando…",
       successTitle: "Pronto!",
       successBody: "Acesso liberado. Indo para o painel…",
+      signedOutNote:
+        "Crie sua conta primeiro para que o código fique vinculado a ela.",
+      signedOutCta: "Criar conta",
       errors: {
         unknown_code:
           "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
-        expired: "Esse código expirou. Peça um novo à sua escola.",
+        expired: "Esse código expirou. Peça um novo.",
         no_seats: "Todas as vagas desse código já foram usadas.",
         already_redeemed: "Você já resgatou esse código — está tudo certo.",
         not_signed_in:
@@ -292,7 +293,6 @@ function PricingPageContent() {
   }, [editionId]);
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
-  const [schoolCodeOpen, setSchoolCodeOpen] = useState(false);
 
   // Signed-out → route to the streamlined fan-edition signup with
   // the edition tag pre-applied. After signup users land on /lesson
@@ -466,9 +466,31 @@ function PricingPageContent() {
                   </>
                 )}
               </button>
+
+              {/* Discount-coupon hint sits directly under the Buy
+                  button so users with a Cultura/partner promo code
+                  know exactly where it goes (Stripe Checkout's
+                  built-in field, after they click above). */}
+              <p className="mt-3 flex items-start gap-1.5 text-[11px] sm:text-xs text-white/55 leading-relaxed">
+                <Tag className="w-3.5 h-3.5 text-emerald-300/70 mt-0.5 shrink-0" />
+                <span>{copy.couponHint}</span>
+              </p>
             </div>
           </section>
         )}
+
+        {/* Got a Full Access code? — promoted to a prominent panel
+            directly under the buy card so students with a code don't
+            mistakenly click the paid CTA. Inline form (no separate
+            modal) means one fewer tap to redeem. */}
+        <FullAccessPanel
+          copy={copy.fullAccess}
+          isSignedIn={!!user}
+          edition={editionId}
+          onSuccess={() => {
+            setTimeout(() => router.push("/dashboard"), 1200);
+          }}
+        />
 
         {/* Secondary subscription cards — quieter so they don't
             compete with the primary WC2026 offer. */}
@@ -520,36 +542,9 @@ function PricingPageContent() {
           </section>
         )}
 
-        {/* Promo-code hint + school-code button.
-            Two-column on sm+, stacked on mobile. */}
-        <section className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-3 sm:gap-4">
-          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-            <Tag className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0" />
-            <div className="text-xs sm:text-sm">
-              <p className="font-semibold text-white mb-1">
-                {copy.promoHint.title}
-              </p>
-              <p className="text-white/55 leading-relaxed">
-                {copy.promoHint.body}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSchoolCodeOpen(true)}
-            className="flex items-start gap-3 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/10 border border-dashed border-emerald-400/40 hover:border-emerald-300/70 p-4 text-left transition-colors"
-          >
-            <KeyRound className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0" />
-            <div className="text-xs sm:text-sm">
-              <p className="font-semibold text-white mb-1">
-                {copy.schoolCode.button}
-              </p>
-              <p className="text-white/55 leading-relaxed">
-                {copy.schoolCode.buttonSub}
-              </p>
-            </div>
-          </button>
-        </section>
+        {/* (The discount-coupon hint moved to a caption under the Buy
+            button, and the school-code modal trigger was replaced by
+            the inline FullAccessPanel below the primary card.) */}
 
         {/* B2B */}
         <section className="max-w-3xl mx-auto">
@@ -617,26 +612,22 @@ function PricingPageContent() {
         </section>
       </main>
 
-      {schoolCodeOpen && (
-        <SchoolCodeModal
-          copy={copy.schoolCode}
-          isSignedIn={!!user}
-          onClose={() => setSchoolCodeOpen(false)}
-          onSuccess={() => {
-            setTimeout(() => router.push("/dashboard"), 1200);
-          }}
-        />
-      )}
     </div>
   );
 }
 
 /**
- * Dark-themed modal for school-code redemption. Calls
- * /api/seat-license/redeem and maps function-level reason codes to
- * the localised messages in `copy.errors`.
+ * Inline Full Access code panel — sits directly below the primary
+ * buy card on the pricing page so partner-school students see the
+ * redeem path without having to spot a small "Have a code?" link
+ * at the bottom of the page. Same logic as the old SchoolCodeModal
+ * but rendered inline (one fewer tap, no overlay).
+ *
+ * Signed-out users see a sign-up nudge instead of the form — the
+ * code has to attach to a real player row, so signup has to happen
+ * first.
  */
-function SchoolCodeModal({ copy, isSignedIn, onClose, onSuccess }) {
+function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -677,61 +668,66 @@ function SchoolCodeModal({ copy, isSignedIn, onClose, onSuccess }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-      onClick={() => !submitting && onClose?.()}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        className="relative w-full max-w-md rounded-2xl bg-[#0b0b0b] border border-white/10 p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={submitting}
-          aria-label="Close"
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-            <KeyRound className="w-5 h-5 text-emerald-300" />
+    <section className="max-w-md mx-auto">
+      <div className="relative rounded-3xl bg-amber-300/[0.06] backdrop-blur-sm border border-amber-300/40 p-5 sm:p-6 shadow-[0_0_28px_rgba(252,211,77,0.08)]">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-amber-300/15 flex items-center justify-center shrink-0">
+            <KeyRound className="w-5 h-5 text-amber-200" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
-            {copy.modalTitle}
-          </h2>
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs tracking-[0.25em] uppercase text-amber-200/80 font-bold">
+              {copy.eyebrow}
+            </p>
+            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">
+              {copy.heading}
+            </h3>
+          </div>
         </div>
 
+        <p className="text-xs sm:text-sm text-white/65 leading-relaxed mb-4">
+          {copy.body}
+        </p>
+
         {success ? (
-          <div className="py-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-7 h-7 text-emerald-300" />
+          <div className="py-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+              <Shield className="w-6 h-6 text-emerald-300" />
             </div>
             <p className="text-base font-bold text-white mb-1">
               {copy.successTitle}
             </p>
             <p className="text-sm text-white/60">{copy.successBody}</p>
           </div>
+        ) : !isSignedIn ? (
+          // Signed-out variant — the redeem endpoint requires an
+          // authenticated player_id, so we route to /join before
+          // showing the form rather than letting the user type a
+          // code that we can't actually attach.
+          <div className="space-y-3">
+            <p className="text-xs sm:text-sm text-white/55">
+              {copy.signedOutNote}
+            </p>
+            <Link
+              href={`/join?edition=${encodeURIComponent(edition)}`}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-amber-300 hover:bg-amber-200 text-[#1a0e00] font-bold text-sm tracking-wide transition-colors"
+            >
+              {copy.signedOutCta}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <p className="text-sm text-white/60 mb-4">{copy.modalBody}</p>
-
+          <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder={copy.placeholder}
-              autoFocus
               disabled={submitting}
-              className="w-full px-3 py-2.5 rounded-lg border border-white/15 bg-white/5 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 mb-3 font-mono uppercase tracking-wide"
+              className="w-full px-3 py-3 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/30 focus:outline-none focus:border-amber-300 font-mono uppercase tracking-wide text-sm sm:text-base text-center"
             />
 
             {error && (
-              <div className="mb-3 p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+              <div className="p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
                 {error}
               </div>
             )}
@@ -739,7 +735,7 @@ function SchoolCodeModal({ copy, isSignedIn, onClose, onSuccess }) {
             <button
               type="submit"
               disabled={submitting || !code.trim()}
-              className="w-full py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-2"
+              className="w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-full bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-[#1a0e00] font-bold text-sm tracking-wide transition-colors"
             >
               {submitting ? (
                 <>
@@ -747,12 +743,15 @@ function SchoolCodeModal({ copy, isSignedIn, onClose, onSuccess }) {
                   {copy.submitting}
                 </>
               ) : (
-                copy.submit
+                <>
+                  <KeyRound className="w-4 h-4" />
+                  {copy.submit}
+                </>
               )}
             </button>
           </form>
         )}
       </div>
-    </div>
+    </section>
   );
 }
