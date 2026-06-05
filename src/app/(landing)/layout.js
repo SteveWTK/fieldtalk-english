@@ -16,8 +16,8 @@ export default function LandingLayout({ children }) {
   const languageOptions = {
     en: { label: "English", flag: "🇬🇧" },
     pt: { label: "Português", flag: "🇧🇷" },
-    es: { label: "Español", flag: "🇪🇸" },
-    th: { label: "ไทย", flag: "🇹🇭" },
+    // es: { label: "Español", flag: "🇪🇸" },
+    // th: { label: "ไทย", flag: "🇹🇭" },
   };
 
   // Handle dark mode toggle

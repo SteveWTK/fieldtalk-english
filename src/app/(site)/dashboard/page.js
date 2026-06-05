@@ -43,6 +43,7 @@ import { getFormation } from "@/lib/squads/squadConfig";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
+import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -226,6 +227,11 @@ function DashboardContent() {
             </span>
           </Link>
         )}
+
+        {/* Push notification opt-in. Renders itself null if the
+            browser doesn't support push, the user already opted in,
+            or they dismissed it within the last 7 days. */}
+        <NotificationsOptIn />
 
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">

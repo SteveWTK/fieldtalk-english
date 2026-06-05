@@ -69,12 +69,12 @@ const OFFERINGS = [
   {
     id: "wc2026_one_time_brl",
     label: "World Cup 2026 — full edition",
-    description: "One-time purchase. Lifetime access to the WC2026 edition.",
+    description: "One-time purchase.",
     mode: "one_time",
     interval: null,
     currency: "BRL",
     // EDIT THESE to match the live Stripe price (R$ amount).
-    displayPrice: "R$ 20",
+    displayPrice: "R$ 57",
     displayInterval: "one-time",
     editionsGranted: ["wc2026"],
     priceId: process.env.STRIPE_WC2026_BRL_PRICE_ID || null,

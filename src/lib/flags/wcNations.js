@@ -61,7 +61,6 @@ export const WC_NATIONS = [
   { code3: "hrv", code2: "hr", name: "Croatia" },
   { code3: "bih", code2: "ba", name: "Bosnia and Herzegovina" },
 
-  // { code3: "srb", code2: "rs", name: "Serbia" },
   // { code3: "pol", code2: "pl", name: "Poland" },
   // { code3: "dnk", code2: "dk", name: "Denmark" },
   { code3: "che", code2: "ch", name: "Switzerland" },
@@ -81,7 +80,6 @@ export const WC_NATIONS = [
   { code3: "civ", code2: "ci", name: "Côte d'Ivoire" },
   { code3: "tun", code2: "tn", name: "Tunisia" },
   { code3: "alg", code2: "dz", name: "Algeria" },
-  // { code3: "cmr", code2: "cm", name: "Cameroon" },
   { code3: "zaf", code2: "za", name: "South Africa" },
   { code3: "tun", code2: "tn", name: "Tunisia" },
   { code3: "cod", code2: "cd", name: "DR Congo" },
@@ -96,7 +94,6 @@ export const WC_NATIONS = [
   { code3: "sau", code2: "sa", name: "Saudi Arabia" },
   { code3: "aus", code2: "au", name: "Australia" },
   { code3: "qat", code2: "qa", name: "Qatar" },
-  // { code3: "uae", code2: "ae", name: "UAE" },
   { code3: "irq", code2: "iq", name: "Iraq" },
   { code3: "uzb", code2: "uz", name: "Uzbekistan" },
 

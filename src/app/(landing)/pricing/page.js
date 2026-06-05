@@ -37,6 +37,14 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
 
+// Subscription cards (FieldTalk Monthly / Yearly) are temporarily
+// hidden while we focus partner outreach on the WC2026 one-off. The
+// offerings themselves still exist in editions.js (and the webhook
+// reverse-lookup still works for any historical subscription IDs) —
+// we just don't render them or their FAQ entries until the post-WC
+// marketing push begins. Flip back to true to re-enable.
+const SHOW_SUBSCRIPTIONS = false;
+
 // EN/PT copy. Same translation-map shape as before so the lang toggle
 // stays one-click and adding a third language is a single object.
 const translations = {
@@ -284,13 +292,27 @@ function PricingPageContent() {
     const all = listOfferingsForEdition(editionId);
     return {
       oneTimeOffering: all.find((o) => o.mode === "one_time") || null,
-      subscriptionOfferings: all
-        .filter((o) => o.mode === "subscription")
-        .sort((a, b) =>
-          a.interval === "monthly" ? -1 : b.interval === "monthly" ? 1 : 0
-        ),
+      subscriptionOfferings: SHOW_SUBSCRIPTIONS
+        ? all
+            .filter((o) => o.mode === "subscription")
+            .sort((a, b) =>
+              a.interval === "monthly" ? -1 : b.interval === "monthly" ? 1 : 0
+            )
+        : [],
     };
   }, [editionId]);
+
+  // Drop subscription-specific FAQ entries when subscriptions are
+  // hidden so users don't see questions about an option that isn't on
+  // the page. Matches on a marker substring rather than index so
+  // re-ordering the array doesn't quietly break this filter.
+  const faqItems = useMemo(() => {
+    if (SHOW_SUBSCRIPTIONS) return copy.faq.items;
+    return copy.faq.items.filter((item) => {
+      const q = item.q.toLowerCase();
+      return !q.includes("subscription") && !q.includes("assinatura");
+    });
+  }, [copy]);
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
 
@@ -594,7 +616,7 @@ function PricingPageContent() {
             {copy.faq.title}
           </h2>
           <div className="space-y-2">
-            {copy.faq.items.map((item, i) => (
+            {faqItems.map((item, i) => (
               <details
                 key={i}
                 className="group rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/15 transition-colors"

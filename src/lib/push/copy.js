@@ -1,0 +1,90 @@
+// src/lib/push/copy.js
+//
+// Notification copy templates, indexed by `kind` (the same string
+// stored in notification_log.kind) and language. Each template is a
+// function that takes a `vars` bag and returns { title, body, url,
+// tag } — the exact shape the service worker expects.
+//
+// Why functions instead of plain strings: variable interpolation
+// (player name, match teams, kickoff time) needs to happen at send
+// time. Keeping the templates as pure functions also makes them
+// trivially unit-testable when we add tests.
+//
+// Adding a new language:
+//   1. Add a new top-level key under TEMPLATES (e.g. "es": {...}).
+//   2. Mirror every kind from the "en" branch.
+//   3. The send utility falls back to "en" automatically if a kind
+//      is missing from the requested language, so partial coverage
+//      is safe.
+
+const TEMPLATES = {
+  en: {
+    welcome_pack: () => ({
+      title: "Your first sticker pack is waiting!",
+      body: "Open your welcome pack to start your WC2026 album.",
+      url: "/dashboard",
+      tag: "welcome_pack",
+    }),
+    pack_reminder: ({ count = 1 } = {}) => ({
+      title:
+        count > 1
+          ? `You have ${count} sticker packs waiting`
+          : "You have a sticker pack waiting",
+      body: "Open it now to add new players to your squad.",
+      url: "/dashboard",
+      // Same tag for any pack-ready notification so a later one
+      // quietly replaces the earlier one rather than stacking.
+      tag: "pack_reminder",
+    }),
+    match_starting: ({ home = "", away = "", lessonId = "" } = {}) => ({
+      title: `${home} x ${away} kicks off soon`,
+      body: "Submit your prediction before the match starts.",
+      url: lessonId ? `/lesson/${lessonId}` : "/lesson",
+      // Per-match tag so multiple "starting soon" notifications for
+      // different matches don't override each other.
+      tag: `match_starting:${home}-${away}`.toLowerCase().replace(/\s+/g, ""),
+    }),
+  },
+  pt: {
+    welcome_pack: () => ({
+      title: "Seu primeiro pacote de figurinhas chegou!",
+      body: "Abra o pacote de boas-vindas e comece seu álbum da WC2026.",
+      url: "/dashboard",
+      tag: "welcome_pack",
+    }),
+    pack_reminder: ({ count = 1 } = {}) => ({
+      title:
+        count > 1
+          ? `Você tem ${count} pacotes esperando`
+          : "Você tem um pacote esperando",
+      body: "Abra agora para reforçar o seu time.",
+      url: "/dashboard",
+      tag: "pack_reminder",
+    }),
+    match_starting: ({ home = "", away = "", lessonId = "" } = {}) => ({
+      title: `${home} x ${away} começa em breve`,
+      body: "Faça seu palpite antes do apito inicial.",
+      url: lessonId ? `/lesson/${lessonId}` : "/lesson",
+      tag: `match_starting:${home}-${away}`.toLowerCase().replace(/\s+/g, ""),
+    }),
+  },
+};
+
+const DEFAULT_LANG = "en";
+
+/**
+ * Resolve a notification kind + language into the concrete
+ * { title, body, url, tag } payload. Falls back to English if the
+ * requested language doesn't have the kind defined yet, so partial
+ * translations are safe.
+ */
+export function buildNotificationPayload(kind, lang, vars = {}) {
+  const langBranch = TEMPLATES[lang] || TEMPLATES[DEFAULT_LANG];
+  const fn = langBranch[kind] || TEMPLATES[DEFAULT_LANG][kind];
+  if (!fn) {
+    return null;
+  }
+  return fn(vars || {});
+}
+
+export const SUPPORTED_KINDS = Object.keys(TEMPLATES[DEFAULT_LANG]);

@@ -7,6 +7,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GuestPrompts from "@/components/guest/GuestPrompts";
+import ServiceWorkerBridge from "@/components/notifications/ServiceWorkerBridge";
 
 function SiteLayoutContent({ children }) {
   const [darkMode, setDarkMode] = useState(true);
@@ -44,6 +45,10 @@ function SiteLayoutContent({ children }) {
         languageOptions={languageOptions}
       />
       <main>{children}</main>
+
+      {/* Registers /sw.js for signed-in users and routes
+          notification-click messages back into the SPA router. */}
+      <ServiceWorkerBridge />
 
       {/* Guest user CTAs - floating buttons, modals, banners */}
       <GuestPrompts />
