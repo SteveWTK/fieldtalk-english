@@ -32,7 +32,6 @@ import {
   School,
   Trophy,
   QrCode,
-  ArrowRight,
   Loader2,
   ChevronRight,
 } from "lucide-react";
@@ -102,8 +101,8 @@ function AdminHubContent() {
             Platform admin
           </h1>
           <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
-            Every admin tool in one place. Pick the section you need —
-            the cards link straight in.
+            Every admin tool in one place. Pick the section you need — the cards
+            link straight in.
           </p>
         </header>
 
@@ -206,7 +205,14 @@ function AdminSection({ title, children }) {
   );
 }
 
-function AdminCard({ href, Icon, title, body, accent = "neutral", meta = null }) {
+function AdminCard({
+  href,
+  Icon,
+  title,
+  body,
+  accent = "neutral",
+  meta = null,
+}) {
   // Three subtle accent tones so the cards visually group by purpose
   // (emerald = engagement / paid flow, amber = partner-issued access,
   // neutral = content / organisations). Tasteful gradient, not loud.
@@ -236,9 +242,7 @@ function AdminCard({ href, Icon, title, body, accent = "neutral", meta = null })
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-bold text-base text-white truncate">
-              {title}
-            </h3>
+            <h3 className="font-bold text-base text-white truncate">{title}</h3>
             <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
           <p className="text-xs sm:text-sm text-white/55 mt-1 leading-relaxed">
