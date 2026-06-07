@@ -152,21 +152,35 @@ export async function sendToPlayer({
  * Have we already notified this player about this kind recently?
  * Used by the daily cron to avoid hammering the same user.
  *
- * @param {string} playerId
- * @param {string} kind
- * @param {number} windowHours — look-back window
+ * Pass `refId` for per-target dedup — e.g. for match_starting we
+ * want one notification per (player, step_id) pair, not one per
+ * (player, "match_starting") for the whole tournament. For broader
+ * kinds like pack_reminder, leave refId null.
+ *
+ * @param {string}  playerId
+ * @param {string}  kind
+ * @param {number}  windowHours — look-back window
+ * @param {string?} refId       — optional payload reference
  * @returns {Promise<boolean>}
  */
-export async function wasRecentlyNotified(playerId, kind, windowHours = 24) {
+export async function wasRecentlyNotified(
+  playerId,
+  kind,
+  windowHours = 24,
+  refId = null
+) {
   const supabase = await getSupabaseAdmin();
   const cutoff = new Date(Date.now() - windowHours * 3600 * 1000).toISOString();
-  const { data, error } = await supabase
+  let query = supabase
     .from("notification_log")
     .select("id")
     .eq("player_id", playerId)
     .eq("kind", kind)
-    .gte("sent_at", cutoff)
-    .limit(1);
+    .gte("sent_at", cutoff);
+  if (refId) {
+    query = query.eq("ref_id", refId);
+  }
+  const { data, error } = await query.limit(1);
   if (error) {
     console.warn("[push/send] wasRecentlyNotified lookup failed:", error.message);
     // Fail-closed: when we can't tell, assume we already notified
