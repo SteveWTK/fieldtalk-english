@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
+import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
 
 const SUPPORTED_EDITIONS = new Set(["players", "wc2026"]);
 
@@ -109,6 +110,11 @@ export async function POST(request) {
         { status: 500 }
       );
     }
+
+    // First-time signup → grant the starter sticker pack (200 XP).
+    // Idempotent inside the helper, so if this route runs twice for
+    // any reason we don't double-grant.
+    await awardWelcomeBonusIfMissing(user.id);
 
     return NextResponse.json({ success: true, created: true, edition });
   } catch (err) {

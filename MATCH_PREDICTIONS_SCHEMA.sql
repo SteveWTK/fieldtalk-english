@@ -162,10 +162,12 @@ CREATE POLICY "match_predictions_delete_own"
 --   - Single source of truth for XP per type — tweak here, every
 --     trigger picks it up.
 --
--- XP table (kept in sync with the UI in src/lib/predictions/rewards.js):
---   winner             10 XP   on correct call
---   exact_score        50 XP   on exact score
---   first_scorer_team  20 XP   on correct first-scorer team
+-- XP table (kept in sync with src/lib/predictions/rewards.js). The
+-- amounts are calibrated to pack_xp_cost = 200 so a correct pick
+-- directly translates to N unopened packs:
+--   winner             200 XP  (= 1 pack)
+--   exact_score        600 XP  (= 3 packs)
+--   first_scorer_team  200 XP  (= 1 pack)
 --
 -- Call from the admin resolve route AFTER setting home_score,
 -- away_score and first_scorer_team on the match row.
@@ -214,9 +216,9 @@ BEGIN
            ELSE FALSE
          END,
          xp_awarded = CASE
-           WHEN mp.prediction_data->>'winner' = 'home' AND v_match.home_score > v_match.away_score THEN 10
-           WHEN mp.prediction_data->>'winner' = 'away' AND v_match.away_score > v_match.home_score THEN 10
-           WHEN mp.prediction_data->>'winner' = 'draw' AND v_match.home_score = v_match.away_score THEN 10
+           WHEN mp.prediction_data->>'winner' = 'home' AND v_match.home_score > v_match.away_score THEN 200
+           WHEN mp.prediction_data->>'winner' = 'away' AND v_match.away_score > v_match.home_score THEN 200
+           WHEN mp.prediction_data->>'winner' = 'draw' AND v_match.home_score = v_match.away_score THEN 200
            ELSE 0
          END,
          resolved_at = now(),
@@ -232,7 +234,7 @@ BEGIN
          ),
          xp_awarded = CASE
            WHEN COALESCE((mp.prediction_data->>'home')::INT, -1) = v_match.home_score
-            AND COALESCE((mp.prediction_data->>'away')::INT, -1) = v_match.away_score THEN 50
+            AND COALESCE((mp.prediction_data->>'away')::INT, -1) = v_match.away_score THEN 600
            ELSE 0
          END,
          resolved_at = now(),
@@ -248,7 +250,7 @@ BEGIN
     UPDATE match_predictions mp
        SET correct = (mp.prediction_data->>'team' = v_match.first_scorer_team),
            xp_awarded = CASE
-             WHEN mp.prediction_data->>'team' = v_match.first_scorer_team THEN 20
+             WHEN mp.prediction_data->>'team' = v_match.first_scorer_team THEN 200
              ELSE 0
            END,
            resolved_at = now(),

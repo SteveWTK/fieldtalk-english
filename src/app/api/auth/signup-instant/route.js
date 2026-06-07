@@ -9,6 +9,7 @@
 // setting.
 import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
+import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
 
 const SUPPORTED_EDITIONS = new Set(["players", "wc2026"]);
 
@@ -87,6 +88,11 @@ export async function POST(request) {
       // can recover. Just log so we can see this in Vercel logs.
       console.error("[signup-instant] players upsert error:", playerError);
     }
+
+    // Grant the starter sticker pack (idempotent inside the helper).
+    // Fire-and-forget would be tempting, but we await so the welcome
+    // push fired by the next opt-in step has a pack to nudge about.
+    await awardWelcomeBonusIfMissing(data.user.id);
 
     return NextResponse.json({ success: true, userId: data.user.id });
   } catch (err) {

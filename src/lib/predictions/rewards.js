@@ -8,14 +8,31 @@
 
 export const PREDICTION_TYPES = ["winner", "exact_score", "first_scorer_team"];
 
+// XP values calibrated to the pack vault (pack_xp_cost = 200), so
+// a correct pick directly unlocks the stated number of packs:
+//   winner             →   1 pack  (200 XP)
+//   exact_score        →   3 packs (600 XP)
+//   first_scorer_team  →   1 pack  (200 XP)
+// Keep these in lock-step with the integers baked into the
+// resolve_match() Postgres function — see MATCH_PREDICTIONS_SCHEMA.sql
+// (or the focused PREDICTION_REWARDS_UPDATE.sql migration that
+// updates only the function).
 export const REWARDS = {
-  // Easy. ~33% baseline odds without skill.
-  winner: { xp: 10, label_en: "Match winner", label_pt: "Vencedor" },
-  // Hard. Single-digit % baseline odds; the headline reward.
-  exact_score: { xp: 50, label_en: "Exact score", label_pt: "Placar exato" },
-  // Medium. ~50% odds (excluding draws).
+  winner: {
+    xp: 200,
+    packs: 1,
+    label_en: "Match winner",
+    label_pt: "Vencedor",
+  },
+  exact_score: {
+    xp: 600,
+    packs: 3,
+    label_en: "Exact score",
+    label_pt: "Placar exato",
+  },
   first_scorer_team: {
-    xp: 20,
+    xp: 200,
+    packs: 1,
     label_en: "First scorer",
     label_pt: "Quem abre o placar",
   },
