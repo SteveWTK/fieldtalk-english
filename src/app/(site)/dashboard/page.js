@@ -44,6 +44,7 @@ import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
 import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
+import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreBanner";
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -227,6 +228,11 @@ function DashboardContent() {
             </span>
           </Link>
         )}
+
+        {/* Open matches nudge — renders null if the user has no
+            actionable predictions, so it only shows up when there's
+            something to do. */}
+        <PredictionsCentreBanner />
 
         {/* Push notification opt-in. Renders itself null if the
             browser doesn't support push, the user already opted in,

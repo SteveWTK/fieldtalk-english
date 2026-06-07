@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/match-starting",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/predictions-open",
+      "schedule": "0 * * * *"
     }
   ]
 }

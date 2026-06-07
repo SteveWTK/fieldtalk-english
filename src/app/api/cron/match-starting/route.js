@@ -1,24 +1,21 @@
 // src/app/api/cron/match-starting/route.js
 //
-// Frequent Vercel cron — looks for prediction steps whose deadline
-// is in the "starting soon" window (45–75 min from now), then pings
-// every subscribed player who hasn't yet submitted for that step.
+// Frequent Vercel cron — sends "predictions closing soon" pushes ~1
+// hour before kickoff. Scans TWO sources in one pass:
 //
-// Why deadline-driven (not match-kickoff-driven): predictions carry
-// a `deadline_at` set on first save from the step's
-// `prediction_deadline`. That deadline is implicitly the kickoff
-// time (we lock submissions when the match starts), so reminding a
-// user 60 min before deadline = reminding them 60 min before
-// kickoff. No separate match-schedule table needed.
+//   1. Lesson group-finish predictions (the `predictions` table)
+//      — deadline-driven via `predictions.deadline_at`.
+//   2. Match Predictions Centre (the `matches` table)
+//      — kickoff-driven via `matches.kickoff_at`.
 //
-// Dedup: per (player, step_id) so two different steps closing in the
-// same hour produce two distinct pushes; same step doesn't ping
-// twice even if the cron window overlaps a previous run.
+// Both produce a `match_starting` push to subscribed players who
+// haven't completed their picks yet. Dedup is per (player, ref_id)
+// with ref_id = step_id OR match_id respectively — those UUIDs
+// live in different namespaces, so they never collide.
 //
-// Schedule: every 30 min — see vercel.json. The window in the query
-// (45–75 min) is wider than 30 min on purpose so the cron has
-// elasticity: a missed run won't drop notifications, the next run
-// catches them.
+// Schedule: every 30 min — see vercel.json. The 45–75 min window
+// is wider than the schedule on purpose: a missed run never drops
+// notifications, the next run catches them.
 
 import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
@@ -188,12 +185,106 @@ export async function GET(request) {
       });
     }
 
+    // ── Second source: match Predictions Centre ──
+    // Same notification kind, different table. Scan matches whose
+    // kickoff is in the closing window and ping subscribed players
+    // who haven't completed all three picks for them.
+    const matchWindowStart = new Date(now + WINDOW_START_MIN * 60 * 1000).toISOString();
+    const matchWindowEnd = new Date(now + WINDOW_END_MIN * 60 * 1000).toISOString();
+    const { data: closingMatches, error: closingMatchesError } = await supabase
+      .from("matches")
+      .select("id, home_team, away_team, kickoff_at")
+      .gte("kickoff_at", matchWindowStart)
+      .lte("kickoff_at", matchWindowEnd)
+      .is("resolved_at", null);
+
+    let matchSent = 0;
+    let matchSkipped = 0;
+    const perMatch = [];
+
+    if (closingMatchesError) {
+      console.error("[cron/match-starting] closingMatches error:", closingMatchesError);
+    } else if (closingMatches && closingMatches.length > 0) {
+      for (const match of closingMatches) {
+        // Players who've made at least one pick for this match.
+        const { data: pickRows } = await supabase
+          .from("match_predictions")
+          .select("player_id, prediction_type")
+          .eq("match_id", match.id);
+        // Count picks per player; treat 3+ as "complete" (winner,
+        // exact_score, first_scorer_team).
+        const picksByPlayer = new Map();
+        for (const row of pickRows || []) {
+          picksByPlayer.set(
+            row.player_id,
+            (picksByPlayer.get(row.player_id) || 0) + 1
+          );
+        }
+        // Eligible = subscribed AND not yet complete.
+        const eligible = subscribedIds.filter(
+          (id) => (picksByPlayer.get(id) || 0) < 3
+        );
+        if (eligible.length === 0) {
+          perMatch.push({
+            matchId: match.id,
+            match: `${match.home_team} vs ${match.away_team}`,
+            eligible: 0,
+            sent: 0,
+          });
+          continue;
+        }
+        const results = await runInBatches(
+          eligible,
+          SEND_CONCURRENCY,
+          async (playerId) => {
+            const dup = await wasRecentlyNotified(
+              playerId,
+              "match_starting",
+              DEDUP_WINDOW_HOURS,
+              match.id
+            );
+            if (dup) return { playerId, skipped: true };
+            const result = await sendToPlayer({
+              playerId,
+              kind: "match_starting",
+              refId: match.id,
+              vars: {
+                predictionTitle: `${match.home_team} x ${match.away_team}`,
+                stepId: match.id,
+                url: "/predictions",
+              },
+            });
+            return { playerId, ...result };
+          }
+        );
+        const sent = results.reduce((a, r) => a + (r?.sent || 0), 0);
+        const skipped = results.filter((r) => r?.skipped).length;
+        matchSent += sent;
+        matchSkipped += skipped;
+        perMatch.push({
+          matchId: match.id,
+          match: `${match.home_team} vs ${match.away_team}`,
+          eligible: eligible.length,
+          sent,
+          skipped,
+        });
+      }
+    }
+
     return NextResponse.json({
       ok: true,
-      steps: closingSteps.length,
-      sent: totalSent,
-      skipped: totalSkipped,
-      perStep,
+      lessonSteps: {
+        scanned: closingSteps.length,
+        sent: totalSent,
+        skipped: totalSkipped,
+        perStep,
+      },
+      matchPredictions: {
+        scanned: closingMatches?.length || 0,
+        sent: matchSent,
+        skipped: matchSkipped,
+        perMatch,
+      },
     });
   } catch (err) {
     console.error("[cron/match-starting] unhandled error:", err);

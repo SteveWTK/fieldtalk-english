@@ -29,6 +29,7 @@ import {
   Tag,
   BookOpen,
   Target,
+  Swords,
   School,
   Trophy,
   QrCode,
@@ -153,10 +154,17 @@ function AdminHubContent() {
             accent="neutral"
           />
           <AdminCard
+            href="/admin/matches"
+            Icon={Swords}
+            title="Matches"
+            body="Enter match results — system grades every user's picks atomically."
+            accent="emerald"
+          />
+          <AdminCard
             href="/admin/predictions"
             Icon={Target}
-            title="Predictions"
-            body="Resolve match predictions and award bonus XP."
+            title="Lesson predictions"
+            body="Resolve lesson-embedded group-finish predictions."
             accent="neutral"
           />
         </AdminSection>

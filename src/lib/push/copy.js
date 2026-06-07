@@ -40,16 +40,47 @@ const TEMPLATES = {
     // finish — Group A" or, later, "Brasil x Argentina"). We accept
     // either shape so the cron doesn't have to care whether the
     // upcoming deadline is a group-finish step or a head-to-head one.
-    match_starting: ({ predictionTitle = "", stepId = "" } = {}) => ({
+    // `url` overrides the default destination — lesson predictions
+    // land on /lesson, Centre matches land on /predictions.
+    match_starting: ({ predictionTitle = "", stepId = "", url } = {}) => ({
       title: predictionTitle
         ? `${predictionTitle} — closing soon`
         : "Predictions closing soon",
       body: "Lock in your call before submissions close.",
-      url: "/lesson",
+      url: url || "/lesson",
       // Per-step tag so a second "starting soon" for the SAME step
       // (cron overlap) replaces the previous one quietly; different
       // matches still get separate notifications.
       tag: stepId ? `match_starting:${stepId}` : "match_starting",
+    }),
+    // Predictions Centre — 24h before kickoff. Fires once per
+    // (player, match) so users see "Brasil x Argentina — predictions
+    // open!" with a deep link to the Centre.
+    predictions_open: ({ homeTeam = "", awayTeam = "", matchId = "" } = {}) => ({
+      title:
+        homeTeam && awayTeam
+          ? `${homeTeam} x ${awayTeam} — predictions open!`
+          : "A match just opened for predictions",
+      body: "Pick the winner, exact score, and first scorer for bonus XP.",
+      url: "/predictions",
+      tag: matchId ? `predictions_open:${matchId}` : "predictions_open",
+    }),
+    // Fires after the admin resolves a match. Only sent to players
+    // who earned at least 1 XP on that match.
+    match_resolved: ({
+      homeTeam = "",
+      awayTeam = "",
+      homeScore = 0,
+      awayScore = 0,
+      xpTotal = 0,
+    } = {}) => ({
+      title:
+        homeTeam && awayTeam
+          ? `${homeTeam} ${homeScore}–${awayScore} ${awayTeam}`
+          : "Match resolved",
+      body: `+${xpTotal} XP from your predictions. Tap to see how you did.`,
+      url: "/predictions",
+      tag: "match_resolved",
     }),
   },
   pt: {
@@ -68,13 +99,37 @@ const TEMPLATES = {
       url: "/dashboard",
       tag: "pack_reminder",
     }),
-    match_starting: ({ predictionTitle = "", stepId = "" } = {}) => ({
+    match_starting: ({ predictionTitle = "", stepId = "", url } = {}) => ({
       title: predictionTitle
         ? `${predictionTitle} — fechando em breve`
         : "Palpites fechando em breve",
       body: "Faça sua aposta antes do fechamento.",
-      url: "/lesson",
+      url: url || "/lesson",
       tag: stepId ? `match_starting:${stepId}` : "match_starting",
+    }),
+    predictions_open: ({ homeTeam = "", awayTeam = "", matchId = "" } = {}) => ({
+      title:
+        homeTeam && awayTeam
+          ? `${homeTeam} x ${awayTeam} — palpites abertos!`
+          : "Um jogo abriu para palpites",
+      body: "Escolha vencedor, placar e quem abre o placar para ganhar XP.",
+      url: "/predictions",
+      tag: matchId ? `predictions_open:${matchId}` : "predictions_open",
+    }),
+    match_resolved: ({
+      homeTeam = "",
+      awayTeam = "",
+      homeScore = 0,
+      awayScore = 0,
+      xpTotal = 0,
+    } = {}) => ({
+      title:
+        homeTeam && awayTeam
+          ? `${homeTeam} ${homeScore}–${awayScore} ${awayTeam}`
+          : "Jogo encerrado",
+      body: `+${xpTotal} XP dos seus palpites. Toque para ver como foi.`,
+      url: "/predictions",
+      tag: "match_resolved",
     }),
   },
 };
