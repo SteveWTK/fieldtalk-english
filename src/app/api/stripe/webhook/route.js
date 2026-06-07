@@ -20,6 +20,13 @@
 // that writes player_edition_access — keyed on (player_id, edition).
 // Re-deliveries are safe because the upsert overwrites with the
 // latest status.
+//
+// Multi-app Stripe account: this same Stripe account is also used
+// by Habitat English (the founder's sole-trader UK account). We
+// stamp `app: "fieldtalk"` on every Checkout Session metadata at
+// checkout time; this handler ignores any event whose metadata
+// (or resolved subscription's metadata) doesn't carry that tag.
+// Habitat events fire into this endpoint too and are safely no-op'd.
 
 import { NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/client";
@@ -37,6 +44,24 @@ function mapStripeStatus(status) {
   if (!status) return "incomplete";
   if (status === "incomplete_expired" || status === "unpaid") return "canceled";
   return status;
+}
+
+// Multi-app filter. Returns true when this event is one of ours.
+// Habitat (and any other product sharing the Stripe account) won't
+// have `app: "fieldtalk"` on its session/subscription metadata.
+//
+// We're strict about UNTAGGED events on the create paths
+// (checkout.session.completed, customer.subscription.created)
+// because those are the only events that CAUSE a grant. For
+// update/delete paths we let untagged-but-known-by-id events
+// through — they can only affect FieldTalk rows because we look
+// up by stripe_subscription_id, which won't match Habitat ones.
+function isFieldTalkSession(session) {
+  return session?.metadata?.app === "fieldtalk";
+}
+
+function isFieldTalkSubscription(subscription) {
+  return subscription?.metadata?.app === "fieldtalk";
 }
 
 export async function POST(request) {
@@ -68,6 +93,12 @@ export async function POST(request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
+        // Multi-app filter — ignore Habitat (or any non-FieldTalk)
+        // checkouts sharing this Stripe account. Acknowledge with
+        // 200 so Stripe doesn't retry.
+        if (!isFieldTalkSession(session)) {
+          break;
+        }
         // Resolve the user-facing promo code text (and its prefix)
         // BEFORE granting, so the grant function can stamp them onto
         // player_edition_access in the same upsert. We retrieve the
@@ -97,6 +128,18 @@ export async function POST(request) {
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object;
+        // For CREATED events we must see the FieldTalk tag — these
+        // can lead to a fresh grant. For UPDATED events (renewals,
+        // status flips, portal-driven plan changes), the existing
+        // grantFromSubscription will only touch a row that already
+        // exists in player_edition_access for that subscription id,
+        // so it's safe even when the tag is missing on legacy subs.
+        if (
+          event.type === "customer.subscription.created" &&
+          !isFieldTalkSubscription(subscription)
+        ) {
+          break;
+        }
         await grantFromSubscription(supabase, subscription);
         break;
       }

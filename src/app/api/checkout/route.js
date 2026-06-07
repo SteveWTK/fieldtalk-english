@@ -144,7 +144,16 @@ export async function POST(request) {
 
     // ── Build the Checkout Session ──
     // Common params first; mode-specific additions below.
+    //
+    // `app: "fieldtalk"` is stamped on every session so the webhook
+    // can tell our events apart from any other product running in
+    // the same Stripe account (e.g. Habitat English, which shares
+    // this UK Stripe account as a sole-trader operation). The
+    // webhook ignores anything without this tag, so a Habitat
+    // checkout firing into the FieldTalk webhook endpoint is a
+    // safe no-op.
     const sharedMetadata = {
+      app: "fieldtalk",
       supabase_id: user.id,
       offering: offering.id,
       editions: offering.editionsGranted.join(","),
