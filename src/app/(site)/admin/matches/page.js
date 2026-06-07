@@ -88,9 +88,9 @@ function AdminMatchesContent() {
             Matches
           </h1>
           <p className="text-sm text-white/55 mt-2 max-w-xl leading-relaxed">
-            Enter results for finished matches; the system grades every user's
-            picks and awards XP atomically. Already-resolved matches at the
-            bottom are read-only.
+            Enter results for finished matches; the system grades every
+            user&apos;s picks and awards XP atomically. Already-resolved matches
+            at the bottom are read-only.
           </p>
         </div>
 
@@ -365,7 +365,8 @@ function ResolvedRow({ match }) {
           {match.stage}
         </p>
         <p className="font-bold text-sm text-white truncate">
-          {match.home_team} {match.home_score}–{match.away_score} {match.away_team}
+          {match.home_team} {match.home_score}–{match.away_score}{" "}
+          {match.away_team}
         </p>
       </div>
       <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-200">

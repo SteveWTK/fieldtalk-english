@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/predictions/MatchCard.js
 //
 // One row in the Predictions Centre list. Header shows the two
@@ -433,7 +434,9 @@ function ResolvedRow({ label, picked, correct, xp, copy }) {
         <div className="min-w-0">
           <p className="font-semibold text-white truncate">{label}</p>
           <p className="text-[11px] text-white/50 truncate">
-            {picked ? `${copy.results.youPicked}: ${picked}` : copy.results.pending}
+            {picked
+              ? `${copy.results.youPicked}: ${picked}`
+              : copy.results.pending}
           </p>
         </div>
       </div>
