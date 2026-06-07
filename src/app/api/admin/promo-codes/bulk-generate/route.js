@@ -55,6 +55,13 @@ export async function POST(request) {
       typeof body.couponId === "string" ? body.couponId.trim() : "";
     const count = Math.floor(Number(body.count) || 0);
     const prefix = typeof body.prefix === "string" ? body.prefix.trim() : "";
+    // Optional. When set, we record (prefix → partnerName) in
+    // partner_promo_prefixes so the admin attribution page can
+    // group revenue by partner without anyone having to enrich
+    // the data later. Trimmed only — partner names can include
+    // spaces, hyphens, accents.
+    const partnerName =
+      typeof body.partnerName === "string" ? body.partnerName.trim() : "";
 
     if (!couponId) {
       return NextResponse.json({ error: "Missing couponId" }, { status: 400 });
@@ -139,11 +146,37 @@ export async function POST(request) {
       }
     }
 
+    // Record the prefix → partner mapping so the attribution page
+    // can join on it. Idempotent on conflict — re-running the
+    // generator with the same prefix updates the partner name.
+    if (prefix && partnerName) {
+      const { supabase: adminSupabase, user } = guard;
+      const { error: mapError } = await adminSupabase
+        .from("partner_promo_prefixes")
+        .upsert(
+          {
+            prefix: prefix.toUpperCase(),
+            partner_name: partnerName,
+            created_by: user.id,
+          },
+          { onConflict: "prefix" }
+        );
+      if (mapError) {
+        // Non-fatal — the codes still got created in Stripe; the
+        // admin can backfill the mapping manually via SQL later.
+        console.warn(
+          "[promo-codes/bulk-generate] partner_promo_prefixes upsert failed:",
+          mapError.message
+        );
+      }
+    }
+
     return NextResponse.json({
       created: successes.length,
       failed: failures.length,
       codes: successes,
       errors: failures.length > 0 ? failures : undefined,
+      partnerMapped: Boolean(prefix && partnerName),
     });
   } catch (err) {
     console.error("[promo-codes/bulk-generate] unhandled error:", err);

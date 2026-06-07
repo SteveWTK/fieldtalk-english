@@ -14,7 +14,7 @@
 //                  /auth/callback after the OAuth handshake
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -23,12 +23,24 @@ import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { getBranch } from "@/lib/branches";
+import {
+  rememberPartnerReferrer,
+  readPartnerReferrer,
+} from "@/lib/partners/referrer";
 
 function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const edition = searchParams.get("edition") || null;
-  const branch = getBranch(searchParams.get("branch"));
+  const branchKey = searchParams.get("branch");
+  const branch = getBranch(branchKey);
+
+  // Mirror the /wc2026 capture so users who deep-link straight to
+  // /join?branch=<slug> (e.g. from a partner email blast that skips
+  // the marketing page) still get attributed.
+  useEffect(() => {
+    if (branchKey) rememberPartnerReferrer(branchKey);
+  }, [branchKey]);
   const { t } = useTranslation();
   const { signIn } = useAuth();
 
@@ -61,6 +73,12 @@ function JoinPageContent() {
           password,
           fullName,
           edition,
+          // Pull the partner attribution out of localStorage where
+          // /wc2026 or this page itself stashed it. The server-side
+          // route writes it to players.partner_referrer on the
+          // freshly-created row. Null if the user came in via a
+          // plain URL.
+          partnerReferrer: readPartnerReferrer(),
         }),
       });
       const data = await res.json();

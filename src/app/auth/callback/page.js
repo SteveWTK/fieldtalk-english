@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Globe, Loader } from "lucide-react";
+import { readPartnerReferrer } from "@/lib/partners/referrer";
 
 export default function AuthCallbackPage() {
   const [status, setStatus] = useState("loading");
@@ -46,12 +47,19 @@ export default function AuthCallbackPage() {
                 ? localStorage.getItem("pending_edition")
                 : null;
             // Always call ensure-player so a row exists, even if no
-            // pending_edition (default to 'players' edition).
+            // pending_edition (default to 'players' edition). The
+            // partner_referrer (if any) was stashed at /wc2026 or
+            // /join before the OAuth redirect and survives in
+            // localStorage; ensure-player only writes it on first
+            // signup, so it's safe to send on every callback.
             await fetch("/api/auth/ensure-player", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
-              body: JSON.stringify({ edition: pendingEdition || "players" }),
+              body: JSON.stringify({
+                edition: pendingEdition || "players",
+                partnerReferrer: readPartnerReferrer(),
+              }),
             });
             if (pendingEdition && typeof window !== "undefined") {
               localStorage.removeItem("pending_edition");

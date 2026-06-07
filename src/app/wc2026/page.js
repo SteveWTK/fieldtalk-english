@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getBranch } from "@/lib/branches";
+import { rememberPartnerReferrer } from "@/lib/partners/referrer";
 
 // Colour strip inspired by the marketing artwork — drawn from flags of
 // historically significant World Cup nations. Pure decoration, not a flag set.
@@ -42,6 +43,14 @@ function WorldCup2026LandingContent() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Persist the branch slug to localStorage so it survives the signup
+  // funnel (Google OAuth redirects out and back; email signup reads it
+  // from the body). Captured here at the landing page so it sticks even
+  // if the user wanders to /lesson and signs up later from elsewhere.
+  useEffect(() => {
+    if (branchKey) rememberPartnerReferrer(branchKey);
+  }, [branchKey]);
 
   const handleEnter = () => {
     if (user) {

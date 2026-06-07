@@ -22,6 +22,20 @@ export async function POST(request) {
     const rawEdition = body.edition || "players";
     const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "players";
 
+    // Partner attribution slug (e.g. "fortaleza", "ceara-aldeota").
+    // Sanitised client-side already, but defence-in-depth:
+    // re-validate the shape here so a malicious caller can't push
+    // arbitrary text into the players row.
+    const rawReferrer =
+      typeof body.partnerReferrer === "string" ? body.partnerReferrer : null;
+    const partnerReferrer = rawReferrer
+      ? rawReferrer
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\-_]/g, "")
+          .slice(0, 64) || null
+      : null;
+
     // Basic validation
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
@@ -79,6 +93,10 @@ export async function POST(request) {
         user_type: "player",
         edition,
         preferred_language: "en",
+        // partner_referrer is conditionally included so a re-upsert
+        // (e.g. the user signs up twice) doesn't overwrite an
+        // existing attribution with null.
+        ...(partnerReferrer ? { partner_referrer: partnerReferrer } : {}),
       },
       { onConflict: "id" }
     );

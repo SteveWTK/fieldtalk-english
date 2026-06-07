@@ -35,6 +35,7 @@ import {
   QrCode,
   Loader2,
   ChevronRight,
+  Network,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -142,6 +143,13 @@ function AdminHubContent() {
             title="QR campaigns"
             body="QR-driven guest access campaigns and partner attribution."
             accent="neutral"
+          />
+          <AdminCard
+            href="/admin/partner-tracking"
+            Icon={Network}
+            title="Partner tracking"
+            body="Full Access by partner: seat redemptions, promo-code purchases, direct branch-link signups."
+            accent="amber"
           />
         </AdminSection>
 

@@ -43,6 +43,10 @@ function PromoCodesAdminContent() {
   const [couponId, setCouponId] = useState("");
   const [count, setCount] = useState(30);
   const [prefix, setPrefix] = useState("CC-CEARA-2026A");
+  // Partner attribution — typed once here, persisted into
+  // partner_promo_prefixes by the bulk-generate route. The admin
+  // partner-tracking page joins on it to group revenue per partner.
+  const [partnerName, setPartnerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -68,6 +72,7 @@ function PromoCodesAdminContent() {
           couponId: couponId.trim(),
           count,
           prefix: prefix.trim() || undefined,
+          partnerName: partnerName.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -179,6 +184,24 @@ function PromoCodesAdminContent() {
                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono text-sm uppercase"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
+              Partner name <span className="text-white/35 normal-case">— optional, used on the partner-tracking page</span>
+            </label>
+            <input
+              type="text"
+              value={partnerName}
+              onChange={(e) => setPartnerName(e.target.value)}
+              placeholder="e.g. Cultura Inglesa Fortaleza"
+              disabled={submitting}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 text-sm"
+            />
+            <p className="text-[11px] text-white/45 mt-1">
+              When set, the prefix is mapped to this partner so promo-code
+              purchases group correctly on the attribution page.
+            </p>
           </div>
 
           {error && (

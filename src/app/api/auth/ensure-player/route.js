@@ -22,6 +22,18 @@ export async function POST(request) {
     const rawEdition = body.edition || "players";
     const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "players";
 
+    // Partner attribution slug from /wc2026?branch=<slug>. Sanitised
+    // client-side; we re-validate the shape here.
+    const rawReferrer =
+      typeof body.partnerReferrer === "string" ? body.partnerReferrer : null;
+    const partnerReferrer = rawReferrer
+      ? rawReferrer
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\-_]/g, "")
+          .slice(0, 64) || null
+      : null;
+
     // Identify the caller via their session cookie
     const cookieStore = await cookies();
     const supabaseAuth = createServerClient(
@@ -93,7 +105,10 @@ export async function POST(request) {
       });
     }
 
-    // No row yet — first-time login. Safe to write the defaults.
+    // No row yet — first-time login. Safe to write the defaults, and
+    // this is THE place we'll ever stamp partner_referrer: subsequent
+    // logins on the existing branch above don't touch it, matching
+    // the "first touch wins" attribution rule.
     const { error: insertError } = await supabase.from("players").insert({
       id: user.id,
       email: user.email,
@@ -101,6 +116,7 @@ export async function POST(request) {
       user_type: "player",
       edition,
       preferred_language: "en",
+      ...(partnerReferrer ? { partner_referrer: partnerReferrer } : {}),
     });
 
     if (insertError) {
