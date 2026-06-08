@@ -42,13 +42,11 @@ export default function WinnerWidget({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
             <Trophy className="w-3.5 h-3.5 text-emerald-300" />
-            <h4 className="font-bold text-sm text-white">
-              {copy.winnerTitle}
-            </h4>
+            <h4 className="font-bold text-sm text-white">{copy.winnerTitle}</h4>
           </div>
-          <p className="text-[11px] text-white/55 leading-relaxed">
+          {/* <p className="text-[11px] text-white/55 leading-relaxed">
             {copy.winnerHint}
-          </p>
+          </p> */}
         </div>
         <span className="shrink-0 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-200">
           +{REWARDS.winner.xp} XP

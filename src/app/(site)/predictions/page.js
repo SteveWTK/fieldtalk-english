@@ -93,9 +93,9 @@ function PredictionsCentreContent() {
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             {copy.pageTitle}
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          {/* <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
             {copy.pageSubtitle}
-          </p>
+          </p> */}
         </header>
 
         <Tabs
@@ -163,10 +163,7 @@ function PredictionsCentreContent() {
 function Tabs({ tab, setTab, upcomingCount, resultsCount, copy }) {
   return (
     <div className="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10 mb-5 sm:mb-6 w-fit">
-      <TabButton
-        active={tab === "upcoming"}
-        onClick={() => setTab("upcoming")}
-      >
+      <TabButton active={tab === "upcoming"} onClick={() => setTab("upcoming")}>
         {copy.tabUpcoming}
         {upcomingCount > 0 && (
           <span className="ml-1.5 text-[10px] font-bold bg-emerald-500/25 text-emerald-200 rounded-full px-1.5 py-0.5">

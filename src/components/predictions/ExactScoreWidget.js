@@ -36,10 +36,7 @@ export default function ExactScoreWidget({
   useEffect(() => {
     if (locked) return;
     if (home === null || away === null) return;
-    if (
-      home === (current?.home ?? null) &&
-      away === (current?.away ?? null)
-    ) {
+    if (home === (current?.home ?? null) && away === (current?.away ?? null)) {
       return;
     }
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -84,9 +81,9 @@ export default function ExactScoreWidget({
               {copy.exactScoreTitle}
             </h4>
           </div>
-          <p className="text-[11px] text-white/55 leading-relaxed">
+          {/* <p className="text-[11px] text-white/55 leading-relaxed">
             {copy.exactScoreHint}
-          </p>
+          </p> */}
         </div>
         <span className="shrink-0 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-300/15 text-amber-200">
           +{REWARDS.exact_score.xp} XP

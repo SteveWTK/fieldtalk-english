@@ -44,9 +44,9 @@ export default function FirstScorerTeamWidget({
               {copy.firstScorerTitle}
             </h4>
           </div>
-          <p className="text-[11px] text-white/55 leading-relaxed">
+          {/* <p className="text-[11px] text-white/55 leading-relaxed">
             {copy.firstScorerHint}
-          </p>
+          </p> */}
         </div>
         <span className="shrink-0 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-300/15 text-orange-200">
           +{REWARDS.first_scorer_team.xp} XP
