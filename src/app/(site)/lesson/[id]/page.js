@@ -98,7 +98,12 @@ const ATTEMPT_REQUIRED_TYPES = new Set([
   "ai_conversation",
   "ai_gap_fill",
   "ai_listening_challenge",
-  "ai_speech_practice",
+  // ai_speech_practice intentionally OMITTED — recording yourself
+  // isn't always convenient (quiet room / classroom / no mic), so
+  // we let the user advance with the Next button even if they
+  // didn't speak. XP is still awarded on successful recording via
+  // the component's own onComplete; users who skip simply earn 0
+  // XP for this step.
   "memory_match",
   "interactive_pitch",
   "interactive_game",
@@ -1291,8 +1296,15 @@ function DynamicLessonContent() {
       case "ai_gap_fill":
         return (
           <div className="space-y-4">
+            {/* Per-step React key so two ai_gap_fill steps back-to-back
+                each get a fresh component instance. Previously the
+                key was just `aiGapFillKey` (which only bumped on
+                "Start again"), so React preserved the instance — and
+                with it the `completed` flag — across step changes.
+                Including the step id and the lesson id rules out the
+                cross-lesson edge case too. */}
             <AIMultipleChoiceGapFill
-              key={aiGapFillKey}
+              key={`${lessonId}-${currentStepData?.id || currentStep}-${aiGapFillKey}`}
               sentences={currentStepData.sentences}
               lessonId={lessonId}
               imageUrl={currentStepData.image_url || null}
@@ -1309,11 +1321,14 @@ function DynamicLessonContent() {
             <div className="flex justify-center mt-4">
               <button
                 onClick={() => {
-                  // Clear localStorage for this gap fill exercise
+                  // Clear localStorage for THIS step (the component's
+                  // key now includes the step id, so we mirror it
+                  // here to avoid wiping a sibling step's progress).
                   if (typeof window !== "undefined") {
-                    // AIMultipleChoiceGapFill uses a single key with JSON data
+                    const stepKey =
+                      currentStepData?.id || "default";
                     localStorage.removeItem(
-                      `lesson-${lessonId}-aiGapFill-progress`
+                      `lesson-${lessonId}-step-${stepKey}-aiGapFill-progress`
                     );
                   }
                   // Force re-render by changing the key

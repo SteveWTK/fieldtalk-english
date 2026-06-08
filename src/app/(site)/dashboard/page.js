@@ -253,17 +253,17 @@ function DashboardContent() {
               </div>
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-wider text-emerald-200/80 font-semibold">
-                  Pick up where you left off
+                  {t("resume_eyebrow", "Pick up where you left off")}
                 </p>
                 <p className="text-sm sm:text-base font-bold text-white truncate">
                   {pendingResume.lessonTitle
-                    ? `Resume — ${pendingResume.lessonTitle}`
-                    : "Resume your lesson"}
+                    ? `${t("resume_named_prefix", "Resume — ")}${pendingResume.lessonTitle}`
+                    : t("resume_generic", "Resume your lesson")}
                 </p>
               </div>
             </div>
             <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500 group-hover:bg-emerald-400 text-[#062013] text-xs sm:text-sm font-bold tracking-wide">
-              Resume
+              {t("resume_cta", "Resume")}
               <ArrowRight className="w-3.5 h-3.5" />
             </span>
           </Link>

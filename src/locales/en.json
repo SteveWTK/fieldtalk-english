@@ -1,4 +1,8 @@
 {
+  "resume_eyebrow": "Pick up where you left off",
+  "resume_generic": "Resume your lesson",
+  "resume_named_prefix": "Resume — ",
+  "resume_cta": "Resume",
   "loading": "Loading...",
   "submit": "Submit",
   "continue": "Continue",

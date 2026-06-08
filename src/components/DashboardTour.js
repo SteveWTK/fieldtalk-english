@@ -306,12 +306,12 @@ export default function DashboardTour({ enabled, onClose }) {
       <>
         {/* Top */}
         <div
-          className="absolute bg-black/30 backdrop-blur-md"
+          className="absolute bg-black/15 backdrop-blur-sm"
           style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top) }}
         />
         {/* Bottom */}
         <div
-          className="absolute bg-black/30 backdrop-blur-md"
+          className="absolute bg-black/15 backdrop-blur-sm"
           style={{
             top: rect.top + rect.height,
             left: 0,
@@ -321,7 +321,7 @@ export default function DashboardTour({ enabled, onClose }) {
         />
         {/* Left */}
         <div
-          className="absolute bg-black/30 backdrop-blur-md"
+          className="absolute bg-black/15 backdrop-blur-sm"
           style={{
             top: rect.top,
             left: 0,
@@ -331,7 +331,7 @@ export default function DashboardTour({ enabled, onClose }) {
         />
         {/* Right */}
         <div
-          className="absolute bg-black/30 backdrop-blur-md"
+          className="absolute bg-black/15 backdrop-blur-sm"
           style={{
             top: rect.top,
             left: rect.left + rect.width,

@@ -40,8 +40,15 @@ export default function AIMultipleChoiceGapFill({
   const { user } = useAuth();
   const { t } = useTranslation(user);
   const { isMuted, toggleMute } = useSoundPreference();
-  // Create unique localStorage key for this lesson and component
-  const STORAGE_KEY = `lesson-${lessonId}-aiGapFill-progress`;
+  // Step-scoped localStorage key. Previously the key was just
+  // `lesson-${lessonId}-aiGapFill-progress`, which meant two
+  // ai_gap_fill steps in the same lesson shared one slot — the
+  // second step would hydrate with the first step's answers and
+  // the `completed` flag, sometimes auto-firing onComplete before
+  // the user had touched anything. Including step.id (with a safe
+  // fallback) scopes each instance to its own state.
+  const stepKey = step?.id || "default";
+  const STORAGE_KEY = `lesson-${lessonId}-step-${stepKey}-aiGapFill-progress`;
 
   // Initialize state with localStorage data if available
   const [answers, setAnswers] = useState(() => {
