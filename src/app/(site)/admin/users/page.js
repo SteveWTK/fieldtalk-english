@@ -177,6 +177,21 @@ function UsersAdminContent() {
             : "—",
         Icon: Trophy,
       },
+      // Full Access roll-up. Single tile shows the headline count;
+      // the hover/title surfaces the breakdown so the admin can see
+      // how many of those came from each path.
+      {
+        label: "Full Access",
+        value: formatNumber(k.fullAccessTotal || 0),
+        Icon: Trophy,
+        tone: "emerald",
+        title:
+          k.fullAccessBySource &&
+          `Stripe sub: ${k.fullAccessBySource.subscription || 0}  ·  ` +
+            `One-off: ${k.fullAccessBySource.one_time_purchase || 0}  ·  ` +
+            `Seat code: ${k.fullAccessBySource.seat_redemption || 0}  ·  ` +
+            `Admin grant: ${k.fullAccessBySource.admin_grant || 0}`,
+      },
     ];
   }, [data]);
 
@@ -302,7 +317,7 @@ function UsersAdminContent() {
         )}
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {kpiCards.map((c, i) => (
             <KpiCard key={i} {...c} />
           ))}
@@ -342,6 +357,9 @@ function UsersAdminContent() {
                   <th className="text-right px-3 py-3 font-semibold hidden sm:table-cell">
                     Last seen
                   </th>
+                  <th className="text-center px-3 py-3 font-semibold">
+                    Access
+                  </th>
                   <th className="w-6" />
                 </tr>
               </thead>
@@ -374,6 +392,12 @@ function UsersAdminContent() {
                     </td>
                     <td className="text-right px-3 py-3 text-white/55 text-xs hidden sm:table-cell">
                       {timeAgo(u.lastActiveAt)}
+                    </td>
+                    <td className="text-center px-3 py-3">
+                      <AccessBadge
+                        has={u.hasFullAccess}
+                        source={u.accessSource}
+                      />
                     </td>
                     <td className="px-2 text-white/40">
                       <ChevronRight className="w-4 h-4" />
@@ -522,10 +546,13 @@ function UsersAdminContent() {
   );
 }
 
-function KpiCard({ label, value, Icon, tone = "neutral" }) {
+function KpiCard({ label, value, Icon, tone = "neutral", title }) {
   const accent = tone === "emerald" ? "text-emerald-300" : "text-white";
   return (
-    <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-3 sm:p-4">
+    <div
+      className="rounded-2xl bg-white/[0.04] border border-white/10 p-3 sm:p-4"
+      title={title}
+    >
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[9px] uppercase tracking-wider text-white/50">
           {label}
@@ -537,6 +564,57 @@ function KpiCard({ label, value, Icon, tone = "neutral" }) {
       </p>
     </div>
   );
+}
+
+// One-line badge for the power-users table. Short label + colour by
+// source so the admin can tell paying users from seat-code users at
+// a glance.
+function AccessBadge({ has, source }) {
+  if (!has) {
+    return <span className="text-white/30 text-[11px]">—</span>;
+  }
+  const map = {
+    subscription: { label: "Sub", cls: "bg-emerald-500/15 text-emerald-200" },
+    one_time_purchase: {
+      label: "One-off",
+      cls: "bg-emerald-500/15 text-emerald-200",
+    },
+    seat_redemption: {
+      label: "Seat",
+      cls: "bg-blue-500/15 text-blue-200",
+    },
+    admin_grant: {
+      label: "Comp",
+      cls: "bg-amber-300/15 text-amber-200",
+    },
+  };
+  const meta = map[source] || {
+    label: "Full",
+    cls: "bg-white/10 text-white/70",
+  };
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${meta.cls}`}
+      title={source || "full_access"}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
+function accessSourceLabel(source) {
+  switch (source) {
+    case "subscription":
+      return "Stripe subscription";
+    case "one_time_purchase":
+      return "Stripe one-off";
+    case "seat_redemption":
+      return "Seat code";
+    case "admin_grant":
+      return "Admin grant";
+    default:
+      return source || "—";
+  }
 }
 
 function activityDot(type) {
@@ -674,6 +752,40 @@ function UserDrillBody({ data }) {
               : "—"}
             {" · "}edition {data.partner.edition || "—"}
           </p>
+        </div>
+      )}
+
+      {data.access && (
+        <div
+          className={`rounded-xl p-3 text-sm border ${
+            data.access.hasFullAccess
+              ? "bg-emerald-500/10 border-emerald-400/30"
+              : "bg-white/[0.03] border-white/10"
+          }`}
+        >
+          <p className="text-[10px] uppercase tracking-wider text-emerald-200/70 font-bold mb-1">
+            Full Access
+          </p>
+          {data.access.hasFullAccess ? (
+            <>
+              <p className="font-semibold flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 text-[10px] font-bold uppercase tracking-wider">
+                  Active
+                </span>
+                <span className="text-white/75">
+                  via {accessSourceLabel(data.access.source)}
+                </span>
+              </p>
+              {data.access.until && (
+                <p className="text-xs text-white/50 mt-1">
+                  Until{" "}
+                  {new Date(data.access.until).toLocaleDateString()}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-white/55">No active access.</p>
+          )}
         </div>
       )}
 

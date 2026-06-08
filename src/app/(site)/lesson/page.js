@@ -107,15 +107,26 @@ function PlayerLessonsMenu() {
   // returns to /lesson where the FirstLessonPrompt highlights Unit 1
   // Lesson 1.
   const [showStarterPack, setShowStarterPack] = useState(false);
+
+  // Session-local "we've already shown onboarding this load" flag.
+  // The /api/onboarding/complete write inside WelcomeOnboarding is
+  // fire-and-forget, so a refetchProgress() triggered by the pack
+  // modal close can race ahead of the DB commit and momentarily
+  // return profile.onboarding_completed = false, which would re-show
+  // the modal. This local guard prevents that flicker.
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+
   useEffect(() => {
     if (loading || !user?.id || !profile) return;
     if (profile.edition !== "wc2026") return;
     if (profile.onboarding_completed === true) return;
+    if (onboardingDismissed) return;
     setShowWelcome(true);
-  }, [loading, user, profile]);
+  }, [loading, user, profile, onboardingDismissed]);
 
   const handleWelcomeClose = (nextAction) => {
     setShowWelcome(false);
+    setOnboardingDismissed(true);
     if (nextAction === "open_pack") {
       setShowStarterPack(true);
     }

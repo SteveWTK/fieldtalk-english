@@ -50,6 +50,7 @@ export async function GET(_request, ctx) {
     stickerRosterRes,
     seatRedemptionsRes,
     predictionsRes,
+    accessRes,
   ] = await Promise.all([
     supabase
       .from("players")
@@ -100,6 +101,16 @@ export async function GET(_request, ctx) {
       .from("predictions")
       .select("id")
       .eq("player_id", id),
+    // Full-access lookup via the GO_LIVE_POLISH.sql view — one row
+    // per player carrying has_full_access + access_source + the
+    // current_period_end. Surfaces in the slide-over so the admin
+    // can answer "is this user a paying customer?" without
+    // jumping to Stripe.
+    supabase
+      .from("v_players_full_access")
+      .select("has_full_access, access_source, access_until")
+      .eq("player_id", id)
+      .maybeSingle(),
   ]);
 
   if (playerRes.error || !playerRes.data) {
@@ -194,6 +205,14 @@ export async function GET(_request, ctx) {
         }
       : null;
 
+  // Full Access summary — collapsed shape for the slide-over.
+  const accessRow = accessRes.data || null;
+  const access = {
+    hasFullAccess: !!accessRow?.has_full_access,
+    source: accessRow?.access_source || null,
+    until: accessRow?.access_until || null,
+  };
+
   const completionsOut = completions.map((c) => {
     const lookup = lessonsLookup.get(c.lesson_id);
     return {
@@ -221,6 +240,7 @@ export async function GET(_request, ctx) {
     squadValue,
     albumCounts: { owned: ownedActive, total: activeStickerIds.size },
     partner,
+    access,
     lessonsCompleted: completionsOut,
     recentXp: xp,
     packsOpenedTotal: packs.length,

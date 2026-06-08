@@ -71,6 +71,7 @@ export async function GET(request) {
     pillarsRes,
     lessonsRes,
     progressRes,
+    accessRes,
   ] = await Promise.all([
     playerQuery,
     supabase
@@ -102,6 +103,12 @@ export async function GET(request) {
     supabase
       .from("player_progress")
       .select("player_id, total_xp, last_activity_date"),
+    // Reads the GO_LIVE_POLISH.sql view. Returns one row per player
+    // with has_full_access (boolean) + access_source ('subscription'
+    // | 'one_time_purchase' | 'seat_redemption' | 'admin_grant').
+    supabase
+      .from("v_players_full_access")
+      .select("player_id, has_full_access, access_source, access_until"),
   ]);
 
   for (const res of [
@@ -115,6 +122,7 @@ export async function GET(request) {
     pillarsRes,
     lessonsRes,
     progressRes,
+    accessRes,
   ]) {
     if (res.error) {
       console.error("[admin/users/stats] sub-fetch error:", res.error);
@@ -135,6 +143,16 @@ export async function GET(request) {
   const pillars = pillarsRes.data || [];
   const lessons = lessonsRes.data || [];
   const progress = progressRes.data || [];
+  const accessRows = accessRes.data || [];
+
+  // Lookup tables — has_full_access + which path granted it.
+  const accessByPlayer = new Map();
+  for (const a of accessRows) {
+    accessByPlayer.set(a.player_id, {
+      has: !!a.has_full_access,
+      source: a.access_source || null,
+    });
+  }
 
   // license_id → partner_name lookup, then player_id → partner_name
   // via seat_redemptions. A player who redeemed multiple codes keeps
@@ -248,6 +266,7 @@ export async function GET(request) {
     .filter((p) => matchingPlayerIds.has(p.id))
     .map((p) => {
       const lastActiveMs = lastActiveByPlayer.get(p.id) || 0;
+      const access = accessByPlayer.get(p.id) || { has: false, source: null };
       return {
         id: p.id,
         name: p.full_name || p.email?.split("@")[0] || "Player",
@@ -258,6 +277,8 @@ export async function GET(request) {
         lessonsCompleted: lessonsByPlayer.get(p.id) || 0,
         totalXp: xpByPlayer.get(p.id) || 0,
         packsOpened: packsByPlayer.get(p.id) || 0,
+        hasFullAccess: access.has,
+        accessSource: access.source,
       };
     })
     .sort((a, b) => {
@@ -409,6 +430,26 @@ export async function GET(request) {
     ...new Set(players.map((p) => p.edition).filter(Boolean)),
   ].sort();
 
+  // Full-access tally for the filtered cohort. Counts players whose
+  // v_players_full_access row says has_full_access = true. Broken
+  // down by source so the admin can see e.g. "of the 47 active
+  // wc2026 players, 24 paid via Stripe and 18 redeemed seat codes".
+  let fullAccessTotal = 0;
+  const fullAccessBySource = {
+    subscription: 0,
+    one_time_purchase: 0,
+    seat_redemption: 0,
+    admin_grant: 0,
+  };
+  for (const pid of matchingPlayerIds) {
+    const a = accessByPlayer.get(pid);
+    if (!a?.has) continue;
+    fullAccessTotal += 1;
+    if (a.source && fullAccessBySource[a.source] !== undefined) {
+      fullAccessBySource[a.source] += 1;
+    }
+  }
+
   return NextResponse.json({
     dateRange: { since, until },
     filters: { availableEditions, availablePartners },
@@ -420,6 +461,8 @@ export async function GET(request) {
       packsOpened: packsOpenedInWindow,
       predictionsSubmitted: predictionsInWindow,
       avgLessonsPerActiveUser,
+      fullAccessTotal,
+      fullAccessBySource,
     },
     powerUsers,
     lessonEngagement,

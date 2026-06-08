@@ -446,11 +446,8 @@ function DashboardContent() {
               )}
             </section>
 
-            {/* Predictions */}
-            <section
-              data-tour-id="predictions"
-              className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5"
-            >
+            {/* Predictions stats */}
+            <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
               <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Crosshair className="w-3.5 h-3.5" />

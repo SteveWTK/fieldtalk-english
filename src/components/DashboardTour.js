@@ -1,21 +1,34 @@
 // src/components/DashboardTour.js
 //
 // Lightweight arrow-style guided tour for first-time dashboard
-// visitors. Renders a darkening overlay with a single "spotlight"
-// cut-out around the current target element, plus a tooltip card
-// pointing at it.
+// visitors. Renders a darkening overlay with a "spotlight" cut-out
+// around the current target element, plus a tooltip card.
+//
+// Two layout modes — chosen automatically per step:
+//
+//   "side"   target fits in <60% of the viewport height. The tooltip
+//            is placed directly below (or above if there's no room
+//            below) the spotlight. Used for compact targets like the
+//            hero strip, the predictions banner, the predictions
+//            stats tile.
+//
+//   "pinned" target is taller than ~60% of the viewport (squad pitch
+//            on mobile, leaderboard). The spotlight still cuts the
+//            target out of the overlay, but the tooltip is pinned to
+//            the bottom of the viewport so it remains readable
+//            without scrolling. The earlier implementation tried to
+//            place the tooltip below such a target and it ended up
+//            off-screen.
 //
 // Targets are looked up by `data-tour-id="<key>"` on the actual
-// dashboard elements (so the tour doesn't have to know any CSS
-// classnames). Steps are ordered; user can Next, Back or Skip.
-//
-// Completion is persisted via /api/onboarding/dashboard-complete,
-// which flips players.dashboard_tour_completed to true. Re-arm a
-// user manually by toggling that column back to false in Supabase.
+// dashboard elements. Completion is persisted via
+// /api/onboarding/dashboard-complete, which flips
+// players.dashboard_tour_completed to true. Re-arm any user by
+// toggling that column back to false in Supabase.
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -27,6 +40,11 @@ const COPY = {
     finish: "Got it",
     stepOf: (i, n) => `${i} of ${n}`,
     steps: [
+      {
+        target: "predictions",
+        title: "Good at predictions?",
+        body: "Tap here to open the Predictions Centre — win sticker packs by calling winners, exact scores and first scorers.",
+      },
       {
         target: "xp-bar",
         title: "Your XP & packs",
@@ -42,11 +60,6 @@ const COPY = {
         title: "Check the ranking",
         body: "See where you sit against players from across Brazil — sort by XP, squad value or album completion.",
       },
-      {
-        target: "predictions",
-        title: "Good at predictions?",
-        body: "Win sticker packs by predicting match outcomes — winner, exact score and first scorer.",
-      },
     ],
   },
   pt: {
@@ -56,6 +69,11 @@ const COPY = {
     finish: "Entendi",
     stepOf: (i, n) => `${i} de ${n}`,
     steps: [
+      {
+        target: "predictions",
+        title: "Bom de palpite?",
+        body: "Toque aqui pra abrir a Central de Palpites — ganhe pacotes de figurinhas prevendo vencedor, placar e quem abre o placar.",
+      },
       {
         target: "xp-bar",
         title: "Seu XP e seus pacotes",
@@ -71,11 +89,6 @@ const COPY = {
         title: "Confira seu lugar no ranking",
         body: "Veja como você está em comparação a outros jogadores — ordene por XP, valor do time ou álbum.",
       },
-      {
-        target: "predictions",
-        title: "Bom de palpite?",
-        body: "Ganhe pacotes de figurinhas prevendo resultados — vencedor, placar exato e quem abre o placar.",
-      },
     ],
   },
 };
@@ -83,19 +96,24 @@ const COPY = {
 // Padding around the spotlight so the highlighted element gets a
 // little air. Helps the user see the full card, not just its inner
 // content.
-const SPOTLIGHT_PADDING = 12;
+const SPOTLIGHT_PADDING = 10;
 
-// How far the tooltip floats from the spotlight on each side.
-const TOOLTIP_OFFSET = 16;
+// How far the tooltip floats from the spotlight in "side" mode.
+const TOOLTIP_OFFSET = 14;
+
+// If the target is taller than this fraction of the viewport, we
+// switch to "pinned" layout — tooltip stuck to the bottom of the
+// screen so it never goes off-screen.
+const LARGE_TARGET_RATIO = 0.55;
+
+// Tooltip width cap. Tooltip never wider than viewport - 24.
+const TOOLTIP_MAX_W = 320;
 
 export default function DashboardTour({ enabled, onClose }) {
   const { userLanguage } = useTranslation();
   const copy = COPY[userLanguage === "pt" ? "pt" : "en"];
   const [stepIndex, setStepIndex] = useState(0);
-  const [rect, setRect] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState(null);
-  const [placement, setPlacement] = useState("below");
-  const tooltipRef = useRef(null);
+  const [layout, setLayout] = useState(null); // { mode, rect, tooltip }
 
   const step = copy.steps[stepIndex];
 
@@ -109,60 +127,93 @@ export default function DashboardTour({ enabled, onClose }) {
     };
   }, [enabled]);
 
-  // Locate the current step's target element by data-tour-id, scroll
-  // it into view, measure its rect, and compute where the tooltip
-  // should land (below by default, above if the bottom half of the
-  // viewport would clip it). Re-runs on resize so rotating a phone
-  // doesn't strand the tooltip in the wrong place.
-  const computePositions = useCallback(() => {
+  // Locate the target, scroll it into view (instant — smooth scroll
+  // would still be settling by the time we measured, which was the
+  // bug that made the spotlight land in the wrong spot), then
+  // compute layout + tooltip position.
+  const computeLayout = useCallback(() => {
     if (!enabled || !step) return;
     const el = document.querySelector(`[data-tour-id="${step.target}"]`);
     if (!el) {
-      // Target missing on this dashboard (e.g. user has no leaderboard
-      // section in the future). Skip ahead silently rather than
-      // blocking the tour.
-      setRect(null);
+      setLayout({ mode: "missing" });
       return;
     }
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    // Wait a frame for the scroll to settle, then measure.
+
+    // Instant scroll so the rect we read next is the rect the user
+    // will actually see. Centred so the user has visual room both
+    // above and below for the tooltip in "side" mode.
+    el.scrollIntoView({ behavior: "auto", block: "center" });
+
+    // Read the rect on the next paint. Layout has already been
+    // applied by the time of the next frame for instant scrolls.
     requestAnimationFrame(() => {
       const r = el.getBoundingClientRect();
-      setRect({
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+      const tooltipW = Math.min(TOOLTIP_MAX_W, vw - 24);
+
+      const rect = {
         top: r.top - SPOTLIGHT_PADDING,
         left: r.left - SPOTLIGHT_PADDING,
         width: r.width + SPOTLIGHT_PADDING * 2,
         height: r.height + SPOTLIGHT_PADDING * 2,
-      });
+      };
 
-      // Tooltip placement: prefer below; flip above if the spotlight
-      // is in the bottom half. Tooltip width capped at 320px; centre
-      // on the spotlight, then clamp into the viewport.
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      const below = r.bottom + TOOLTIP_OFFSET + 200 < vh;
-      setPlacement(below ? "below" : "above");
-      const tooltipW = Math.min(320, vw - 24);
+      // Decide mode. "Pinned" when the target is too tall to leave
+      // room for a tooltip either above or below.
+      const targetRatio = r.height / vh;
+      const isLarge = targetRatio > LARGE_TARGET_RATIO;
+
+      if (isLarge) {
+        // Tooltip pinned to the bottom of the viewport. Always
+        // readable, never clipped.
+        setLayout({
+          mode: "pinned",
+          rect,
+          tooltip: {
+            left: 12,
+            width: vw - 24,
+            bottom: 16,
+            maxWidth: tooltipW,
+          },
+        });
+        return;
+      }
+
+      // "Side" mode — prefer below, flip above when there's no room.
+      // Estimate tooltip height — we don't know the exact rendered
+      // height yet but ~180px is a safe upper bound for our copy.
+      const TOOLTIP_HEIGHT_GUESS = 200;
+      const spaceBelow = vh - (r.bottom + SPOTLIGHT_PADDING);
+      const spaceAbove = r.top - SPOTLIGHT_PADDING;
+      const below = spaceBelow >= TOOLTIP_HEIGHT_GUESS || spaceBelow >= spaceAbove;
+
+      // Centre tooltip on the spotlight, clamp into the viewport.
       let left = r.left + r.width / 2 - tooltipW / 2;
       left = Math.max(12, Math.min(vw - tooltipW - 12, left));
       const top = below
         ? r.bottom + SPOTLIGHT_PADDING + TOOLTIP_OFFSET
-        : r.top - SPOTLIGHT_PADDING - TOOLTIP_OFFSET; // we render above
-      setTooltipPos({ top, left, width: tooltipW });
+        : r.top - SPOTLIGHT_PADDING - TOOLTIP_OFFSET; // rendered with -translate-y-full
+
+      setLayout({
+        mode: "side",
+        rect,
+        tooltip: { top, left, width: tooltipW, placement: below ? "below" : "above" },
+      });
     });
   }, [enabled, step]);
 
   useEffect(() => {
     if (!enabled) return;
-    computePositions();
-    const handler = () => computePositions();
+    computeLayout();
+    const handler = () => computeLayout();
     window.addEventListener("resize", handler);
-    window.addEventListener("scroll", handler, true);
+    // No scroll listener — body is locked while the tour is up, so
+    // scroll can't change. Resize covers orientation flips.
     return () => {
       window.removeEventListener("resize", handler);
-      window.removeEventListener("scroll", handler, true);
     };
-  }, [enabled, computePositions]);
+  }, [enabled, computeLayout]);
 
   const finish = useCallback(() => {
     onClose?.();
@@ -178,6 +229,8 @@ export default function DashboardTour({ enabled, onClose }) {
   if (!enabled || !step) return null;
 
   const isLast = stepIndex === copy.steps.length - 1;
+  const mode = layout?.mode;
+  const rect = layout?.rect;
 
   return (
     <div
@@ -186,10 +239,9 @@ export default function DashboardTour({ enabled, onClose }) {
       aria-modal="true"
       aria-label="Dashboard tour"
     >
-      {/* Darkening overlay with a spotlight cut-out. We render four
-          opaque rectangles around the highlighted rect rather than
-          using SVG cutouts — simpler and renders identically across
-          browsers. */}
+      {/* Darkening overlay with a spotlight cut-out. Four opaque
+          rectangles around the highlighted rect — simpler than SVG
+          mask and renders identically across browsers. */}
       {rect ? (
         <>
           {/* Top */}
@@ -227,8 +279,7 @@ export default function DashboardTour({ enabled, onClose }) {
               height: rect.height,
             }}
           />
-          {/* Spotlight border — sits exactly on top of the cut-out
-              so the highlighted element has a glowing emerald ring. */}
+          {/* Spotlight border — emerald ring on top of the cut-out. */}
           <div
             className="absolute pointer-events-none rounded-2xl border-2 border-emerald-400 shadow-[0_0_28px_rgba(16,185,129,0.45)]"
             style={{
@@ -240,23 +291,36 @@ export default function DashboardTour({ enabled, onClose }) {
           />
         </>
       ) : (
-        // Target missing — render a full overlay so the user can
-        // still close the tour cleanly.
+        // Target missing or layout still computing — render a full
+        // dark overlay so the user can still close the tour cleanly.
         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
       )}
 
       {/* Tooltip card */}
-      {tooltipPos && (
+      {layout?.tooltip && (
         <div
-          ref={tooltipRef}
           className={`absolute rounded-2xl bg-[#0f0f0f] border border-emerald-400/40 shadow-2xl p-4 ${
-            placement === "above" ? "-translate-y-full" : ""
+            mode === "side" && layout.tooltip.placement === "above"
+              ? "-translate-y-full"
+              : ""
           }`}
-          style={{
-            top: tooltipPos.top,
-            left: tooltipPos.left,
-            width: tooltipPos.width,
-          }}
+          style={
+            mode === "pinned"
+              ? {
+                  left: layout.tooltip.left,
+                  width: layout.tooltip.width,
+                  bottom: layout.tooltip.bottom,
+                  maxWidth: layout.tooltip.maxWidth,
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  right: 12,
+                }
+              : {
+                  top: layout.tooltip.top,
+                  left: layout.tooltip.left,
+                  width: layout.tooltip.width,
+                }
+          }
         >
           <div className="flex items-start justify-between gap-3 mb-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">

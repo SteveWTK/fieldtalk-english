@@ -82,6 +82,7 @@ export default function PredictionsCentreBanner() {
   return (
     <Link
       href="/predictions"
+      data-tour-id="predictions"
       className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-amber-300/15 via-amber-300/10 to-transparent border border-amber-300/40 hover:border-amber-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
     >
       <div className="flex items-center gap-3 min-w-0">

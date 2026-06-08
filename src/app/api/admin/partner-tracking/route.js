@@ -115,7 +115,11 @@ export async function GET() {
 
     // ── Path 3: direct branch-link signups ──
     // Group players by partner_referrer. For each branch, count
-    // total signups and how many of them have paid edition access.
+    // total signups and how many of them have Full Access right
+    // now (any source — Stripe purchase, seat redemption, or
+    // admin grant). The has_full_access view does the heavy lifting
+    // of accounting for expiry windows, status filters and
+    // multiple grant paths in one read.
     const { data: branchPlayers, error: branchError } = await supabase
       .from("players")
       .select("id, partner_referrer, created_at")
@@ -131,13 +135,26 @@ export async function GET() {
     const branchPlayerIds = (branchPlayers || []).map((p) => p.id);
     const paidPlayerIds = new Set();
     if (branchPlayerIds.length > 0) {
-      const { data: paidRows } = await supabase
-        .from("player_edition_access")
-        .select("player_id, source, status")
-        .in("player_id", branchPlayerIds)
-        .in("source", ["subscription", "one_time_purchase"])
-        .in("status", ["active", "trialing"]);
-      for (const r of paidRows || []) paidPlayerIds.add(r.player_id);
+      // Single read from the view — has_full_access already accounts
+      // for status + current_period_end + all four source paths.
+      // We still want to flag which path granted it for the "paid"
+      // vs "seat" distinction the partner cares about, so we filter
+      // out seat-redemption rows: this column is the partner's "did
+      // they actually pay you" tally, not their "do they have access"
+      // tally (which Paths 1 + 2 separately cover).
+      const { data: accessRows } = await supabase
+        .from("v_players_full_access")
+        .select("player_id, has_full_access, access_source")
+        .in("player_id", branchPlayerIds);
+      for (const r of accessRows || []) {
+        if (!r.has_full_access) continue;
+        if (
+          r.access_source === "subscription" ||
+          r.access_source === "one_time_purchase"
+        ) {
+          paidPlayerIds.add(r.player_id);
+        }
+      }
     }
     const branchPartners = new Map();
     for (const p of branchPlayers || []) {
