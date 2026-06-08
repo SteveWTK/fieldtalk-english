@@ -161,6 +161,13 @@ function DashboardContent() {
   //   - data has loaded
   //   - the user is a WC2026 player (other editions opt-in later)
   //   - players.dashboard_tour_completed is not yet true
+  //   - no other modal is open on the dashboard (pack vault, profile
+  //     editor) — we don't want spotlights overlapping a modal
+  //   - the welcome flow wasn't just completed (localStorage flag set
+  //     by the lesson page when the user opens their starter pack;
+  //     prevents the tour from firing in the immediate post-pack
+  //     navigation window when testers occasionally land here for a
+  //     moment before /lesson finishes settling)
   // Persisted via /api/onboarding/dashboard-complete; admins can
   // re-arm any user by setting the column back to false.
   const [showDashboardTour, setShowDashboardTour] = useState(false);
@@ -168,11 +175,25 @@ function DashboardContent() {
     if (loading || !profile) return;
     if (profile.edition !== "wc2026") return;
     if (profile.dashboard_tour_completed === true) return;
+    if (packModalOpen || profileModalOpen) return;
+    // localStorage gate. Cleared when more than 5 minutes have
+    // passed since the welcome flow ended — by then the user has
+    // had time to do lesson 1 + arrive at the dashboard for real.
+    try {
+      const completedAt = Number(
+        localStorage.getItem("ft.welcome.completed_at") || 0
+      );
+      if (completedAt && Date.now() - completedAt < 5 * 60 * 1000) {
+        return;
+      }
+    } catch {
+      // localStorage unavailable (private mode) — proceed.
+    }
     // Defer one tick so the dashboard markup has mounted and our
     // data-tour-id targets are present in the DOM.
-    const id = setTimeout(() => setShowDashboardTour(true), 400);
+    const id = setTimeout(() => setShowDashboardTour(true), 800);
     return () => clearTimeout(id);
-  }, [loading, profile]);
+  }, [loading, profile, packModalOpen, profileModalOpen]);
 
   if (loading) {
     return (
@@ -510,9 +531,12 @@ function DashboardContent() {
 
       {/* Dashboard onboarding tour — arrow-style spotlight + tooltip
           pointing at each section. Only renders for WC2026 players
-          who haven't completed it yet. */}
+          who haven't completed it yet. We also pause it when any
+          other modal opens (pack vault, profile editor) — both
+          modals are full-screen on mobile, so a spotlight underneath
+          them would be wasted; the tour resumes once they close. */}
       <DashboardTour
-        enabled={showDashboardTour}
+        enabled={showDashboardTour && !packModalOpen && !profileModalOpen}
         onClose={() => setShowDashboardTour(false)}
       />
 

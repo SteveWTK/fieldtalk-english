@@ -116,16 +116,48 @@ export default function DashboardTour({ enabled, onClose }) {
   const [layout, setLayout] = useState(null); // { mode, rect, tooltip }
 
   const step = copy.steps[stepIndex];
+  const layoutReady = layout && layout.mode !== "missing";
 
-  // Lock scrolling while the tour is up; restore on unmount.
+  // Lock scrolling ONLY while the overlay is actually visible. If we
+  // locked on `enabled` alone, the body would be stuck `overflow:
+  // hidden` during the layout-compute phase (before the spotlight
+  // renders) and during the brief window when a step's target is
+  // missing — that was the "page gets stuck, can't scroll" report.
+  // Always restore to "" on cleanup so a previous modal that left
+  // an "auto" / "hidden" value on `body.style.overflow` doesn't
+  // bleed into our restore.
   useEffect(() => {
-    if (!enabled) return;
-    const prev = document.body.style.overflow;
+    if (!enabled || !layoutReady) return;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = "";
     };
-  }, [enabled]);
+  }, [enabled, layoutReady]);
+
+  // If a step's target doesn't exist (e.g. the predictions banner
+  // isn't rendered because the user has no open matches), advance
+  // automatically after a short pause. Stops the tour from getting
+  // stuck on a step it can't render.
+  useEffect(() => {
+    if (!enabled) return;
+    if (layout?.mode !== "missing") return;
+    const id = setTimeout(() => {
+      if (stepIndex < copy.steps.length - 1) {
+        setStepIndex((i) => i + 1);
+      } else {
+        // finish() is defined below — inline equivalent so we don't
+        // need a forward ref. Same body as finish().
+        onClose?.();
+        fetch("/api/onboarding/dashboard-complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }).catch(() => {});
+      }
+    }, 1200);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, layout, stepIndex]);
 
   // Locate the target, scroll it into view (instant — smooth scroll
   // would still be settling by the time we measured, which was the
@@ -227,10 +259,19 @@ export default function DashboardTour({ enabled, onClose }) {
   }, [onClose]);
 
   if (!enabled || !step) return null;
+  // While the layout is still computing OR the target is missing,
+  // render NOTHING. This avoids two ugly states the testers saw:
+  //   1. A full blackout overlay with no spotlight (layout=null).
+  //   2. A blocking overlay that traps clicks + scroll for the
+  //      length of the layout compute.
+  // Once layout is ready, the spotlight + tooltip appear. The
+  // missing-target effect above advances or closes the tour without
+  // ever showing a stuck overlay.
+  if (!layoutReady) return null;
 
   const isLast = stepIndex === copy.steps.length - 1;
-  const mode = layout?.mode;
-  const rect = layout?.rect;
+  const mode = layout.mode;
+  const rect = layout.rect;
 
   return (
     <div
@@ -242,59 +283,53 @@ export default function DashboardTour({ enabled, onClose }) {
       {/* Darkening overlay with a spotlight cut-out. Four opaque
           rectangles around the highlighted rect — simpler than SVG
           mask and renders identically across browsers. */}
-      {rect ? (
-        <>
-          {/* Top */}
-          <div
-            className="absolute bg-black/70 backdrop-blur-[2px]"
-            style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top) }}
-          />
-          {/* Bottom */}
-          <div
-            className="absolute bg-black/70 backdrop-blur-[2px]"
-            style={{
-              top: rect.top + rect.height,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          />
-          {/* Left */}
-          <div
-            className="absolute bg-black/70 backdrop-blur-[2px]"
-            style={{
-              top: rect.top,
-              left: 0,
-              width: Math.max(0, rect.left),
-              height: rect.height,
-            }}
-          />
-          {/* Right */}
-          <div
-            className="absolute bg-black/70 backdrop-blur-[2px]"
-            style={{
-              top: rect.top,
-              left: rect.left + rect.width,
-              right: 0,
-              height: rect.height,
-            }}
-          />
-          {/* Spotlight border — emerald ring on top of the cut-out. */}
-          <div
-            className="absolute pointer-events-none rounded-2xl border-2 border-emerald-400 shadow-[0_0_28px_rgba(16,185,129,0.45)]"
-            style={{
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-            }}
-          />
-        </>
-      ) : (
-        // Target missing or layout still computing — render a full
-        // dark overlay so the user can still close the tour cleanly.
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
-      )}
+      <>
+        {/* Top */}
+        <div
+          className="absolute bg-black/70 backdrop-blur-[2px]"
+          style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top) }}
+        />
+        {/* Bottom */}
+        <div
+          className="absolute bg-black/70 backdrop-blur-[2px]"
+          style={{
+            top: rect.top + rect.height,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        {/* Left */}
+        <div
+          className="absolute bg-black/70 backdrop-blur-[2px]"
+          style={{
+            top: rect.top,
+            left: 0,
+            width: Math.max(0, rect.left),
+            height: rect.height,
+          }}
+        />
+        {/* Right */}
+        <div
+          className="absolute bg-black/70 backdrop-blur-[2px]"
+          style={{
+            top: rect.top,
+            left: rect.left + rect.width,
+            right: 0,
+            height: rect.height,
+          }}
+        />
+        {/* Spotlight border — emerald ring on top of the cut-out. */}
+        <div
+          className="absolute pointer-events-none rounded-2xl border-2 border-emerald-400 shadow-[0_0_28px_rgba(16,185,129,0.45)]"
+          style={{
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          }}
+        />
+      </>
 
       {/* Tooltip card */}
       {layout?.tooltip && (

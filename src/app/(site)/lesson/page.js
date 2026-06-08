@@ -127,6 +127,18 @@ function PlayerLessonsMenu() {
   const handleWelcomeClose = (nextAction) => {
     setShowWelcome(false);
     setOnboardingDismissed(true);
+    // Marker the dashboard tour reads to defer itself for the few
+    // minutes immediately after the welcome flow ends. Set on every
+    // close (open_pack OR skip) so users who skip without opening
+    // the pack aren't ambushed by the dashboard tour either.
+    try {
+      localStorage.setItem(
+        "ft.welcome.completed_at",
+        String(Date.now())
+      );
+    } catch {
+      // private mode — non-fatal, tour just fires immediately
+    }
     if (nextAction === "open_pack") {
       setShowStarterPack(true);
     }
