@@ -27,8 +27,22 @@
 "use client";
 
 import Image from "next/image";
-import { getBranch, isPlacementEnabled } from "@/lib/branches";
+import * as branches from "@/lib/branches";
 import { useCurrentBranchSlug } from "@/lib/branches/useCurrentBranchSlug";
+
+// Pull the helpers via a namespace import then guard each call —
+// this component is mounted in Footer, HeaderBase, the dashboard
+// and the auth callback splash, so any signed-in page renders it.
+// If branches.js is ever edited to remove `isPlacementEnabled` or
+// `getBranch` (the kind of accidental drop that took the site down
+// on 2026-06-08), we now degrade to "render nothing" instead of
+// crashing the whole React tree.
+const isPlacementEnabledFn =
+  typeof branches.isPlacementEnabled === "function"
+    ? branches.isPlacementEnabled
+    : () => false;
+const getBranchFn =
+  typeof branches.getBranch === "function" ? branches.getBranch : () => null;
 
 // Visual sizes — height in px (width auto from aspect). Picked to
 // match the surfaces we expect the logo on without breaking layout.
@@ -49,10 +63,12 @@ export default function PartnerLogo({
   const slug = useCurrentBranchSlug(profile);
   // No slug → no partner attribution → render nothing.
   if (!slug) return null;
-  // Branch exists but doesn't have this placement turned on.
-  if (!isPlacementEnabled(slug, placement)) return null;
+  // Branch exists but doesn't have this placement turned on. The
+  // guarded function returns false if branches.js was edited to
+  // remove the helper, so this still degrades safely.
+  if (!isPlacementEnabledFn(slug, placement)) return null;
 
-  const branch = getBranch(slug);
+  const branch = getBranchFn(slug);
   if (!branch?.logoSrc) return null;
 
   const sizeClass = SIZE_CLASSES[size] || SIZE_CLASSES.md;
