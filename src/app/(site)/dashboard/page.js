@@ -52,12 +52,9 @@ function DashboardContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {
-    profile,
-    progress,
-    loading,
-    refetchProgress,
-  } = usePlayerDashboard(user?.id);
+  const { profile, progress, loading, refetchProgress } = usePlayerDashboard(
+    user?.id
+  );
   const { settings } = useAppSettings();
   // Pending lesson resume — populated from localStorage. When set we
   // surface a "Resume your lesson" CTA at the top of the dashboard
@@ -136,9 +133,7 @@ function DashboardContent() {
     router.replace("/dashboard");
   }, [searchParams, router]);
 
-  const resumeHref = pendingResume
-    ? `/lesson/${pendingResume.lessonId}`
-    : null;
+  const resumeHref = pendingResume ? `/lesson/${pendingResume.lessonId}` : null;
 
   // Profile override (set when the edit modal saves) wins over the
   // freshly-loaded profile so the UI updates instantly without a
@@ -148,8 +143,7 @@ function DashboardContent() {
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
     "Player";
-  const avatarUrl =
-    profileOverride.avatar_url ?? profile?.avatar_url ?? "";
+  const avatarUrl = profileOverride.avatar_url ?? profile?.avatar_url ?? "";
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -233,7 +227,7 @@ function DashboardContent() {
             className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4" />
-            Back to lessons
+            {t("back_to_lessons", "Back to lessons")}
           </Link>
         </div>
 
@@ -354,11 +348,21 @@ function DashboardContent() {
                 <div className="flex justify-between text-xs text-white/60 mt-1.5">
                   <span>
                     {packsAvailable > 0
-                      ? `🎉 ${packsAvailable} pack${packsAvailable === 1 ? "" : "s"} ready`
-                      : `${xpToNextPack} XP to your next pack`}
+                      ? packsAvailable === 1
+                        ? t("pack_ready_singular", "🎉 1 pack ready")
+                        : t(
+                            "packs_ready_plural",
+                            "🎉 {count} packs ready"
+                          ).replace("{count}", packsAvailable)
+                      : t(
+                          "xp_to_next_pack",
+                          "{xp} XP to your next pack"
+                        ).replace("{xp}", xpToNextPack)}
                   </span>
                   <span className="text-white/40">
-                    Squad value {squadValue}/{squadMax}
+                    {t("squad_value_short", "Squad value {value}/{max}")
+                      .replace("{value}", squadValue)
+                      .replace("{max}", squadMax)}
                   </span>
                 </div>
               </div>
@@ -374,12 +378,19 @@ function DashboardContent() {
             className="lg:col-span-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-base sm:text-lg">Your Squad</h2>
+              {/* "Ultimate Team" is the same in both languages by design
+                  — it's the product name for the squad surface. The
+                  Edit link DOES localise: "Edit team" / "Monte seu
+                  time". */}
+              <h2 className="font-semibold text-base sm:text-lg">
+                Ultimate Team
+              </h2>
               <Link
                 href="/dashboard/squad"
                 className="text-xs sm:text-sm text-emerald-300 hover:text-emerald-200 flex items-center gap-0.5 font-semibold"
               >
-                Edit squad <ChevronRight className="w-4 h-4" />
+                {t("edit_team_link", "Edit team")}{" "}
+                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
             <DashboardPitch
@@ -387,7 +398,10 @@ function DashboardContent() {
               stickersById={squadStickersById}
             />
             <p className="text-center text-xs text-white/50 mt-3">
-              Open packs to collect stickers, then build your XI here
+              {t(
+                "build_xi_hint",
+                "Open packs to collect stickers, then build your XI here"
+              )}
             </p>
           </section>
 
@@ -397,12 +411,13 @@ function DashboardContent() {
             <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
               <div className="flex items-center gap-2 text-white/60 text-xs tracking-wider uppercase mb-2">
                 <Trophy className="w-3.5 h-3.5" />
-                Squad Value
+                {t("squad_value_label", "Squad Value")}
               </div>
               <div className="text-3xl sm:text-4xl font-black">
                 {squadValue}
                 <span className="text-base font-medium text-white/40">
-                  {" "}/ {squadMax}
+                  {" "}
+                  / {squadMax}
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-3">
@@ -418,29 +433,26 @@ function DashboardContent() {
               <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Package className="w-3.5 h-3.5" />
-                  Pack Vault
+                  {t("pack_vault_label", "Pack Vault")}
                 </div>
                 <Link
                   href="/dashboard/album"
                   className="text-emerald-300 hover:text-emerald-200 normal-case tracking-normal flex items-center gap-0.5"
                 >
-                  Album <ChevronRight className="w-3 h-3" />
+                  {t("album_link", "Album")} <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
               {packsAvailable > 0 ? (
                 <>
                   <div className="text-3xl sm:text-4xl font-black">
                     {packsAvailable}
-                    <span className="text-base font-medium text-white/40">
-                      {" "}ready
-                    </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setPackModalOpen(true)}
                     className="mt-3 w-full px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-[#070707] text-sm font-bold tracking-wide transition-colors"
                   >
-                    Open a pack
+                    {t("open_a_pack", "Open a pack")}
                   </button>
                 </>
               ) : (
@@ -449,21 +461,30 @@ function DashboardContent() {
                     0
                   </div>
                   <p className="text-xs text-white/50 mt-2">
-                    Earn{" "}
-                    <span className="text-white/80 font-semibold">
-                      {xpToNextPack || packXpCost} more XP
-                    </span>{" "}
-                    to unlock your{" "}
-                    {totalXp >= packXpCost ? "next" : "first"} pack
+                    {(totalXp >= packXpCost
+                      ? t(
+                          "earn_more_xp_next",
+                          "Earn {xp} more XP to unlock your next pack"
+                        )
+                      : t(
+                          "earn_more_xp_first",
+                          "Earn {xp} more XP to unlock your first pack"
+                        )
+                    ).replace("{xp}", xpToNextPack || packXpCost)}
                   </p>
                 </>
               )}
               {collection.length > 0 && (
                 <p className="mt-3 text-xs text-white/50">
-                  <span className="text-white/80 font-semibold">
-                    {collection.length}
-                  </span>{" "}
-                  unique sticker{collection.length === 1 ? "" : "s"} collected
+                  {collection.length === 1
+                    ? t(
+                        "unique_sticker_collected_singular",
+                        "1 unique sticker collected"
+                      )
+                    : t(
+                        "unique_stickers_collected_plural",
+                        "{count} unique stickers collected"
+                      ).replace("{count}", collection.length)}
                 </p>
               )}
             </section>
@@ -473,14 +494,14 @@ function DashboardContent() {
               <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Crosshair className="w-3.5 h-3.5" />
-                  Predictions
+                  {t("predictions_label", "Predictions")}
                 </div>
                 {predictionCounts.total > 0 && (
                   <Link
                     href="/dashboard/predictions"
                     className="text-emerald-300 hover:text-emerald-200 normal-case tracking-normal flex items-center gap-0.5"
                   >
-                    View <ChevronRight className="w-3 h-3" />
+                    {t("view_link", "View")} <ChevronRight className="w-3 h-3" />
                   </Link>
                 )}
               </div>
@@ -489,7 +510,8 @@ function DashboardContent() {
                   <div className="text-3xl sm:text-4xl font-black">
                     {predictionCounts.pending}
                     <span className="text-base font-medium text-white/40">
-                      {" "}pending
+                      {" "}
+                      {t("pending_label", "pending")}
                     </span>
                   </div>
                   <div className="mt-2 flex items-center gap-3 text-xs text-white/50">
@@ -497,14 +519,14 @@ function DashboardContent() {
                       <span className="text-white/80 font-semibold">
                         {predictionCounts.resolved}
                       </span>{" "}
-                      resolved
+                      {t("resolved_label", "resolved")}
                     </span>
                     {predictionCounts.totalBonusXp > 0 && (
                       <span>
                         <span className="text-emerald-300 font-semibold">
                           +{predictionCounts.totalBonusXp} XP
                         </span>{" "}
-                        bonus
+                        {t("bonus_label", "bonus")}
                       </span>
                     )}
                   </div>
@@ -515,8 +537,10 @@ function DashboardContent() {
                     0
                   </div>
                   <p className="text-xs text-white/50 mt-2">
-                    Your predictions will appear here once they&apos;re saved
-                    from lessons
+                    {t(
+                      "predictions_empty_hint",
+                      "Your predictions will appear here once they're saved from lessons"
+                    )}
                   </p>
                 </>
               )}
@@ -622,12 +646,50 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
             className="absolute inset-0 w-full h-full pointer-events-none"
           >
             <rect x="0" y="0" width="140" height="100" fill="#0f3a23" />
-            <rect x="8" y="8" width="124" height="84" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <line x1="70" y1="8" x2="70" y2="92" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <circle cx="70" cy="50" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect
+              x="8"
+              y="8"
+              width="124"
+              height="84"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <line
+              x1="70"
+              y1="8"
+              x2="70"
+              y2="92"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <circle
+              cx="70"
+              cy="50"
+              r="8"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
             <circle cx="70" cy="50" r="0.6" fill="rgba(255,255,255,0.7)" />
-            <rect x="8" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <rect x="118" y="28" width="14" height="44" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect
+              x="8"
+              y="28"
+              width="14"
+              height="44"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <rect
+              x="118"
+              y="28"
+              width="14"
+              height="44"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
           </svg>
         ) : (
           <svg
@@ -636,12 +698,50 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
             className="absolute inset-0 w-full h-full pointer-events-none"
           >
             <rect x="0" y="0" width="100" height="140" fill="#0f3a23" />
-            <rect x="8" y="8" width="84" height="124" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <line x1="8" y1="70" x2="92" y2="70" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <circle cx="50" cy="70" r="8" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect
+              x="8"
+              y="8"
+              width="84"
+              height="124"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <line
+              x1="8"
+              y1="70"
+              x2="92"
+              y2="70"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <circle
+              cx="50"
+              cy="70"
+              r="8"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
             <circle cx="50" cy="70" r="0.6" fill="rgba(255,255,255,0.7)" />
-            <rect x="28" y="8" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
-            <rect x="28" y="118" width="44" height="14" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.4" />
+            <rect
+              x="28"
+              y="8"
+              width="44"
+              height="14"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
+            <rect
+              x="28"
+              y="118"
+              width="44"
+              height="14"
+              fill="none"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="0.4"
+            />
           </svg>
         )}
       </div>

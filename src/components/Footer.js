@@ -34,9 +34,9 @@ export default function Footer() {
           <a href="/terms" className="text-gray-400 hover:text-white">
             Terms
           </a>
-          <a href="/contact" className="text-gray-400 hover:text-white">
+          {/* <a href="/contact" className="text-gray-400 hover:text-white">
             Contact
-          </a>
+          </a> */}
           {isAdmin && (
             <Link
               href="/admin"
