@@ -176,14 +176,15 @@ function DashboardContent() {
     if (profile.edition !== "wc2026") return;
     if (profile.dashboard_tour_completed === true) return;
     if (packModalOpen || profileModalOpen) return;
-    // localStorage gate. Cleared when more than 5 minutes have
-    // passed since the welcome flow ended — by then the user has
-    // had time to do lesson 1 + arrive at the dashboard for real.
+    // localStorage gate. 60-second window: enough to skip the
+    // immediate post-pack navigation, short enough that the typical
+    // "open pack → do lesson 1 → tap dashboard" path (~1–2 min on
+    // an engaged user) lands on the dashboard with the tour ready.
     try {
       const completedAt = Number(
         localStorage.getItem("ft.welcome.completed_at") || 0
       );
-      if (completedAt && Date.now() - completedAt < 5 * 60 * 1000) {
+      if (completedAt && Date.now() - completedAt < 60 * 1000) {
         return;
       }
     } catch {

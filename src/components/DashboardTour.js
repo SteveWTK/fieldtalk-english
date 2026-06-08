@@ -172,9 +172,13 @@ export default function DashboardTour({ enabled, onClose }) {
     }
 
     // Instant scroll so the rect we read next is the rect the user
-    // will actually see. Centred so the user has visual room both
-    // above and below for the tooltip in "side" mode.
-    el.scrollIntoView({ behavior: "auto", block: "center" });
+    // will actually see. `block: "nearest"` only scrolls when the
+    // target is genuinely off-screen — partial-visibility cases
+    // (most steps on laptops + tablets) leave the page where it
+    // is. This was previously `"center"` and it dragged the page
+    // deep into scrolled territory by the last step, which on iOS
+    // Safari left the user briefly unable to scroll back to the top.
+    el.scrollIntoView({ behavior: "auto", block: "nearest" });
 
     // Read the rect on the next paint. Layout has already been
     // applied by the time of the next frame for instant scrolls.
@@ -248,6 +252,13 @@ export default function DashboardTour({ enabled, onClose }) {
   }, [enabled, computeLayout]);
 
   const finish = useCallback(() => {
+    // Restore body scroll SYNCHRONOUSLY before React schedules the
+    // unmount. The useEffect cleanup would do the same but only
+    // after the next render tick; that gap is the "stuck for a
+    // little while" the testers reported, especially on iOS Safari
+    // where momentum scrolling interacts badly with a still-hidden
+    // body. Doing it inline closes that window.
+    document.body.style.overflow = "";
     onClose?.();
     fetch("/api/onboarding/dashboard-complete", {
       method: "POST",
@@ -257,6 +268,15 @@ export default function DashboardTour({ enabled, onClose }) {
       console.warn("[dashboard-tour] mark-complete failed:", err)
     );
   }, [onClose]);
+
+  // Defensive unmount cleanup — guarantees body.style.overflow is
+  // restored no matter which code path tore down the tour. Belt and
+  // braces on top of the layoutReady-scoped effect above.
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   if (!enabled || !step) return null;
   // While the layout is still computing OR the target is missing,
@@ -286,12 +306,12 @@ export default function DashboardTour({ enabled, onClose }) {
       <>
         {/* Top */}
         <div
-          className="absolute bg-black/70 backdrop-blur-[2px]"
+          className="absolute bg-black/30 backdrop-blur-md"
           style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top) }}
         />
         {/* Bottom */}
         <div
-          className="absolute bg-black/70 backdrop-blur-[2px]"
+          className="absolute bg-black/30 backdrop-blur-md"
           style={{
             top: rect.top + rect.height,
             left: 0,
@@ -301,7 +321,7 @@ export default function DashboardTour({ enabled, onClose }) {
         />
         {/* Left */}
         <div
-          className="absolute bg-black/70 backdrop-blur-[2px]"
+          className="absolute bg-black/30 backdrop-blur-md"
           style={{
             top: rect.top,
             left: 0,
@@ -311,7 +331,7 @@ export default function DashboardTour({ enabled, onClose }) {
         />
         {/* Right */}
         <div
-          className="absolute bg-black/70 backdrop-blur-[2px]"
+          className="absolute bg-black/30 backdrop-blur-md"
           style={{
             top: rect.top,
             left: rect.left + rect.width,
