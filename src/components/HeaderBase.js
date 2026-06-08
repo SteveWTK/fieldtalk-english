@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Moon, Sun, User, Menu, X } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState } from "react";
+import PartnerLogo from "@/components/branding/PartnerLogo";
+import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 // import Image from "next/image";
 
 function HeaderBase({
@@ -16,6 +18,7 @@ function HeaderBase({
   languageOptions,
 }) {
   const { user, signOut } = useAuth();
+  const { profile } = usePlayerProfile(user?.id);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const localizedLinks = {
@@ -158,6 +161,17 @@ function HeaderBase({
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 dark:from-accent-600 dark:to-accent-500 bg-clip-text text-transparent">
                 FieldTalk English
               </span>
+              {/* Partner logo placement — sits beside the FieldTalk
+                  wordmark for users whose branch has
+                  placements.siteHeader = true in branches.js.
+                  Returns null for everyone else, so this is a no-op
+                  visually until a partner is opted in. */}
+              <PartnerLogo
+                placement="siteHeader"
+                profile={profile}
+                size="xs"
+                className="ml-2"
+              />
             </Link>
 
             {/* Desktop Navigation */}

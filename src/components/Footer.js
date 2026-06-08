@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Shield } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import PartnerLogo from "@/components/branding/PartnerLogo";
 
 export default function Footer() {
   const { user } = useAuth();
@@ -24,9 +25,16 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-4 border-t border-gray-700">
       <div className="px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-gray-400 text-sm">
-          © 2026 FieldTalk English. All rights reserved.
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-gray-400 text-sm">
+            © 2026 FieldTalk English. All rights reserved.
+          </p>
+          {/* Partner logo placement — renders only when the user's
+              partner_referrer matches a branch with
+              placements.footer = true in branches.js. Default off;
+              flip on per-partner when requested. */}
+          <PartnerLogo placement="footer" profile={profile} size="xs" />
+        </div>
         <div className="flex items-center gap-4 sm:gap-6 text-sm">
           <a href="/privacy" className="text-gray-400 hover:text-white">
             Privacy

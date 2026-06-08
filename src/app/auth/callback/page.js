@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Globe, Loader } from "lucide-react";
 import { readPartnerReferrer } from "@/lib/partners/referrer";
+import PartnerLogo from "@/components/branding/PartnerLogo";
 
 export default function AuthCallbackPage() {
   const [status, setStatus] = useState("loading");
@@ -129,6 +130,15 @@ export default function AuthCallbackPage() {
         }}
       />
       <div className="relative text-center">
+        {/* Partner logo first (when the user signed up via a partner
+            branch link with placements.loading enabled). Sits above
+            the FieldTalk wordmark so the partner name reads as the
+            "presenter" of this experience for the brief moment the
+            splash is up. Renders null for non-attributed users so
+            organic traffic still sees the standard FieldTalk
+            wordmark front-and-centre. */}
+        <PartnerLogo placement="loading" size="lg" className="mx-auto mb-6" />
+
         <div className="flex items-center justify-center space-x-2 mb-8">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-yellow-500 rounded-full flex items-center justify-center">
             <Globe className="w-6 h-6 text-white" />

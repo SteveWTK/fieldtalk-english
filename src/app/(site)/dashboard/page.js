@@ -46,6 +46,7 @@ import StickerCard from "@/components/stickers/StickerCard";
 import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreBanner";
 import DashboardTour from "@/components/DashboardTour";
+import PartnerLogo from "@/components/branding/PartnerLogo";
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -219,8 +220,11 @@ function DashboardContent() {
       </div>
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
-        {/* Top-of-page nav row — Back to lessons link sits to the left
-            so users can hop back into the lesson flow easily. */}
+        {/* Top-of-page nav row — Back to lessons link sits to the
+            left so users can hop back into the lesson flow easily.
+            The optional partner logo sits to the right; for users
+            attributed to a branch with placements.dashboard = true
+            it renders, otherwise it's null. */}
         <div className="flex items-center justify-between">
           <Link
             href="/lesson"
@@ -229,6 +233,7 @@ function DashboardContent() {
             <ChevronLeft className="w-4 h-4" />
             {t("back_to_lessons", "Back to lessons")}
           </Link>
+          <PartnerLogo placement="dashboard" profile={profile} size="sm" />
         </div>
 
         {/* Resume-lesson banner — appears whenever the user has an
