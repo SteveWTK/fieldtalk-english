@@ -45,6 +45,7 @@ import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
 import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreBanner";
+import DashboardTour from "@/components/DashboardTour";
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -156,6 +157,23 @@ function DashboardContent() {
     .map((w) => w[0].toUpperCase())
     .join("");
 
+  // First-visit dashboard tour. Mounts when:
+  //   - data has loaded
+  //   - the user is a WC2026 player (other editions opt-in later)
+  //   - players.dashboard_tour_completed is not yet true
+  // Persisted via /api/onboarding/dashboard-complete; admins can
+  // re-arm any user by setting the column back to false.
+  const [showDashboardTour, setShowDashboardTour] = useState(false);
+  useEffect(() => {
+    if (loading || !profile) return;
+    if (profile.edition !== "wc2026") return;
+    if (profile.dashboard_tour_completed === true) return;
+    // Defer one tick so the dashboard markup has mounted and our
+    // data-tour-id targets are present in the DOM.
+    const id = setTimeout(() => setShowDashboardTour(true), 400);
+    return () => clearTimeout(id);
+  }, [loading, profile]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#070707] flex items-center justify-center">
@@ -240,7 +258,10 @@ function DashboardContent() {
         <NotificationsOptIn />
 
         {/* ── Hero strip ─────────────────────────────────────────────── */}
-        <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">
+        <section
+          data-tour-id="xp-bar"
+          className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6"
+        >
           <div className="flex items-center gap-4">
             {/* Avatar — image if set, otherwise initials on a gradient. */}
             <button
@@ -326,7 +347,10 @@ function DashboardContent() {
         {/* ── Main grid: squad pitch + side tiles ────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Squad pitch — takes 2 columns on lg */}
-          <section className="lg:col-span-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6">
+          <section
+            data-tour-id="squad-pitch"
+            className="lg:col-span-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6"
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-base sm:text-lg">Your Squad</h2>
               <Link
@@ -423,7 +447,10 @@ function DashboardContent() {
             </section>
 
             {/* Predictions */}
-            <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
+            <section
+              data-tour-id="predictions"
+              className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5"
+            >
               <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Crosshair className="w-3.5 h-3.5" />
@@ -477,10 +504,20 @@ function DashboardContent() {
             </section>
 
             {/* Leaderboard — top 10 ranked by Squad value or XP. */}
-            <Leaderboard defaultSort="squad_value" />
+            <div data-tour-id="leaderboard">
+              <Leaderboard defaultSort="squad_value" />
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Dashboard onboarding tour — arrow-style spotlight + tooltip
+          pointing at each section. Only renders for WC2026 players
+          who haven't completed it yet. */}
+      <DashboardTour
+        enabled={showDashboardTour}
+        onClose={() => setShowDashboardTour(false)}
+      />
 
       {/* Pack-opening modal — mounted once at root so the reveal cards
           don't get clipped by parent transforms / overflows. */}

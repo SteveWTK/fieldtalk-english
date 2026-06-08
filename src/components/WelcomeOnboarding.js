@@ -148,12 +148,12 @@ const COPY = {
       xpBadge: "200 XP = 1 pack of 7 players",
     },
     slide4: {
-      headline: ["All set to", "play!"],
+      headline: ["Your welcome pack", "is waiting"],
       subtitle:
-        "Learn English, make predictions, collect players, build your team, and chase the world ranking. Your World Cup starts now.",
+        "We've added a starter sticker pack to your account. Open it now to see which players land in your first squad.",
       homeTip:
         "📱 On your phone? Add FieldTalk to your home screen from your browser's menu — one tap and you're back in.",
-      cta: "🚀 Start your journey",
+      cta: "🎁 Open my first pack",
     },
   },
   pt: {
@@ -207,16 +207,22 @@ const COPY = {
       xpBadge: "200 XP = 1 pacote com 7 jogadores",
     },
     slide4: {
-      headline: ["Tudo pronto para", "jogar!"],
+      headline: ["Seu pacote de boas-vindas", "está te esperando"],
       subtitle:
-        "Aprenda inglês, dê seus palpites, colecione jogadores, monte seu time e dispute o ranking mundial. Sua Copa começa agora.",
+        "Já adicionamos um pacote inicial de figurinhas na sua conta. Abra agora pra ver quais jogadores chegam pro seu primeiro time.",
       homeTip:
         "📱 No celular? Adicione o FieldTalk à tela inicial pelo menu do seu navegador — um toque e você volta direto pra jornada.",
-      cta: "🚀 Iniciar jornada",
+      cta: "🎁 Abrir meu primeiro pacote",
     },
   },
 };
 
+// onClose accepts an optional `nextAction` argument:
+//   - undefined / "dismiss" → user skipped or closed via Skip / X.
+//   - "open_pack"            → user reached the final slide and tapped
+//                              "Open my first pack" — the parent should
+//                              mount the PackOpeningModal so the welcome
+//                              sticker pack pops open immediately.
 export default function WelcomeOnboarding({ userId, onClose }) {
   const { userLanguage } = useTranslation();
   // useLanguage's setLang updates the LanguageContext, localStorage,
@@ -226,12 +232,12 @@ export default function WelcomeOnboarding({ userId, onClose }) {
   const copy = COPY[userLanguage === "pt" ? "pt" : "en"];
   const [slide, setSlide] = useState(1);
 
-  const close = () => {
+  const close = (nextAction) => {
     // Optimistic UX — hide the modal immediately so dismissal feels
     // snappy, then mark the flag in the background. A failed flag
     // write isn't catastrophic; the user simply sees the modal again
     // on their next visit and tries again.
-    onClose?.();
+    onClose?.(nextAction);
     if (userId) {
       fetch("/api/onboarding/complete", {
         method: "POST",
@@ -302,7 +308,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
       {slide < 4 && (
         <button
           type="button"
-          onClick={close}
+          onClick={() => close("dismiss")}
           className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 text-xs text-white/50 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/5 transition-colors"
         >
           {copy.skip}
@@ -349,7 +355,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
             ) : (
               <button
                 type="button"
-                onClick={close}
+                onClick={() => close("open_pack")}
                 className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] text-sm font-bold tracking-wide transition-colors shadow-[0_6px_28px_rgba(16,185,129,0.35)]"
               >
                 {copy.slide4.cta}

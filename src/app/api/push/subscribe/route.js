@@ -100,13 +100,14 @@ export async function POST(request) {
     }
 
     // ── First-time opt-in: fire the welcome push immediately ──
-    // Doing this here (rather than only via the daily cron) closes
-    // the loop for brand-new users: signup → onboarding → opt-in →
-    // notification arrives "Your first sticker pack is waiting!"
-    // within seconds, which both confirms the subscription works
-    // AND points them at the starter pack we just gave them on
-    // signup. Logged via notification_log so the daily cron won't
-    // double-send.
+    // Fires unconditionally on first subscribe — doubles as a
+    // confirmation that the notification pipe is alive. Logged in
+    // notification_log so a re-opt-in (e.g. on a second device) is
+    // suppressed.
+    //
+    // Pack-related re-engagement (the "you have N packs waiting"
+    // case) is handled by the daily pack-reminders cron, which uses
+    // a separate `pack_reminder` kind and its own dedup window.
     try {
       const { data: priorWelcome } = await supabase
         .from("notification_log")
@@ -116,34 +117,16 @@ export async function POST(request) {
         .limit(1);
       const alreadySent = (priorWelcome?.length || 0) > 0;
       if (!alreadySent) {
-        // Are there unopened packs to nudge about? Skip if not, so
-        // the welcome push doesn't fire when there's literally
-        // nothing for the user to open.
-        const [{ data: progress }, { count: openedCount }] = await Promise.all([
-          supabase
-            .from("player_progress")
-            .select("total_xp")
-            .eq("player_id", user.id)
-            .maybeSingle(),
-          supabase
-            .from("pack_openings")
-            .select("*", { count: "exact", head: true })
-            .eq("player_id", user.id),
-        ]);
-        const totalXp = progress?.total_xp || 0;
-        const packsEarned = Math.floor(totalXp / 200);
-        const packsOpened = openedCount || 0;
-        if (packsEarned > packsOpened) {
-          // Fire-and-forget — don't block the subscribe response on
-          // the webpush round-trip.
-          sendToPlayer({ playerId: user.id, kind: "welcome_pack" }).catch(
-            (err) =>
-              console.warn(
-                "[push/subscribe] welcome push failed:",
-                err?.message
-              )
-          );
-        }
+        // Fire-and-forget — don't block the subscribe response on
+        // the webpush round-trip. Failure modes are logged but
+        // never break the subscribe flow.
+        sendToPlayer({ playerId: user.id, kind: "welcome_pack" }).catch(
+          (err) =>
+            console.warn(
+              "[push/subscribe] welcome push failed:",
+              err?.message
+            )
+        );
       }
     } catch (err) {
       // Welcome-push errors are non-fatal — the subscription is

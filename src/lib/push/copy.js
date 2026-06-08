@@ -19,9 +19,15 @@
 
 const TEMPLATES = {
   en: {
+    // Fires once on first push opt-in. Functions as both a welcome
+    // greeting AND a confirmation that notifications are working —
+    // since the new onboarding flow encourages users to open their
+    // starter pack BEFORE they enable notifications, a pack-specific
+    // notification would arrive after the pack's already been
+    // opened. Generic copy works in either case.
     welcome_pack: () => ({
-      title: "Your first sticker pack is waiting!",
-      body: "Open your welcome pack to start your WC2026 album.",
+      title: "Notifications on — welcome to FieldTalk!",
+      body: "We'll let you know when packs drop and matches are about to kick off.",
       url: "/dashboard",
       tag: "welcome_pack",
     }),
@@ -85,8 +91,8 @@ const TEMPLATES = {
   },
   pt: {
     welcome_pack: () => ({
-      title: "Seu primeiro pacote de figurinhas chegou!",
-      body: "Abra o pacote de boas-vindas e comece seu álbum da WC2026.",
+      title: "Notificações ativadas — bem-vindo ao FieldTalk!",
+      body: "Vamos te avisar quando os pacotes saírem e os jogos forem começar.",
       url: "/dashboard",
       tag: "welcome_pack",
     }),

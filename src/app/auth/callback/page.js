@@ -57,7 +57,10 @@ export default function AuthCallbackPage() {
               headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({
-                edition: pendingEdition || "players",
+                // Default to wc2026 — every active acquisition channel
+                // is World Cup themed. `pending_edition` from /wc2026
+                // wins when present.
+                edition: pendingEdition || "wc2026",
                 partnerReferrer: readPartnerReferrer(),
               }),
             });

@@ -37,6 +37,7 @@ import FirstLessonPrompt from "@/components/FirstLessonPrompt";
 import PaywallCard from "@/components/PaywallCard";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 import WelcomeOnboarding from "@/components/WelcomeOnboarding";
+import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -100,12 +101,33 @@ function PlayerLessonsMenu() {
   // the flag. Admins can re-arm any user by setting the column back
   // to false in the Supabase table editor.
   const [showWelcome, setShowWelcome] = useState(false);
+  // When the user taps "Open my first pack" on the final onboarding
+  // slide, this flips to true and PackOpeningModal mounts. The modal
+  // calls /api/packs/open, awards the welcome pack contents, then
+  // returns to /lesson where the FirstLessonPrompt highlights Unit 1
+  // Lesson 1.
+  const [showStarterPack, setShowStarterPack] = useState(false);
   useEffect(() => {
     if (loading || !user?.id || !profile) return;
     if (profile.edition !== "wc2026") return;
     if (profile.onboarding_completed === true) return;
     setShowWelcome(true);
   }, [loading, user, profile]);
+
+  const handleWelcomeClose = (nextAction) => {
+    setShowWelcome(false);
+    if (nextAction === "open_pack") {
+      setShowStarterPack(true);
+    }
+  };
+
+  const handleStarterPackClose = () => {
+    setShowStarterPack(false);
+    // Refresh dashboard data so the pack vault count + collection
+    // reflect what was just opened. We're already on /lesson, so the
+    // FirstLessonPrompt naturally surfaces Unit 1 Lesson 1.
+    refetchProgress?.();
+  };
   const previewLessonSet = useMemo(
     () => new Set(access.previewLessonIds || []),
     [access.previewLessonIds]
@@ -378,11 +400,25 @@ function PlayerLessonsMenu() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* First-visit WC2026 welcome — fullscreen overlay, mounts
           before any other content so the user lands directly in the
-          intro flow. */}
+          intro flow. When the user finishes the flow, they can
+          either "Open my first pack" (→ PackOpeningModal below) or
+          dismiss; either way the modal closes and the lesson list
+          becomes visible. */}
       {showWelcome && (
         <WelcomeOnboarding
           userId={user?.id}
-          onClose={() => setShowWelcome(false)}
+          onClose={handleWelcomeClose}
+        />
+      )}
+
+      {/* Starter sticker pack — opens the moment the WelcomeOnboarding
+          completes with the "open_pack" action. On close, the user
+          stays on /lesson where Unit 1 Lesson 1 is already highlighted
+          by FirstLessonPrompt. */}
+      {showStarterPack && (
+        <PackOpeningModal
+          open={showStarterPack}
+          onClose={handleStarterPackClose}
         />
       )}
       {/* <h1 className="text-2xl font-bold text-primary-900 dark:text-white">

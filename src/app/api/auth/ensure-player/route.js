@@ -19,8 +19,11 @@ const SUPPORTED_EDITIONS = new Set(["players", "wc2026"]);
 export async function POST(request) {
   try {
     const body = await request.json();
-    const rawEdition = body.edition || "players";
-    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "players";
+    // Default-to-wc2026 (same rationale as signup-instant — see comment
+    // there). Pre-launch the default was "players"; every live
+    // acquisition channel is now WC2026.
+    const rawEdition = body.edition || "wc2026";
+    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "wc2026";
 
     // Partner attribution slug from /wc2026?branch=<slug>. Sanitised
     // client-side; we re-validate the shape here.

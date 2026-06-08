@@ -19,8 +19,13 @@ export async function POST(request) {
     const email = (body.email || "").trim().toLowerCase();
     const password = body.password || "";
     const fullName = (body.fullName || "").trim();
-    const rawEdition = body.edition || "players";
-    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "players";
+    // Default-to-wc2026: every signup we do not explicitly tag as
+    // anything else lands in the WC2026 edition. Pre-launch the
+    // default was "players", but every active acquisition channel is
+    // now WC2026-shaped (root landing, /wc2026, partner branch
+    // links), so falling back to wc2026 is the correct behaviour.
+    const rawEdition = body.edition || "wc2026";
+    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "wc2026";
 
     // Partner attribution slug (e.g. "fortaleza", "ceara-aldeota").
     // Sanitised client-side already, but defence-in-depth:
