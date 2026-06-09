@@ -1,10 +1,13 @@
 // src/components/Leaderboard.js
 //
 // Top-N leaderboard tile, used on the Ultimate Team dashboard.
-// Three ranking modes via a small toggle:
-//   - "squad"  → by squad value (sum of placed sticker ratings)
-//   - "xp"     → by total XP accumulated
-//   - "album"  → by % of the active sticker roster collected
+//
+// Two filter axes:
+//   1. Sort mode (squad value | XP | album %)
+//   2. Cohort (Global | My school) — appears only for users whose
+//      players.partner_referrer is set, so a Cultura Teresina or
+//      Fortaleza student can switch to a school-local ranking for
+//      classroom competitions.
 //
 // Each row shows the primary metric prominently plus one secondary
 // number for context. If the user isn't in the visible top slice, an
@@ -12,12 +15,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trophy, Crown } from "lucide-react";
+import { Trophy, Crown, Users2, Globe2 } from "lucide-react";
+import { BRANCHES } from "@/lib/branches";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Leaderboard({ defaultSort = "squad_value" }) {
+  const { userLanguage } = useTranslation();
   const [sort, setSort] = useState(defaultSort);
+  // "all" → global; "mine" → caller's partner_referrer (resolved
+  // server-side from cookies). The component fetches once on mount
+  // with "all" to learn whether the caller has a partner_referrer
+  // (callerBranch in the response); only then does the school
+  // toggle appear.
+  const [cohort, setCohort] = useState("all");
   const [entries, setEntries] = useState([]);
   const [you, setYou] = useState(null);
+  const [callerBranch, setCallerBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,9 +40,12 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `/api/leaderboard?sort=${encodeURIComponent(sort)}&limit=10`
-        );
+        const params = new URLSearchParams({
+          sort,
+          limit: "10",
+          branch: cohort,
+        });
+        const res = await fetch(`/api/leaderboard?${params.toString()}`);
         const json = await res.json();
         if (cancelled) return;
         if (!res.ok) {
@@ -39,6 +55,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
         } else {
           setEntries(json.entries || []);
           setYou(json.you || null);
+          setCallerBranch(json.callerBranch || null);
         }
       } catch {
         if (!cancelled) {
@@ -53,7 +70,28 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
     return () => {
       cancelled = true;
     };
-  }, [sort]);
+  }, [sort, cohort]);
+
+  // Look up the partner's friendly display name. Falls back to the
+  // generic "My school" label if the slug isn't registered in
+  // BRANCHES (so a brand-new partner we haven't added a logo for
+  // yet still gets a working toggle).
+  const schoolName =
+    callerBranch && BRANCHES[callerBranch]?.alt
+      ? BRANCHES[callerBranch].alt
+      : userLanguage === "pt"
+        ? "Minha escola"
+        : "My school";
+
+  const globalLabel = userLanguage === "pt" ? "Geral" : "Global";
+  const emptyLabel =
+    userLanguage === "pt"
+      ? "Ninguém no ranking ainda — seja o primeiro!"
+      : "No players ranked yet — be the first!";
+  const emptySchoolLabel =
+    userLanguage === "pt"
+      ? "Ninguém da sua escola no ranking ainda — seja o primeiro!"
+      : "No one from your school ranked yet — be the first!";
 
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
@@ -62,7 +100,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
           <Trophy className="w-3.5 h-3.5" />
           Leaderboard
         </div>
-        {/* Tiny mode toggle — square pill with three states. */}
+        {/* Sort-mode toggle — three states. */}
         <div className="flex rounded-full bg-white/5 p-0.5 text-[10px] sm:text-xs">
           <button
             type="button"
@@ -100,6 +138,43 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
         </div>
       </div>
 
+      {/* Cohort toggle — only renders when the caller has a
+          partner_referrer. Renders inline (separate row) so on
+          mobile it doesn't fight with the sort pills for space. */}
+      {callerBranch && (
+        <div className="flex items-center justify-end mb-3">
+          <div className="flex rounded-full bg-white/5 p-0.5 text-[10px] sm:text-xs">
+            <button
+              type="button"
+              onClick={() => setCohort("all")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                cohort === "all"
+                  ? "bg-emerald-500 text-[#070707]"
+                  : "text-white/60 hover:text-white"
+              }`}
+            >
+              <Globe2 className="w-3 h-3" />
+              {globalLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCohort("mine")}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                cohort === "mine"
+                  ? "bg-emerald-500 text-[#070707]"
+                  : "text-white/60 hover:text-white"
+              }`}
+              title={schoolName}
+            >
+              <Users2 className="w-3 h-3" />
+              {/* On narrow screens the full Cultura name overflows
+                  — truncate without losing the prefix. */}
+              <span className="truncate max-w-[140px]">{schoolName}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="py-6 flex justify-center">
           <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -108,7 +183,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
         <p className="text-xs text-red-300">{error}</p>
       ) : entries.length === 0 ? (
         <p className="text-xs text-white/50 text-center py-3">
-          No players ranked yet — be the first!
+          {cohort === "mine" ? emptySchoolLabel : emptyLabel}
         </p>
       ) : (
         <>
@@ -163,9 +238,7 @@ function LeaderboardRow({ entry, primary }) {
   return (
     <li
       className={`flex items-center gap-2 sm:gap-3 px-2 py-1.5 rounded-lg text-sm ${
-        isYou
-          ? "bg-emerald-500/15 ring-1 ring-emerald-400/40"
-          : ""
+        isYou ? "bg-emerald-500/15 ring-1 ring-emerald-400/40" : ""
       }`}
     >
       {/* Rank — gold crown for #1, otherwise the number */}

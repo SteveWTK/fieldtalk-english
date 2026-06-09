@@ -146,7 +146,14 @@ export default function DashboardTour({ enabled, onClose }) {
         setStepIndex((i) => i + 1);
       } else {
         // finish() is defined below — inline equivalent so we don't
-        // need a forward ref. Same body as finish().
+        // need a forward ref. Same body as finish() including the
+        // localStorage backup, so an API failure can't strand the
+        // user in a re-firing loop.
+        try {
+          localStorage.setItem("ft.dashboard.tour_completed", "1");
+        } catch {
+          /* ignore */
+        }
         onClose?.();
         fetch("/api/onboarding/dashboard-complete", {
           method: "POST",
@@ -259,6 +266,22 @@ export default function DashboardTour({ enabled, onClose }) {
     // where momentum scrolling interacts badly with a still-hidden
     // body. Doing it inline closes that window.
     document.body.style.overflow = "";
+
+    // Belt-and-braces: also pin the completion in localStorage. The
+    // /api/onboarding/dashboard-complete fetch below is
+    // fire-and-forget, so if it fails (network blip, ad blocker,
+    // service-worker hiccup) the DB column never flips and the
+    // dashboard effect would re-fire the tour every time the user
+    // returns. The dashboard reads this flag in addition to
+    // profile.dashboard_tour_completed, so a successful local mark
+    // is enough to retire the tour on this device.
+    try {
+      localStorage.setItem("ft.dashboard.tour_completed", "1");
+    } catch {
+      // Private mode / disabled storage — non-fatal; the user just
+      // sees the tour again next session.
+    }
+
     onClose?.();
     fetch("/api/onboarding/dashboard-complete", {
       method: "POST",

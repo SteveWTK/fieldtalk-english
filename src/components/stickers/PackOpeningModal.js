@@ -26,13 +26,25 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
   const [stickers, setStickers] = useState([]);
   const [packsRemaining, setPacksRemaining] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  // Distinguish "the XP hasn't been written yet, try again in a sec"
+  // from a real failure. The /api/packs/open route returns the
+  // computed totals on a 400 so we can spot a near-miss like
+  // packsEarned === packsOpened (race between awardXp and this
+  // check) vs an actual zero.
+  const [isSyncIssue, setIsSyncIssue] = useState(false);
+  // Bumping this re-runs the open effect — used by the Try again
+  // button below.
+  const [attemptKey, setAttemptKey] = useState(0);
 
-  // Trigger the open request the moment the modal mounts.
+  // Trigger the open request the moment the modal mounts (and on
+  // every attemptKey bump, so the retry path is a single state
+  // setter away).
   useEffect(() => {
     if (!open) return;
     setPhase("opening");
     setStickers([]);
     setErrorMessage("");
+    setIsSyncIssue(false);
 
     let cancelled = false;
     (async () => {
@@ -41,6 +53,16 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
+          // "No packs available" specifically usually means the
+          // user crossed the threshold via mid-lesson XP that
+          // hasn't fully landed yet — the partial commit can be
+          // slow under flaky network. Distinguish it from generic
+          // failures so the UI can offer a soft retry instead of
+          // the alarming "Something went wrong" we used to show.
+          const looksLikeSyncIssue =
+            data?.error === "No packs available" ||
+            res.status === 425; // Too Early (future-proofing)
+          setIsSyncIssue(looksLikeSyncIssue);
           setErrorMessage(data.error || "Could not open pack");
           setPhase("error");
           return;
@@ -59,7 +81,7 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, attemptKey]);
 
   if (!open) return null;
 
@@ -111,9 +133,41 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
         )}
 
         {phase === "error" && (
-          <div className="py-16 text-center">
-            <p className="text-lg font-semibold mb-2">Something went wrong</p>
-            <p className="text-sm text-white/60">{errorMessage}</p>
+          <div className="py-16 text-center px-6">
+            {isSyncIssue ? (
+              <>
+                <p className="text-lg font-semibold mb-2">
+                  Your XP is still syncing
+                </p>
+                <p className="text-sm text-white/60 mb-5 max-w-sm mx-auto leading-relaxed">
+                  The pack you earned hasn&apos;t finished saving yet. Give
+                  it a second and try again.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold mb-2">
+                  Something went wrong
+                </p>
+                <p className="text-sm text-white/60 mb-5">{errorMessage}</p>
+              </>
+            )}
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setAttemptKey((k) => k + 1)}
+                className="px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold text-sm tracking-wide transition-colors"
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                onClick={() => onClose?.({ refetch: false })}
+                className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
 

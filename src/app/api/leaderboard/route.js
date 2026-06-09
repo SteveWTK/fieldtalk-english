@@ -38,6 +38,19 @@ export async function GET(request) {
     // dashboard naturally shows the WC2026 leaderboard. Pass
     // `?edition=all` to bypass the filter entirely (admin use only).
     const editionParam = url.searchParams.get("edition");
+    // Partner branch filter. Three values supported:
+    //   - explicit slug ("teresina", "fortaleza", …) → filter to
+    //     players with that exact partner_referrer
+    //   - "mine" → server resolves to the caller's own
+    //              partner_referrer (saves the client a round-trip)
+    //   - omitted / "all" → no filter (global leaderboard)
+    // Cultura Teresina + Fortaleza use this for school-local
+    // competitions; students compete against people they know.
+    const branchParamRaw = url.searchParams.get("branch");
+    const branchParam =
+      branchParamRaw && branchParamRaw !== "all"
+        ? branchParamRaw.toLowerCase().trim()
+        : null;
 
     // Auth — identify the caller so we can flag their row.
     const cookieStore = await cookies();
@@ -61,17 +74,28 @@ export async function GET(request) {
 
     const supabase = await getSupabaseAdmin();
 
-    // Resolve the edition to filter on. Explicit ?edition=... wins,
-    // otherwise we look at the caller's row. "all" disables filtering.
+    // Resolve the edition to filter on. Also pull the caller's own
+    // partner_referrer in the same round-trip so we can (a) resolve
+    // branch=mine, and (b) tell the client whether to show a "My
+    // school" toggle. Single query for both saves a hop.
     let edition = editionParam;
-    if (!edition && currentUserId) {
+    let callerBranch = null;
+    if (currentUserId) {
       const { data: me } = await supabase
         .from("players")
-        .select("edition")
+        .select("edition, partner_referrer")
         .eq("id", currentUserId)
         .maybeSingle();
-      edition = me?.edition || null;
+      if (!edition) edition = me?.edition || null;
+      callerBranch = me?.partner_referrer || null;
     }
+
+    // Resolve branch filter. "mine" maps to the caller's own
+    // partner_referrer; anything else is taken verbatim. A "mine"
+    // call by an un-attributed user disables the filter rather than
+    // returning an empty leaderboard.
+    const resolvedBranch =
+      branchParam === "mine" ? callerBranch : branchParam;
 
     // Pull players + their progress + their squads. Admin accounts are
     // included on purpose — during the early WC2026 demo they're
@@ -80,9 +104,13 @@ export async function GET(request) {
     // "platform_admin") once there's a real player cohort.
     let playersQuery = supabase
       .from("players")
-      .select("id, full_name, email, user_type, edition");
+      .select("id, full_name, email, user_type, edition, partner_referrer");
     if (edition && edition !== "all") {
       playersQuery = playersQuery.eq("edition", edition);
+    }
+    if (resolvedBranch) {
+      // Tiny partial-indexed lookup, see PARTNER_LAUNCH_INDEXES.sql.
+      playersQuery = playersQuery.eq("partner_referrer", resolvedBranch);
     }
     const { data: players, error: playersError } = await playersQuery;
     if (playersError) {
@@ -243,7 +271,17 @@ export async function GET(request) {
           }
         : null;
 
-    return NextResponse.json({ entries, you, sort, edition });
+    return NextResponse.json({
+      entries,
+      you,
+      sort,
+      edition,
+      // Caller's own partner_referrer (so the client can decide
+      // whether to show the "My school" toggle) and the branch the
+      // current response was filtered on (or null when global).
+      callerBranch,
+      branch: resolvedBranch,
+    });
   } catch (err) {
     console.error("[leaderboard] unexpected error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

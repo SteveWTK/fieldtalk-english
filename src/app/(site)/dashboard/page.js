@@ -171,7 +171,20 @@ function DashboardContent() {
     if (profile.edition !== "wc2026") return;
     if (profile.dashboard_tour_completed === true) return;
     if (packModalOpen || profileModalOpen) return;
-    // localStorage gate. 60-second window: enough to skip the
+    // Belt-and-braces local marker. DashboardTour.finish() writes
+    // this on completion. Reading it here means an earlier API
+    // failure that left players.dashboard_tour_completed at false
+    // can't re-fire the tour on this device — the local signal
+    // wins. (Was the root cause of "the tour starts every time he
+    // opens a sticker pack" report.)
+    try {
+      if (localStorage.getItem("ft.dashboard.tour_completed") === "1") {
+        return;
+      }
+    } catch {
+      /* localStorage unavailable — proceed */
+    }
+    // Welcome-flow deferral. 60-second window: enough to skip the
     // immediate post-pack navigation, short enough that the typical
     // "open pack → do lesson 1 → tap dashboard" path (~1–2 min on
     // an engaged user) lands on the dashboard with the tour ready.
