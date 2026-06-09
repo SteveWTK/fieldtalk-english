@@ -266,7 +266,15 @@ export default function AIMultipleChoiceGapFill({
     if (onComplete) {
       setTimeout(() => onComplete(finalXP), 1000);
     }
-  }, [showFeedback, sentences, completed, attempts, hintUsage, baseXp, onComplete]);
+  }, [
+    showFeedback,
+    sentences,
+    completed,
+    attempts,
+    hintUsage,
+    baseXp,
+    onComplete,
+  ]);
 
   const getAIHint = async (sentenceId, sentence) => {
     const currentHintCount = hintUsage[sentenceId] || 0;
@@ -727,7 +735,7 @@ export default function AIMultipleChoiceGapFill({
 
       {sentences.map((sentence) => renderSentenceWithOptions(sentence))}
 
-      {completed && (
+      {/* {completed && (
         <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center space-x-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -744,7 +752,7 @@ export default function AIMultipleChoiceGapFill({
             </p>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 }

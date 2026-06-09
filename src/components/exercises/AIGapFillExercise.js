@@ -392,21 +392,21 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
   };
 
   // Calculate hint statistics for completion message
-  const getTotalHintsUsed = () => {
-    return Object.values(hintUsage).reduce((total, count) => total + count, 0);
-  };
+  // const getTotalHintsUsed = () => {
+  //   return Object.values(hintUsage).reduce((total, count) => total + count, 0);
+  // };
 
-  const getPerformanceMessage = () => {
-    const totalHints = getTotalHintsUsed();
+  // const getPerformanceMessage = () => {
+  //   const totalHints = getTotalHintsUsed();
 
-    if (totalHints === 0) {
-      return "Amazing! You completed everything without using any hints! 🏆";
-    } else if (totalHints <= 2) {
-      return "Great work! You used hints wisely and learned effectively! ⭐";
-    } else {
-      return "Good job completing the exercise! Keep practicing to build confidence! 💪";
-    }
-  };
+  //   if (totalHints === 0) {
+  //     return "Amazing! You completed everything without using any hints! 🏆";
+  //   } else if (totalHints <= 2) {
+  //     return "Great work! You used hints wisely and learned effectively! ⭐";
+  //   } else {
+  //     return "Good job completing the exercise! Keep practicing to build confidence! 💪";
+  //   }
+  // };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -422,7 +422,7 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
 
       {sentences.map((sentence) => renderSentenceWithGap(sentence))}
 
-      {completed && (
+      {/* {completed && (
         <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center space-x-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -439,7 +439,7 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
             </p>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
