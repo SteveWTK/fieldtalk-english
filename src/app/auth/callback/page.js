@@ -63,6 +63,15 @@ export default function AuthCallbackPage() {
                 // wins when present.
                 edition: pendingEdition || "wc2026",
                 partnerReferrer: readPartnerReferrer(),
+                // Browser-detected preferred language. LanguageContext
+                // writes the detected value to localStorage on mount;
+                // read it here so the players row gets the right
+                // language at first creation. Falls back to null
+                // (server defaults to "en") for ancient browsers.
+                preferredLanguage:
+                  (typeof window !== "undefined" &&
+                    localStorage.getItem("preferredLanguage")) ||
+                  null,
               }),
             });
             if (pendingEdition && typeof window !== "undefined") {

@@ -21,6 +21,7 @@ import Image from "next/image";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { getBranch } from "@/lib/branches";
 import {
@@ -42,6 +43,12 @@ function JoinPageContent() {
     if (branchKey) rememberPartnerReferrer(branchKey);
   }, [branchKey]);
   const { t } = useTranslation();
+  // Current language from LanguageContext — browser-detected for
+  // first-time visitors (Brazilian browsers land on "pt"), or
+  // whatever the user explicitly toggled to. We pass this to
+  // signup-instant so the players row is created with the right
+  // preferred_language out of the gate.
+  const { lang } = useLanguage();
   const { signIn } = useAuth();
 
   const [fullName, setFullName] = useState("");
@@ -79,6 +86,11 @@ function JoinPageContent() {
           // freshly-created row. Null if the user came in via a
           // plain URL.
           partnerReferrer: readPartnerReferrer(),
+          // Browser-detected (or user-toggled) language. Without
+          // this the server defaults to "en" and the LanguageContext
+          // overwrites a Brazilian browser's "pt" back to "en" on
+          // first signed-in render.
+          preferredLanguage: lang,
         }),
       });
       const data = await res.json();

@@ -41,6 +41,21 @@ export async function POST(request) {
           .slice(0, 64) || null
       : null;
 
+    // Preferred language passed from the client (which has
+    // browser-detected this from navigator.language and/or the
+    // user's explicit toggle on /wc2026). Falls back to "en" only if
+    // the client doesn't send anything — every modern call path
+    // does. Without this, the LanguageContext's one-time DB seed
+    // would overwrite a Brazilian browser's correctly-detected "pt"
+    // back to "en" on the first signed-in render.
+    const SUPPORTED_LANGS = ["en", "pt", "es", "th"];
+    const rawLang =
+      typeof body.preferredLanguage === "string"
+        ? body.preferredLanguage.toLowerCase().trim()
+        : null;
+    const preferredLanguage =
+      rawLang && SUPPORTED_LANGS.includes(rawLang) ? rawLang : "en";
+
     // Basic validation
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
@@ -97,7 +112,7 @@ export async function POST(request) {
         full_name: fullName || email.split("@")[0],
         user_type: "player",
         edition,
-        preferred_language: "en",
+        preferred_language: preferredLanguage,
         // partner_referrer is conditionally included so a re-upsert
         // (e.g. the user signs up twice) doesn't overwrite an
         // existing attribution with null.

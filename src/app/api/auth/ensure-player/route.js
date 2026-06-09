@@ -37,6 +37,18 @@ export async function POST(request) {
           .slice(0, 64) || null
       : null;
 
+    // Client-detected preferred language. Same rationale as
+    // signup-instant: writing "en" by default would cause the
+    // LanguageContext's DB-seed effect to overwrite a Brazilian
+    // browser's correctly-detected "pt" on first signed-in render.
+    const SUPPORTED_LANGS = ["en", "pt", "es", "th"];
+    const rawLang =
+      typeof body.preferredLanguage === "string"
+        ? body.preferredLanguage.toLowerCase().trim()
+        : null;
+    const preferredLanguage =
+      rawLang && SUPPORTED_LANGS.includes(rawLang) ? rawLang : "en";
+
     // Identify the caller via their session cookie
     const cookieStore = await cookies();
     const supabaseAuth = createServerClient(
@@ -118,7 +130,7 @@ export async function POST(request) {
       full_name: fullName,
       user_type: "player",
       edition,
-      preferred_language: "en",
+      preferred_language: preferredLanguage,
       ...(partnerReferrer ? { partner_referrer: partnerReferrer } : {}),
     });
 
