@@ -150,9 +150,22 @@ const COPY = {
     slide4: {
       headline: ["Your welcome pack", "is waiting"],
       subtitle:
-        "We've added a starter sticker pack to your account. Open it now to see which players land in your first squad.",
-      homeTip:
-        "📱 On your phone? Add FieldTalk to your home screen from your browser's menu — one tap and you're back in.",
+        "We've added a starter sticker pack to your account. Open it next to see which players land in your first squad.",
+    },
+    // Standalone home-screen slide — splitting it out from slide 4
+    // so the tip can't be visually skimmed past on the way to the
+    // "Open my first pack" CTA. Last slide, deliberate emphasis.
+    slide5: {
+      headline: ["Save FieldTalk to your", "home screen"],
+      subtitle:
+        "One tap from your home screen gets you straight back in — no hunting for the link.",
+      stepsTitle: "How to add it:",
+      steps: [
+        "Open your browser's menu (the ⋮ or share icon).",
+        "Tap “Add to Home Screen” (or “Install app”).",
+        "Confirm — that's it. The FieldTalk icon will appear.",
+      ],
+      reminder: "You can always do it later, but takes 10 seconds now!",
       cta: "🎁 Open my first pack",
     },
   },
@@ -209,9 +222,19 @@ const COPY = {
     slide4: {
       headline: ["Seu pacote de boas-vindas", "está te esperando"],
       subtitle:
-        "Já adicionamos um pacote inicial de figurinhas na sua conta. Abra agora pra ver quais jogadores chegam pro seu primeiro time.",
-      homeTip:
-        "📱 No celular? Adicione o FieldTalk à tela inicial pelo menu do seu navegador — um toque e você volta direto pra jornada.",
+        "Já adicionamos um pacote inicial de figurinhas na sua conta. Abra a seguir pra ver quais jogadores chegam pro seu primeiro time.",
+    },
+    slide5: {
+      headline: ["Salve o FieldTalk na sua", "tela inicial"],
+      subtitle:
+        "Um toque na sua tela inicial e você volta direto pro jogo — sem caçar o link.",
+      stepsTitle: "Como adicionar:",
+      steps: [
+        "Abra o menu do navegador (os ⋮ ou ícone de compartilhar).",
+        "Toque em “Adicionar à tela inicial” (ou “Instalar app”).",
+        "Confirme — pronto. O ícone do FieldTalk aparece.",
+      ],
+      reminder: "Você pode deixar pra depois, mas leva 10 segundos agora!",
       cta: "🎁 Abrir meu primeiro pacote",
     },
   },
@@ -305,7 +328,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
 
       {/* Skip — top right. Disabled on the final slide (CTA is the
           completion path there). */}
-      {slide < 4 && (
+      {slide < 5 && (
         <button
           type="button"
           onClick={() => close("dismiss")}
@@ -324,6 +347,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
           {slide === 2 && <SlideTwo copy={copy.slide2} />}
           {slide === 3 && <SlideThree copy={copy.slide3} />}
           {slide === 4 && <SlideFour copy={copy.slide4} />}
+          {slide === 5 && <SlideFive copy={copy.slide5} />}
         </div>
       </div>
 
@@ -331,7 +355,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
           the controls are predictable across slides. */}
       <div className="relative z-10 px-5 sm:px-8 pb-8 pt-4">
         <div className="max-w-md mx-auto">
-          <ProgressDots current={slide} total={4} />
+          <ProgressDots current={slide} total={5} />
           <div className="mt-5 flex items-center justify-between gap-3">
             <button
               type="button"
@@ -343,7 +367,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
               {copy.back}
             </button>
 
-            {slide < 4 ? (
+            {slide < 5 ? (
               <button
                 type="button"
                 onClick={() => setSlide(slide + 1)}
@@ -358,7 +382,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
                 onClick={() => close("open_pack")}
                 className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] text-sm font-bold tracking-wide transition-colors shadow-[0_6px_28px_rgba(16,185,129,0.35)]"
               >
-                {copy.slide4.cta}
+                {copy.slide5.cta}
               </button>
             )}
           </div>
@@ -499,11 +523,54 @@ function SlideFour({ copy }) {
         {copy.subtitle}
       </p>
 
-      {/* "Save to home screen" nudge — soft amber pill so it reads as
-          a tip rather than a CTA. Mostly relevant on mobile; on desktop
-          it doesn't hurt to know about it for any future tablet use. */}
-      <div className="mt-5 mx-auto max-w-sm rounded-2xl bg-amber-300/10 border border-amber-300/30 px-4 py-3 text-xs sm:text-sm text-amber-100/90 leading-relaxed">
-        {copy.homeTip}
+      <Animations />
+    </div>
+  );
+}
+
+// Standalone "Add to home screen" slide. Bigger, friendlier and
+// can't be skimmed past on the way to the "Open my first pack"
+// CTA — the tip lands as the final beat of the onboarding so
+// students (and the Cultura coordinators showing them) don't
+// miss it.
+function SlideFive({ copy }) {
+  return (
+    <div className="onb-fade-up">
+      <div className="text-6xl sm:text-7xl mb-4 onb-bounce inline-block">
+        📱
+      </div>
+      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3">
+        {copy.headline[0]}{" "}
+        <span className="text-amber-300">{copy.headline[1]}</span>
+      </h1>
+      <p className="text-sm sm:text-base text-white/65 max-w-xs sm:max-w-sm mx-auto leading-relaxed mb-5">
+        {copy.subtitle}
+      </p>
+
+      {/* Step-by-step instructions in a clearly-bordered amber card
+          — the same colour family as the previous embedded tip, but
+          significantly bigger and structured so each step reads
+          deliberately. */}
+      <div className="mx-auto max-w-sm rounded-2xl bg-amber-300/10 border border-amber-300/40 px-4 sm:px-5 py-4 text-left">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-amber-200/80 font-bold mb-3">
+          {copy.stepsTitle}
+        </p>
+        <ol className="space-y-2">
+          {copy.steps.map((step, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2.5 text-sm text-amber-100/90 leading-relaxed"
+            >
+              <span className="shrink-0 w-5 h-5 rounded-full bg-amber-300/25 text-amber-100 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                {i + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 pt-3 border-t border-amber-300/20 text-[11px] text-amber-200/70 italic">
+          {copy.reminder}
+        </p>
       </div>
 
       <Animations />
