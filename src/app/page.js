@@ -130,7 +130,7 @@ export default function RootLandingPage() {
         {/* Tagline — short, English. The branded /wc2026 page uses a
             longer Portuguese intro for Brazilian audiences; here we
             keep it punchy and edition-neutral. */}
-        <p
+        {/* <p
           className={`mt-10 max-w-md text-sm sm:text-base text-white/65 leading-relaxed opacity-0 ${
             mounted ? "rl-rise" : ""
           }`}
@@ -138,7 +138,7 @@ export default function RootLandingPage() {
         >
           Learn English through the World Cup — vocabulary, predictions,
           sticker packs, and a squad to build.
-        </p>
+        </p> */}
       </main>
 
       {/* CTA — bottom, single button, mirrors /wc2026's style. */}
