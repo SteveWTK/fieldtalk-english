@@ -138,9 +138,16 @@ function AdminHubContent() {
             accent="emerald"
           />
           <AdminCard
+            href="/admin/branch-qr"
+            Icon={QrCode}
+            title="Partner QR codes"
+            body="Print-ready QR codes that lead to each partner's branded WC2026 landing."
+            accent="emerald"
+          />
+          <AdminCard
             href="/admin/qr-campaigns"
             Icon={QrCode}
-            title="QR campaigns"
+            title="QR campaigns (guest)"
             body="QR-driven guest access campaigns and partner attribution."
             accent="neutral"
           />
