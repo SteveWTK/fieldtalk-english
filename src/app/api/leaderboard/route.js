@@ -22,6 +22,109 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
+import { BRANCHES, canonicalPartnerName } from "@/lib/branches";
+
+// Resolve a partner-branch slug ("fortaleza", "teresina", …) to the
+// full set of player IDs affiliated with that branch via ANY of three
+// signals:
+//
+//   1. players.partner_referrer = <slug>
+//        — set when the user signed up via /wc2026?branch=<slug>.
+//   2. seat_redemptions → seat_licenses.partner_name matches the
+//      branch's canonical partner name (aliases included via
+//      canonicalPartnerName).
+//        — covers the case a partner needs to count students who
+//          came in via a generic FieldTalk link but redeemed a
+//          partner-issued seat licence.
+//   3. player_edition_access.promo_code_prefix maps (via
+//      partner_promo_prefixes) to the branch's canonical partner.
+//        — covers the same case with discounted Stripe purchases.
+//
+// Union of the three is what an admin or partner would intuitively
+// think of as "their students" — anyone who came in via the
+// partner's link, code, or licence. Returns null when slug is
+// falsy (caller should treat as "no filter").
+async function resolveBranchPlayerIds(supabase, slug) {
+  if (!slug) return null;
+
+  const branchAlt = BRANCHES[slug]?.alt || null;
+
+  const [directRes, redemptionsRes, prefixesRes] = await Promise.all([
+    supabase.from("players").select("id").eq("partner_referrer", slug),
+    branchAlt
+      ? supabase
+          .from("seat_redemptions")
+          .select("player_id, seat_licenses(partner_name)")
+      : Promise.resolve({ data: [], error: null }),
+    branchAlt
+      ? supabase
+          .from("partner_promo_prefixes")
+          .select("prefix, partner_name")
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (directRes.error) throw directRes.error;
+  if (redemptionsRes.error) throw redemptionsRes.error;
+  if (prefixesRes.error) throw prefixesRes.error;
+
+  const ids = new Set();
+  for (const p of directRes.data || []) ids.add(p.id);
+
+  if (branchAlt) {
+    for (const r of redemptionsRes.data || []) {
+      const partner = canonicalPartnerName(
+        r.seat_licenses?.partner_name || ""
+      );
+      if (partner === branchAlt && r.player_id) ids.add(r.player_id);
+    }
+
+    // Promo prefixes are stored upper-case in the lookup table; the
+    // events route assumes the same on player_edition_access. Match
+    // the convention so we don't miss rows.
+    const matchingPrefixes = (prefixesRes.data || [])
+      .filter((p) => canonicalPartnerName(p.partner_name) === branchAlt)
+      .map((p) => (p.prefix || "").toUpperCase())
+      .filter(Boolean);
+
+    if (matchingPrefixes.length > 0) {
+      const { data: promoAccess, error: promoErr } = await supabase
+        .from("player_edition_access")
+        .select("player_id, promo_code_prefix")
+        .in("promo_code_prefix", matchingPrefixes);
+      if (promoErr) throw promoErr;
+      for (const a of promoAccess || []) {
+        if (a.player_id) ids.add(a.player_id);
+      }
+    }
+  }
+
+  return Array.from(ids);
+}
+
+// Infer a caller's branch slug from their seat redemptions when
+// players.partner_referrer is null. Used so users who signed up via
+// a generic link but redeemed a partner seat code still get the
+// "My school" toggle pointing at the right partner.
+async function inferCallerBranchFromRedemptions(supabase, userId) {
+  if (!userId) return null;
+  const { data: redemptions } = await supabase
+    .from("seat_redemptions")
+    .select("redeemed_at, seat_licenses(partner_name)")
+    .eq("player_id", userId)
+    .order("redeemed_at", { ascending: false })
+    .limit(5);
+  for (const r of redemptions || []) {
+    const partner = canonicalPartnerName(
+      r.seat_licenses?.partner_name || ""
+    );
+    if (!partner) continue;
+    for (const [slug, branch] of Object.entries(BRANCHES)) {
+      if (slug === "default") continue;
+      if (branch.alt === partner) return slug;
+    }
+  }
+  return null;
+}
 
 export async function GET(request) {
   try {
@@ -93,6 +196,16 @@ export async function GET(request) {
         .maybeSingle();
       if (!edition) edition = me?.edition || null;
       callerBranch = me?.partner_referrer || null;
+      // Fallback: caller has no partner_referrer (e.g. signed up via
+      // a generic FieldTalk link) but redeemed a partner seat code.
+      // Infer their branch from the redemption so the "My school"
+      // toggle works.
+      if (!callerBranch) {
+        callerBranch = await inferCallerBranchFromRedemptions(
+          supabase,
+          currentUserId
+        );
+      }
     }
 
     // Resolve branch filter. "mine" maps to the caller's own
@@ -101,6 +214,36 @@ export async function GET(request) {
     // returning an empty leaderboard.
     const resolvedBranch =
       branchParam === "mine" ? callerBranch : branchParam;
+
+    // If a branch filter was requested, resolve it to the union of
+    // player IDs that match via partner_referrer, seat redemption, or
+    // promo-code attribution. Empty set → short-circuit to an empty
+    // leaderboard before we fetch anything else.
+    let branchPlayerIds = null;
+    if (resolvedBranch) {
+      try {
+        branchPlayerIds = await resolveBranchPlayerIds(
+          supabase,
+          resolvedBranch
+        );
+      } catch (err) {
+        console.error("[leaderboard] branch resolution error:", err);
+        return NextResponse.json(
+          { error: "Could not resolve branch" },
+          { status: 500 }
+        );
+      }
+      if (!branchPlayerIds || branchPlayerIds.length === 0) {
+        return NextResponse.json({
+          entries: [],
+          you: null,
+          sort,
+          edition,
+          callerBranch,
+          branch: resolvedBranch,
+        });
+      }
+    }
 
     // Pull players + their progress + their squads. Admin accounts are
     // included on purpose — during the early WC2026 demo they're
@@ -113,9 +256,10 @@ export async function GET(request) {
     if (edition && edition !== "all") {
       playersQuery = playersQuery.eq("edition", edition);
     }
-    if (resolvedBranch) {
-      // Tiny partial-indexed lookup, see PARTNER_LAUNCH_INDEXES.sql.
-      playersQuery = playersQuery.eq("partner_referrer", resolvedBranch);
+    if (branchPlayerIds) {
+      // Union of partner_referrer + seat redemption + promo-code
+      // attribution paths. PK lookup; index-backed.
+      playersQuery = playersQuery.in("id", branchPlayerIds);
     }
     const { data: players, error: playersError } = await playersQuery;
     if (playersError) {
