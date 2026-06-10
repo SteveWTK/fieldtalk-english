@@ -130,6 +130,21 @@ export async function GET(request) {
 
     const playerIds = players.map((p) => p.id);
 
+    // ⚠ Explicit .limit() on every unbounded query below. Supabase's
+    // PostgREST caps `.select()` at 1000 rows by default; once
+    // sticker_players passed 1000 (WC2026 = 48 × 26 ≈ 1248 players)
+    // the leaderboard's rating map was silently truncated, dropping
+    // the most recent stickers. The squad-value sum then resolved
+    // those positions to 0, and the album % computed against a
+    // truncated denominator. usePlayerSquad on the dashboard
+    // doesn't hit this because it filters to ONE player and stays
+    // well under the cap.
+    //
+    // 50000 is far above today's worst case and gives plenty of
+    // headroom for full-tournament growth. If we ever exceed it
+    // we'll move to range-based pagination, but at our scale a
+    // single 50k-row read is faster than chunking.
+    const FETCH_LIMIT = 50000;
     const [
       progressRes,
       squadsRes,
@@ -140,19 +155,25 @@ export async function GET(request) {
       supabase
         .from("player_progress")
         .select("player_id, total_xp, hat_trick_count")
-        .in("player_id", playerIds),
+        .in("player_id", playerIds)
+        .limit(FETCH_LIMIT),
       supabase
         .from("player_squads")
         .select("player_id, positions")
-        .in("player_id", playerIds),
+        .in("player_id", playerIds)
+        .limit(FETCH_LIMIT),
       // Active stickers only — matches the album view, so the
       // denominator a user sees here is the same one they see on
       // /dashboard/album. Inactive/retired stickers are excluded.
-      supabase.from("sticker_players").select("id, rating, is_active"),
+      supabase
+        .from("sticker_players")
+        .select("id, rating, is_active")
+        .limit(FETCH_LIMIT),
       supabase
         .from("player_stickers")
         .select("player_id, sticker_id, quantity")
-        .in("player_id", playerIds),
+        .in("player_id", playerIds)
+        .limit(FETCH_LIMIT),
       // Predictions XP — sum of xp_awarded across all resolved
       // match_predictions per player. Powers the new "Predict"
       // sort tab + secondary signal on every other tab.
@@ -160,7 +181,8 @@ export async function GET(request) {
         .from("match_predictions")
         .select("player_id, xp_awarded")
         .in("player_id", playerIds)
-        .gt("xp_awarded", 0),
+        .gt("xp_awarded", 0)
+        .limit(FETCH_LIMIT),
     ]);
 
     if (
