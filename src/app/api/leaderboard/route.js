@@ -130,21 +130,47 @@ export async function GET(request) {
 
     const playerIds = players.map((p) => p.id);
 
-    // ⚠ Explicit .limit() on every unbounded query below. Supabase's
-    // PostgREST caps `.select()` at 1000 rows by default; once
-    // sticker_players passed 1000 (WC2026 = 48 × 26 ≈ 1248 players)
-    // the leaderboard's rating map was silently truncated, dropping
-    // the most recent stickers. The squad-value sum then resolved
-    // those positions to 0, and the album % computed against a
-    // truncated denominator. usePlayerSquad on the dashboard
-    // doesn't hit this because it filters to ONE player and stays
-    // well under the cap.
+    // ⚠ Two of these tables can exceed Supabase's PostgREST
+    // db-max-rows cap (1000 rows by default) and silently truncate:
     //
-    // 50000 is far above today's worst case and gives plenty of
-    // headroom for full-tournament growth. If we ever exceed it
-    // we'll move to range-based pagination, but at our scale a
-    // single 50k-row read is faster than chunking.
-    const FETCH_LIMIT = 50000;
+    //   sticker_players  — 1248 active rows once all 48 WC2026
+    //                       squads are loaded
+    //   player_stickers  — ~50 users × ~50 stickers each grows
+    //                       past 1000 quickly
+    //
+    // `.limit(N)` on the client CANNOT override db-max-rows — the
+    // hard cap is enforced server-side regardless of what the
+    // request asks for ("There's no way to override the value of
+    // db-max-rows from the request" — PostgREST docs). So our
+    // previous explicit limits were a no-op against the same
+    // truncation that produced the original bug (squad value 49
+    // vs 37 in the leaderboard).
+    //
+    // The reliable fix is range-based pagination — multiple
+    // 1000-row requests stitched together. fetchAllRows below
+    // pages until the chunk comes back smaller than the page size.
+    const PAGE_SIZE = 1000;
+    async function fetchAllRows(buildQuery) {
+      const out = [];
+      let offset = 0;
+      // Hard safety cap so a runaway DB never spins this loop
+      // forever. 100k rows × any of these tables is far beyond
+      // what FieldTalk could realistically have at WC2026 scale.
+      const HARD_CAP = 100_000;
+      while (offset < HARD_CAP) {
+        const { data, error } = await buildQuery().range(
+          offset,
+          offset + PAGE_SIZE - 1
+        );
+        if (error) return { data: null, error };
+        const rows = data || [];
+        out.push(...rows);
+        if (rows.length < PAGE_SIZE) break;
+        offset += PAGE_SIZE;
+      }
+      return { data: out, error: null };
+    }
+
     const [
       progressRes,
       squadsRes,
@@ -152,37 +178,41 @@ export async function GET(request) {
       collectionsRes,
       predictionsRes,
     ] = await Promise.all([
+      // Bounded by `playerIds.length` (one row per player). Safe to
+      // single-shot — capped at 1000 only matters if you have 1000+
+      // players in one edition, which is well past where we are.
       supabase
         .from("player_progress")
         .select("player_id, total_xp, hat_trick_count")
-        .in("player_id", playerIds)
-        .limit(FETCH_LIMIT),
+        .in("player_id", playerIds),
       supabase
         .from("player_squads")
         .select("player_id, positions")
-        .in("player_id", playerIds)
-        .limit(FETCH_LIMIT),
+        .in("player_id", playerIds),
       // Active stickers only — matches the album view, so the
       // denominator a user sees here is the same one they see on
       // /dashboard/album. Inactive/retired stickers are excluded.
-      supabase
-        .from("sticker_players")
-        .select("id, rating, is_active")
-        .limit(FETCH_LIMIT),
-      supabase
-        .from("player_stickers")
-        .select("player_id, sticker_id, quantity")
-        .in("player_id", playerIds)
-        .limit(FETCH_LIMIT),
+      // PAGED — 1248+ rows is past the default cap.
+      fetchAllRows(() =>
+        supabase.from("sticker_players").select("id, rating, is_active")
+      ),
+      // PAGED — grows past the cap as users accumulate stickers.
+      fetchAllRows(() =>
+        supabase
+          .from("player_stickers")
+          .select("player_id, sticker_id, quantity")
+          .in("player_id", playerIds)
+      ),
       // Predictions XP — sum of xp_awarded across all resolved
-      // match_predictions per player. Powers the new "Predict"
-      // sort tab + secondary signal on every other tab.
-      supabase
-        .from("match_predictions")
-        .select("player_id, xp_awarded")
-        .in("player_id", playerIds)
-        .gt("xp_awarded", 0)
-        .limit(FETCH_LIMIT),
+      // match_predictions per player. Could exceed the cap mid-
+      // tournament; page just in case.
+      fetchAllRows(() =>
+        supabase
+          .from("match_predictions")
+          .select("player_id, xp_awarded")
+          .in("player_id", playerIds)
+          .gt("xp_awarded", 0)
+      ),
     ]);
 
     if (
