@@ -440,12 +440,12 @@ function PlayerLessonsMenu() {
       <>
         {/* Inline paywall — sits above the cards when the user is
             signed in but hasn't unlocked the edition. */}
-        {showInlinePaywall && (
+        {/* {showInlinePaywall && (
           <PaywallCard
             edition={profile?.edition || "wc2026"}
             variant="inline"
           />
-        )}
+        )} */}
 
         {/* "Start here" prompt — only shows on the first pillar's
             first lesson, by virtue of FirstLessonPrompt's own
