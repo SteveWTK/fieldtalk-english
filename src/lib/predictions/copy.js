@@ -51,6 +51,12 @@ export const COPY = {
     cta: {
       backToDashboard: "Back to dashboard",
     },
+    filters: {
+      countryAll: "All countries",
+      groupAll: "All groups",
+      noMatches: "No matches match your filters.",
+      clear: "Clear filters",
+    },
   },
   pt: {
     pageEyebrow: "FieldTalk WC2026",
@@ -98,6 +104,12 @@ export const COPY = {
     },
     cta: {
       backToDashboard: "Voltar ao painel",
+    },
+    filters: {
+      countryAll: "Todos os países",
+      groupAll: "Todos os grupos",
+      noMatches: "Nenhum jogo combina com os filtros.",
+      clear: "Limpar filtros",
     },
   },
 };

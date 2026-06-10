@@ -562,6 +562,32 @@ function DashboardContent() {
                   </p>
                 </>
               )}
+
+              {/* Hat-trick badge — surfaces whenever the user has at
+                  least one all-3-correct match. Sits at the bottom of
+                  the predictions tile so it builds on the existing
+                  predictions storyline (resolved + bonus + hat-tricks). */}
+              {(progress?.hat_trick_count || 0) > 0 && (
+                <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2">
+                  <span className="text-xl">🎩</span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-wider text-amber-200/80 font-bold">
+                      {progress.hat_trick_count === 1
+                        ? t("hat_trick_singular", "Hat-trick")
+                        : t("hat_tricks_plural", "Hat-tricks")}
+                    </p>
+                    <p className="text-sm font-bold text-amber-100">
+                      {progress.hat_trick_count}
+                      <span className="text-xs font-normal text-white/50 ml-1.5">
+                        {t(
+                          "hat_trick_hint",
+                          "all 3 picks correct on one match"
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Leaderboard — top 10 ranked by Squad value or XP. */}

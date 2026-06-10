@@ -135,6 +135,18 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
           >
             Album
           </button>
+          <button
+            type="button"
+            onClick={() => setSort("predictions_xp")}
+            className={`px-2 py-1 rounded-full font-semibold transition-colors ${
+              sort === "predictions_xp"
+                ? "bg-emerald-500 text-[#070707]"
+                : "text-white/60 hover:text-white"
+            }`}
+            title="Sort by prediction XP"
+          >
+            Predict
+          </button>
         </div>
       </div>
 
@@ -217,6 +229,8 @@ function LeaderboardRow({ entry, primary }) {
     albumOwned = 0,
     albumTotal = 0,
     albumPct = 0,
+    predictionsXp = 0,
+    hatTricks = 0,
     isYou,
   } = entry;
   // Primary = the big number on the right (the metric we're sorting on).
@@ -230,6 +244,15 @@ function LeaderboardRow({ entry, primary }) {
   } else if (primary === "album") {
     primaryValue = `${albumPct}%`;
     secondaryLabel = `${albumOwned}/${albumTotal} collected`;
+  } else if (primary === "predictions_xp") {
+    primaryValue = predictionsXp.toLocaleString();
+    // Hat-tricks earn a 🎩 suffix when > 0 — visual incentive for
+    // accuracy over volume. Falls back to "XP from picks" otherwise
+    // so the row reads sensibly for users without any hat-tricks yet.
+    secondaryLabel =
+      hatTricks > 0
+        ? `🎩 ${hatTricks} hat-trick${hatTricks === 1 ? "" : "s"}`
+        : "XP from picks";
   } else {
     primaryValue = totalXp.toLocaleString();
     secondaryLabel = `Squad ${squadValue}`;

@@ -27,8 +27,13 @@ export async function GET(request) {
   try {
     const url = new URL(request.url);
     const sortRaw = url.searchParams.get("sort");
-    const sort =
-      sortRaw === "xp" || sortRaw === "album" ? sortRaw : "squad_value";
+    const sort = [
+      "xp",
+      "album",
+      "predictions_xp",
+    ].includes(sortRaw)
+      ? sortRaw
+      : "squad_value";
     const limit = Math.min(
       Math.max(1, Number(url.searchParams.get("limit") || 20)),
       100
@@ -125,31 +130,45 @@ export async function GET(request) {
 
     const playerIds = players.map((p) => p.id);
 
-    const [progressRes, squadsRes, stickerRes, collectionsRes] =
-      await Promise.all([
-        supabase
-          .from("player_progress")
-          .select("player_id, total_xp")
-          .in("player_id", playerIds),
-        supabase
-          .from("player_squads")
-          .select("player_id, positions")
-          .in("player_id", playerIds),
-        // Active stickers only — matches the album view, so the
-        // denominator a user sees here is the same one they see on
-        // /dashboard/album. Inactive/retired stickers are excluded.
-        supabase.from("sticker_players").select("id, rating, is_active"),
-        supabase
-          .from("player_stickers")
-          .select("player_id, sticker_id, quantity")
-          .in("player_id", playerIds),
-      ]);
+    const [
+      progressRes,
+      squadsRes,
+      stickerRes,
+      collectionsRes,
+      predictionsRes,
+    ] = await Promise.all([
+      supabase
+        .from("player_progress")
+        .select("player_id, total_xp, hat_trick_count")
+        .in("player_id", playerIds),
+      supabase
+        .from("player_squads")
+        .select("player_id, positions")
+        .in("player_id", playerIds),
+      // Active stickers only — matches the album view, so the
+      // denominator a user sees here is the same one they see on
+      // /dashboard/album. Inactive/retired stickers are excluded.
+      supabase.from("sticker_players").select("id, rating, is_active"),
+      supabase
+        .from("player_stickers")
+        .select("player_id, sticker_id, quantity")
+        .in("player_id", playerIds),
+      // Predictions XP — sum of xp_awarded across all resolved
+      // match_predictions per player. Powers the new "Predict"
+      // sort tab + secondary signal on every other tab.
+      supabase
+        .from("match_predictions")
+        .select("player_id, xp_awarded")
+        .in("player_id", playerIds)
+        .gt("xp_awarded", 0),
+    ]);
 
     if (
       progressRes.error ||
       squadsRes.error ||
       stickerRes.error ||
-      collectionsRes.error
+      collectionsRes.error ||
+      predictionsRes.error
     ) {
       console.error("[leaderboard] sub-fetch error:", {
         progress: progressRes.error,
@@ -174,9 +193,22 @@ export async function GET(request) {
     }
     const albumTotal = activeStickerIds.size;
 
-    // player_id → total_xp lookup
+    // player_id → total_xp + hat_trick_count lookup
     const xpById = new Map();
-    for (const p of progressRes.data || []) xpById.set(p.player_id, p.total_xp || 0);
+    const hatTrickById = new Map();
+    for (const p of progressRes.data || []) {
+      xpById.set(p.player_id, p.total_xp || 0);
+      hatTrickById.set(p.player_id, p.hat_trick_count || 0);
+    }
+
+    // player_id → sum of xp_awarded on resolved match_predictions
+    const predictionsXpById = new Map();
+    for (const row of predictionsRes.data || []) {
+      predictionsXpById.set(
+        row.player_id,
+        (predictionsXpById.get(row.player_id) || 0) + (row.xp_awarded || 0)
+      );
+    }
 
     // player_id → squad_value lookup
     const squadValueById = new Map();
@@ -219,6 +251,8 @@ export async function GET(request) {
         albumOwned,
         albumTotal,
         albumPct,
+        predictionsXp: predictionsXpById.get(p.id) || 0,
+        hatTricks: hatTrickById.get(p.id) || 0,
       };
     });
 
@@ -234,6 +268,14 @@ export async function GET(request) {
         // coincidence. albumTotal is the same for everyone in the
         // same edition so this is equivalent to comparing %.
         if (b.albumOwned !== a.albumOwned) return b.albumOwned - a.albumOwned;
+        return b.totalXp - a.totalXp;
+      }
+      if (sort === "predictions_xp") {
+        // Tiebreak by hat-tricks (rewards quality over quantity)
+        // then total XP.
+        if (b.predictionsXp !== a.predictionsXp)
+          return b.predictionsXp - a.predictionsXp;
+        if (b.hatTricks !== a.hatTricks) return b.hatTricks - a.hatTricks;
         return b.totalXp - a.totalXp;
       }
       if (b.totalXp !== a.totalXp) return b.totalXp - a.totalXp;
@@ -254,6 +296,8 @@ export async function GET(request) {
       albumOwned: e.albumOwned,
       albumTotal: e.albumTotal,
       albumPct: e.albumPct,
+      predictionsXp: e.predictionsXp,
+      hatTricks: e.hatTricks,
       isYou: e.id === currentUserId,
     }));
 
@@ -267,6 +311,8 @@ export async function GET(request) {
             albumOwned: enriched[youIndex].albumOwned,
             albumTotal: enriched[youIndex].albumTotal,
             albumPct: enriched[youIndex].albumPct,
+            predictionsXp: enriched[youIndex].predictionsXp,
+            hatTricks: enriched[youIndex].hatTricks,
             isYou: true,
           }
         : null;
