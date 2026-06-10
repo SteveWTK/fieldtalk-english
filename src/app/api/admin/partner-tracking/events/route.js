@@ -34,7 +34,7 @@
 
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
-import { BRANCHES } from "@/lib/branches";
+import { BRANCHES, canonicalPartnerName } from "@/lib/branches";
 
 const EVENTS_LIMIT = 500;
 
@@ -127,10 +127,14 @@ export async function GET() {
     }
 
     // ── Lookups ──
+    // Canonicalise prefix → partner mapping so a partner whose
+    // promo codes were generated under one name and seat codes
+    // under another (e.g. Fortaleza ↔ Ceará) still rolls up
+    // together when filtered or counted.
     const prefixToPartner = new Map(
       (prefixesRes.data || []).map((p) => [
         p.prefix.toUpperCase(),
-        p.partner_name,
+        canonicalPartnerName(p.partner_name),
       ])
     );
     const accessByPlayer = new Map(
@@ -172,7 +176,9 @@ export async function GET() {
         player_id: r.player_id,
         player_name: name,
         player_email: email,
-        partner_name: r.seat_licenses?.partner_name || "(unattributed)",
+        partner_name: canonicalPartnerName(
+          r.seat_licenses?.partner_name || "(unattributed)"
+        ),
         edition: r.seat_licenses?.edition || null,
         detail: r.seat_licenses?.code
           ? `Code: ${r.seat_licenses.code}`

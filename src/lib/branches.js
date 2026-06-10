@@ -45,6 +45,14 @@ export const BRANCHES = {
     logoSrc: "/logos/cultura-inglesa-arrows.png",
     alt: "Cultura Inglesa Fortaleza",
     slug: "fortaleza",
+    // Alternative names this partner has been entered under in
+    // seat_licenses.partner_name or partner_promo_prefixes.partner_name.
+    // The canonical name is `alt`; canonicalPartnerName() below maps
+    // any of these (case-insensitive, trimmed) onto it. Cultura
+    // Inglesa hold rights for the whole state of Ceará but operate
+    // out of Fortaleza, so the two names get used interchangeably —
+    // we want them to roll up as one partner everywhere.
+    aliases: ["Cultura Inglesa Ceará", "Cultura Inglesa Ceara"],
     placements: { ...DEFAULT_PLACEMENTS, loading: true },
   },
   teresina: {
@@ -73,4 +81,43 @@ export function isPlacementEnabled(branchKey, placement) {
   const branch = BRANCHES[normalized];
   if (!branch || !branch.placements) return false;
   return branch.placements[placement] === true;
+}
+
+// ── Partner-name normalisation ───────────────────────────────────
+// Different rows of seat_licenses + partner_promo_prefixes carry
+// different variants of the same partner's name (e.g. "Cultura
+// Inglesa Fortaleza" vs "Cultura Inglesa Ceará"). Without
+// normalisation, the admin partner-tracking page renders them as
+// separate partners — which breaks per-partner reporting and the
+// local-leaderboard pitch.
+//
+// The map is built once at module load from each branch's `alt`
+// (canonical) + `aliases` array. Lookup is case-insensitive and
+// whitespace-trimmed. Unknown names pass through unchanged.
+
+const PARTNER_NAME_CANONICAL = (() => {
+  const map = new Map();
+  for (const [slug, branch] of Object.entries(BRANCHES)) {
+    if (slug === DEFAULT_BRANCH_KEY) continue;
+    const canonical = branch.alt;
+    if (!canonical) continue;
+    map.set(canonical.toLowerCase().trim(), canonical);
+    for (const a of branch.aliases || []) {
+      if (typeof a !== "string") continue;
+      map.set(a.toLowerCase().trim(), canonical);
+    }
+  }
+  return map;
+})();
+
+/**
+ * Returns the canonical display name for a partner. Pass any of:
+ *   - the canonical name itself ("Cultura Inglesa Fortaleza")
+ *   - an alias ("Cultura Inglesa Ceará", "Cultura Inglesa Ceara")
+ *   - an unknown string — passes through verbatim
+ * Use anywhere an admin page groups or displays a partner_name.
+ */
+export function canonicalPartnerName(rawName) {
+  if (!rawName || typeof rawName !== "string") return rawName;
+  return PARTNER_NAME_CANONICAL.get(rawName.toLowerCase().trim()) || rawName;
 }

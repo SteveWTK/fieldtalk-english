@@ -235,12 +235,18 @@ function PredictionsCentreContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("upcoming");
-  // Country + group filters. "all" disables that axis. Match list
-  // grows to ~104 matches across the tournament; client-side
-  // filtering on a payload that small is instant and saves an
-  // extra round-trip per filter change.
+  // Country + group + predictions filters. "all" disables that
+  // axis. Match list grows to ~104 matches across the tournament;
+  // client-side filtering on a payload that small is instant and
+  // saves an extra round-trip per filter change.
+  //
+  // predictionsFilter values:
+  //   "all"  — no filter
+  //   "made" — at least one of the three pick types submitted
+  //   "none" — no picks submitted yet (great for "what's left to do")
   const [countryFilter, setCountryFilter] = useState("all");
   const [groupFilter, setGroupFilter] = useState("all");
+  const [predictionsFilter, setPredictionsFilter] = useState("all");
 
   const refresh = useCallback(async () => {
     try {
@@ -329,13 +335,24 @@ function PredictionsCentreContent() {
     if (groupFilter !== "all" && m.stage !== groupFilter) {
       return false;
     }
+    if (predictionsFilter !== "all") {
+      const p = m.predictions || {};
+      // hasAny → at least one of the three prediction types has a
+      // saved pick. The list endpoint sets each slot to null when
+      // the user hasn't picked, or an object when they have.
+      const hasAny = !!(p.winner || p.exact_score || p.first_scorer_team);
+      if (predictionsFilter === "made" && !hasAny) return false;
+      if (predictionsFilter === "none" && hasAny) return false;
+    }
     return true;
   };
 
   const filteredUpcoming = upcoming.filter(filterMatch);
   const filteredResults = results.filter(filterMatch);
   const activeFilters =
-    (countryFilter !== "all" ? 1 : 0) + (groupFilter !== "all" ? 1 : 0);
+    (countryFilter !== "all" ? 1 : 0) +
+    (groupFilter !== "all" ? 1 : 0) +
+    (predictionsFilter !== "all" ? 1 : 0);
 
   const stageLabel = (slug) =>
     (lang === "pt" ? STAGE_LABELS_PT : STAGE_LABELS)[slug] || slug;
@@ -392,15 +409,22 @@ function PredictionsCentreContent() {
           copy={copy}
         />
 
-        {/* Country + Group filters. Hide when there's nothing to
-            filter (e.g. on a fresh database with one or two
-            matches), surface as soon as the dataset grows. */}
-        {availableCountries.length > 1 || availableGroups.length > 1 ? (
+        {/* Country + Group + Predictions-made filters. Hide when
+            there's nothing to filter (e.g. on a fresh database with
+            one or two matches), surface as soon as the dataset
+            grows. The predictions filter is always meaningful once
+            there's more than one match, so we factor it into the
+            visibility check too. */}
+        {availableCountries.length > 1 ||
+        availableGroups.length > 1 ||
+        upcoming.length + results.length > 1 ? (
           <FilterRow
             countryFilter={countryFilter}
             setCountryFilter={setCountryFilter}
             groupFilter={groupFilter}
             setGroupFilter={setGroupFilter}
+            predictionsFilter={predictionsFilter}
+            setPredictionsFilter={setPredictionsFilter}
             availableCountries={availableCountries}
             availableGroups={availableGroups}
             activeFilters={activeFilters}
@@ -516,6 +540,8 @@ function FilterRow({
   setCountryFilter,
   groupFilter,
   setGroupFilter,
+  predictionsFilter,
+  setPredictionsFilter,
   availableCountries,
   availableGroups,
   activeFilters,
@@ -524,7 +550,11 @@ function FilterRow({
   copy,
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 mb-5 sm:mb-6 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-center">
+    // Three filter dropdowns plus a clear button. On mobile they
+    // stack; from sm: upwards we lay them out as three equal-width
+    // columns and let the clear button float to a fourth, auto-sized
+    // column when active.
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 mb-5 sm:mb-6 grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
       <FilterSelect
         value={countryFilter}
         onChange={setCountryFilter}
@@ -544,12 +574,22 @@ function FilterRow({
           ...availableGroups.map((g) => ({ value: g, label: stageLabel(g) })),
         ]}
       />
+      <FilterSelect
+        value={predictionsFilter}
+        onChange={setPredictionsFilter}
+        options={[
+          { value: "all", label: copy.predictionsAll },
+          { value: "made", label: copy.predictionsMade },
+          { value: "none", label: copy.predictionsNone },
+        ]}
+      />
       {activeFilters > 0 ? (
         <button
           type="button"
           onClick={() => {
             setCountryFilter("all");
             setGroupFilter("all");
+            setPredictionsFilter("all");
           }}
           className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs text-white/70 hover:text-white border border-white/15 hover:border-white/30 transition-colors"
         >

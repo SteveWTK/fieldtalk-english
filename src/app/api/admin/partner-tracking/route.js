@@ -23,6 +23,7 @@
 
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { canonicalPartnerName } from "@/lib/branches";
 
 export async function GET() {
   try {
@@ -46,7 +47,13 @@ export async function GET() {
     }
     const seatPartners = new Map();
     for (const row of redemptions || []) {
-      const partner = row.seat_licenses?.partner_name || "(unattributed)";
+      // canonicalPartnerName() rolls up aliased variants (e.g.
+      // "Cultura Inglesa Ceará" vs "Cultura Inglesa Fortaleza")
+      // under a single canonical name so per-partner totals are
+      // correct.
+      const partner = canonicalPartnerName(
+        row.seat_licenses?.partner_name || "(unattributed)"
+      );
       const edition = row.seat_licenses?.edition || "—";
       const key = `${partner}::${edition}`;
       const entry = seatPartners.get(key) || {
@@ -90,8 +97,14 @@ export async function GET() {
       // Don't fail the whole call — we can still show the raw prefixes
       // and label them "(unmapped)".
     }
+    // Canonicalise partner names from the prefix → partner mapping
+    // up-front so any downstream key/display already uses the
+    // umbrella name.
     const prefixToPartner = new Map(
-      (prefixesRes.data || []).map((p) => [p.prefix.toUpperCase(), p.partner_name])
+      (prefixesRes.data || []).map((p) => [
+        p.prefix.toUpperCase(),
+        canonicalPartnerName(p.partner_name),
+      ])
     );
     const promoPartners = new Map();
     const unmappedPrefixes = new Set();

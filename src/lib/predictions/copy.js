@@ -54,6 +54,9 @@ export const COPY = {
     filters: {
       countryAll: "All countries",
       groupAll: "All groups",
+      predictionsAll: "All matches",
+      predictionsMade: "Predictions made",
+      predictionsNone: "No predictions yet",
       noMatches: "No matches match your filters.",
       clear: "Clear filters",
     },
@@ -108,6 +111,9 @@ export const COPY = {
     filters: {
       countryAll: "Todos os países",
       groupAll: "Todos os grupos",
+      predictionsAll: "Todos os jogos",
+      predictionsMade: "Já palpitei",
+      predictionsNone: "Sem palpites ainda",
       noMatches: "Nenhum jogo combina com os filtros.",
       clear: "Limpar filtros",
     },
