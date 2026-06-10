@@ -50,9 +50,7 @@ function PlayerLessonsMenu() {
   useEffect(() => {
     if (!selectedPillar) return;
     if (typeof document === "undefined") return;
-    const el = document.querySelector(
-      `[data-pillar-name="${selectedPillar}"]`
-    );
+    const el = document.querySelector(`[data-pillar-name="${selectedPillar}"]`);
     if (!el) return;
     // Defer one frame so the expanded content has mounted; otherwise
     // we'd scroll to the card's pre-expansion height and stop short.
@@ -150,10 +148,7 @@ function PlayerLessonsMenu() {
     // close (open_pack OR skip) so users who skip without opening
     // the pack aren't ambushed by the dashboard tour either.
     try {
-      localStorage.setItem(
-        "ft.welcome.completed_at",
-        String(Date.now())
-      );
+      localStorage.setItem("ft.welcome.completed_at", String(Date.now()));
     } catch {
       // private mode — non-fatal, tour just fires immediately
     }
@@ -173,8 +168,7 @@ function PlayerLessonsMenu() {
     () => new Set(access.previewLessonIds || []),
     [access.previewLessonIds]
   );
-  const showInlinePaywall =
-    !!user && !access.loading && !access.hasAccess;
+  const showInlinePaywall = !!user && !access.loading && !access.hasAccess;
 
   // Show the "Start here" prompt only when:
   //   - data has loaded
@@ -228,9 +222,7 @@ function PlayerLessonsMenu() {
       const pillarsSorted = [...pillars].sort(
         (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
       );
-      const pIdx = pillarsSorted.findIndex(
-        (p) => p.name === sourcePillar.name
-      );
+      const pIdx = pillarsSorted.findIndex((p) => p.name === sourcePillar.name);
       const nextPillar = pIdx >= 0 ? pillarsSorted[pIdx + 1] : null;
 
       if (nextPillar) {
@@ -480,7 +472,9 @@ function PlayerLessonsMenu() {
               status !== "construction" &&
               status !== "edition_paywall";
             const highlight =
-              (showStartPrompt && lessonIndex === 0 && selectedPillar === pillar.name) ||
+              (showStartPrompt &&
+                lessonIndex === 0 &&
+                selectedPillar === pillar.name) ||
               (highlightLessonId && lesson.id === highlightLessonId);
 
             return (
@@ -560,7 +554,9 @@ function PlayerLessonsMenu() {
                       aria-label="Get the full edition to unlock"
                     >
                       <Sparkles className="w-3 h-3" />
-                      {userLanguage === "pt" ? "Edição completa" : "Full edition"}
+                      {userLanguage === "pt"
+                        ? "Edição completa"
+                        : "Full edition"}
                     </Link>
                   ) : (
                     <div className="p-2 text-gray-400 ml-4">
@@ -595,10 +591,7 @@ function PlayerLessonsMenu() {
           dismiss; either way the modal closes and the lesson list
           becomes visible. */}
       {showWelcome && (
-        <WelcomeOnboarding
-          userId={user?.id}
-          onClose={handleWelcomeClose}
-        />
+        <WelcomeOnboarding userId={user?.id} onClose={handleWelcomeClose} />
       )}
 
       {/* Starter sticker pack — opens the moment the WelcomeOnboarding
@@ -654,7 +647,10 @@ function PlayerLessonsMenu() {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-emerald-300 shrink-0 onb-arrow-nudge" aria-hidden />
+            <ArrowRight
+              className="w-5 h-5 text-emerald-300 shrink-0 onb-arrow-nudge"
+              aria-hidden
+            />
           </div>
           {/* Animations declared in the single styled-jsx block at
               the bottom of this component — Next.js only allows one
@@ -679,15 +675,11 @@ function PlayerLessonsMenu() {
           either side. Same pattern Duolingo / Brilliant / Khan
           Academy use — prevents the unnatural card-stretching that
           a 1280px-wide accordion would produce on a 27" monitor. */}
-      <div
-        className="space-y-4 mb-8 max-w-3xl mx-auto"
-        data-pillars-container
-      >
+      <div className="space-y-4 mb-8 max-w-2xl mx-auto" data-pillars-container>
         {pillars.map((pillar, index) => {
           const IconComponent = getIconComponent(pillar.icon);
           const isExpanded = selectedPillar === pillar.name;
-          const isStartNextUnit =
-            endOfUnitJump?.unitPillarName === pillar.name;
+          const isStartNextUnit = endOfUnitJump?.unitPillarName === pillar.name;
           return (
             <div
               key={pillar.name}
@@ -840,14 +832,20 @@ function PlayerLessonsMenu() {
         /* End-of-unit CTA: nudging arrow + pulsing glow on the
            highlighted next-unit card. */
         @keyframes onb-arrow-nudge {
-          0%, 100% { transform: translateX(0); }
-          50%      { transform: translateX(6px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          50% {
+            transform: translateX(6px);
+          }
         }
         .onb-arrow-nudge {
           animation: onb-arrow-nudge 1.4s ease-in-out infinite;
         }
         @keyframes start-next-unit-pulse {
-          0%, 100% {
+          0%,
+          100% {
             box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
           }
           50% {
@@ -863,13 +861,24 @@ function PlayerLessonsMenu() {
            longer cycle so the highlighted next-unit and next-lesson
            cards read as "ready when you are" rather than "alert". */
         @keyframes next-attention {
-          0%, 18%, 30%, 100% {
+          0%,
+          18%,
+          30%,
+          100% {
             transform: translateX(0) rotate(0);
           }
-          20% { transform: translateX(-2px) rotate(-0.4deg); }
-          22% { transform: translateX(2px)  rotate(0.4deg); }
-          24% { transform: translateX(-2px) rotate(-0.4deg); }
-          26% { transform: translateX(2px)  rotate(0.4deg); }
+          20% {
+            transform: translateX(-2px) rotate(-0.4deg);
+          }
+          22% {
+            transform: translateX(2px) rotate(0.4deg);
+          }
+          24% {
+            transform: translateX(-2px) rotate(-0.4deg);
+          }
+          26% {
+            transform: translateX(2px) rotate(0.4deg);
+          }
         }
         .next-attention {
           animation: next-attention 3.6s ease-in-out infinite;
