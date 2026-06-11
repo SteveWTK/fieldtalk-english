@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Crosshair,
+  Gamepad2,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -246,7 +247,21 @@ function DashboardContent() {
             <ChevronLeft className="w-4 h-4" />
             {t("back_to_lessons", "Back to lessons")}
           </Link>
-          <PartnerLogo placement="dashboard" profile={profile} size="sm" />
+          <div className="flex items-center gap-3">
+            {/* Game Centre link gated to admins until the section is
+                polished and ready for users. Flip the condition to
+                always-on once we're happy with it. */}
+            {profile?.user_type === "platform_admin" && (
+              <Link
+                href="/games"
+                className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white"
+              >
+                <Gamepad2 className="w-4 h-4" />
+                {t("game_centre_link", "Game Centre")}
+              </Link>
+            )}
+            <PartnerLogo placement="dashboard" profile={profile} size="sm" />
+          </div>
         </div>
 
         {/* Resume-lesson banner — appears whenever the user has an

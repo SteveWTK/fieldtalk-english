@@ -36,6 +36,7 @@ import {
   Loader2,
   ChevronRight,
   Network,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -181,6 +182,13 @@ function AdminHubContent() {
             title="Lesson predictions"
             body="Resolve lesson-embedded group-finish predictions."
             accent="neutral"
+          />
+          <AdminCard
+            href="/admin/sticker-mapping"
+            Icon={Activity}
+            title="Sticker → API-Football mapping"
+            body="Map stickers to API-Football player IDs so the daily cron keeps ratings live."
+            accent="emerald"
           />
         </AdminSection>
 
