@@ -1,24 +1,30 @@
 // src/app/api/admin/sticker-mapping/search/route.js
 //
-// Server-side proxy for API-Football's player search, used by the
-// admin mapping page so the API key stays on the server.
+// Server-side proxy for API-Football's player-profile search, used
+// by the admin mapping page so the API key stays on the server.
 //
-//   GET /api/admin/sticker-mapping/search?q=<name>&season=<year>
+//   GET /api/admin/sticker-mapping/search?q=<name>
 //     → returns top candidate players from API-Football matching
-//       the name. Each candidate carries enough metadata (id, name,
-//       team, age, nationality, photo) for the admin to confidently
-//       pick the right one before clicking Save.
+//       the name. Each candidate carries enough metadata (id,
+//       name, position, nationality, photo, birth) for the admin
+//       to confidently pick the right one before clicking Save.
 //
-// API-Football constraint: /players endpoint requires `search` of
-// at least 3 characters AND either `team` or `league` or `season`.
-// We pass `season` (defaulting to the current WC2026 season) so the
-// admin can search by name alone.
+// Why /players/profiles and not /players?
+//   /players?search=…&season=… only returns players who already
+//   have statistics in that season. Early in WC2026 that set is
+//   nearly empty — every search returns "No candidates found".
+//   /players/profiles?search=… queries the profile registry
+//   directly and doesn't need a season. The recompute cron still
+//   uses /players?id=X&season=2026 (works by ID regardless of
+//   whether stats exist yet).
+//
+// Min query length:
+//   API-Football requires at least 4 characters on this endpoint.
 
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
-const DEFAULT_SEASON = Number(process.env.API_FOOTBALL_SEASON || 2026);
 
 export async function GET(request) {
   const guard = await requireAdmin();
@@ -33,15 +39,14 @@ export async function GET(request) {
 
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") || "").trim();
-  const season = Number(url.searchParams.get("season") || DEFAULT_SEASON);
-  if (q.length < 3) {
+  if (q.length < 4) {
     return NextResponse.json(
-      { error: "Search query must be at least 3 characters." },
+      { error: "Search query must be at least 4 characters." },
       { status: 400 }
     );
   }
 
-  const apiUrl = `${API_FOOTBALL_BASE}/players?search=${encodeURIComponent(q)}&season=${season}`;
+  const apiUrl = `${API_FOOTBALL_BASE}/players/profiles?search=${encodeURIComponent(q)}`;
   let payload;
   try {
     const res = await fetch(apiUrl, {
@@ -66,13 +71,10 @@ export async function GET(request) {
     );
   }
 
-  // Flatten the API-Football shape to what the UI actually needs.
-  // Each response[i] is { player: {...}, statistics: [{ team, league, ...}, ...] }
-  // Take the first statistics entry as the "primary" team — fine
-  // for disambiguation in the UI.
+  // Flatten the API-Football /players/profiles shape to what the UI
+  // actually needs. Each response[i] is { player: { id, name, ... } }.
   const candidates = (payload?.response || []).map((row) => {
     const player = row?.player || {};
-    const primary = row?.statistics?.[0] || {};
     return {
       api_football_player_id: player.id,
       name: player.name,
@@ -80,17 +82,14 @@ export async function GET(request) {
       lastname: player.lastname,
       age: player.age,
       nationality: player.nationality,
-      photo: player.photo,
-      team_name: primary?.team?.name || null,
-      team_logo: primary?.team?.logo || null,
-      league_name: primary?.league?.name || null,
-      position: primary?.games?.position || null,
+      birth_date: player.birth?.date || null,
+      position: player.position || null,
+      photo: player.photo || null,
     };
   });
 
   return NextResponse.json({
     query: q,
-    season,
     candidates,
     total: candidates.length,
   });

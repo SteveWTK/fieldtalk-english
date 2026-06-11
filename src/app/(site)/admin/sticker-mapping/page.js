@@ -269,7 +269,17 @@ function StickerRow({ sticker, onMap }) {
 }
 
 function MappingModal({ sticker, onClose, onSaved }) {
-  const initialQuery = sticker.name || "";
+  // Auto-search defaults to the last word of the sticker name.
+  // API-Football's /players/profiles search behaves better with a
+  // distinctive surname ("Mbappé", "Bellingham", "Vinícius") than
+  // with a full name string. The admin can always edit the query
+  // and re-search.
+  const initialQuery = useMemo(() => {
+    const full = (sticker.name || "").trim();
+    if (!full) return "";
+    const parts = full.split(/\s+/);
+    return parts[parts.length - 1];
+  }, [sticker.name]);
   const [query, setQuery] = useState(initialQuery);
   const [candidates, setCandidates] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -278,9 +288,9 @@ function MappingModal({ sticker, onClose, onSaved }) {
   const [saveError, setSaveError] = useState(null);
 
   const runSearch = useCallback(async (q) => {
-    if (!q || q.trim().length < 3) {
+    if (!q || q.trim().length < 4) {
       setCandidates([]);
-      setSearchError("Type at least 3 characters.");
+      setSearchError("Type at least 4 characters.");
       return;
     }
     setSearching(true);
@@ -407,10 +417,17 @@ function MappingModal({ sticker, onClose, onSaved }) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate">{c.name}</p>
                     <p className="text-[11px] text-white/55 truncate">
-                      {c.team_name || "—"}
-                      {c.position ? ` · ${c.position}` : ""}
-                      {c.nationality ? ` · ${c.nationality}` : ""}
-                      {c.age != null ? ` · ${c.age}y` : ""}
+                      {[
+                        c.nationality,
+                        c.position,
+                        c.birth_date
+                          ? `b. ${c.birth_date}`
+                          : c.age != null
+                            ? `${c.age}y`
+                            : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || "—"}
                     </p>
                   </div>
                   <button
