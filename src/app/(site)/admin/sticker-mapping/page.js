@@ -16,6 +16,7 @@
 // page) and server-side (the API routes use requireAdmin).
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -96,10 +97,9 @@ function AdminStickerMappingContent() {
             Sticker → API-Football mapping
           </h1>
           <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
-            Map each sticker to its API-Football player_id so the daily
-            cron can keep the rating in sync with real-world performance.
-            Unmapped stickers retain their current static rating until
-            you map them.
+            Map each sticker to its API-Football player_id so the daily cron can
+            keep the rating in sync with real-world performance. Unmapped
+            stickers retain their current static rating until you map them.
           </p>
         </header>
 
@@ -245,8 +245,8 @@ function StickerRow({ sticker, onMap }) {
       <td className="px-3 py-2">
         {sticker.api_football_player_id ? (
           <span className="inline-flex items-center gap-1 text-xs text-emerald-300">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            #{sticker.api_football_player_id}
+            <CheckCircle2 className="w-3.5 h-3.5" />#
+            {sticker.api_football_player_id}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs text-amber-300/80">

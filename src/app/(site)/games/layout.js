@@ -16,6 +16,7 @@ import PaywallCard from "@/components/PaywallCard";
 
 function GamesGate({ children }) {
   const access = usePlayerAccess();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
   if (access.loading) {
