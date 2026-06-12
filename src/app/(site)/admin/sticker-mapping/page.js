@@ -268,6 +268,34 @@ function StickerRow({ sticker, onMap }) {
   );
 }
 
+// Pre-compute a normalised, accent-stripped version of a name for
+// fuzzy "looks like the sticker" highlighting. Server returns
+// candidates in API-Football's spelling, but stickers often use
+// the player's Brazilian/Portuguese transliteration — comparing
+// the lowercase, accent-stripped strings catches Vinícius/Vinicius,
+// Jürgen/Jurgen, etc.
+function stripAccents(s) {
+  // ̀-ͯ is the Unicode "Combining Diacritical Marks" block.
+  // NFD-decompose then strip those marks → "Vinícius" → "vinicius".
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+function namesLookAlike(a, b) {
+  const na = stripAccents(a);
+  const nb = stripAccents(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  // Last-word match (surnames). Catches "Ronwen Williams" ↔ "R. Williams"
+  // ↔ "Williams" when the squad endpoint stores a shortened form.
+  const lastA = na.split(/\s+/).pop();
+  const lastB = nb.split(/\s+/).pop();
+  if (lastA && lastA === lastB) return true;
+  return na.includes(nb) || nb.includes(na);
+}
+
 function MappingModal({ sticker, onClose, onSaved }) {
   // Auto-search defaults to the last word of the sticker name.
   // API-Football's /players/profiles search behaves better with a
@@ -286,6 +314,15 @@ function MappingModal({ sticker, onClose, onSaved }) {
   const [searchError, setSearchError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+
+  // Country-squad candidates — the fast path. We fetch the full
+  // ~26-player WC squad for the sticker's country and display it
+  // above the name-search results. Most mappings finish in one
+  // click here.
+  const [squadCandidates, setSquadCandidates] = useState([]);
+  const [squadTeam, setSquadTeam] = useState(null);
+  const [squadLoading, setSquadLoading] = useState(true);
+  const [squadError, setSquadError] = useState(null);
 
   const runSearch = useCallback(async (q) => {
     if (!q || q.trim().length < 4) {
@@ -313,10 +350,51 @@ function MappingModal({ sticker, onClose, onSaved }) {
     }
   }, []);
 
-  // Auto-search on open with the sticker's name.
+  // Auto-search on open with the sticker's name (used only as a
+  // fallback for players who didn't show up in the squad).
   useEffect(() => {
     runSearch(initialQuery);
   }, [initialQuery, runSearch]);
+
+  // Load the country squad on open. Runs in parallel with the
+  // name search above.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setSquadLoading(true);
+      setSquadError(null);
+      setSquadCandidates([]);
+      setSquadTeam(null);
+      try {
+        const params = new URLSearchParams();
+        if (sticker.country) params.set("country", sticker.country);
+        if (sticker.country_code)
+          params.set("country_code", sticker.country_code);
+        const res = await fetch(
+          `/api/admin/sticker-mapping/country-squad?${params.toString()}`
+        );
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) throw new Error(json.error || "Squad lookup failed");
+        setSquadTeam(json.team || null);
+        setSquadCandidates(json.candidates || []);
+        if (!json.team) {
+          setSquadError(
+            json.message ||
+              `No national team found for ${sticker.country}. Use the name search below.`
+          );
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setSquadError(err.message);
+      } finally {
+        if (!cancelled) setSquadLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sticker.country, sticker.country_code]);
 
   const save = async (apiFootballPlayerId) => {
     setSaving(true);
@@ -365,6 +443,89 @@ function MappingModal({ sticker, onClose, onSaved }) {
         </div>
 
         <div className="p-4">
+          {/* ── Country squad — the fast path. 26-ish candidates,
+              sorted GK → DEF → MID → FWD, with a likely match
+              auto-highlighted by name fuzzy-match. ─────────────── */}
+          <section className="mb-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-300/80 font-semibold">
+                {squadTeam
+                  ? `${squadTeam.name} squad`
+                  : `${sticker.country} squad`}
+              </p>
+              {squadCandidates.length > 0 && (
+                <p className="text-[10px] text-white/40">
+                  {squadCandidates.length} players
+                </p>
+              )}
+            </div>
+            {squadLoading ? (
+              <div className="py-4 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-emerald-300" />
+              </div>
+            ) : squadError && squadCandidates.length === 0 ? (
+              <p className="text-xs text-amber-300/70">{squadError}</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {squadCandidates.map((c) => {
+                  const likely = namesLookAlike(c.name, sticker.name);
+                  return (
+                    <li
+                      key={c.api_football_player_id}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl border ${
+                        likely
+                          ? "border-emerald-400/60 bg-emerald-500/[0.06]"
+                          : "border-white/10 bg-white/[0.03] hover:border-emerald-400/40"
+                      } transition-colors`}
+                    >
+                      {c.photo && (
+                        <img
+                          src={c.photo}
+                          alt=""
+                          className="w-9 h-9 rounded-full object-cover bg-white/10"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate">
+                          {c.number != null && (
+                            <span className="text-white/40 tabular-nums mr-1.5">
+                              {String(c.number).padStart(2, "0")}
+                            </span>
+                          )}
+                          {c.name}
+                          {likely && (
+                            <span className="ml-2 text-[10px] uppercase tracking-wider text-emerald-300 font-bold">
+                              likely match
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[11px] text-white/55 truncate">
+                          {[c.position, c.age != null ? `${c.age}y` : null]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={saving}
+                        onClick={() => save(c.api_football_player_id)}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-200 border border-emerald-400/30 hover:border-emerald-400/70 hover:bg-emerald-500/25 transition-colors disabled:opacity-50"
+                      >
+                        Select
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* ── Name search — fallback for players missing from the
+              squad endpoint (late call-ups, recently dropped, etc).
+              ─────────────────────────────────────────────────────── */}
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold mb-2">
+            Or search by name
+          </p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
