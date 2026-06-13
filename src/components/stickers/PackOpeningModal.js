@@ -12,8 +12,10 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Sparkles, Package, ArrowRight } from "lucide-react";
+import { X, Sparkles, Package, ArrowRight, TrendingUp } from "lucide-react";
 import StickerCard from "./StickerCard";
+import { useAuth } from "@/components/AuthProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /**
  * resumeAction — optional `{ href, label }` set by the dashboard when
@@ -22,10 +24,18 @@ import StickerCard from "./StickerCard";
  * to their exact step without scanning the page.
  */
 export default function PackOpeningModal({ open, onClose, resumeAction }) {
+  const { user } = useAuth();
+  const { t } = useTranslation(user);
   const [phase, setPhase] = useState("opening"); // opening | revealed | error
   const [stickers, setStickers] = useState([]);
   const [packsRemaining, setPacksRemaining] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  // "Dynamic sticker values are now live" — one-off announcement
+  // shown the first time a user opens a pack after we turned on
+  // API-Football-driven recompute. Gated per-user via localStorage
+  // so it appears exactly once. Sits above the revealed cards so
+  // they see it WHILE looking at their new players.
+  const [showDynamicValuesNotice, setShowDynamicValuesNotice] = useState(false);
   // Distinguish "the XP hasn't been written yet, try again in a sec"
   // from a real failure. The /api/packs/open route returns the
   // computed totals on a 400 so we can spot a near-miss like
@@ -82,6 +92,36 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
       cancelled = true;
     };
   }, [open, attemptKey]);
+
+  // Decide whether to render the dynamic-values notice each time the
+  // modal opens. Only flips to true when:
+  //   - we know the user (auth has resolved)
+  //   - they haven't dismissed it before (localStorage flag absent)
+  // Once dismissed, the localStorage write below keeps it hidden
+  // on every future pack open.
+  useEffect(() => {
+    if (!open || !user?.id) return;
+    try {
+      const key = `ft.dynamicValuesNotice.${user.id}`;
+      if (window.localStorage.getItem(key) === "1") {
+        setShowDynamicValuesNotice(false);
+        return;
+      }
+    } catch {
+      /* private mode — show it; dismissal will fail silently too */
+    }
+    setShowDynamicValuesNotice(true);
+  }, [open, user]);
+
+  const dismissDynamicValuesNotice = () => {
+    setShowDynamicValuesNotice(false);
+    if (!user?.id) return;
+    try {
+      window.localStorage.setItem(`ft.dynamicValuesNotice.${user.id}`, "1");
+    } catch {
+      /* private mode — non-fatal */
+    }
+  };
 
   if (!open) return null;
 
@@ -173,6 +213,31 @@ export default function PackOpeningModal({ open, onClose, resumeAction }) {
 
         {phase === "revealed" && (
           <>
+            {showDynamicValuesNotice && (
+              <div className="mb-5 sm:mb-6 rounded-2xl border border-amber-300/40 bg-gradient-to-br from-amber-300/[0.08] via-amber-300/[0.04] to-transparent p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-amber-300/15 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-amber-200" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base font-bold text-amber-100">
+                      {t("dynamic_sticker_values_title")}
+                    </p>
+                    <p className="text-xs sm:text-sm text-white/75 mt-1 leading-relaxed">
+                      {t("dynamic_sticker_values_body")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={dismissDynamicValuesNotice}
+                      className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-300/20 hover:bg-amber-300/30 text-amber-100 text-xs font-bold tracking-wide transition-colors"
+                    >
+                      {t("dynamic_sticker_values_cta")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mb-4 sm:mb-6 text-center">
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
                 Pack opened

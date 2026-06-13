@@ -43,6 +43,14 @@ function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
   const [showConstructionModal, setShowConstructionModal] = useState(false);
+  // Auto-pop "great work — new content soon" modal when the user
+  // has completed every currently-open lesson (all lessons whose
+  // under_construction = false). Gated per (user, open-lesson-count)
+  // via localStorage so it shows once when they reach the wall, then
+  // again next time we release more content and they catch up. See
+  // the useEffect below for trigger logic.
+  const [showAllOpenLessonsDoneModal, setShowAllOpenLessonsDoneModal] =
+    useState(false);
   // Smooth-scroll the newly-expanded Unit card into view when the
   // user picks a different Unit. block: "nearest" means we only
   // scroll if the card isn't already on screen — avoids jolting the
@@ -181,6 +189,47 @@ function PlayerLessonsMenu() {
     if (loading || !user) return;
     setShowStartPrompt((completions?.length || 0) === 0);
   }, [loading, user, completions]);
+
+  // "All open lessons completed" detection. Triggers a one-time
+  // congratulatory modal the first time the user catches up to the
+  // construction wall — they've finished every lesson with
+  // under_construction = false. Localstorage key includes the open-
+  // lesson count, so a future release of 4 more lessons will re-arm
+  // the modal once they complete those too.
+  useEffect(() => {
+    if (loading || !user?.id) return;
+    if (!Array.isArray(lessons) || lessons.length === 0) return;
+    const openLessons = lessons.filter((l) => !l.under_construction);
+    if (openLessons.length === 0) return;
+    const completedIds = new Set(
+      (completions || []).map((c) => c.lesson_id).filter(Boolean)
+    );
+    const allOpenDone = openLessons.every((l) => completedIds.has(l.id));
+    if (!allOpenDone) return;
+    // Per (user, open-lesson-count) gate — naturally re-arms when
+    // we release more content and they catch up again.
+    const storageKey = `ft.allOpenLessonsDone.${user.id}.${openLessons.length}`;
+    try {
+      if (window.localStorage.getItem(storageKey) === "1") return;
+    } catch {
+      /* private mode — show once per session */
+    }
+    setShowAllOpenLessonsDoneModal(true);
+  }, [loading, user, lessons, completions]);
+
+  const dismissAllOpenLessonsDoneModal = () => {
+    setShowAllOpenLessonsDoneModal(false);
+    if (!user?.id || !Array.isArray(lessons)) return;
+    const openCount = lessons.filter((l) => !l.under_construction).length;
+    try {
+      window.localStorage.setItem(
+        `ft.allOpenLessonsDone.${user.id}.${openCount}`,
+        "1"
+      );
+    } catch {
+      /* private mode — non-fatal */
+    }
+  };
 
   // When we land here from a finished lesson with `?completed=<id>`,
   // figure out which pillar to show and which lesson card to highlight:
@@ -805,6 +854,42 @@ function PlayerLessonsMenu() {
               className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
             >
               {t("ok")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* "All open lessons completed" — fires once per (user, open-
+          lesson-count) when the user catches up to the construction
+          wall. Auto-dismissed by the localStorage flag in
+          dismissAllOpenLessonsDoneModal. */}
+      {showAllOpenLessonsDoneModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-emerald-400/30">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-emerald-500 dark:text-emerald-300" />
+              </div>
+            </div>
+            <h3 className="text-xl font-black text-gray-900 dark:text-white text-center mb-3">
+              {t("all_open_lessons_done_title")}
+            </h3>
+            <p className="text-sm text-gray-700 dark:text-white/75 text-center leading-relaxed mb-5">
+              {t("all_open_lessons_done_body_1")}
+            </p>
+            <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/20 p-4 mb-6">
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200 mb-1">
+                {t("all_open_lessons_done_body_2_heading")}
+              </p>
+              <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed">
+                {t("all_open_lessons_done_body_2")}
+              </p>
+            </div>
+            <button
+              onClick={dismissAllOpenLessonsDoneModal}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold py-3 px-4 rounded-xl transition-colors tracking-wide"
+            >
+              {t("all_open_lessons_done_cta")}
             </button>
           </div>
         </div>
