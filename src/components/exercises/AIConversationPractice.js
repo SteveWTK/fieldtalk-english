@@ -123,6 +123,19 @@ export default function AIConversationPractice({
   const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Pending auto-complete timeout. Scheduled from an async handler
+  // after the user hits maxTurns; cleared on unmount so a manual
+  // "Next" click during the 2s wait doesn't let a stale timeout
+  // re-fire onComplete after the next step has already mounted.
+  const completeTimeoutRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (completeTimeoutRef.current) {
+        clearTimeout(completeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -261,7 +274,10 @@ export default function AIConversationPractice({
           // Calculate score based on errors
           const errorCount = Object.keys(errors).length;
           const score = Math.max(50, 100 - errorCount * 10);
-          setTimeout(() => onComplete(score), 2000);
+          completeTimeoutRef.current = setTimeout(() => {
+            completeTimeoutRef.current = null;
+            onComplete(score);
+          }, 2000);
         }
       }
     } catch (error) {

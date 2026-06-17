@@ -38,6 +38,7 @@ import PaywallCard from "@/components/PaywallCard";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 import WelcomeOnboarding from "@/components/WelcomeOnboarding";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
+import NewContentBanner from "@/components/NewContentBanner";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -653,6 +654,14 @@ function PlayerLessonsMenu() {
           onClose={handleStarterPackClose}
         />
       )}
+
+      {/* "New content available" — sits at the top so returning users
+          spot it before scrolling the unit grid. Renders null when
+          the user has already acknowledged the latest open-lesson
+          count. */}
+      <div className="mb-6">
+        <NewContentBanner />
+      </div>
       {/* <h1 className="text-2xl font-bold text-primary-900 dark:text-white">
         World Cup 2026 Edition
       </h1> */}
@@ -877,14 +886,47 @@ function PlayerLessonsMenu() {
             <p className="text-sm text-gray-700 dark:text-white/75 text-center leading-relaxed mb-5">
               {t("all_open_lessons_done_body_1")}
             </p>
-            <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/20 p-4 mb-6">
-              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200 mb-1">
-                {t("all_open_lessons_done_body_2_heading")}
-              </p>
-              <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed">
-                {t("all_open_lessons_done_body_2")}
-              </p>
-            </div>
+            {(() => {
+              // Game Centre is still admin-only while we polish it —
+              // same gate as the dashboard nav link. Drop the
+              // user_type check in both places when ready for public.
+              const showGameCentreCard =
+                profile?.user_type === "platform_admin";
+              return (
+                <>
+                  <div
+                    className={`rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/20 p-4 ${
+                      showGameCentreCard ? "mb-3" : "mb-6"
+                    }`}
+                  >
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200 mb-1">
+                      {t("all_open_lessons_done_body_2_heading")}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed">
+                      {t("all_open_lessons_done_body_2")}
+                    </p>
+                  </div>
+                  {showGameCentreCard && (
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-300/10 border border-amber-200 dark:border-amber-300/30 p-4 mb-6">
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-200 mb-1">
+                        {t("all_open_lessons_done_game_centre_heading")}
+                      </p>
+                      <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed mb-3">
+                        {t("all_open_lessons_done_game_centre")}
+                      </p>
+                      <Link
+                        href="/games"
+                        onClick={dismissAllOpenLessonsDoneModal}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-300 text-[#1a0e00] hover:bg-amber-200 transition-colors"
+                      >
+                        {t("all_open_lessons_done_game_centre_cta")}
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
             <button
               onClick={dismissAllOpenLessonsDoneModal}
               className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold py-3 px-4 rounded-xl transition-colors tracking-wide"

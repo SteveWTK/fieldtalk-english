@@ -13,6 +13,7 @@ import {
   BookOpen,
   Filter,
   Download,
+  Megaphone,
 } from "lucide-react";
 import {
   getAllLessonsForCMS,
@@ -32,6 +33,11 @@ function LessonsListContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPillar, setFilterPillar] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  // "Notify users about new content" — fires a push to every
+  // subscribed player AND lights up the in-app banner. Use after
+  // flipping under_construction = false on a batch of lessons.
+  const [announcing, setAnnouncing] = useState(false);
+  const [announceResult, setAnnounceResult] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -70,6 +76,52 @@ function LessonsListContent() {
     } catch (error) {
       console.error("Error deleting lesson:", error);
       alert("Failed to delete lesson. Please try again.");
+    }
+  }
+
+  async function handleAnnounceNewContent() {
+    // Default count is "however many lessons are NOT under construction
+    // right now". Admin can override on the prompt. Used only in the
+    // notification body, not for any gating logic — the banner reads
+    // open-lesson count from the DB independently.
+    const openCount = lessons.filter((l) => !l.under_construction).length;
+    const raw = window.prompt(
+      "How many lessons did you just release?\n" +
+        "Used in the push title. Leave blank for the default message.",
+      "1"
+    );
+    if (raw === null) return;
+    const count = Number(raw);
+    if (
+      !confirm(
+        `This will send a push notification to every subscribed player and light up the "New content available" banner in the app. Continue?`
+      )
+    ) {
+      return;
+    }
+    setAnnouncing(true);
+    setAnnounceResult(null);
+    try {
+      const res = await fetch("/api/admin/announce-new-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          count: Number.isFinite(count) && count > 0 ? count : 0,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setAnnounceResult({ ok: false, message: json.error || "Failed" });
+        return;
+      }
+      setAnnounceResult({
+        ok: true,
+        message: `Sent to ${json.playersTargeted} player(s) — ${json.sent} delivered, ${json.dead} dead subs cleaned up.`,
+      });
+    } catch (err) {
+      setAnnounceResult({ ok: false, message: err.message });
+    } finally {
+      setAnnouncing(false);
     }
   }
 
@@ -122,14 +174,37 @@ function LessonsListContent() {
               Create and manage lesson content for FieldTalk
             </p>
           </div>
-          <button
-            onClick={() => router.push("/admin/lessons/new")}
-            className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Create New Lesson
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAnnounceNewContent}
+              disabled={announcing}
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-3 rounded-lg flex items-center gap-2 transition-colors"
+              title="Send push notification + light up the in-app banner"
+            >
+              <Megaphone className="w-5 h-5" />
+              {announcing ? "Sending…" : "Notify of new content"}
+            </button>
+            <button
+              onClick={() => router.push("/admin/lessons/new")}
+              className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Create New Lesson
+            </button>
+          </div>
         </div>
+
+        {announceResult && (
+          <div
+            className={`mb-4 px-4 py-3 rounded-lg text-sm ${
+              announceResult.ok
+                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-500/30"
+                : "bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-500/30"
+            }`}
+          >
+            {announceResult.message}
+          </div>
+        )}
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

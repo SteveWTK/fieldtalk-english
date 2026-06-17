@@ -264,7 +264,14 @@ export default function AIMultipleChoiceGapFill({
       Math.round(baseXp * attemptsFactor * hintsFactor)
     );
     if (onComplete) {
-      setTimeout(() => onComplete(finalXP), 1000);
+      // Cleanup-on-unmount is critical: if the user clicks the lesson
+      // page's manual "Next" button before this timeout fires, the
+      // component unmounts but the timeout would otherwise still fire
+      // onComplete → bumping XP for an already-advanced step AND
+      // (when paired with a parent setTimeout(handleNext, …))
+      // triggering a SECOND advance, skipping the next step.
+      const id = setTimeout(() => onComplete(finalXP), 1000);
+      return () => clearTimeout(id);
     }
   }, [
     showFeedback,

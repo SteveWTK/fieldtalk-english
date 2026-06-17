@@ -1,14 +1,14 @@
 // src/app/(site)/games/page.js
 //
-// Game Centre hub. Cards link out to each individual game route.
-// Layout + accent vocabulary mirror the admin hub so the page feels
-// like part of the same family.
+// Game Centre hub. Cards link out to each individual game variant.
+// Adding a new Memory Match category: drop a row into GAMES below
+// with `href: "/games/memory-match?category=<slug>"`. The game route
+// reads the query string and fetches the right vocabulary slice.
 //
-// Adding a new game:
-//   1. Create src/app/(site)/games/<slug>/page.js
-//   2. Add an entry to GAMES below with the same slug
-//   3. Make sure the game calls awardXp({ source: `game/${slug}`, … })
-//      on completion (see memory-match for the pattern)
+// Adding a wholly new game type: create
+// src/app/(site)/games/<slug>/page.js, add an entry here, and make
+// sure the game calls awardXp({ source: `game/<slug>`, … }) on
+// completion (see memory-match for the pattern).
 "use client";
 
 import Link from "next/link";
@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Brain,
+  Flag,
   Layout as LayoutIcon,
   Worm,
   Sparkles,
@@ -23,12 +24,22 @@ import {
 
 const GAMES = [
   {
-    slug: "memory-match",
-    href: "/games/memory-match",
-    title: "Football Memory Match",
-    body: "Match English football roles to their Portuguese equivalents. Quick rounds, big satisfaction.",
+    slug: "memory-match-positions",
+    href: "/games/memory-match?category=positions",
+    title: "Memory Match — Positions",
+    body: "Match each English football role to its Portuguese equivalent.",
     Icon: Brain,
     accent: "emerald",
+    xpReward: 10,
+    available: true,
+  },
+  {
+    slug: "memory-match-flags",
+    href: "/games/memory-match?category=flags",
+    title: "Memory Match — WC2026 Flags",
+    body: "Match each World Cup 2026 nation's flag to its English name.",
+    Icon: Flag,
+    accent: "amber",
     xpReward: 10,
     available: true,
   },
@@ -38,7 +49,7 @@ const GAMES = [
     title: "Pitch positions",
     body: "Click around the pitch to nail every position and zone — coming soon.",
     Icon: LayoutIcon,
-    accent: "amber",
+    accent: "neutral",
     available: false,
   },
   {

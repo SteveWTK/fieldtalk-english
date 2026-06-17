@@ -46,6 +46,7 @@ import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
 import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreBanner";
+import NewContentBanner from "@/components/NewContentBanner";
 import DashboardTour from "@/components/DashboardTour";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 
@@ -295,6 +296,12 @@ function DashboardContent() {
             </span>
           </Link>
         )}
+
+        {/* "New content available" — lights up when the open-lesson
+            count grows past what this user has seen. Self-dismisses
+            on tap-through to /lesson. Renders null when there's no
+            new content. */}
+        <NewContentBanner />
 
         {/* Open matches nudge — renders null if the user has no
             actionable predictions, so it only shows up when there's

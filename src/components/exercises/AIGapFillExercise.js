@@ -1,7 +1,7 @@
 // src/components/exercises/AIGapFillExercise.js
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   HelpCircle,
   CheckCircle,
@@ -25,6 +25,22 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
   const [hintUsage, setHintUsage] = useState({}); // Track hint count per gap
   const [hintHistory, setHintHistory] = useState({}); // Store all hints per gap
   const MAX_HINTS_PER_GAP = 2;
+
+  // Pending auto-advance timeout. We schedule it from inside an
+  // event handler (not a useEffect), so the only reliable way to
+  // clean it up on unmount is via a ref + an unmount effect. Without
+  // this, manually clicking the lesson's "Next" button during the
+  // 1s wait advances the lesson, then the stale timeout fires
+  // onComplete from the OLD step → bumps XP for a step that's
+  // already gone AND can trigger a second advance.
+  const completeTimeoutRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (completeTimeoutRef.current) {
+        clearTimeout(completeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleInputChange = (sentenceId, value) => {
     setAnswers((prev) => ({
@@ -72,7 +88,10 @@ export default function AIGapFillExercise({ sentences, lessonId, onComplete }) {
       const finalXP = Math.max(baseXP - attemptPenalty - hintPenalty, 30);
 
       if (onComplete) {
-        setTimeout(() => onComplete(finalXP), 1000);
+        completeTimeoutRef.current = setTimeout(() => {
+          completeTimeoutRef.current = null;
+          onComplete(finalXP);
+        }, 1000);
       }
     }
 

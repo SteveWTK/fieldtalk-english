@@ -1210,8 +1210,16 @@ function DynamicLessonContent() {
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
-                // Auto-advance to next step after a short delay
-                setTimeout(() => handleNext(), 1000);
+                // No additional setTimeout here — child components
+                // already debounce by 1s before firing onComplete,
+                // and stacking another 1s wait raced with manual
+                // "Next" clicks: a user clicking Next during the
+                // child's 1s window caused the child to unmount but
+                // its stale setTimeout would still fire this
+                // onComplete from the OLD step a second later, which
+                // then queued another handleNext that advanced AGAIN
+                // — skipping the freshly-shown next step.
+                handleNext();
               }}
               minWords={currentStepData.minWords || 50}
               maxWords={currentStepData.maxWords || 200}
@@ -1257,8 +1265,16 @@ function DynamicLessonContent() {
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
-                // Auto-advance to next step after a short delay
-                setTimeout(() => handleNext(), 1000);
+                // No additional setTimeout here — child components
+                // already debounce by 1s before firing onComplete,
+                // and stacking another 1s wait raced with manual
+                // "Next" clicks: a user clicking Next during the
+                // child's 1s window caused the child to unmount but
+                // its stale setTimeout would still fire this
+                // onComplete from the OLD step a second later, which
+                // then queued another handleNext that advanced AGAIN
+                // — skipping the freshly-shown next step.
+                handleNext();
               }}
               maxTurns={currentStepData.maxTurns || 6}
             />
@@ -1314,8 +1330,16 @@ function DynamicLessonContent() {
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
-                // Auto-advance to next step after a short delay
-                setTimeout(() => handleNext(), 1000);
+                // No additional setTimeout here — child components
+                // already debounce by 1s before firing onComplete,
+                // and stacking another 1s wait raced with manual
+                // "Next" clicks: a user clicking Next during the
+                // child's 1s window caused the child to unmount but
+                // its stale setTimeout would still fire this
+                // onComplete from the OLD step a second later, which
+                // then queued another handleNext that advanced AGAIN
+                // — skipping the freshly-shown next step.
+                handleNext();
               }}
             />
             <div className="flex justify-center mt-4">

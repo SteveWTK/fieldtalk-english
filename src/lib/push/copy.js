@@ -88,6 +88,19 @@ const TEMPLATES = {
       url: "/predictions",
       tag: "match_resolved",
     }),
+    // Fires after admin flips one or more lessons from
+    // under_construction=true → false and hits the "Notify users"
+    // button on the lessons admin page. `count` is how many lessons
+    // were just published.
+    new_content_available: ({ count = 0 } = {}) => ({
+      title: "New content available!",
+      body:
+        count > 1
+          ? `${count} new lessons just landed. Pick up where you left off.`
+          : "A new lesson just landed. Pick up where you left off.",
+      url: "/lesson",
+      tag: "new_content_available",
+    }),
   },
   pt: {
     welcome_pack: () => ({
@@ -136,6 +149,15 @@ const TEMPLATES = {
       body: `+${xpTotal} XP dos seus palpites. Toque para ver como foi.`,
       url: "/predictions",
       tag: "match_resolved",
+    }),
+    new_content_available: ({ count = 0 } = {}) => ({
+      title: "Novo conteúdo disponível!",
+      body:
+        count > 1
+          ? `${count} novas aulas chegaram. Continue de onde parou.`
+          : "Uma nova aula chegou. Continue de onde parou.",
+      url: "/lesson",
+      tag: "new_content_available",
     }),
   },
 };
