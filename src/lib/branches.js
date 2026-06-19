@@ -29,10 +29,10 @@ export const DEFAULT_BRANCH_KEY = "default";
 // Off-by-default baseline. Spread this into a partner's placements
 // to opt in to specific surfaces one at a time.
 const DEFAULT_PLACEMENTS = {
-  loading: false,    // post-login splash (auth callback)
-  dashboard: false,  // top-right of the dashboard nav row
+  loading: false, // post-login splash (auth callback)
+  dashboard: false, // top-right of the dashboard nav row
   siteHeader: false, // beside the FieldTalk wordmark
-  footer: false,     // next to the copyright
+  footer: false, // next to the copyright
 };
 
 export const BRANCHES = {
@@ -59,6 +59,12 @@ export const BRANCHES = {
     logoSrc: "/logos/cultura-inglesa-logo-lion.png",
     alt: "Cultura Inglesa Teresina",
     slug: "teresina",
+    placements: { ...DEFAULT_PLACEMENTS, loading: true },
+  },
+  ponta_grossa: {
+    logoSrc: "/logos/cultura-inglesa-logo-lion.png",
+    alt: "Cultura Inglesa Ponta Grossa",
+    slug: "ponta-grossa",
     placements: { ...DEFAULT_PLACEMENTS, loading: true },
   },
 };
