@@ -37,13 +37,17 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
 
-// Subscription cards (FieldTalk Monthly / Yearly) are temporarily
-// hidden while we focus partner outreach on the WC2026 one-off. The
-// offerings themselves still exist in editions.js (and the webhook
-// reverse-lookup still works for any historical subscription IDs) —
-// we just don't render them or their FAQ entries until the post-WC
-// marketing push begins. Flip back to true to re-enable.
-const SHOW_SUBSCRIPTIONS = false;
+// Subscriptions visibility is decided per-edition below. WC2026 was
+// launched one-off-only (partner cohorts, no monthly retention story),
+// but Pro Path 26/27 ships with subscriptions as a first-class tier.
+// Any edition that has one or more subscription offerings in
+// editions.js will have them rendered on its pricing card — no manual
+// toggle needed.
+//
+// If we ever want to force-hide subscriptions for a specific edition
+// (e.g. running a partner promo where only the one-off is on sale),
+// add `hideSubscriptions: true` to that edition in EDITIONS and use
+// it below.
 
 // EN/PT copy. Same translation-map shape as before so the lang toggle
 // stays one-click and adding a third language is a single object.
@@ -55,7 +59,11 @@ const translations = {
     },
     primary: {
       flag: "One-time",
-      cta: "Get the WC2026 edition",
+      // {editionName} is substituted at render time from edition.name
+      // so this copy stays edition-agnostic. WC2026 renders as "Get
+      // the World Cup 2026 Edition"; Pro Path renders as "Get
+      // FieldTalk Pro Path 26/27".
+      cta: "Get {editionName}",
       // {accessEndDate} is substituted at render time from
       // edition.oneTimeAccessEnd so the on-page copy stays in sync
       // with the actual access cutoff — change the date in
@@ -120,7 +128,7 @@ const translations = {
       items: [
         {
           q: "What's the difference between the one-off and the subscription?",
-          a: "The one-off purchase gives you full access to the WC2026 edition through {accessEndDate} — perfect for the tournament window. The subscription gives you access to WC2026 PLUS every future edition (Champions League, Premier League, etc.) for as long as you're subscribed.",
+          a: "The one-off purchase gives you full access to {editionName} through {accessEndDate}. The subscription options give you continuing access — monthly for shorter-term needs (e.g. skilling up for a trial), yearly for career-long use.",
         },
         {
           q: "How do coupon codes work?",
@@ -144,7 +152,7 @@ const translations = {
     },
     primary: {
       flag: "Compra única",
-      cta: "Pegar a Edição WC2026",
+      cta: "Pegar {editionName}",
       accessNote: "Acesso total até {accessEndDate}",
       features: [
         "Todas as lições de todos os pilares",
@@ -201,7 +209,7 @@ const translations = {
       items: [
         {
           q: "Qual a diferença entre a compra única e a assinatura?",
-          a: "A compra única dá acesso total à Edição WC2026 até {accessEndDate} — perfeito para a janela da Copa. A assinatura dá acesso à WC2026 MAIS todas as edições futuras (Champions League, Premier League, etc.) enquanto você estiver assinando.",
+          a: "A compra única dá acesso total a {editionName} até {accessEndDate}. As opções de assinatura oferecem acesso contínuo — mensal para necessidades mais curtas (ex: preparar-se para uma peneira), anual para uso ao longo da carreira.",
         },
         {
           q: "Como funcionam os cupons?",
@@ -282,36 +290,44 @@ function PricingPageContent() {
     }
   }, [edition, lang]);
 
-  const fill = (s) =>
-    accessEndDate && typeof s === "string"
-      ? s.replace("{accessEndDate}", accessEndDate)
-      : s;
+  // Interpolate {accessEndDate} and {editionName} into any copy
+  // string that contains them. Keeps every edition's page in sync
+  // with the editions.js config — no per-edition string overrides.
+  const fill = (s) => {
+    if (typeof s !== "string") return s;
+    let out = s;
+    if (accessEndDate) out = out.replace(/\{accessEndDate\}/g, accessEndDate);
+    if (edition?.name) out = out.replace(/\{editionName\}/g, edition.name);
+    return out;
+  };
 
   const { oneTimeOffering, subscriptionOfferings } = useMemo(() => {
     const all = listOfferingsForEdition(editionId);
     return {
       oneTimeOffering: all.find((o) => o.mode === "one_time") || null,
-      subscriptionOfferings: SHOW_SUBSCRIPTIONS
-        ? all
-            .filter((o) => o.mode === "subscription")
-            .sort((a, b) =>
-              a.interval === "monthly" ? -1 : b.interval === "monthly" ? 1 : 0
-            )
-        : [],
+      // Auto-show subscriptions whenever the edition has any. WC2026's
+      // OFFERINGS carry it only for legacy reverse-lookup (so the
+      // webhook can still resolve historical subscription price IDs);
+      // Pro Path ships with monthly + yearly as first-class options.
+      subscriptionOfferings: all
+        .filter((o) => o.mode === "subscription")
+        .sort((a, b) =>
+          a.interval === "monthly" ? -1 : b.interval === "monthly" ? 1 : 0
+        ),
     };
   }, [editionId]);
 
-  // Drop subscription-specific FAQ entries when subscriptions are
-  // hidden so users don't see questions about an option that isn't on
-  // the page. Matches on a marker substring rather than index so
-  // re-ordering the array doesn't quietly break this filter.
+  // Drop subscription-specific FAQ entries when the edition has no
+  // subscription offerings visible. Matches on marker substrings
+  // rather than index so re-ordering the array doesn't quietly
+  // break this filter.
   const faqItems = useMemo(() => {
-    if (SHOW_SUBSCRIPTIONS) return copy.faq.items;
+    if (subscriptionOfferings.length > 0) return copy.faq.items;
     return copy.faq.items.filter((item) => {
       const q = item.q.toLowerCase();
       return !q.includes("subscription") && !q.includes("assinatura");
     });
-  }, [copy]);
+  }, [copy, subscriptionOfferings.length]);
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
 
@@ -482,7 +498,7 @@ function PricingPageContent() {
                   </>
                 ) : (
                   <>
-                    {copy.primary.cta}
+                    {fill(copy.primary.cta)}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

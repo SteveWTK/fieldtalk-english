@@ -10,8 +10,11 @@
 import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
+import { getSupportedEditionIds } from "@/lib/editions/editions";
 
-const SUPPORTED_EDITIONS = new Set(["players", "wc2026"]);
+// Derived from EDITIONS in editions.js at import time — new editions
+// added there flow through here automatically.
+const SUPPORTED_EDITIONS = getSupportedEditionIds();
 
 export async function POST(request) {
   try {
@@ -130,7 +133,11 @@ export async function POST(request) {
     // Grant the starter sticker pack (idempotent inside the helper).
     // Fire-and-forget would be tempting, but we await so the welcome
     // push fired by the next opt-in step has a pack to nudge about.
-    await awardWelcomeBonusIfMissing(data.user.id);
+    // Only for editions with a sticker/pack economy — WC2026 today.
+    // Pro Path and other non-pack editions skip this.
+    if (edition === "wc2026") {
+      await awardWelcomeBonusIfMissing(data.user.id);
+    }
 
     return NextResponse.json({ success: true, userId: data.user.id });
   } catch (err) {

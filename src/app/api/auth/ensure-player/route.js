@@ -13,8 +13,12 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
+import { getSupportedEditionIds } from "@/lib/editions/editions";
 
-const SUPPORTED_EDITIONS = new Set(["players", "wc2026"]);
+// Derived from EDITIONS in editions.js at import time. Adding a new
+// edition there automatically expands what the auth flow accepts —
+// no allow-list to hand-maintain here.
+const SUPPORTED_EDITIONS = getSupportedEditionIds();
 
 export async function POST(request) {
   try {
@@ -144,8 +148,12 @@ export async function POST(request) {
 
     // First-time signup → grant the starter sticker pack (200 XP).
     // Idempotent inside the helper, so if this route runs twice for
-    // any reason we don't double-grant.
-    await awardWelcomeBonusIfMissing(user.id);
+    // any reason we don't double-grant. Only granted for editions
+    // that have a sticker/pack economy (currently just wc2026); Pro
+    // Path and future non-pack editions skip.
+    if (edition === "wc2026") {
+      await awardWelcomeBonusIfMissing(user.id);
+    }
 
     return NextResponse.json({ success: true, created: true, edition });
   } catch (err) {

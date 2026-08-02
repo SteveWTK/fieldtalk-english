@@ -40,6 +40,16 @@ const EDITIONS = {
     // "Premier League 26/27" if we ever sell it as a forever buy).
     oneTimeAccessEnd: "2026-08-31T23:59:59-03:00",
   },
+  propath_26_27: {
+    id: "propath_26_27",
+    name: "FieldTalk Pro Path 26/27",
+    tagline:
+      "The English you'll actually use — dressing room, coach, agent, media.",
+    // Season pass runs Aug 2026 → Aug 2027 to match the football
+    // calendar. Adjust here if the launch date slips; the webhook
+    // reads this at purchase time.
+    oneTimeAccessEnd: "2027-08-31T23:59:59-03:00",
+  },
   // Future editions: championsleague26, premierleague26, …
 };
 
@@ -50,6 +60,18 @@ export function getEdition(id) {
 
 export function listEditions() {
   return Object.values(EDITIONS);
+}
+
+/**
+ * Set of every valid edition id, plus the legacy "players" slug that
+ * pre-launched player accounts were tagged with (kept here so
+ * SUPPORTED_EDITIONS checks in signup routes still let those users
+ * back in). Any new edition added to EDITIONS above is automatically
+ * accepted by the auth flow — no need to remember to update a
+ * second allow-list.
+ */
+export function getSupportedEditionIds() {
+  return new Set([...Object.keys(EDITIONS), "players"]);
 }
 
 // ─── Offerings (Stripe products we sell) ───────────────────────────
@@ -105,8 +127,78 @@ const OFFERINGS = [
     currency: "BRL",
     displayPrice: "R$ 149",
     displayInterval: "/year",
+    // Once Pro Path Stripe products exist, add "propath_26_27" here
+    // so existing subscribers get automatic access. Kept WC-only for
+    // now until Pro Path is publicly launched — otherwise WC
+    // subscribers would see a Pro Path edition they didn't sign up
+    // for on their dashboard.
     editionsGranted: ["wc2026"],
     priceId: process.env.STRIPE_EDITIONS_YEARLY_BRL_PRICE_ID || null,
+  },
+
+  // ─── Pro Path 26/27 offerings ─────────────────────────────────
+  //
+  // Three tiers matching the individual-sales business model:
+  //   - season_pass  : one-time R$ 149 for 12-month access
+  //   - monthly      : R$ 29/mo subscription (aimed at trialists
+  //                    skilling up ahead of a specific trial)
+  //   - yearly       : R$ 179/year subscription, better value than
+  //                    monthly, auto-renews across seasons
+  //
+  // TO ACTIVATE:
+  //   1. In Stripe dashboard, create 3 products under "Pro Path 26/27":
+  //        - "Pro Path 26/27 — Season Pass" (one-time, R$ 149)
+  //        - "Pro Path — Monthly"           (recurring monthly, R$ 29)
+  //        - "Pro Path — Yearly"            (recurring yearly, R$ 179)
+  //   2. Copy each Price ID into .env.local + Vercel env:
+  //        STRIPE_PROPATH_SEASON_BRL_PRICE_ID=price_...
+  //        STRIPE_PROPATH_MONTHLY_BRL_PRICE_ID=price_...
+  //        STRIPE_PROPATH_YEARLY_BRL_PRICE_ID=price_...
+  //   3. Deploy — the pricing page will auto-render these cards once
+  //      the env vars land (they show as "coming soon" without a
+  //      priceId, since the checkout can't create a session).
+  //
+  // Bulk-seat (Tier 2) doesn't need an offering — the existing
+  // seat-licences admin flow generates codes that grant this same
+  // edition via the redemption path.
+  {
+    id: "propath_season_brl",
+    label: "Pro Path 26/27 — Season Pass",
+    description:
+      "One-time purchase, full access through the 26/27 season (Aug 26 → Aug 27).",
+    mode: "one_time",
+    interval: null,
+    currency: "BRL",
+    displayPrice: "R$ 149",
+    displayInterval: "one-time",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_PROPATH_SEASON_BRL_PRICE_ID || null,
+  },
+  {
+    id: "propath_monthly_brl",
+    label: "Pro Path — Monthly",
+    description:
+      "Skill up ahead of a specific trial. Cancel anytime.",
+    mode: "subscription",
+    interval: "monthly",
+    currency: "BRL",
+    displayPrice: "R$ 29",
+    displayInterval: "/month",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_PROPATH_MONTHLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "propath_yearly_brl",
+    label: "Pro Path — Yearly",
+    description:
+      "Twelve months of access, auto-renews across seasons. Best value for career-long use.",
+    mode: "subscription",
+    interval: "yearly",
+    currency: "BRL",
+    displayPrice: "R$ 179",
+    displayInterval: "/year",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_PROPATH_YEARLY_BRL_PRICE_ID || null,
   },
 ];
 
