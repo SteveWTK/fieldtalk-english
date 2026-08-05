@@ -35,6 +35,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
 
 // Subscriptions visibility is decided per-edition below. WC2026 was
@@ -238,12 +239,12 @@ function PricingPageFallback() {
           className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(16,185,129,0.20), rgba(16,185,129,0) 70%)",
+              "radial-gradient(circle at center, rgba(132,204,22,0.20), rgba(132,204,22,0) 70%)",
           }}
         />
       </div>
       <div className="relative z-10 min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
       </div>
     </div>
   );
@@ -264,10 +265,23 @@ function PricingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  // Signed-in visitors default to THEIR edition's pricing (a Pro
+  // Path user hitting "/pricing" in the top nav should see Pro Path
+  // cards, not WC2026's). URL param wins when present so a shared
+  // link like /pricing?edition=wc2026 still works from a different
+  // edition's account.
+  const { profile, loading: profileLoading } = usePlayerProfile(user?.id);
 
+  const urlEdition = (searchParams?.get("edition") || "").trim() || null;
+  // While profile is loading for a signed-in user with no URL edition,
+  // we defer resolving so we don't briefly render WC2026 cards and
+  // then flip to Pro Path. Signed-out users get WC2026 straight away
+  // (the historical default; can revisit when a chooser page exists).
+  const editionResolutionPending =
+    !urlEdition && !!user?.id && profileLoading;
   const editionId =
-    (searchParams?.get("edition") || "wc2026").trim() || "wc2026";
-  const edition = getEdition(editionId);
+    urlEdition || profile?.edition || (user?.id ? null : "wc2026");
+  const edition = editionId ? getEdition(editionId) : null;
 
   const [lang, setLang] = useState("pt");
   const copy = translations[lang] || translations.en;
@@ -361,12 +375,19 @@ function PricingPageContent() {
     }
   };
 
+  // Profile still loading → show the same fallback the Suspense
+  // wrapper uses. Prevents a WC2026 → Pro Path flicker for signed-in
+  // users hitting /pricing with no URL param.
+  if (editionResolutionPending) {
+    return <PricingPageFallback />;
+  }
+
   if (!edition) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white/70 p-6">
-        Unknown edition: {editionId}.{" "}
-        <Link href="/pricing" className="underline ml-1">
-          Try /pricing
+        Unknown edition: {editionId || "(none)"}.{" "}
+        <Link href="/pricing?edition=wc2026" className="underline ml-1">
+          Try /pricing?edition=wc2026
         </Link>
       </div>
     );
@@ -381,7 +402,7 @@ function PricingPageContent() {
           className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(16,185,129,0.20), rgba(16,185,129,0) 70%)",
+              "radial-gradient(circle at center, rgba(132,204,22,0.20), rgba(132,204,22,0) 70%)",
           }}
         />
         <div
@@ -400,7 +421,7 @@ function PricingPageContent() {
           onClick={() => setLang("en")}
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "en"
-              ? "bg-emerald-500 text-[#062013]"
+              ? "bg-accent-500 text-[#062013]"
               : "bg-white/5 text-white/60 hover:text-white"
           }`}
         >
@@ -410,7 +431,7 @@ function PricingPageContent() {
           onClick={() => setLang("pt")}
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "pt"
-              ? "bg-emerald-500 text-[#062013]"
+              ? "bg-accent-500 text-[#062013]"
               : "bg-white/5 text-white/60 hover:text-white"
           }`}
         >
@@ -422,12 +443,12 @@ function PricingPageContent() {
         {/* Hero — compact, centred. Eyebrow + headline only; no
             subtitle so the primary card sits high on mobile. */}
         <section className="text-center pt-2">
-          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-emerald-300/80 font-semibold mb-2 sm:mb-3">
+          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-accent-300/80 font-semibold mb-2 sm:mb-3">
             {copy.hero.eyebrow}
           </p>
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
             {copy.hero.titleHighlight}{" "}
-            <span className="bg-gradient-to-r from-emerald-300 to-emerald-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-accent-300 to-accent-200 bg-clip-text text-transparent">
               {edition.name}
             </span>
           </h1>
@@ -438,18 +459,18 @@ function PricingPageContent() {
             iPhone after the compact hero. */}
         {oneTimeOffering && (
           <section className="max-w-md mx-auto">
-            <div className="relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-emerald-400/30 p-5 sm:p-7 shadow-[0_0_40px_rgba(16,185,129,0.08)]">
+            <div className="relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-accent-400/30 p-5 sm:p-7 shadow-[0_0_40px_rgba(132,204,22,0.08)]">
               {/* Floating "One-time" pill */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500 text-[10px] sm:text-xs font-bold text-[#062013] tracking-wider uppercase shadow">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent-500 text-[10px] sm:text-xs font-bold text-[#062013] tracking-wider uppercase shadow">
                   <Star className="w-3.5 h-3.5" /> {copy.primary.flag}
                 </span>
               </div>
 
               {/* Icon + label */}
               <div className="flex items-center gap-3 mb-4 sm:mb-5 mt-1">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-                  <Trophy className="w-5 h-5 text-emerald-300" />
+                <div className="w-11 h-11 rounded-2xl bg-accent-500/15 flex items-center justify-center shrink-0">
+                  <Trophy className="w-5 h-5 text-accent-300" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="text-base sm:text-lg font-bold leading-tight">
@@ -470,7 +491,7 @@ function PricingPageContent() {
                   {oneTimeOffering.displayInterval}
                 </span>
               </div>
-              <p className="flex items-center gap-1.5 text-xs text-emerald-200/80 mb-5">
+              <p className="flex items-center gap-1.5 text-xs text-accent-200/80 mb-5">
                 <Calendar className="w-3.5 h-3.5" />
                 {fill(copy.primary.accessNote)}
               </p>
@@ -479,7 +500,7 @@ function PricingPageContent() {
               {/* <ul className="space-y-2 mb-6">
                 {copy.primary.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-sm">
-                    <Check className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5" />
+                    <Check className="w-4 h-4 text-accent-300 flex-shrink-0 mt-0.5" />
                     <span className="text-white/80">{f}</span>
                   </li>
                 ))}
@@ -489,7 +510,7 @@ function PricingPageContent() {
               <button
                 onClick={() => handleBuy(oneTimeOffering.id)}
                 disabled={checkoutLoading !== null}
-                className="w-full py-3 px-5 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
+                className="w-full py-3 px-5 rounded-full bg-accent-500 hover:bg-accent-400 disabled:opacity-60 text-[#062013] font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
               >
                 {checkoutLoading === oneTimeOffering.id ? (
                   <>
@@ -509,7 +530,7 @@ function PricingPageContent() {
                   know exactly where it goes (Stripe Checkout's
                   built-in field, after they click above). */}
               <p className="mt-3 flex items-start gap-1.5 text-[15px] sm:text-[16px] text-white/55 leading-relaxed">
-                <Tag className="w-4 h-4 text-emerald-300/70 mt-0.5 shrink-0" />
+                <Tag className="w-4 h-4 text-accent-300/70 mt-0.5 shrink-0" />
                 <span>{copy.couponHint}</span>
               </p>
             </div>
@@ -585,12 +606,12 @@ function PricingPageContent() {
 
         {/* B2B */}
         {/* <section className="max-w-3xl mx-auto">
-          <div className="relative rounded-3xl bg-gradient-to-br from-emerald-500/15 via-white/[0.04] to-amber-400/10 border border-white/10 p-6 sm:p-8 overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
+          <div className="relative rounded-3xl bg-gradient-to-br from-accent-500/15 via-white/[0.04] to-amber-400/10 border border-white/10 p-6 sm:p-8 overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-accent-400/10 blur-2xl pointer-events-none" />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
-                <Building2 className="w-4 h-4 text-emerald-300" />
-                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
+                <Building2 className="w-4 h-4 text-accent-300" />
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-accent-200/80">
                   {copy.b2b.eyebrow}
                 </span>
               </div>
@@ -604,7 +625,7 @@ function PricingPageContent() {
               <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
                 {copy.b2b.bullets.map((b, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <Check className="w-4 h-4 text-accent-300 shrink-0" />
                     <span className="text-white/80">{b}</span>
                   </li>
                 ))}
@@ -638,7 +659,7 @@ function PricingPageContent() {
               >
                 <summary className="cursor-pointer list-none p-4 flex items-start justify-between gap-3 font-semibold text-white text-sm">
                   <span>{item.q}</span>
-                  <ChevronDown className="w-4 h-4 text-emerald-300 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
+                  <ChevronDown className="w-4 h-4 text-accent-300 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <p className="px-4 pb-4 text-white/65 text-sm leading-relaxed">
                   {fill(item.a)}
@@ -726,8 +747,8 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
 
         {success ? (
           <div className="py-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-6 h-6 text-emerald-300" />
+            <div className="w-12 h-12 rounded-full bg-accent-500/20 flex items-center justify-center mx-auto mb-3">
+              <Shield className="w-6 h-6 text-accent-300" />
             </div>
             <p className="text-base font-bold text-white mb-1">
               {copy.successTitle}

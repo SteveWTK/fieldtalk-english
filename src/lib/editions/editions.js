@@ -177,8 +177,7 @@ const OFFERINGS = [
   {
     id: "propath_monthly_brl",
     label: "Pro Path — Monthly",
-    description:
-      "Skill up ahead of a specific trial. Cancel anytime.",
+    description: "Skill up ahead of a specific trial. Cancel anytime.",
     mode: "subscription",
     interval: "monthly",
     currency: "BRL",

@@ -11,30 +11,30 @@ module.exports = {
       colors: {
         // FieldTalk custom colors
         // 1. Rich, deep blues with energetic coral - feels premium yet approachable
-        primary: {
-          50: "#eff8ff",
-          100: "#daf0ff",
-          200: "#bee4ff",
-          300: "#91d2ff",
-          400: "#5db5ff",
-          500: "#1d4ed8", // Main brand color
-          600: "#1e40af",
-          700: "#1e3a8a",
-          800: "#1e3a8a",
-          900: "#1e293b",
-        },
-        accent: {
-          50: "#fff1f0",
-          100: "#ffe0dd",
-          200: "#ffc6c0",
-          300: "#ff9d94",
-          400: "#ff6b5a", // Energetic coral
-          500: "#ff4d32",
-          600: "#ed2f17",
-          700: "#c8220e",
-          800: "#a51e10",
-          900: "#881e13",
-        },
+        // primary: {
+        //   50: "#eff8ff",
+        //   100: "#daf0ff",
+        //   200: "#bee4ff",
+        //   300: "#91d2ff",
+        //   400: "#5db5ff",
+        //   500: "#1d4ed8", // Main brand color
+        //   600: "#1e40af",
+        //   700: "#1e3a8a",
+        //   800: "#1e3a8a",
+        //   900: "#1e293b",
+        // },
+        // accent: {
+        //   50: "#fff1f0",
+        //   100: "#ffe0dd",
+        //   200: "#ffc6c0",
+        //   300: "#ff9d94",
+        //   400: "#ff6b5a", // Energetic coral
+        //   500: "#ff4d32",
+        //   600: "#ed2f17",
+        //   700: "#c8220e",
+        //   800: "#a51e10",
+        //   900: "#881e13",
+        // },
         // 2. Deep emerald with sophisticated gold - very premium football feel
         // primary: {
         //   50: "#ecfdf5",

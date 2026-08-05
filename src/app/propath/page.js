@@ -30,14 +30,30 @@ import { rememberPartnerReferrer } from "@/lib/partners/referrer";
 // Single accent bar rather than a multi-nation stripe — a horizontal
 // "floodlight" sweeping across the page. Two-stop gradient keeps the
 // visual identity distinct from WC2026's flags-inspired multi-colour.
+// const ACCENT_BAR_GRADIENT =
+//   "linear-gradient(90deg, #34d399 0%, #a7f3d0 50%, #67e8f9 100%)";
 const ACCENT_BAR_GRADIENT =
-  "linear-gradient(90deg, #34d399 0%, #a7f3d0 50%, #67e8f9 100%)";
+  "linear-gradient(90deg, #a3e635 0%, #bef264 50%, #d9f99d 100%)";
+
+// Umbrella-brand default for Pro Path landings without a branch
+// override. WC2026 keeps the Cultura lion as its default; Pro Path
+// defaults to Inspire Future (our parent business name) to underline
+// that this edition is the FieldTalk product rather than a specific
+// partner campaign. Academy / club logos still take over when a
+// ?branch=<slug> is present via the shared BRANCHES registry.
+const INSPIRE_FUTURE_LOGO = {
+  logoSrc: "/logos/FieldTalk-wide-dm-w.png",
+  alt: "Inspire Future",
+};
 
 function ProPathLandingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const branchKey = searchParams.get("branch");
-  const branch = getBranch(branchKey);
+  // When a branch slug is present we honour it (co-branded partner
+  // landing). Otherwise we use the Inspire Future default rather than
+  // falling through to the WC-era Cultura default from branches.js.
+  const branch = branchKey ? getBranch(branchKey) : INSPIRE_FUTURE_LOGO;
   const { user } = useAuth();
   const { t } = useTranslation();
 
@@ -74,8 +90,8 @@ function ProPathLandingContent() {
           than /wc2026 to signal "athletic / clinical" rather than
           "tournament / celebratory". */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-15%] left-[-15%] w-[70vw] h-[70vw] rounded-full blur-3xl bg-pp-glow-emerald" />
-        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl bg-pp-glow-cyan" />
+        <div className="absolute top-[-15%] left-[-15%] w-[70vw] h-[70vw] rounded-full blur-3xl bg-pp-glow-lime" />
+        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl bg-pp-glow-slate" />
         <div className="absolute inset-0 bg-pp-vignette" />
       </div>
 
@@ -124,7 +140,7 @@ function ProPathLandingContent() {
           style={{ animationDelay: "1050ms" }}
         >
           <p className="text-lg sm:text-2xl md:text-3xl font-light tracking-wide">
-            <span className="bg-gradient-to-r from-emerald-300 via-emerald-200 to-cyan-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-100 bg-clip-text text-transparent">
               {t("propath_subtitle")}
             </span>
           </p>
@@ -132,14 +148,14 @@ function ProPathLandingContent() {
 
         {/* Tagline — one line, restrained. This is the real product
             positioning; sits between the edition name and the CTA. */}
-        <p
+        {/* <p
           className={`mt-6 max-w-lg text-sm sm:text-base text-white/60 leading-relaxed opacity-0 ${
             mounted ? "pp-fade-in" : ""
           }`}
           style={{ animationDelay: "1250ms" }}
         >
           {t("propath_tagline")}
-        </p>
+        </p> */}
 
         {/* Accent bar — single sweep of light rather than a nation
             stripe. Matches the "floodlight" identity we picked. */}
@@ -150,7 +166,10 @@ function ProPathLandingContent() {
           style={{
             animationDelay: "1450ms",
             background: ACCENT_BAR_GRADIENT,
-            boxShadow: "0 0 24px rgba(52, 211, 153, 0.35)",
+            // Lime glow matching accent-400 rgb so the bar reads as
+            // one continuous piece of "floodlight" instead of a
+            // painted stripe on the void.
+            boxShadow: "0 0 24px rgba(163, 230, 53, 0.35)",
           }}
         />
       </main>
@@ -168,7 +187,7 @@ function ProPathLandingContent() {
           <span className="relative z-10">
             {user ? t("propath_cta_enter") : t("propath_cta_start")}
           </span>
-          <span className="absolute inset-0 rounded-full ring-2 ring-white/30 group-hover:ring-emerald-300/60 pp-pulse-ring" />
+          <span className="absolute inset-0 rounded-full ring-2 ring-white/30 group-hover:ring-accent-300/60 pp-pulse-ring" />
         </button>
       </footer>
 
@@ -176,19 +195,24 @@ function ProPathLandingContent() {
           colliding with the wc- animations on /wc2026 if a user
           navigates directly from one to the other via link. */}
       <style jsx global>{`
-        .bg-pp-glow-emerald {
+        /* Ambient glow palette — accent-400 (electric lime, rgb 163
+           230 53) paired with primary-400 (sophisticated slate, rgb
+           148 163 184). Matches the "contemporary high-tech" identity
+           we picked in tailwind.config.js, distinct from WC2026's
+           emerald + gold fanfare. */
+        .bg-pp-glow-lime {
           background: radial-gradient(
             circle at center,
-            rgba(16, 185, 129, 0.22),
-            rgba(16, 185, 129, 0) 70%
+            rgba(163, 230, 53, 0.2),
+            rgba(163, 230, 53, 0) 70%
           );
           animation: pp-glow-pulse 9s ease-in-out infinite;
         }
-        .bg-pp-glow-cyan {
+        .bg-pp-glow-slate {
           background: radial-gradient(
             circle at center,
-            rgba(103, 232, 249, 0.14),
-            rgba(103, 232, 249, 0) 70%
+            rgba(148, 163, 184, 0.16),
+            rgba(148, 163, 184, 0) 70%
           );
           animation: pp-glow-pulse 11s ease-in-out infinite reverse;
         }
