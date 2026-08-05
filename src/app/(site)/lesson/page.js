@@ -37,6 +37,7 @@ import FirstLessonPrompt from "@/components/FirstLessonPrompt";
 import PaywallCard from "@/components/PaywallCard";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 import WelcomeOnboarding from "@/components/WelcomeOnboarding";
+import ProPathOnboarding from "@/components/onboarding/propath/ProPathOnboarding";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
 
@@ -118,14 +119,15 @@ function PlayerLessonsMenu() {
   // QA isn't blocked.
   const access = usePlayerAccess(profile?.edition);
 
-  // First-visit WC2026 welcome flow. Only mounts when:
-  //   - data has loaded
-  //   - user is signed in to a wc2026 player row
-  //   - players.onboarding_completed is not yet true
-  // Dismissing the modal POSTs /api/onboarding/complete which flips
-  // the flag. Admins can re-arm any user by setting the column back
-  // to false in the Supabase table editor.
+  // First-visit onboarding — one flag drives both flows, but the
+  // actual overlay chosen depends on the caller's edition:
+  //   - wc2026         → <WelcomeOnboarding /> (packs + squad story)
+  //   - propath_26_27  → <ProPathOnboarding /> (position + goal + ready)
+  // Both write to the same players.onboarding_completed column when
+  // dismissed, so the "did they finish setup?" gate stays in one
+  // place regardless of edition.
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showProPathOnboarding, setShowProPathOnboarding] = useState(false);
   // When the user taps "Open my first pack" on the final onboarding
   // slide, this flips to true and PackOpeningModal mounts. The modal
   // calls /api/packs/open, awards the welcome pack contents, then
@@ -143,11 +145,26 @@ function PlayerLessonsMenu() {
 
   useEffect(() => {
     if (loading || !user?.id || !profile) return;
-    if (profile.edition !== "wc2026") return;
     if (profile.onboarding_completed === true) return;
     if (onboardingDismissed) return;
-    setShowWelcome(true);
+    // Route to the right onboarding by edition. Legacy "players"
+    // rows fall through to the WC flow — they were the pre-launch
+    // seed cohort and shouldn't hit any onboarding at this point.
+    if (profile.edition === "propath_26_27") {
+      setShowProPathOnboarding(true);
+    } else if (profile.edition === "wc2026") {
+      setShowWelcome(true);
+    }
   }, [loading, user, profile, onboardingDismissed]);
+
+  const handleProPathOnboardingClose = () => {
+    setShowProPathOnboarding(false);
+    setOnboardingDismissed(true);
+    // Refetch so profile.position + propath_goal + onboarding_completed
+    // reflect what the API just wrote — the dashboard hero badge will
+    // pick up the position on next render.
+    refetchProgress?.();
+  };
 
   const handleWelcomeClose = (nextAction) => {
     setShowWelcome(false);
@@ -642,6 +659,23 @@ function PlayerLessonsMenu() {
           becomes visible. */}
       {showWelcome && (
         <WelcomeOnboarding userId={user?.id} onClose={handleWelcomeClose} />
+      )}
+
+      {/* Pro Path first-visit overlay — parallel to WelcomeOnboarding
+          above; only one mounts at a time (the useEffect above picks
+          exactly one based on profile.edition). On dismiss the user
+          is routed to /dashboard by the component itself so they
+          land directly on their Skill Radar. */}
+      {showProPathOnboarding && (
+        <ProPathOnboarding
+          userName={
+            profile?.full_name ||
+            user?.user_metadata?.full_name ||
+            user?.email?.split("@")[0] ||
+            ""
+          }
+          onDismiss={handleProPathOnboardingClose}
+        />
       )}
 
       {/* Starter sticker pack — opens the moment the WelcomeOnboarding

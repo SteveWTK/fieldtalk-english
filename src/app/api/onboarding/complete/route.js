@@ -10,7 +10,15 @@
 // welcome modal" signal.
 //
 // Body (all optional):
-//   { role?, level?, goals? }
+//   { role?, level?, goals?, position?, propath_goal? }
+//
+// Legacy fields (role/level/goals) — written by the WC WelcomeOnboarding.
+// Pro Path fields (position, propath_goal) — written by the Pro Path
+// 3-slide onboarding. Any combination is fine; the endpoint writes
+// whichever fields are supplied and always flips onboarding_completed
+// to true. Reusing one endpoint keeps the "did the user finish
+// onboarding?" gate in one place, regardless of which edition's flow
+// they went through.
 //
 // Idempotent — calling on an already-completed player is a no-op.
 //
@@ -55,7 +63,14 @@ export async function POST(request) {
     // caused Supabase to reject the whole statement, which is what made
     // the flag stick at false even after the modal completed.
     const body = await request.json().catch(() => ({}));
-    const { role, level, goals } = body || {};
+    const {
+      role,
+      level,
+      goals,
+      // Pro Path fields — see route header for full doc.
+      position,
+      propath_goal: propathGoal,
+    } = body || {};
 
     const update = { onboarding_completed: true };
     if (typeof role === "string" && role.trim()) {
@@ -66,6 +81,21 @@ export async function POST(request) {
     }
     if (goals !== undefined) {
       update.learning_goals = goals;
+    }
+    // Pro Path onboarding writes to purpose-built columns so we don't
+    // overload onboarding_role (which historically meant "player /
+    // coach / director") with a football position. Both are trimmed
+    // + shape-checked before writing so a stray whitespace or unknown
+    // goal value doesn't fail the CHECK constraint on the column.
+    if (typeof position === "string" && position.trim()) {
+      update.position = position.trim();
+    }
+    const ALLOWED_PROPATH_GOALS = ["trials", "academy", "going_pro", "general"];
+    if (
+      typeof propathGoal === "string" &&
+      ALLOWED_PROPATH_GOALS.includes(propathGoal.trim())
+    ) {
+      update.propath_goal = propathGoal.trim();
     }
 
     const supabase = await getSupabaseAdmin();
