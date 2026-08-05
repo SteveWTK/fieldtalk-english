@@ -22,7 +22,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -46,7 +46,8 @@ import ProPathSkillRadar from "./ProPathSkillRadar";
 export default function ProPathDashboard() {
   const { user } = useAuth();
   const { lang } = useLanguage();
-  const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const router = useRouter();
   const { profile, progress, lessons, completions, loading, refetchProgress } =
     usePlayerDashboard(user?.id);
 
@@ -84,8 +85,7 @@ export default function ProPathDashboard() {
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
-  const position =
-    profile?.position || user?.user_metadata?.position || null;
+  const position = profile?.position || user?.user_metadata?.position || null;
   const totalXp = progress?.total_xp || 0;
 
   if (loading) {
@@ -166,7 +166,9 @@ export default function ProPathDashboard() {
 
             <div className="min-w-0 flex-1">
               <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
-                {lang === "pt" ? "Jogador Pro Path 26/27" : "Pro Path 26/27 player"}
+                {lang === "pt"
+                  ? "Jogador Pro Path 26/27"
+                  : "Pro Path 26/27 player"}
               </p>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate mt-0.5">
                 {fullName}
@@ -233,7 +235,9 @@ export default function ProPathDashboard() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300 font-bold">
-                  {lang === "pt" ? "Certificado desbloqueado" : "Certificate unlocked"}
+                  {lang === "pt"
+                    ? "Certificado desbloqueado"
+                    : "Certificate unlocked"}
                 </p>
                 <h3 className="text-lg font-black mt-1">
                   {lang === "pt"
@@ -256,12 +260,14 @@ export default function ProPathDashboard() {
                     alert(
                       lang === "pt"
                         ? "Certificado em desenvolvimento — em breve!"
-                        : "Certificate download coming soon!"
+                        : "Certificate download coming soon!",
                     );
                   }}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  {lang === "pt" ? "Baixar certificado" : "Download certificate"}
+                  {lang === "pt"
+                    ? "Baixar certificado"
+                    : "Download certificate"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
