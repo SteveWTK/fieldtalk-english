@@ -49,8 +49,53 @@ import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreB
 import NewContentBanner from "@/components/NewContentBanner";
 import DashboardTour from "@/components/DashboardTour";
 import PartnerLogo from "@/components/branding/PartnerLogo";
+import ProPathDashboard from "@/components/dashboard/propath/ProPathDashboard";
+import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 
+// Dashboard router. Reads the caller's edition and delegates to the
+// right dashboard component. Kept as a thin router so each edition
+// owns its own tile composition — Pro Path's storyline (skill radar
+// + trial-ready + certificate) is fundamentally different from
+// WC's (squad + packs + predictions), and forcing them through one
+// switchy component would make both harder to iterate on.
+//
+// The default export (DashboardPage) wraps this in ProtectedRoute;
+// this router runs after auth so `user` is always present.
 function DashboardContent() {
+  const { user } = useAuth();
+  const { profile, loading } = usePlayerProfile(user?.id);
+
+  // While the profile is loading we keep the loader neutral (white
+  // spinner) so it doesn't briefly show WC emerald then flip to Pro
+  // Path lime — that flicker would be the first thing a Pro Path
+  // user sees on their dashboard. Small detail, matters.
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-[#070707] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-white/40 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (profile.edition === "propath_26_27") {
+    return <ProPathDashboard />;
+  }
+
+  // Default = WC2026 (also covers legacy "players" edition tags —
+  // those users see the WC dashboard for now; migrating them to Pro
+  // Path is a separate content decision).
+  return <WC2026DashboardContent />;
+}
+
+// WC2026 dashboard content — the original 5-tile fan storyline
+// (hero + squad + pack vault + predictions + leaderboard). Kept as-is
+// so WC2026 users don't see any regression while Pro Path adds a
+// parallel dashboard component (ProPathDashboard).
+//
+// Which one renders is decided by DashboardContent below, which reads
+// profile.edition and picks. New editions get their own component
+// alongside this one.
+function WC2026DashboardContent() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();

@@ -29,12 +29,30 @@ import {
   readPartnerReferrer,
 } from "@/lib/partners/referrer";
 
+// Umbrella-brand default for non-WC editions (Pro Path first) so we
+// don't fall through to the Cultura lion — which was the sensible
+// default when WC was the only edition, but reads as wrong branding
+// on a Pro Path signup screen. Same INSPIRE_FUTURE_LOGO used on the
+// /propath landing; kept in sync by convention.
+const INSPIRE_FUTURE_LOGO = {
+  logoSrc: "/logos/FieldTalk-wide-dm-w.png",
+  alt: "Inspire Future",
+};
+
 function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const edition = searchParams.get("edition") || null;
   const branchKey = searchParams.get("branch");
-  const branch = getBranch(branchKey);
+  // With a branch slug present, honour the partner brand. Without
+  // one, pick the umbrella logo appropriate to the edition — WC
+  // keeps its Cultura default (via getBranch), non-WC editions get
+  // Inspire Future.
+  const branch = branchKey
+    ? getBranch(branchKey)
+    : edition && edition !== "wc2026"
+      ? INSPIRE_FUTURE_LOGO
+      : getBranch(null);
 
   // Mirror the /wc2026 capture so users who deep-link straight to
   // /join?branch=<slug> (e.g. from a partner email blast that skips

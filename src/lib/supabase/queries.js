@@ -160,14 +160,22 @@ export async function getAllPillars(edition = null) {
   }
 }
 
-export async function getLessonsByPillar(pillarId) {
+/**
+ * Fetch all active lessons for a pillar, optionally scoped to an
+ * edition. Pass `edition` (e.g. "wc2026", "propath_26_27") to restrict
+ * to that edition's content; omit / pass null to return every edition
+ * (admin / debug only — user surfaces should always pass an edition).
+ */
+export async function getLessonsByPillar(pillarId, edition = null) {
   try {
-    const { data, error } = await supabase
+    let q = supabase
       .from("lessons")
       .select("*")
       .eq("pillar_id", pillarId)
       .eq("is_active", true)
       .order("sort_order");
+    if (edition) q = q.eq("edition", edition);
+    const { data, error } = await q;
 
     if (error) {
       console.error(

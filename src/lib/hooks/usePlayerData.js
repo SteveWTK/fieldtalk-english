@@ -81,10 +81,16 @@ export function usePillarsAndLessons(edition = null) {
         const pillarsData = await getAllPillars(edition);
         setPillars(pillarsData);
 
-        // Get lessons for each pillar
+        // Get lessons for each pillar, scoped to the caller's edition
+        // so a Pro Path user only sees Pro Path content and vice versa.
+        // Omitting `edition` (null) returns every edition — admin /
+        // debug only; user surfaces should always pass one.
         const lessonsData = {};
         for (const pillar of pillarsData) {
-          lessonsData[pillar.name] = await getLessonsByPillar(pillar.id);
+          lessonsData[pillar.name] = await getLessonsByPillar(
+            pillar.id,
+            edition
+          );
         }
         setLessons(lessonsData);
       } catch (err) {
@@ -160,18 +166,15 @@ export function usePlayerDashboard(userId) {
     loading: progressLoading,
     refetch: refetchProgress,
   } = usePlayerProgress(userId);
-  // ──────────────────────────────────────────────────────────────────
-  // TEMPORARY (WC2026 launch week): force the lesson list to show only
-  // WC pillars regardless of what the player's profile says. This is a
-  // belt-and-braces guard so even if the auth → players row chain has a
-  // gap, the demo never accidentally shows 'players' edition content.
-  //
-  // To restore normal per-edition filtering: set FORCE_EDITION = null
-  // and rely on profile.edition. Re-enable when auth-chain bug fixed.
-  // ──────────────────────────────────────────────────────────────────
-  const FORCE_EDITION = "wc2026";
+  // Per-edition lesson filtering — the auth chain is now stable
+  // enough to trust players.edition end-to-end, and Pro Path 26/27
+  // signups depend on it (they must NOT see WC2026 units on their
+  // dashboard). The old WC-launch-week FORCE_EDITION guard has been
+  // lifted; if a specific user reports missing lessons, verify their
+  // players.edition value in Supabase before reintroducing any
+  // force-override.
   const { pillars, lessons, loading: lessonsLoading } = usePillarsAndLessons(
-    FORCE_EDITION || profile?.edition || null
+    profile?.edition || null
   );
   const { completions, loading: completionsLoading } =
     usePlayerCompletions(userId);

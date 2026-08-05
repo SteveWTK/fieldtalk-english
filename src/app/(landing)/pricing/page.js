@@ -274,13 +274,17 @@ function PricingPageContent() {
 
   const urlEdition = (searchParams?.get("edition") || "").trim() || null;
   // While profile is loading for a signed-in user with no URL edition,
-  // we defer resolving so we don't briefly render WC2026 cards and
-  // then flip to Pro Path. Signed-out users get WC2026 straight away
-  // (the historical default; can revisit when a chooser page exists).
+  // we defer resolving so we don't briefly render one edition's cards
+  // and then flip. Signed-out users default to Pro Path (the ongoing
+  // edition and our primary business focus post-WC) — WC2026 links
+  // still work via /pricing?edition=wc2026 for anyone with a direct
+  // link.
   const editionResolutionPending =
     !urlEdition && !!user?.id && profileLoading;
   const editionId =
-    urlEdition || profile?.edition || (user?.id ? null : "wc2026");
+    urlEdition ||
+    profile?.edition ||
+    (user?.id ? null : "propath_26_27");
   const edition = editionId ? getEdition(editionId) : null;
 
   const [lang, setLang] = useState("pt");
