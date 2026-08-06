@@ -2,66 +2,132 @@
 //
 // Root landing — fieldtalkenglish.com.
 //
-// A stripped-down sibling of the partner-branded /wc2026 page:
-// same dark theme, ambient glows and stripe motif, but no Cultura
-// Inglesa logo and no "presents" line — this URL is the generic
-// front door for organic / search / direct traffic that doesn't
-// arrive via a partner branch link.
+// Front door for organic / search / direct traffic that doesn't
+// arrive via a partner branch link (those go to /wc2026?branch=<slug>).
 //
-// English by default. Cultura branches and other partners use
-// /wc2026?branch=<slug> which renders the Portuguese-leaning
-// branded version. When we add more editions post-WC2026 this
-// page will evolve into an edition picker; for the next two months
-// it's a single CTA into the WC2026 funnel.
+// Post-WC layout: two-edition chooser. Pro Path 26/27 is the primary
+// (evergreen, ongoing business focus, lime identity); WC2026 is the
+// secondary (legacy, still accessible until Aug 31 2026, emerald +
+// gold identity preserved). Each card routes to its dedicated
+// landing page (/propath or /wc2026) where the full edition
+// experience begins.
+//
+// Signed-in users see their current edition's card highlighted with
+// a "Continue" CTA that skips straight to /lesson — the front door
+// gets out of their way.
+//
+// This page is deliberately calm — one hero, two clearly labelled
+// choices, no upsell chrome. If we ever add more editions, they slot
+// in as additional cards; the two-card layout becomes a small grid.
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Trophy, Target } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
-// Same stripe-colour set as /wc2026 — colours drawn from WC-relevant
-// nations' flags. Pure decoration, not a flag set.
-const STRIPE_COLORS = [
+const COPY = {
+  en: {
+    heroTitle: "FieldTalk English",
+    heroTagline: "The football English you'll actually use.",
+    chooseHeading: "Choose your edition",
+    continue: "Continue",
+    yourEdition: "Your edition",
+    langLabel: "EN",
+    propath: {
+      eyebrow: "The season's edition",
+      title: "Pro Path 26/27",
+      tagline:
+        "Dressing room, coach, agent, media — the English every serious player needs.",
+      cta: "Explore Pro Path",
+    },
+    wc2026: {
+      eyebrow: "Legacy edition",
+      title: "World Cup 2026",
+      tagline:
+        "Match-day English through the tournament that made the world watch. Still available.",
+      cta: "Explore WC2026",
+    },
+  },
+  pt: {
+    heroTitle: "FieldTalk English",
+    heroTagline: "O inglês do futebol que você vai usar de verdade.",
+    chooseHeading: "Escolha sua edição",
+    continue: "Continuar",
+    yourEdition: "Sua edição",
+    langLabel: "PT",
+    propath: {
+      eyebrow: "A edição da temporada",
+      title: "Pro Path 26/27",
+      tagline:
+        "Vestiário, técnico, empresário, imprensa — o inglês que todo jogador sério precisa.",
+      cta: "Conhecer o Pro Path",
+    },
+    wc2026: {
+      eyebrow: "Edição legado",
+      title: "Copa do Mundo 2026",
+      tagline:
+        "O inglês dos gramados na Copa que fez o mundo assistir. Ainda disponível.",
+      cta: "Conhecer a WC2026",
+    },
+  },
+};
+
+// Two lightweight stripe motifs — one per edition — so each card
+// gets its own visual DNA at a glance. Pro Path leans lime + slate
+// (matches /propath); WC keeps the multi-nation flag palette.
+const PROPATH_STRIPE = [
+  "#a3e635", // lime
+  "#bef264", // pale lime
+  "#84cc16", // lime-500
+  "#94a3b8", // slate-400
+];
+const WC_STRIPE = [
   "#009C3B", // Brazil green
   "#FFDF00", // Brazil yellow
-  "#FFFFFF", // White (Argentina, France, England)
-  "#CE1126", // Red (Spain, Canada, Mexico)
-  "#0055A4", // French blue
-  "#FFCD00", // Sweden / Brazil tone
-  "#1A1A1A", // Near-black
-  "#75AADB", // Argentina sky blue
+  "#FFFFFF",
+  "#CE1126",
+  "#0055A4",
+  "#75AADB",
 ];
 
 export default function RootLandingPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { profile } = usePlayerProfile(user?.id);
+  const { lang, setLang } = useLanguage();
+  const copy = COPY[lang] || COPY.en;
+
+  // Defer entrance animations until mount so the first paint doesn't
+  // catch mid-frame. Matches the /propath and /wc2026 pattern.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleEnter = () => {
-    if (user) {
-      router.push("/lesson");
-    } else {
-      // Send to the streamlined fan-edition signup with the WC2026
-      // tag pre-applied so the players row is created in the right
-      // edition from minute zero. No branch slug — that's reserved
-      // for the partner-branded /wc2026?branch=<slug> URLs.
-      router.push("/join?edition=wc2026");
-    }
-  };
+  // If the caller is signed in, "Continue" routes them straight into
+  // the app. Otherwise both cards behave the same (go to that
+  // edition's landing → its Enter button → /join with edition tag).
+  const goDirectly = () => router.push("/lesson");
+
+  const userEdition = profile?.edition || null;
+  const isSignedIn = !!user;
 
   return (
     <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden flex flex-col">
-      {/* Ambient glows — emerald + amber, slow pulse. Same vocabulary
-          as /wc2026 and /pricing so the funnel feels continuous. */}
+      {/* Ambient glows — lime for the primary Pro Path card side,
+          a hint of emerald for the WC card side, so the palette
+          reads as "the two editions co-existing" rather than either
+          one owning the whole page. */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-[-15%] left-[-15%] w-[70vw] h-[70vw] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(16,185,129,0.22), rgba(16,185,129,0) 70%)",
+              "radial-gradient(circle at center, rgba(163,230,53,0.18), rgba(163,230,53,0) 70%)",
             animation: "rl-glow-pulse 9s ease-in-out infinite",
           }}
         />
@@ -69,7 +135,7 @@ export default function RootLandingPage() {
           className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(234,179,8,0.15), rgba(234,179,8,0) 70%)",
+              "radial-gradient(circle at center, rgba(16,185,129,0.12), rgba(16,185,129,0) 70%)",
             animation: "rl-glow-pulse 11s ease-in-out infinite reverse",
           }}
         />
@@ -82,77 +148,116 @@ export default function RootLandingPage() {
         />
       </div>
 
-      {/* Centre: brand mark + edition + stripe + CTA. No partner
-          logo, no "presents" line. */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+      {/* Language toggle — top-right, floating so it doesn't take
+          vertical real estate away from the hero. */}
+      <div className="absolute top-4 right-4 z-20 flex gap-1 text-[10px] sm:text-xs">
+        <button
+          type="button"
+          onClick={() => setLang("en")}
+          className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
+            lang === "en"
+              ? "bg-accent-400 text-primary-900"
+              : "bg-white/5 text-white/60 hover:text-white"
+          }`}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          onClick={() => setLang("pt")}
+          className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
+            lang === "pt"
+              ? "bg-accent-400 text-primary-900"
+              : "bg-white/5 text-white/60 hover:text-white"
+          }`}
+        >
+          PT
+        </button>
+      </div>
+
+      {/* Hero — brand mark + tagline. Compact so both cards sit
+          above the fold on a laptop. */}
+      <header className="relative z-10 pt-16 sm:pt-20 px-6 text-center">
         <h1
           className={`font-black tracking-tight leading-[0.95] opacity-0 ${
             mounted ? "rl-rise" : ""
           }`}
           style={{
-            animationDelay: "200ms",
-            fontSize: "clamp(2.5rem, 12vw, 6rem)",
+            animationDelay: "150ms",
+            fontSize: "clamp(2.25rem, 8vw, 4.5rem)",
           }}
         >
-          FieldTalk English
+          {copy.heroTitle}
         </h1>
-
-        <div
-          className={`mt-4 opacity-0 ${mounted ? "rl-rise" : ""}`}
-          style={{ animationDelay: "500ms" }}
-        >
-          <p className="text-lg sm:text-2xl md:text-3xl font-light tracking-wide">
-            <span className="bg-gradient-to-r from-emerald-400 via-yellow-300 to-emerald-400 bg-clip-text text-transparent">
-              World Cup 2026 Edition
-            </span>
-          </p>
-        </div>
-
-        {/* Colour stripe */}
-        <div
-          className={`mt-12 sm:mt-16 flex h-[10px] sm:h-3 w-[80%] max-w-md rounded-full overflow-hidden opacity-0 ${
-            mounted ? "rl-stripe" : ""
+        <p
+          className={`mt-3 text-sm sm:text-base text-white/60 max-w-lg mx-auto leading-relaxed opacity-0 ${
+            mounted ? "rl-fade-in" : ""
           }`}
-          style={{ animationDelay: "800ms" }}
+          style={{ animationDelay: "450ms" }}
         >
-          {STRIPE_COLORS.map((color, i) => (
-            <div
-              key={i}
-              className="flex-1"
-              style={{
-                backgroundColor: color,
-                boxShadow: `inset 0 0 8px ${color}`,
-              }}
-            />
-          ))}
-        </div>
+          {copy.heroTagline}
+        </p>
+      </header>
 
-        {/* Tagline — short, English. The branded /wc2026 page uses a
-            longer Portuguese intro for Brazilian audiences; here we
-            keep it punchy and edition-neutral. */}
-        {/* <p
-          className={`mt-10 max-w-md text-sm sm:text-base text-white/65 leading-relaxed opacity-0 ${
-            mounted ? "rl-rise" : ""
+      {/* Edition chooser */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <p
+          className={`text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold mb-4 sm:mb-6 opacity-0 ${
+            mounted ? "rl-fade-in" : ""
           }`}
-          style={{ animationDelay: "1050ms" }}
+          style={{ animationDelay: "700ms" }}
         >
-          Learn English through the World Cup — vocabulary, predictions,
-          sticker packs, and a squad to build.
-        </p> */}
+          {copy.chooseHeading}
+        </p>
+
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {/* Pro Path — primary card. Accent lime border + glow so
+              it visually leads. */}
+          <EditionCard
+            variant="propath"
+            eyebrow={copy.propath.eyebrow}
+            title={copy.propath.title}
+            tagline={copy.propath.tagline}
+            cta={copy.propath.cta}
+            stripe={PROPATH_STRIPE}
+            Icon={Target}
+            href="/propath"
+            highlighted={isSignedIn ? userEdition === "propath_26_27" : true}
+            userLabel={copy.yourEdition}
+            continueLabel={copy.continue}
+            showContinue={isSignedIn && userEdition === "propath_26_27"}
+            onContinue={goDirectly}
+            mounted={mounted}
+            animationDelay="950ms"
+          />
+
+          {/* WC2026 — secondary card. Emerald + gold DNA preserved
+              from the tournament identity. Reads as "still here"
+              rather than "not chosen". */}
+          <EditionCard
+            variant="wc"
+            eyebrow={copy.wc2026.eyebrow}
+            title={copy.wc2026.title}
+            tagline={copy.wc2026.tagline}
+            cta={copy.wc2026.cta}
+            stripe={WC_STRIPE}
+            Icon={Trophy}
+            href="/wc2026"
+            highlighted={isSignedIn && userEdition === "wc2026"}
+            userLabel={copy.yourEdition}
+            continueLabel={copy.continue}
+            showContinue={isSignedIn && userEdition === "wc2026"}
+            onContinue={goDirectly}
+            mounted={mounted}
+            animationDelay="1150ms"
+          />
+        </div>
       </main>
 
-      {/* CTA — bottom, single button, mirrors /wc2026's style. */}
-      <footer className="relative z-10 pb-16 sm:pb-20 flex justify-center px-6">
-        <button
-          onClick={handleEnter}
-          className={`group relative px-14 py-4 rounded-full font-bold tracking-[0.15em] uppercase text-base sm:text-lg text-[#070707] bg-white hover:scale-[1.03] active:scale-[0.98] transition-transform duration-300 opacity-0 ${
-            mounted ? "rl-rise" : ""
-          }`}
-          style={{ animationDelay: "1300ms" }}
-        >
-          <span className="relative z-10">Enter</span>
-          <span className="absolute inset-0 rounded-full ring-2 ring-white/30 group-hover:ring-emerald-300/60 rl-pulse-ring" />
-        </button>
+      {/* Minimal footer — no chrome, just © line. Keeps the page
+          calm and directs the eye to the two cards. */}
+      <footer className="relative z-10 pb-6 sm:pb-8 text-center text-[11px] text-white/30">
+        © 2026 FieldTalk English
       </footer>
 
       <style jsx global>{`
@@ -164,6 +269,14 @@ export default function RootLandingPage() {
           100% {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @keyframes rl-fade-in {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
           }
         }
         @keyframes rl-stripe {
@@ -187,26 +300,136 @@ export default function RootLandingPage() {
             transform: scale(1.08);
           }
         }
-        @keyframes rl-pulse-ring {
-          0%,
-          100% {
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-          }
-          50% {
-            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.05);
-          }
-        }
         .rl-rise {
           animation: rl-rise 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .rl-fade-in {
+          animation: rl-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .rl-stripe {
           animation: rl-stripe 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           transform-origin: left center;
         }
-        .rl-pulse-ring {
-          animation: rl-pulse-ring 2.6s ease-in-out infinite;
-        }
       `}</style>
+    </div>
+  );
+}
+
+// Edition card — dark glassy panel with an edition-specific colour
+// stripe at the top. Two variants:
+//   variant="propath" → lime border + subtle lime glow when highlighted
+//   variant="wc"      → emerald border + subtle amber glow when highlighted
+//
+// `highlighted` is a strong visual cue for "this is you / this is the
+// primary one". Signed-out users see Pro Path highlighted (the
+// ongoing edition); signed-in users see whichever edition matches
+// their profile.
+function EditionCard({
+  variant,
+  eyebrow,
+  title,
+  tagline,
+  cta,
+  stripe,
+  Icon,
+  href,
+  highlighted,
+  userLabel,
+  continueLabel,
+  showContinue,
+  onContinue,
+  mounted,
+  animationDelay,
+}) {
+  const isPropath = variant === "propath";
+  const borderClass = highlighted
+    ? isPropath
+      ? "border-accent-400/60 shadow-[0_0_40px_rgba(163,230,53,0.15)]"
+      : "border-emerald-400/60 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
+    : "border-white/10 hover:border-white/25";
+  const iconBg = isPropath
+    ? "bg-accent-400/15 text-accent-300"
+    : "bg-emerald-500/15 text-emerald-300";
+  const ctaClass = isPropath
+    ? "bg-accent-400 hover:bg-accent-300 text-primary-900"
+    : "bg-emerald-500 hover:bg-emerald-400 text-[#062013]";
+
+  return (
+    <div
+      className={`relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border ${borderClass} transition-colors overflow-hidden opacity-0 ${
+        mounted ? "rl-rise" : ""
+      }`}
+      style={{ animationDelay }}
+    >
+      {/* Top stripe — visual DNA per edition. Slides in on mount. */}
+      <div
+        className={`flex h-1.5 w-full overflow-hidden opacity-0 ${
+          mounted ? "rl-stripe" : ""
+        }`}
+        style={{ animationDelay }}
+      >
+        {stripe.map((color, i) => (
+          <div
+            key={i}
+            className="flex-1"
+            style={{
+              backgroundColor: color,
+              boxShadow: `inset 0 0 6px ${color}`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="p-5 sm:p-7">
+        {highlighted && userLabel && (
+          <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 font-bold mb-2">
+            {userLabel}
+          </p>
+        )}
+        <div className="flex items-start gap-3 mb-3">
+          <div
+            className={`shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center ${iconBg}`}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p
+              className={`text-[10px] uppercase tracking-[0.25em] font-bold ${
+                isPropath ? "text-accent-300/80" : "text-emerald-300/80"
+              }`}
+            >
+              {eyebrow}
+            </p>
+            <h2 className="text-lg sm:text-xl font-black tracking-tight mt-0.5">
+              {title}
+            </h2>
+          </div>
+        </div>
+
+        <p className="text-sm text-white/70 leading-relaxed mb-5">
+          {tagline}
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            href={href}
+            className={`inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide transition-colors ${ctaClass}`}
+          >
+            {cta}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          {showContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              className={`inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide border border-white/20 hover:border-white/40 text-white bg-white/[0.03] hover:bg-white/[0.08] transition-colors`}
+            >
+              {continueLabel}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

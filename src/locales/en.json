@@ -135,6 +135,8 @@
   "lesson_not_found": "Lesson Not Found",
   "lesson_doesnt_exist": "The lesson you're looking for doesn't exist.",
   "back_to_dashboard": "Back to Ultimate Team",
+  "go_to_dashboard": "Go to Ultimate Team",
+  "go_to_propath_dashboard": "Go to Training Ground",
   "reload_page": "Reload Page",
   "failed_to_load": "Failed to load the lesson",
   "error_occurred": "An error occurred",

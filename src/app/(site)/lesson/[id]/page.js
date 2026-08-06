@@ -52,7 +52,7 @@ import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ReplayOnboardingButton from "@/components/ReplayOnboardingButton";
 import PackProgressBanner from "@/components/PackProgressBanner";
-import { usePlayerProgress } from "@/lib/hooks/usePlayerData";
+import { usePlayerProgress, usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { useAppSettings } from "@/lib/hooks/useAppSettings";
 import { useTranslation } from "@/hooks/useTranslation";
 import AIWritingExercise from "@/components/exercises/AIWritingExercise";
@@ -155,7 +155,20 @@ function DynamicLessonContent() {
   // banner overstate, false-fire pack unlocks, and produce the "No
   // packs available" server response when the user tried to open.
   const { progress: playerProgress } = usePlayerProgress(user?.id);
+  const { profile: playerProfile } = usePlayerProfile(user?.id);
   const { settings: appSettings } = useAppSettings();
+
+  // Edition-aware dashboard button labels. Pro Path users are
+  // "returning to their Training Ground / CT", WC users to their
+  // "Ultimate Team". Kept as derived strings so any component
+  // rendering them stays edition-agnostic (just uses the label).
+  const isProPath = playerProfile?.edition === "propath_26_27";
+  const dashboardBackLabel = isProPath
+    ? t("back_to_propath_dashboard")
+    : t("back_to_dashboard");
+  const dashboardGoLabel = isProPath
+    ? t("go_to_propath_dashboard")
+    : t("go_to_dashboard");
   const baselineXp = playerProgress?.total_xp || 0;
   const uncommittedXpEarned = Math.max(0, xpEarned - committedXp);
   const effectiveXp = baselineXp + uncommittedXpEarned;
@@ -598,7 +611,7 @@ function DynamicLessonContent() {
               onClick={() => router.push("/dashboard")}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              {t("back_to_dashboard")}
+              {dashboardBackLabel}
             </button>
             <button
               onClick={() => window.location.reload()}
@@ -3127,7 +3140,7 @@ function DynamicLessonContent() {
                     disabled={completing}
                     className="bg-accent-800 hover:bg-accent-700 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Go to Ultimate Team
+                    {dashboardGoLabel}
                   </button>
                 </div>
               </div>

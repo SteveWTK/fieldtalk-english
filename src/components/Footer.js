@@ -48,7 +48,7 @@ export default function Footer() {
           {isAdmin && (
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-200 hover:text-emerald-100 text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent-400/15 hover:bg-accent-400/25 border border-accent-400/30 hover:border-accent-400/50 text-accent-200 hover:text-accent-100 text-xs font-semibold transition-colors"
             >
               <Shield className="w-3 h-3" />
               Admin

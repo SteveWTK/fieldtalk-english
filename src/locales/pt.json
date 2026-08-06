@@ -135,6 +135,8 @@
   "lesson_not_found": "Lição Não Encontrada",
   "lesson_doesnt_exist": "A lição que você está procurando não existe.",
   "back_to_dashboard": "Voltar ao Ultimate Team",
+  "go_to_dashboard": "Ir ao Ultimate Team",
+  "go_to_propath_dashboard": "Ir ao CT",
   "reload_page": "Recarregar Página",
   "failed_to_load": "Falha ao carregar a lição",
   "error_occurred": "Ocorreu um erro",
