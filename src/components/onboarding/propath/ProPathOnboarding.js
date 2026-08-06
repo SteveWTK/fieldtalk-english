@@ -393,8 +393,12 @@ function SlidePosition({ copy, value, onChange, lang }) {
             />
           </div>
 
-          {/* Row 2 — defenders (LB / CB / RB from left to right) */}
-          <div className="col-span-4">
+          {/* Row 2 — defenders (LB / CB / RB from left to right).
+              LB explicitly forces col-start-1 so it wraps to a new
+              row: without this the grid's auto-flow would slot it
+              into cols 9-12 of row 1 (the space to the right of
+              GK), pushing the whole defensive line off by one. */}
+          <div className="col-start-1 col-span-4">
             <PosButton
               pos={getPosition("LB")}
               active={value === "LB"}

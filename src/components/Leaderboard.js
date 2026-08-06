@@ -107,7 +107,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
             onClick={() => setSort("squad_value")}
             className={`px-2 py-1 rounded-full font-semibold transition-colors ${
               sort === "squad_value"
-                ? "bg-emerald-500 text-[#070707]"
+                ? "bg-accent-500 text-[#070707]"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -118,7 +118,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
             onClick={() => setSort("xp")}
             className={`px-2 py-1 rounded-full font-semibold transition-colors ${
               sort === "xp"
-                ? "bg-emerald-500 text-[#070707]"
+                ? "bg-accent-500 text-[#070707]"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -129,7 +129,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
             onClick={() => setSort("album")}
             className={`px-2 py-1 rounded-full font-semibold transition-colors ${
               sort === "album"
-                ? "bg-emerald-500 text-[#070707]"
+                ? "bg-accent-500 text-[#070707]"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -140,7 +140,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
             onClick={() => setSort("predictions_xp")}
             className={`px-2 py-1 rounded-full font-semibold transition-colors ${
               sort === "predictions_xp"
-                ? "bg-emerald-500 text-[#070707]"
+                ? "bg-accent-500 text-[#070707]"
                 : "text-white/60 hover:text-white"
             }`}
             title="Sort by prediction XP"
@@ -161,7 +161,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
               onClick={() => setCohort("all")}
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-colors ${
                 cohort === "all"
-                  ? "bg-emerald-500 text-[#070707]"
+                  ? "bg-accent-500 text-[#070707]"
                   : "text-white/60 hover:text-white"
               }`}
             >
@@ -173,7 +173,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
               onClick={() => setCohort("mine")}
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-colors ${
                 cohort === "mine"
-                  ? "bg-emerald-500 text-[#070707]"
+                  ? "bg-accent-500 text-[#070707]"
                   : "text-white/60 hover:text-white"
               }`}
               title={schoolName}
@@ -189,7 +189,7 @@ export default function Leaderboard({ defaultSort = "squad_value" }) {
 
       {loading ? (
         <div className="py-6 flex justify-center">
-          <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : error ? (
         <p className="text-xs text-red-300">{error}</p>
@@ -261,7 +261,7 @@ function LeaderboardRow({ entry, primary }) {
   return (
     <li
       className={`flex items-center gap-2 sm:gap-3 px-2 py-1.5 rounded-lg text-sm ${
-        isYou ? "bg-emerald-500/15 ring-1 ring-emerald-400/40" : ""
+        isYou ? "bg-accent-500/15 ring-1 ring-accent-400/40" : ""
       }`}
     >
       {/* Rank — gold crown for #1, otherwise the number */}
@@ -275,12 +275,12 @@ function LeaderboardRow({ entry, primary }) {
       <div className="flex-1 min-w-0">
         <p
           className={`truncate ${
-            isYou ? "font-bold text-emerald-100" : "text-white/85"
+            isYou ? "font-bold text-accent-100" : "text-white/85"
           }`}
         >
           {name}
           {isYou && (
-            <span className="ml-1 text-[10px] text-emerald-300 font-semibold">
+            <span className="ml-1 text-[10px] text-accent-300 font-semibold">
               (you)
             </span>
           )}

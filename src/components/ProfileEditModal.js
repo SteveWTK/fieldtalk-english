@@ -14,16 +14,36 @@ import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { X, Check, Upload, Loader2 } from "lucide-react";
 import { WC_NATIONS, FLAG_URL_BUILDER } from "@/lib/flags/wcNations";
+import { POSITIONS, NOT_SURE_YET } from "@/lib/players/positions";
 
+/**
+ * ProfileEditModal props:
+ *   open, initialName, initialAvatarUrl — display name + avatar (all editions).
+ *   initialPosition — optional position code, only used when
+ *     `showPositionPicker` is true. Empty string / null renders as
+ *     "Not set" and the picker starts unselected.
+ *   showPositionPicker — flip to true for Pro Path callers so the
+ *     position section appears. Keeping this opt-in prevents WC users
+ *     from seeing a picker for a field their edition doesn't use.
+ *   onSaved(next) — called with `{ full_name, avatar_url, position? }`
+ *     so the parent can update local override without a refetch.
+ */
 export default function ProfileEditModal({
   open,
   initialName = "",
   initialAvatarUrl = "",
+  initialPosition = null,
+  showPositionPicker = false,
   onClose,
   onSaved,
 }) {
   const [name, setName] = useState(initialName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  // Position state uses `undefined` = untouched (don't PATCH), any
+  // string = selected code, `null` = explicitly "Not sure yet" (clear).
+  // Distinguishing untouched from cleared lets a user close the modal
+  // without accidentally wiping a previously-set position.
+  const [position, setPosition] = useState(initialPosition ?? undefined);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,9 +54,10 @@ export default function ProfileEditModal({
     if (open) {
       setName(initialName || "");
       setAvatarUrl(initialAvatarUrl || "");
+      setPosition(initialPosition ?? undefined);
       setError(null);
     }
-  }, [open, initialName, initialAvatarUrl]);
+  }, [open, initialName, initialAvatarUrl, initialPosition]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -85,13 +106,20 @@ export default function ProfileEditModal({
     setSaving(true);
     setError(null);
     try {
+      const body = {
+        full_name: name,
+        avatar_url: avatarUrl,
+      };
+      // Only include position in the PATCH when the picker is visible
+      // AND the user actually touched it (not untouched). null is a
+      // real value here meaning "clear it" — distinct from undefined.
+      if (showPositionPicker && position !== undefined) {
+        body.position = position;
+      }
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: name,
-          avatar_url: avatarUrl,
-        }),
+        body: JSON.stringify(body),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -99,7 +127,13 @@ export default function ProfileEditModal({
         setSaving(false);
         return;
       }
-      onSaved?.({ full_name: name, avatar_url: avatarUrl });
+      onSaved?.({
+        full_name: name,
+        avatar_url: avatarUrl,
+        ...(showPositionPicker && position !== undefined
+          ? { position: position || null }
+          : {}),
+      });
       onClose?.();
     } catch {
       setError("Network error");
@@ -144,12 +178,62 @@ export default function ProfileEditModal({
             onChange={(e) => setName(e.target.value)}
             maxLength={60}
             placeholder="e.g. Carlos R."
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400"
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-accent-400"
           />
           <p className="mt-1 text-[11px] text-white/40">
             Up to 60 characters. Shown publicly on the leaderboard.
           </p>
         </div>
+
+        {/* Position picker — Pro Path only. Compact 4-col grid of
+            position codes so it fits inside the modal without
+            dominating; users who want the visual pitch-shaped picker
+            still have it during onboarding. "Not sure yet" clears
+            the field (stored as NULL). */}
+        {showPositionPicker && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs uppercase tracking-wider text-white/60">
+                Position
+              </label>
+              {position !== undefined && position !== null && (
+                <button
+                  type="button"
+                  onClick={() => setPosition(null)}
+                  className="text-[11px] text-white/50 hover:text-white"
+                >
+                  Not sure yet
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+              {POSITIONS.map((pos) => {
+                const active = position === pos.code;
+                return (
+                  <button
+                    key={pos.code}
+                    type="button"
+                    onClick={() => setPosition(pos.code)}
+                    title={pos.en}
+                    aria-pressed={active}
+                    className={`px-2 py-1.5 rounded-lg border text-xs font-black tabular-nums transition-colors ${
+                      active
+                        ? "border-accent-400 bg-accent-400/15 text-accent-200"
+                        : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                    }`}
+                  >
+                    {pos.code}
+                  </button>
+                );
+              })}
+            </div>
+            {position === null && (
+              <p className="mt-1.5 text-[11px] text-white/45">
+                {NOT_SURE_YET.en}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Upload photo */}
         <div className="mb-4">
@@ -252,7 +336,7 @@ export default function ProfileEditModal({
                   title={nation.name}
                   className={`relative h-10 sm:h-12 rounded-md overflow-hidden ring-2 transition-all ${
                     isSelected
-                      ? "ring-emerald-400 scale-105"
+                      ? "ring-accent-400 scale-105"
                       : "ring-white/10 hover:ring-white/40"
                   }`}
                 >
@@ -268,7 +352,7 @@ export default function ProfileEditModal({
                     unoptimized
                   />
                   {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-emerald-500/40">
+                    <div className="absolute inset-0 flex items-center justify-center bg-accent-500/40">
                       <Check className="w-5 h-5 text-white drop-shadow" />
                     </div>
                   )}
@@ -297,7 +381,7 @@ export default function ProfileEditModal({
             type="button"
             onClick={handleSave}
             disabled={saving || uploading}
-            className="px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#070707] text-sm font-bold disabled:opacity-50"
+            className="px-5 py-2 rounded-full bg-accent-500 hover:bg-accent-400 text-[#070707] text-sm font-bold disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save"}
           </button>

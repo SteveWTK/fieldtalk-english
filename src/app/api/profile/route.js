@@ -2,18 +2,24 @@
 //
 // PATCH /api/profile  — update the signed-in user's own profile.
 //
-// Only two fields are writable here: full_name (display name shown on
-// the dashboard / leaderboard) and avatar_url. Everything else on
-// the players row (user_type, edition, email, …) is read-only from this
-// endpoint by design — those would need separate, more guarded paths.
+// Three fields are writable here: full_name, avatar_url and position.
+// Everything else on the players row (user_type, edition, email, …)
+// is read-only from this endpoint by design — those need separate,
+// more guarded paths.
 //
 // Display name is trimmed and clamped at 60 chars.
 // avatar_url is rejected unless it's a recognised flag CDN host
 // (flagcdn.com) or the project's own Supabase Storage host.
+// position must be one of the canonical POSITIONS codes (GK, RB, CB,
+// …) or null / empty string to clear. Written by the Pro Path
+// onboarding + the ProfileEditModal's post-onboarding change flow.
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
+import { POSITIONS } from "@/lib/players/positions";
+
+const ALLOWED_POSITION_CODES = new Set(POSITIONS.map((p) => p.code));
 
 const MAX_NAME_LEN = 60;
 const ALLOWED_AVATAR_HOSTS = new Set([
@@ -91,6 +97,29 @@ export async function PATCH(request) {
         );
       }
       update.avatar_url = avatar;
+    }
+
+    if ("position" in body) {
+      // null / empty string → clear the position. Any string value →
+      // must match one of the canonical codes so a stale client can't
+      // seed garbage into the column.
+      const raw = body.position;
+      if (raw == null || raw === "") {
+        update.position = null;
+      } else if (
+        typeof raw === "string" &&
+        ALLOWED_POSITION_CODES.has(raw.trim())
+      ) {
+        update.position = raw.trim();
+      } else {
+        return NextResponse.json(
+          {
+            error:
+              "position must be one of the canonical codes (GK, RB, CB, …) or null",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     if (Object.keys(update).length === 0) {

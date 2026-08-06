@@ -151,7 +151,9 @@ export default function ProPathSkillRadar({
           </p>
           <p className="text-2xl font-black tabular-nums text-accent-300">
             {axesWithProgress}
-            <span className="text-white/40 text-sm font-bold">/{AXIS_COUNT}</span>
+            <span className="text-white/40 text-sm font-bold">
+              /{AXIS_COUNT}
+            </span>
           </p>
         </div>
       </header>
@@ -208,8 +210,7 @@ export default function ProPathSkillRadar({
             strokeWidth={2}
             strokeLinejoin="round"
             style={{
-              transition:
-                "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
               filter: anyDone
                 ? "drop-shadow(0 0 12px rgba(163,230,53,0.35))"
                 : "none",
@@ -221,9 +222,7 @@ export default function ProPathSkillRadar({
               progress, so a partially-filled radar reads clearly. */}
           {SKILL_AXES.map((axis, i) => {
             const data = pctById.get(axis.id) || { pct: 0, done: 0 };
-            const fraction = animate
-              ? Math.max(data.pct / 100, 0.02)
-              : 0.02;
+            const fraction = animate ? Math.max(data.pct / 100, 0.02) : 0.02;
             const p = axisPoint(i, fraction);
             const active = data.done > 0;
             return (
@@ -232,12 +231,9 @@ export default function ProPathSkillRadar({
                 cx={p.x}
                 cy={p.y}
                 r={active ? 4 : 2.5}
-                fill={
-                  active ? "rgb(190,242,100)" : "rgba(255,255,255,0.4)"
-                }
+                fill={active ? "rgb(190,242,100)" : "rgba(255,255,255,0.4)"}
                 style={{
-                  transition:
-                    "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
+                  transition: "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
               />
             );
@@ -260,7 +256,7 @@ export default function ProPathSkillRadar({
             // foreignObject dims are set so the icon+label group
             // centres on `p`. Width kept tight to avoid overlap
             // between adjacent labels on mobile.
-            const w = 92;
+            const w = 96;
             const h = 44;
             return (
               <foreignObject
@@ -282,12 +278,12 @@ export default function ProPathSkillRadar({
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 ${
+                    className={`w-5 h-5 ${
                       active ? "text-accent-300" : "text-white/40"
                     }`}
                   />
                   <span
-                    className={`text-[10px] font-bold leading-tight text-center ${
+                    className={`text-[12px] font-bold leading-tight text-center ${
                       active ? "text-white/85" : "text-white/45"
                     }`}
                   >
@@ -304,7 +300,11 @@ export default function ProPathSkillRadar({
             progress (the natural "next place to work" nudge). Keeps
             the tile always-informative without an empty area. */}
         <SkillRadarDetail
-          axis={hoverAxisId ? SKILL_AXES.find((a) => a.id === hoverAxisId) : nextUpAxis(perAxis)}
+          axis={
+            hoverAxisId
+              ? SKILL_AXES.find((a) => a.id === hoverAxisId)
+              : nextUpAxis(perAxis)
+          }
           data={
             hoverAxisId
               ? pctById.get(hoverAxisId)

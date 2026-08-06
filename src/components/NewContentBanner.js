@@ -94,14 +94,14 @@ export default function NewContentBanner() {
     <Link
       href="/lesson"
       onClick={markSeen}
-      className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-400/50 hover:border-emerald-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
+      className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-accent-500/20 via-accent-500/10 to-transparent border border-accent-400/50 hover:border-accent-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="shrink-0 w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-emerald-200" />
+        <div className="shrink-0 w-9 h-9 rounded-full bg-accent-500/25 flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-accent-200" />
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] uppercase tracking-wider text-emerald-200/80 font-semibold">
+          <p className="text-[11px] uppercase tracking-wider text-accent-200/80 font-semibold">
             {copy.eyebrow}
           </p>
           <p className="text-sm sm:text-base font-bold text-white truncate">
@@ -109,7 +109,7 @@ export default function NewContentBanner() {
           </p>
         </div>
       </div>
-      <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500 group-hover:bg-emerald-400 text-[#062013] text-xs sm:text-sm font-bold tracking-wide">
+      <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent-500 group-hover:bg-accent-400 text-[#062013] text-xs sm:text-sm font-bold tracking-wide">
         {copy.cta}
         <ArrowRight className="w-3.5 h-3.5" />
       </span>

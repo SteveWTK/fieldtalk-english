@@ -91,9 +91,14 @@ export default function ProPathDashboard() {
     usePlayerDashboard(user?.id);
 
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  // Local overrides drive instant UI feedback after the modal saves,
+  // without waiting for a full profile refetch. `undefined` means "no
+  // override yet — fall through to the fetched profile"; `null` on
+  // position means the user picked "Not sure yet" (badge hides).
   const [profileOverride, setProfileOverride] = useState({
     full_name: null,
     avatar_url: null,
+    position: undefined,
   });
 
   // Flatten every pillar's lessons into one array for the radar hook.
@@ -132,7 +137,15 @@ export default function ProPathDashboard() {
   // "Not sure yet" on the onboarding. If profile.position is null,
   // the hero simply hides the badge — honest empty state beats
   // showing wrong data.
-  const position = profile?.position || null;
+  //
+  // Override wins over the fetched profile so the hero updates
+  // instantly after the ProfileEditModal saves — no wait for a
+  // profile refetch. `undefined` on override means "use fetched
+  // value"; `null` means "user explicitly cleared it".
+  const position =
+    profileOverride.position !== undefined
+      ? profileOverride.position
+      : profile?.position || null;
   const totalXp = progress?.total_xp || 0;
 
   if (loading) {
@@ -305,12 +318,22 @@ export default function ProPathDashboard() {
         open={profileModalOpen}
         initialName={fullName}
         initialAvatarUrl={avatarUrl}
+        initialPosition={position}
+        showPositionPicker={true}
         onClose={() => setProfileModalOpen(false)}
         onSaved={(next) => {
-          setProfileOverride({
+          setProfileOverride((prev) => ({
+            ...prev,
             full_name: next.full_name ?? "",
             avatar_url: next.avatar_url ?? "",
-          });
+            // Only overwrite the override when the modal actually
+            // sent back a position field (Pro Path save path). If
+            // the modal was opened by a caller who didn't touch
+            // position, prev.position stays as it was.
+            ...(next.position !== undefined
+              ? { position: next.position }
+              : {}),
+          }));
           refetchProgress?.();
         }}
       />
