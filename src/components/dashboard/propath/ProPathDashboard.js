@@ -43,11 +43,50 @@ import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import NewContentBanner from "@/components/NewContentBanner";
 import ProPathSkillRadar from "./ProPathSkillRadar";
 
+// Local copy dictionary — same pattern PredictionsCentreBanner /
+// ProPathOnboarding use. Kept in the component file because these
+// strings are tightly coupled to this UI and don't need to be shared.
+// If any string ends up needed elsewhere, promote it to
+// src/locales/{en,pt}.json under a propath_* key.
+const COPY = {
+  en: {
+    backToLessons: "Back to lessons",
+    editProfile: "Edit profile",
+    heroEyebrow: "Your Training Ground",
+    xp: "XP",
+    continueLessons: "Continue lessons",
+    continueLessonsBody: "Pick up where you left off.",
+    gameCentre: "Game Centre",
+    gameCentreBody: "Drill vocabulary in short rounds.",
+    certificateUnlockedEyebrow: "Certificate unlocked",
+    certificateUnlockedTitle: "You're Trial-Ready",
+    certificateUnlockedBody:
+      "All 6 areas started. Your Pro Path 26/27 certificate is ready to download.",
+    certificateDownload: "Download certificate",
+    certificatePlaceholderAlert: "Certificate download coming soon!",
+  },
+  pt: {
+    backToLessons: "Voltar às aulas",
+    editProfile: "Editar perfil",
+    heroEyebrow: "Seu Centro de Treinamento",
+    xp: "XP",
+    continueLessons: "Continuar aulas",
+    continueLessonsBody: "Retome de onde parou.",
+    gameCentre: "Game Centre",
+    gameCentreBody: "Pratique vocabulário em rodadas rápidas.",
+    certificateUnlockedEyebrow: "Certificado desbloqueado",
+    certificateUnlockedTitle: "Você está Pronto para Peneiras",
+    certificateUnlockedBody:
+      "Todas as 6 áreas iniciadas. Seu certificado Pro Path 26/27 já pode ser baixado.",
+    certificateDownload: "Baixar certificado",
+    certificatePlaceholderAlert: "Certificado em desenvolvimento — em breve!",
+  },
+};
+
 export default function ProPathDashboard() {
   const { user } = useAuth();
   const { lang } = useLanguage();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const router = useRouter();
+  const copy = COPY[lang] || COPY.en;
   const { profile, progress, lessons, completions, loading, refetchProgress } =
     usePlayerDashboard(user?.id);
 
@@ -85,7 +124,15 @@ export default function ProPathDashboard() {
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
-  const position = profile?.position || user?.user_metadata?.position || null;
+  // Position is authoritative from Pro Path onboarding →
+  // players.position only. We deliberately DON'T fall back to
+  // user.user_metadata.position: legacy signup screens seeded that
+  // field with a hard-coded "Forward" default, which would then show
+  // up as the user's position even when they'd explicitly picked
+  // "Not sure yet" on the onboarding. If profile.position is null,
+  // the hero simply hides the badge — honest empty state beats
+  // showing wrong data.
+  const position = profile?.position || null;
   const totalXp = progress?.total_xp || 0;
 
   if (loading) {
@@ -125,7 +172,7 @@ export default function ProPathDashboard() {
             className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            {lang === "pt" ? "Voltar às aulas" : "Back to lessons"}
+            {copy.backToLessons}
           </Link>
         </div>
 
@@ -142,7 +189,7 @@ export default function ProPathDashboard() {
             <button
               type="button"
               onClick={() => setProfileModalOpen(true)}
-              aria-label={lang === "pt" ? "Editar perfil" : "Edit profile"}
+              aria-label={copy.editProfile}
               className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shrink-0 ring-2 ring-white/15 hover:ring-accent-400 transition-shadow"
             >
               {avatarUrl ? (
@@ -166,9 +213,7 @@ export default function ProPathDashboard() {
 
             <div className="min-w-0 flex-1">
               <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
-                {lang === "pt"
-                  ? "Jogador Pro Path 26/27"
-                  : "Pro Path 26/27 player"}
+                {copy.heroEyebrow}
               </p>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate mt-0.5">
                 {fullName}
@@ -180,7 +225,7 @@ export default function ProPathDashboard() {
                   </span>
                 )}
                 <span className="text-xs text-white/55 tabular-nums">
-                  {totalXp.toLocaleString()} XP
+                  {totalXp.toLocaleString()} {copy.xp}
                 </span>
               </div>
             </div>
@@ -201,22 +246,14 @@ export default function ProPathDashboard() {
           <QuickLink
             href="/lesson"
             Icon={BookOpen}
-            title={lang === "pt" ? "Continuar aulas" : "Continue lessons"}
-            body={
-              lang === "pt"
-                ? "Retome de onde parou."
-                : "Pick up where you left off."
-            }
+            title={copy.continueLessons}
+            body={copy.continueLessonsBody}
           />
           <QuickLink
             href="/games"
             Icon={Gamepad2}
-            title={lang === "pt" ? "Game Centre" : "Game Centre"}
-            body={
-              lang === "pt"
-                ? "Pratique vocabulário em rodadas rápidas."
-                : "Drill vocabulary in short rounds."
-            }
+            title={copy.gameCentre}
+            body={copy.gameCentreBody}
           />
         </div>
 
@@ -235,19 +272,13 @@ export default function ProPathDashboard() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300 font-bold">
-                  {lang === "pt"
-                    ? "Certificado desbloqueado"
-                    : "Certificate unlocked"}
+                  {copy.certificateUnlockedEyebrow}
                 </p>
                 <h3 className="text-lg font-black mt-1">
-                  {lang === "pt"
-                    ? "Você está Pronto para Peneiras"
-                    : "You're Trial-Ready"}
+                  {copy.certificateUnlockedTitle}
                 </h3>
                 <p className="text-sm text-white/75 mt-1 leading-relaxed">
-                  {lang === "pt"
-                    ? "Todas as 6 áreas iniciadas. Seu certificado Pro Path 26/27 já pode ser baixado."
-                    : "All 6 areas started. Your Pro Path 26/27 certificate is ready to download."}
+                  {copy.certificateUnlockedBody}
                 </p>
                 <button
                   type="button"
@@ -257,17 +288,11 @@ export default function ProPathDashboard() {
                     // Empty click keeps the hook obvious in UI; not
                     // showing the button pre-implementation would hide
                     // the emotional payoff from users who earned it.
-                    alert(
-                      lang === "pt"
-                        ? "Certificado em desenvolvimento — em breve!"
-                        : "Certificate download coming soon!",
-                    );
+                    alert(copy.certificatePlaceholderAlert);
                   }}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  {lang === "pt"
-                    ? "Baixar certificado"
-                    : "Download certificate"}
+                  {copy.certificateDownload}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>

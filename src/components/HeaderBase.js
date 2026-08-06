@@ -120,7 +120,28 @@ function HeaderBase({
   };
 
   const copy = t[lang] || t.en;
-  const links = localizedLinks[type]?.[lang] || localizedLinks[type]?.en || [];
+  const rawLinks =
+    localizedLinks[type]?.[lang] || localizedLinks[type]?.en || [];
+
+  // Per-edition dashboard label. WC gets its existing "Ultimate Team"
+  // wording; Pro Path swaps to "Training Ground" (EN) or "CT" (PT
+  // short — universally recognised in Brazilian football and vital
+  // in a tight nav). Other editions fall back to the raw label from
+  // the array above. Kept as a per-link post-process so the base
+  // array stays static + declarative.
+  const propathDashboardLabel = {
+    en: "Training Ground",
+    pt: "CT",
+    es: "Centro de Entrenamiento",
+    fr: "Centre d'entraînement",
+  };
+  const links = rawLinks.map((l) => {
+    if (l.href !== "/dashboard") return l;
+    if (profile?.edition === "propath_26_27") {
+      return { ...l, label: propathDashboardLabel[lang] || propathDashboardLabel.en };
+    }
+    return l;
+  });
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 

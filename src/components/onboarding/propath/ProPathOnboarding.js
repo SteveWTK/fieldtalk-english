@@ -33,7 +33,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { POSITIONS, NOT_SURE_YET } from "@/lib/players/positions";
+import { NOT_SURE_YET, getPosition } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
 import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
 
@@ -346,7 +346,20 @@ export default function ProPathOnboarding({
   );
 }
 
-// ─── Slide 1 — position picker ──────────────────────────────────
+// ─── Slide 1 — position picker (pitch-shaped layout) ─────────────
+// Buttons are placed in a 12-column grid that mirrors a football
+// pitch. Reading top-to-bottom: keeper alone in the centre, three
+// defenders spread across, three midfielders, four attackers with
+// wingers on the flanks. The layout communicates position at a
+// glance without needing icons; a subtle bordered "pitch card"
+// wraps everything for the visual cue.
+//
+// Left/right orientation follows the standard formation-diagram
+// convention (viewer looking down from above, attacking upward):
+// LB / LW sit on the viewer's LEFT. If a user's mental model is
+// "viewer-behind-goal", we can swap the row-2 and row-4 orders in
+// one place here — every position lookup uses codes, so downstream
+// data isn't touched.
 function SlidePosition({ copy, value, onChange, lang }) {
   return (
     <div className="text-center">
@@ -360,45 +373,116 @@ function SlidePosition({ copy, value, onChange, lang }) {
         {copy.body}
       </p>
 
-      {/* Grid of position buttons. 3 columns on mobile → 4 wide screens.
-          Codes rendered prominently, full label small below — a player
-          knows "RB" at a glance and appreciates the full text as a
-          secondary confirmation. */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
-        {POSITIONS.map((pos) => {
-          const active = value === pos.code;
-          return (
-            <button
-              key={pos.code}
-              type="button"
-              onClick={() => onChange(pos.code)}
-              aria-pressed={active}
-              className={`group rounded-2xl border p-3 text-left transition-all ${
-                active
-                  ? "border-accent-400 bg-accent-400/10 shadow-[0_0_20px_rgba(163,230,53,0.15)]"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`text-lg sm:text-xl font-black tracking-tight tabular-nums ${
-                    active ? "text-accent-200" : "text-white/85"
-                  }`}
-                >
-                  {pos.code}
-                </span>
-                {active && <Check className="w-4 h-4 text-accent-300" />}
-              </div>
-              <p
-                className={`text-[10px] sm:text-[11px] mt-1 leading-tight ${
-                  active ? "text-white/80" : "text-white/50"
-                }`}
-              >
-                {lang === "pt" ? pos.pt : pos.en}
-              </p>
-            </button>
-          );
-        })}
+      {/* Pitch card — subtle bordered container with a faint centre
+          line to sell the "you're picking on a pitch" metaphor
+          without dominating the interface. */}
+      <div className="relative rounded-3xl border border-white/[0.07] bg-white/[0.015] p-3 sm:p-4">
+        <div
+          className="pointer-events-none absolute left-4 right-4 top-1/2 -translate-y-1/2 border-t border-dashed border-white/5"
+          aria-hidden
+        />
+
+        <div className="relative grid grid-cols-12 gap-2 sm:gap-3">
+          {/* Row 1 — goalkeeper, centred */}
+          <div className="col-start-5 col-span-4">
+            <PosButton
+              pos={getPosition("GK")}
+              active={value === "GK"}
+              onClick={() => onChange("GK")}
+              lang={lang}
+            />
+          </div>
+
+          {/* Row 2 — defenders (LB / CB / RB from left to right) */}
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("LB")}
+              active={value === "LB"}
+              onClick={() => onChange("LB")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("CB")}
+              active={value === "CB"}
+              onClick={() => onChange("CB")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("RB")}
+              active={value === "RB"}
+              onClick={() => onChange("RB")}
+              lang={lang}
+            />
+          </div>
+
+          {/* Row 3 — midfield (DM / CM / AM). These are back-to-front
+              roles, not left/right; showing them in a horizontal
+              row keeps the pitch shape while acknowledging that DM
+              sits deepest and AM highest. */}
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("DM")}
+              active={value === "DM"}
+              onClick={() => onChange("DM")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("CM")}
+              active={value === "CM"}
+              onClick={() => onChange("CM")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-4">
+            <PosButton
+              pos={getPosition("AM")}
+              active={value === "AM"}
+              onClick={() => onChange("AM")}
+              lang={lang}
+            />
+          </div>
+
+          {/* Row 4 — attack (LW / CF / ST / RW). Wingers on the
+              flanks, forwards in the middle. */}
+          <div className="col-span-3">
+            <PosButton
+              pos={getPosition("LW")}
+              active={value === "LW"}
+              onClick={() => onChange("LW")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-3">
+            <PosButton
+              pos={getPosition("CF")}
+              active={value === "CF"}
+              onClick={() => onChange("CF")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-3">
+            <PosButton
+              pos={getPosition("ST")}
+              active={value === "ST"}
+              onClick={() => onChange("ST")}
+              lang={lang}
+            />
+          </div>
+          <div className="col-span-3">
+            <PosButton
+              pos={getPosition("RW")}
+              active={value === "RW"}
+              onClick={() => onChange("RW")}
+              lang={lang}
+            />
+          </div>
+        </div>
       </div>
 
       {/* "Not sure yet" — deliberately full-width + softer so it feels
@@ -416,6 +500,41 @@ function SlidePosition({ copy, value, onChange, lang }) {
         {lang === "pt" ? NOT_SURE_YET.pt : NOT_SURE_YET.en}
       </button>
     </div>
+  );
+}
+
+// Single position tile — code prominent, full label small below.
+// Defensive against getPosition returning null (defensive so a typo
+// in the layout above degrades to a hidden slot rather than crashing).
+function PosButton({ pos, active, onClick, lang }) {
+  if (!pos) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={lang === "pt" ? pos.pt : pos.en}
+      className={`w-full h-full flex flex-col items-center justify-center rounded-xl border py-2 sm:py-2.5 px-1 transition-all ${
+        active
+          ? "border-accent-400 bg-accent-400/10 shadow-[0_0_18px_rgba(163,230,53,0.18)]"
+          : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
+      }`}
+    >
+      <span
+        className={`text-base sm:text-lg font-black tracking-tight tabular-nums ${
+          active ? "text-accent-200" : "text-white/85"
+        }`}
+      >
+        {pos.code}
+      </span>
+      <span
+        className={`text-[9px] sm:text-[10px] mt-0.5 leading-tight text-center line-clamp-1 ${
+          active ? "text-white/80" : "text-white/50"
+        }`}
+      >
+        {lang === "pt" ? pos.pt : pos.en}
+      </span>
+    </button>
   );
 }
 

@@ -23,6 +23,40 @@ import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
 
+// Local copy dictionary — colocated because these strings are tightly
+// coupled to this tile. Same pattern as ProPathDashboard /
+// ProPathOnboarding. `aria` is a function so it can interpolate the
+// live axesWithProgress + total count.
+const COPY = {
+  en: {
+    eyebrow: "Skill Radar",
+    subtitle: "Your readiness across every side of the game",
+    areasStarted: "Areas started",
+    aria: (done, total) => `Skill radar. ${done} of ${total} areas started.`,
+    trialReadyLabel: "Trial-Ready score",
+    trialReadyExplain:
+      "Complete at least 1 lesson in each of the 6 areas to earn your Pro Path 26/27 certificate.",
+    startFirstLesson: "Start your first lesson",
+    detailEmptyBody:
+      "Lessons coming soon. Start any area to begin filling out your radar.",
+    lessonsComplete: "lessons complete",
+  },
+  pt: {
+    eyebrow: "Radar de Habilidades",
+    subtitle: "Sua prontidão para os desafios do jogo",
+    areasStarted: "Áreas iniciadas",
+    aria: (done, total) =>
+      `Radar de habilidades. ${done} de ${total} áreas iniciadas.`,
+    trialReadyLabel: "Prontidão para peneiras",
+    trialReadyExplain:
+      "Complete pelo menos 1 aula em cada uma das 6 áreas para ganhar seu certificado Pro Path 26/27.",
+    startFirstLesson: "Começar a primeira aula",
+    detailEmptyBody:
+      "Aulas em breve. Comece por qualquer área para começar a preencher o radar.",
+    lessonsComplete: "aulas concluídas",
+  },
+};
+
 // SVG geometry constants. viewBox is 0..VIEW; radar sits at (CX, CY)
 // with maximum radius R_MAX. All axis-endpoint positions are derived
 // from these + the axis index, so tweaking VIEW/R_MAX in one place
@@ -65,6 +99,7 @@ export default function ProPathSkillRadar({
   lang = "en",
   lessonHref = "/lesson",
 }) {
+  const copy = COPY[lang] || COPY.en;
   // Entrance animation — the polygon draws from 0% to its real value
   // on mount so users see it "fill in" rather than pop. Duration
   // matched to the ambient landing-page animations (~1s) for family
@@ -104,17 +139,15 @@ export default function ProPathSkillRadar({
       <header className="flex items-start justify-between gap-3 mb-4">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
-            {lang === "pt" ? "Radar de Habilidades" : "Skill Radar"}
+            {copy.eyebrow}
           </p>
           <h2 className="text-lg sm:text-xl font-black tracking-tight mt-1">
-            {lang === "pt"
-              ? "Sua prontidão para os desafios do jogo"
-              : "Your readiness across every side of the game"}
+            {copy.subtitle}
           </h2>
         </div>
         <div className="shrink-0 text-right">
           <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
-            {lang === "pt" ? "Áreas iniciadas" : "Areas started"}
+            {copy.areasStarted}
           </p>
           <p className="text-2xl font-black tabular-nums text-accent-300">
             {axesWithProgress}
@@ -128,11 +161,7 @@ export default function ProPathSkillRadar({
           viewBox={`0 0 ${VIEW} ${VIEW + 20}`}
           className="w-full max-w-md mx-auto block"
           role="img"
-          aria-label={
-            lang === "pt"
-              ? `Radar de habilidades. ${axesWithProgress} de ${AXIS_COUNT} áreas iniciadas.`
-              : `Skill radar. ${axesWithProgress} of ${AXIS_COUNT} areas started.`
-          }
+          aria-label={copy.aria(axesWithProgress, AXIS_COUNT)}
         >
           {/* Background rings — hex outlines drawn from the same axis
               geometry, so ring shape follows axis count automatically
@@ -282,6 +311,7 @@ export default function ProPathSkillRadar({
               : pctById.get(nextUpAxis(perAxis)?.id || "")
           }
           lang={lang}
+          copy={copy}
           isEmpty={isEmpty}
         />
       </div>
@@ -292,7 +322,7 @@ export default function ProPathSkillRadar({
       <div className="mt-5 pt-5 border-t border-white/10">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold text-white/80">
-            {lang === "pt" ? "Prontidão para peneiras" : "Trial-Ready score"}
+            {copy.trialReadyLabel}
           </p>
           <p className="text-xs font-black tabular-nums text-accent-300">
             {trialReadyPct}%
@@ -305,9 +335,7 @@ export default function ProPathSkillRadar({
           />
         </div>
         <p className="mt-2 text-[11px] text-white/50 leading-relaxed">
-          {lang === "pt"
-            ? "Complete pelo menos 1 aula em cada uma das 6 áreas para ganhar seu certificado Pro Path 26/27."
-            : "Complete at least 1 lesson in each of the 6 areas to earn your Pro Path 26/27 certificate."}
+          {copy.trialReadyExplain}
         </p>
 
         {isEmpty && (
@@ -316,7 +344,7 @@ export default function ProPathSkillRadar({
             className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            {lang === "pt" ? "Começar a primeira aula" : "Start your first lesson"}
+            {copy.startFirstLesson}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         )}
@@ -337,10 +365,10 @@ function nextUpAxis(perAxis) {
   return SKILL_AXES.find((a) => a.id === bottomId) || SKILL_AXES[0];
 }
 
-function SkillRadarDetail({ axis, data, lang, isEmpty }) {
+function SkillRadarDetail({ axis, data, lang, copy, isEmpty }) {
   if (!axis) return null;
   const Icon = axis.Icon;
-  const label = lang === "pt" ? axis.pt : axis.en;
+  const label = skillAxisLabel(axis.id, lang, "full");
 
   if (isEmpty || !data || data.total === 0) {
     return (
@@ -351,9 +379,7 @@ function SkillRadarDetail({ axis, data, lang, isEmpty }) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-white/85">{label}</p>
           <p className="text-[11px] text-white/50 leading-relaxed">
-            {lang === "pt"
-              ? "Aulas em breve. Comece por qualquer área para começar a preencher o radar."
-              : "Lessons coming soon. Start any area to begin filling out your radar."}
+            {copy.detailEmptyBody}
           </p>
         </div>
       </div>
@@ -368,8 +394,7 @@ function SkillRadarDetail({ axis, data, lang, isEmpty }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-white/90">{label}</p>
         <p className="text-[11px] text-white/60 leading-relaxed">
-          {data.done} / {data.total}{" "}
-          {lang === "pt" ? "aulas concluídas" : "lessons complete"}
+          {data.done} / {data.total} {copy.lessonsComplete}
           <span className="text-white/40"> · {data.pct}%</span>
         </p>
       </div>
