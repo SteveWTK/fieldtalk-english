@@ -279,38 +279,47 @@ export default function ProPathSkillRadar({
             );
           })}
 
-          {/* Cells — 24 wedges. Fill opacity scales with the
-              segment's fill (baseline 6% so an empty cell is still
-              visible as a subtle wedge). Passed cells get a soft
-              glow via drop-shadow. Not-released cells (lessonId
-              === null) render as dashed outlines only. */}
+          {/* Cells — 24 wedges. State-driven rendering:
+                - passed (fill=1)        → solid lime + glow
+                - partial (0 < fill < 1) → lime, opacity scales
+                                            from a subtle 15%
+                                            baseline with progress
+                - not started (fill = 0
+                    but lesson exists)   → NO fill, solid outline
+                - not released (no lesson
+                    yet in this slot)    → NO fill, dashed outline
+              The empty-but-lesson-exists case previously showed a
+              "ghost green" at 15% opacity which read as if the user
+              had started something — moved to zero fill + slightly
+              stronger outline to distinguish it from not-released
+              without simulating progress. */}
           {perAxis.map((axisData, axisIdx) =>
             axisData.segments.map((seg, segIdx) => {
               const notReleased = seg.lessonId === null;
               const passed = seg.passed;
+              const started = seg.fill > 0;
               const isHover =
                 hoverCell?.axisIdx === axisIdx &&
                 hoverCell?.segmentIdx === segIdx;
               const path = cellPath(axisIdx, segIdx);
 
-              // Fill opacity: passed = 0.9 (near-solid), partial =
-              // 0.15 + fill*0.65 (rises with progress from a subtle
-              // baseline), not-released = 0 (no fill, dashed
-              // outline only).
               let fillOpacity = 0;
-              if (notReleased) {
-                fillOpacity = 0;
-              } else if (passed) {
-                fillOpacity = animate ? 0.9 : 0.06;
-              } else {
-                fillOpacity = animate ? 0.15 + seg.fill * 0.65 : 0.06;
+              if (passed) {
+                fillOpacity = animate ? 0.9 : 0;
+              } else if (started) {
+                fillOpacity = animate ? 0.15 + seg.fill * 0.65 : 0;
               }
+              // notReleased + not-started + not-passed cells all
+              // stay at fillOpacity = 0; the stroke does the
+              // differentiation.
 
               const strokeColor = notReleased
-                ? "rgba(255,255,255,0.15)"
+                ? "rgba(255,255,255,0.12)"
                 : passed
                   ? "rgba(163,230,53,0.9)"
-                  : "rgba(255,255,255,0.2)";
+                  : started
+                    ? "rgba(163,230,53,0.5)"
+                    : "rgba(255,255,255,0.22)";
 
               return (
                 <path

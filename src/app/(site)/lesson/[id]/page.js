@@ -1337,6 +1337,15 @@ function DynamicLessonContent() {
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
               step={currentStepData}
+              onAttempt={() => {
+                // Unlock the Next button as soon as the user has
+                // engaged with the step, regardless of correctness.
+                // Matches the ATTEMPT_REQUIRED_TYPES contract; fixes
+                // the June '26 regression where a wrong answer left
+                // Next stuck disabled because onComplete only fires
+                // on all-correct.
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
+              }}
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
@@ -3179,13 +3188,18 @@ function DynamicLessonContent() {
   return (
     <div className="max-w-4xl mx-auto p-4 min-h-screen">
       {/* Side rail showing live progress toward the next sticker pack.
-          Updates as each step's XP is awarded — flashes a celebratory
-          state when the user crosses a pack threshold mid-lesson. */}
-      <PackProgressBanner
-        effectiveXp={effectiveXp}
-        packXpCost={packXpCost}
-        onOpenClick={handleOpenPackMidLesson}
-      />
+          WC-only — Pro Path (and any future non-sticker edition)
+          doesn't have a pack economy, so the "Only X XP left to
+          your next pack" nudge would just be noise. Explicit
+          allow-list (not deny-list) so new editions never
+          accidentally inherit this. */}
+      {playerProfile?.edition === "wc2026" && (
+        <PackProgressBanner
+          effectiveXp={effectiveXp}
+          packXpCost={packXpCost}
+          onOpenClick={handleOpenPackMidLesson}
+        />
+      )}
 
       {/* Header */}
       <div className="mb-6">

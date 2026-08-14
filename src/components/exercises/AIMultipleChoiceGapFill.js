@@ -28,6 +28,15 @@ export default function AIMultipleChoiceGapFill({
   sentences,
   lessonId,
   onComplete,
+  // Fires ONCE the first time the user checks any sentence, regardless
+  // of correctness. Parent uses it to satisfy the Next-button
+  // attempt gate — the "have a go and you can move on" contract the
+  // lesson player relies on. Without this, users who got any gap
+  // wrong found Next stuck disabled forever (June '26 regression:
+  // onComplete only fires when ALL gaps are correct, so a single
+  // wrong answer left the step "un-attempted" from the parent's
+  // point of view even though the user had clearly attempted it).
+  onAttempt,
   englishVariant = "british",
   voiceGender = "male",
   imageUrl = null,
@@ -282,6 +291,21 @@ export default function AIMultipleChoiceGapFill({
     baseXp,
     onComplete,
   ]);
+
+  // Fire onAttempt once the user has checked at least one sentence.
+  // Decoupled from correctness so the parent's Next-button attempt
+  // gate opens as soon as the user has engaged — even if none of
+  // their answers were right. XP and full completion still wait on
+  // the all-correct effect above (users don't earn XP just for
+  // clicking Check on a wrong answer).
+  const [attemptFired, setAttemptFired] = React.useState(false);
+  React.useEffect(() => {
+    if (attemptFired) return;
+    const hasAnyCheck = Object.keys(showFeedback || {}).length > 0;
+    if (!hasAnyCheck) return;
+    setAttemptFired(true);
+    if (typeof onAttempt === "function") onAttempt();
+  }, [showFeedback, attemptFired, onAttempt]);
 
   const getAIHint = async (sentenceId, sentence) => {
     const currentHintCount = hintUsage[sentenceId] || 0;
