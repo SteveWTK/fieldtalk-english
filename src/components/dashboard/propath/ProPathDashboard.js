@@ -58,10 +58,14 @@ const COPY = {
     continueLessonsBody: "Pick up where you left off.",
     gameCentre: "Game Centre",
     gameCentreBody: "Drill vocabulary in short rounds.",
-    certificateUnlockedEyebrow: "Certificate unlocked",
-    certificateUnlockedTitle: "You're Trial-Ready",
+    // Level-aware certificate copy. Functions interpolate the level
+    // number so a Level-2 unlock reads "Level 2 complete" without
+    // needing separate keys per level.
+    certificateUnlockedEyebrow: (level) => `Level ${level} complete`,
+    certificateUnlockedTitle: (level) =>
+      `Your Pro Path Level ${level} certificate`,
     certificateUnlockedBody:
-      "All 6 areas started. Your Pro Path 26/27 certificate is ready to download.",
+      "Every skill mastered at this level. Time to celebrate — and to keep going into the next 4 units.",
     certificateDownload: "Download certificate",
     certificatePlaceholderAlert: "Certificate download coming soon!",
   },
@@ -74,10 +78,11 @@ const COPY = {
     continueLessonsBody: "Retome de onde parou.",
     gameCentre: "Game Centre",
     gameCentreBody: "Pratique vocabulário em rodadas rápidas.",
-    certificateUnlockedEyebrow: "Certificado desbloqueado",
-    certificateUnlockedTitle: "Você está Pronto para Peneiras",
+    certificateUnlockedEyebrow: (level) => `Nível ${level} concluído`,
+    certificateUnlockedTitle: (level) =>
+      `Seu certificado Pro Path Nível ${level}`,
     certificateUnlockedBody:
-      "Todas as 6 áreas iniciadas. Seu certificado Pro Path 26/27 já pode ser baixado.",
+      "Todas as habilidades dominadas neste nível. Hora de celebrar — e seguir para as próximas 4 unidades.",
     certificateDownload: "Baixar certificado",
     certificatePlaceholderAlert: "Certificado em desenvolvimento — em breve!",
   },
@@ -248,8 +253,12 @@ export default function ProPathDashboard() {
         {/* ── Skill Radar — the flagship visual ─────────────────── */}
         <ProPathSkillRadar
           perAxis={radar.perAxis}
-          trialReadyPct={radar.trialReadyPct}
-          axesWithProgress={radar.axesWithProgress}
+          currentLevel={radar.currentLevel}
+          levelPct={radar.levelPct}
+          axesFullyPassed={radar.axesFullyPassed}
+          totalPassedInLevel={radar.totalPassedInLevel}
+          totalPossibleInLevel={radar.totalPossibleInLevel}
+          certificateReady={radar.certificateReady}
           lang={lang}
           lessonHref="/lesson"
         />
@@ -275,9 +284,12 @@ export default function ProPathDashboard() {
           <Leaderboard defaultSort="xp" />
         </div>
 
-        {/* Trial-Ready badge (celebratory) — only when unlocked. Keeps
-            the dashboard focused when the milestone isn't hit yet. */}
-        {radar.trialReady && (
+        {/* Certificate-unlocked hero — fires when radar.certificateReady
+            is true (every axis has all 4 segments passed in the
+            current Level). The radar tile shows a subtle inline
+            confirmation; this section is the celebration moment
+            with a real download CTA. */}
+        {radar.certificateReady && (
           <section className="rounded-3xl bg-gradient-to-br from-accent-400/[0.15] via-accent-400/[0.08] to-transparent border border-accent-400/40 p-5 sm:p-6">
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-2xl bg-accent-400/25 flex items-center justify-center shrink-0">
@@ -285,10 +297,10 @@ export default function ProPathDashboard() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300 font-bold">
-                  {copy.certificateUnlockedEyebrow}
+                  {copy.certificateUnlockedEyebrow(radar.currentLevel)}
                 </p>
                 <h3 className="text-lg font-black mt-1">
-                  {copy.certificateUnlockedTitle}
+                  {copy.certificateUnlockedTitle(radar.currentLevel)}
                 </h3>
                 <p className="text-sm text-white/75 mt-1 leading-relaxed">
                   {copy.certificateUnlockedBody}

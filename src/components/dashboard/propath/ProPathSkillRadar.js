@@ -1,145 +1,222 @@
 // src/components/dashboard/propath/ProPathSkillRadar.js
 //
-// Pro Path dashboard's flagship visual — a 6-axis SVG radar chart
-// showing per-axis completion for the user. The whole tile is
-// designed to feel like the identity of the edition: dark glassy
-// panel, electric-lime polygon, axis icons in slate. Animates on
-// mount + hovers reveal per-axis detail without leaving the tile.
+// Pro Path dashboard's flagship visual — a 6-axis radar with 4
+// individually-lit segments per axis (24 cells total). Each segment
+// corresponds to one Level-progressing lesson in that skill; its
+// fill scales from 0 (not attempted) to 1 (passed threshold), with
+// partial fills showing "close but keep going" states.
 //
-// Data source: useSkillRadar hook (upstream of this component).
-// Empty state (no lessons or no completions yet) still renders the
-// scaffold — a small centre dot + faint hexagonal grid — so the
-// tile reads as an *invitation* rather than a broken chart. Copy
-// nudges toward the first lesson.
+// Data source: useSkillRadar hook. This component is presentation-
+// only — no data fetching or scoring lives here.
 //
-// Sizing: the SVG uses a viewBox so it scales to the parent width;
-// axis-label positions are pre-computed in unit space, letting the
-// consumer control layout without recomputing angles.
+// Visual design:
+//   - Six hexagonal-sector cells per axis (4 cells radiating from
+//     the centre outward). Cells are curved wedge slices — cleaner
+//     to draw and read than a strictly-hexagonal cell subdivision.
+//   - Subtle hexagon ring outlines behind the cells preserve the
+//     visual DNA of the previous version.
+//   - Passed segments: solid lime + soft glow.
+//   - Partial segments: proportional opacity + visible outline —
+//     "you're on it, keep going".
+//   - Not-yet-released segments (Level's lesson slot for that axis
+//     doesn't exist in the DB yet): dashed outline only.
+//   - Hover any cell → detail strip shows lesson info + XP earned
+//     against threshold.
+//
+// Layout: SVG uses a viewBox so the whole tile scales to the parent.
 
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Trophy } from "lucide-react";
 import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
+import {
+  LESSONS_PER_LEVEL,
+  PASS_THRESHOLD,
+} from "@/lib/hooks/useSkillRadar";
 
-// Local copy dictionary — colocated because these strings are tightly
-// coupled to this tile. Same pattern as ProPathDashboard /
-// ProPathOnboarding. `aria` is a function so it can interpolate the
-// live axesWithProgress + total count.
+// Local copy dictionary — same colocated pattern as the rest of the
+// Pro Path components.
 const COPY = {
   en: {
-    eyebrow: "Skill Radar",
+    eyebrow: (level) => `Skill Radar — Level ${level}`,
     subtitle: "Your readiness across every side of the game",
-    areasStarted: "Areas started",
-    aria: (done, total) => `Skill radar. ${done} of ${total} areas started.`,
-    trialReadyLabel: "Trial-Ready score",
+    passedLabel: "Segments passed",
+    aria: (done, total, level) =>
+      `Skill radar, Level ${level}. ${done} of ${total} segments passed.`,
+    trialReadyLabel: "Certificate progress",
     trialReadyExplain:
-      "Complete at least 1 lesson in each of the 6 areas to earn your Pro Path 26/27 certificate.",
+      "Pass all 4 segments in each of the 6 areas to earn the Level {level} certificate.",
     startFirstLesson: "Start your first lesson",
+    keepGoing: "Keep going",
     detailEmptyBody:
       "Lessons coming soon. Start any area to begin filling out your radar.",
-    lessonsComplete: "lessons complete",
+    detailNotReleasedBody:
+      "This lesson isn't in your Training Ground yet — content team is on it.",
+    detailNotStarted: "Not yet started",
+    detailPassed: "Passed",
+    detailPartial: "Keep going",
+    lessonNumber: (n) => `Lesson ${n}`,
+    xpOf: (earned, max) => `${earned} / ${max} XP`,
+    passesAt: (n) => `Passes at ${n} XP`,
+    certificateReadyEyebrow: (level) => `Level ${level} complete`,
+    certificateReadyBody: "Every axis, every segment. Certificate ready.",
   },
   pt: {
-    eyebrow: "Radar de Habilidades",
+    eyebrow: (level) => `Radar de Habilidades — Nível ${level}`,
     subtitle: "Sua prontidão para os desafios do jogo",
-    areasStarted: "Áreas iniciadas",
-    aria: (done, total) =>
-      `Radar de habilidades. ${done} de ${total} áreas iniciadas.`,
-    trialReadyLabel: "Prontidão para peneiras",
+    passedLabel: "Segmentos concluídos",
+    aria: (done, total, level) =>
+      `Radar de habilidades, Nível ${level}. ${done} de ${total} segmentos concluídos.`,
+    trialReadyLabel: "Progresso do certificado",
     trialReadyExplain:
-      "Complete pelo menos 1 aula em cada uma das 6 áreas para ganhar seu certificado Pro Path 26/27.",
+      "Passe nos 4 segmentos de cada uma das 6 áreas para ganhar o certificado de Nível {level}.",
     startFirstLesson: "Começar a primeira aula",
+    keepGoing: "Continuar",
     detailEmptyBody:
       "Aulas em breve. Comece por qualquer área para começar a preencher o radar.",
-    lessonsComplete: "aulas concluídas",
+    detailNotReleasedBody:
+      "Essa aula ainda não está no seu Centro de Treinamento — a equipe de conteúdo está trabalhando nela.",
+    detailNotStarted: "Ainda não iniciada",
+    detailPassed: "Passou",
+    detailPartial: "Continue",
+    lessonNumber: (n) => `Aula ${n}`,
+    xpOf: (earned, max) => `${earned} / ${max} XP`,
+    passesAt: (n) => `Passa em ${n} XP`,
+    certificateReadyEyebrow: (level) => `Nível ${level} concluído`,
+    certificateReadyBody: "Todos os eixos, todos os segmentos. Certificado pronto.",
   },
 };
 
 // SVG geometry constants. viewBox is 0..VIEW; radar sits at (CX, CY)
-// with maximum radius R_MAX. All axis-endpoint positions are derived
-// from these + the axis index, so tweaking VIEW/R_MAX in one place
-// resizes the whole chart proportionally.
+// with maximum radius R_MAX. Adjust these three to rescale the
+// whole chart proportionally.
 const VIEW = 400;
 const CX = VIEW / 2;
 const CY = VIEW / 2 + 6; // nudge down so top-axis label doesn't clip
 const R_MAX = 130;
 const AXIS_COUNT = SKILL_AXES.length;
+const SECTOR_ANGLE = (2 * Math.PI) / AXIS_COUNT; // 60° per axis
+// A tiny angular gap between adjacent axes' cells so the boundaries
+// read cleanly — otherwise the 24 cells run into each other and the
+// whole radar looks like a filled disc when everything is full.
+const CELL_GAP_ANGLE = 0.018;
 
-// Rings drawn behind the polygon at these fractions of R_MAX. Four
-// rings (25/50/75/100 %) is enough to read progress at a glance
-// without cluttering the chart.
+// Rings drawn behind the cells for visual guidance. Same 4 fractions
+// as the segment boundaries so the grid + cells are visually
+// consistent.
 const RING_FRACTIONS = [0.25, 0.5, 0.75, 1.0];
 
-// Convert (axisIndex, fraction) → SVG point. Angle starts at -90°
-// (top) and moves clockwise, matching the natural reading order of
-// the axis labels around the tile.
-function axisPoint(axisIndex, fraction) {
-  const angle = -Math.PI / 2 + (axisIndex / AXIS_COUNT) * Math.PI * 2;
-  const r = R_MAX * fraction;
+// Axis centre angle (top axis = -90°, i.e. -π/2).
+function axisAngle(i) {
+  return -Math.PI / 2 + i * SECTOR_ANGLE;
+}
+
+// (angle, radius) → SVG point in the tile's coordinate space.
+function polarPoint(angle, r) {
   return {
     x: CX + Math.cos(angle) * r,
     y: CY + Math.sin(angle) * r,
-    angle,
   };
 }
 
-// Label position sits slightly outside R_MAX so the icons don't
-// overlap the outer ring. 1.15 gives comfortable breathing room on
-// desktop; the SVG scales down for mobile automatically.
+// Cell path (SVG `d` string) for segment N of axis A. Cell is a
+// curved wedge bounded by two radial edges (with a small angular gap
+// on each side) and two concentric arcs (inner + outer). Innermost
+// segment (N=0) collapses inner arc to the centre point — a
+// triangle-like wedge instead of a trapezoid.
+function cellPath(axisIdx, segmentIdx) {
+  const angleCenter = axisAngle(axisIdx);
+  const angleStart =
+    angleCenter - SECTOR_ANGLE / 2 + CELL_GAP_ANGLE / 2;
+  const angleEnd = angleCenter + SECTOR_ANGLE / 2 - CELL_GAP_ANGLE / 2;
+  const innerR = (segmentIdx / LESSONS_PER_LEVEL) * R_MAX;
+  const outerR = ((segmentIdx + 1) / LESSONS_PER_LEVEL) * R_MAX;
+
+  const outerStart = polarPoint(angleStart, outerR);
+  const outerEnd = polarPoint(angleEnd, outerR);
+  const innerStart = polarPoint(angleStart, innerR);
+  const innerEnd = polarPoint(angleEnd, innerR);
+
+  if (segmentIdx === 0) {
+    // Triangle-wedge with centre apex — no inner arc.
+    return [
+      `M ${CX.toFixed(2)},${CY.toFixed(2)}`,
+      `L ${outerStart.x.toFixed(2)},${outerStart.y.toFixed(2)}`,
+      `A ${outerR.toFixed(2)},${outerR.toFixed(2)} 0 0 1 ${outerEnd.x.toFixed(2)},${outerEnd.y.toFixed(2)}`,
+      "Z",
+    ].join(" ");
+  }
+  return [
+    `M ${innerStart.x.toFixed(2)},${innerStart.y.toFixed(2)}`,
+    `A ${innerR.toFixed(2)},${innerR.toFixed(2)} 0 0 1 ${innerEnd.x.toFixed(2)},${innerEnd.y.toFixed(2)}`,
+    `L ${outerEnd.x.toFixed(2)},${outerEnd.y.toFixed(2)}`,
+    `A ${outerR.toFixed(2)},${outerR.toFixed(2)} 0 0 0 ${outerStart.x.toFixed(2)},${outerStart.y.toFixed(2)}`,
+    "Z",
+  ].join(" ");
+}
+
+// Label position sits slightly outside R_MAX so icons don't overlap
+// the outer ring.
 function labelPoint(axisIndex) {
-  return axisPoint(axisIndex, 1.18);
+  return polarPoint(axisAngle(axisIndex), R_MAX * 1.18);
 }
 
 export default function ProPathSkillRadar({
   perAxis,
-  trialReadyPct,
-  axesWithProgress,
+  currentLevel,
+  levelPct,
+  axesFullyPassed,
+  totalPassedInLevel,
+  totalPossibleInLevel,
+  certificateReady,
   lang = "en",
   lessonHref = "/lesson",
 }) {
   const copy = COPY[lang] || COPY.en;
-  // Entrance animation — the polygon draws from 0% to its real value
-  // on mount so users see it "fill in" rather than pop. Duration
-  // matched to the ambient landing-page animations (~1s) for family
-  // resemblance.
+
+  // Entrance animation — cells fade in with a slight radial stagger
+  // (inner cells first). Duration matched to the ambient landing-
+  // page animations for family resemblance.
   const [animate, setAnimate] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => setAnimate(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const [hoverAxisId, setHoverAxisId] = useState(null);
+  // Hover state — { axisIdx, segmentIdx } identifying which cell.
+  // Detail strip shows either the hovered cell OR (default) the
+  // "next up" cell (lowest-fill, non-empty axis).
+  const [hoverCell, setHoverCell] = useState(null);
 
-  const pctById = useMemo(() => {
-    const m = new Map();
-    for (const a of perAxis) m.set(a.id, a);
-    return m;
-  }, [perAxis]);
+  // Fast lookup: axis id → axis + segments (from useSkillRadar).
+  const axisByIndex = perAxis; // already in SKILL_AXES order
 
-  // Polygon points. On mount `animate` is false → every axis reads 0
-  // (a single point at centre). Flipping to true triggers the
-  // browser's CSS transition on the polygon, drawing it to its real
-  // shape. Simple and hard to break.
-  const polygonPoints = SKILL_AXES.map((axis, i) => {
-    const pctRaw = pctById.get(axis.id)?.pct || 0;
-    const fraction = animate ? pctRaw / 100 : 0;
-    const p = axisPoint(i, Math.max(fraction, 0.02)); // 0.02 so an
-    // all-zero radar still renders as a tiny dot rather than a
-    // degenerate polygon that Safari sometimes drops entirely.
-    return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-  }).join(" ");
+  // Determine the "next up" cell for the default detail strip:
+  // the first not-yet-passed segment across all axes, walking axes
+  // left-to-right and segments inward-out. Feels like "here's what
+  // to tackle next".
+  const nextUp = useMemo(() => {
+    for (let segIdx = 0; segIdx < LESSONS_PER_LEVEL; segIdx++) {
+      for (let axisIdx = 0; axisIdx < axisByIndex.length; axisIdx++) {
+        const seg = axisByIndex[axisIdx]?.segments?.[segIdx];
+        if (seg && !seg.passed) return { axisIdx, segmentIdx: segIdx };
+      }
+    }
+    return null;
+  }, [axisByIndex]);
 
-  const isEmpty = perAxis.every((a) => a.total === 0);
-  const anyDone = perAxis.some((a) => a.done > 0);
+  const detailCell = hoverCell || nextUp;
+
+  const isEmpty = perAxis.every((a) => a.available === 0);
 
   return (
     <section className="rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 p-5 sm:p-6">
       <header className="flex items-start justify-between gap-3 mb-4">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
-            {copy.eyebrow}
+            {copy.eyebrow(currentLevel)}
           </p>
           <h2 className="text-lg sm:text-xl font-black tracking-tight mt-1">
             {copy.subtitle}
@@ -147,12 +224,12 @@ export default function ProPathSkillRadar({
         </div>
         <div className="shrink-0 text-right">
           <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
-            {copy.areasStarted}
+            {copy.passedLabel}
           </p>
           <p className="text-2xl font-black tabular-nums text-accent-300">
-            {axesWithProgress}
+            {totalPassedInLevel}
             <span className="text-white/40 text-sm font-bold">
-              /{AXIS_COUNT}
+              /{totalPossibleInLevel}
             </span>
           </p>
         </div>
@@ -163,14 +240,18 @@ export default function ProPathSkillRadar({
           viewBox={`0 0 ${VIEW} ${VIEW + 20}`}
           className="w-full max-w-md mx-auto block"
           role="img"
-          aria-label={copy.aria(axesWithProgress, AXIS_COUNT)}
+          aria-label={copy.aria(
+            totalPassedInLevel,
+            totalPossibleInLevel,
+            currentLevel
+          )}
         >
-          {/* Background rings — hex outlines drawn from the same axis
-              geometry, so ring shape follows axis count automatically
-              (drop an axis and the hex becomes a pentagon). */}
+          {/* Background hex rings — subtle guidance for the eye,
+              matching the previous version so the radar still reads
+              as "hexagonal" even though cells are arc-bounded. */}
           {RING_FRACTIONS.map((f, ri) => {
             const points = SKILL_AXES.map((_, i) => {
-              const p = axisPoint(i, f);
+              const p = polarPoint(axisAngle(i), f * R_MAX);
               return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
             }).join(" ");
             return (
@@ -178,15 +259,16 @@ export default function ProPathSkillRadar({
                 key={ri}
                 points={points}
                 fill="none"
-                stroke="rgba(255,255,255,0.08)"
-                strokeWidth={ri === RING_FRACTIONS.length - 1 ? 1.25 : 0.75}
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth={ri === RING_FRACTIONS.length - 1 ? 1 : 0.5}
               />
             );
           })}
 
-          {/* Radial axis lines — subtle, drawn to R_MAX. */}
+          {/* Radial axis lines — very subtle, so hover boundaries
+              are hinted but don't compete with the cells. */}
           {SKILL_AXES.map((axis, i) => {
-            const outer = axisPoint(i, 1);
+            const outer = polarPoint(axisAngle(i), R_MAX);
             return (
               <line
                 key={axis.id}
@@ -194,69 +276,95 @@ export default function ProPathSkillRadar({
                 y1={CY}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255,255,255,0.08)"
-                strokeWidth={0.75}
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth={0.5}
               />
             );
           })}
 
-          {/* Filled polygon — the user's actual radar. Transitions
-              from centre-point → real shape on mount, giving the
-              "filling in" effect. */}
-          <polygon
-            points={polygonPoints}
-            fill="rgba(163,230,53,0.18)"
-            stroke="rgba(163,230,53,0.85)"
-            strokeWidth={2}
-            strokeLinejoin="round"
-            style={{
-              transition: "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
-              filter: anyDone
-                ? "drop-shadow(0 0 12px rgba(163,230,53,0.35))"
-                : "none",
-            }}
-          />
+          {/* Cells — 24 wedges. Fill opacity scales with the
+              segment's fill (baseline 6% so an empty cell is still
+              visible as a subtle wedge). Passed cells get a soft
+              glow via drop-shadow. Not-released cells (lessonId
+              === null) render as dashed outlines only. */}
+          {perAxis.map((axisData, axisIdx) =>
+            axisData.segments.map((seg, segIdx) => {
+              const notReleased = seg.lessonId === null;
+              const passed = seg.passed;
+              const isHover =
+                hoverCell?.axisIdx === axisIdx &&
+                hoverCell?.segmentIdx === segIdx;
+              const path = cellPath(axisIdx, segIdx);
 
-          {/* Per-axis vertex markers — small filled circles at each
-              vertex. Larger + brighter when the axis has any
-              progress, so a partially-filled radar reads clearly. */}
-          {SKILL_AXES.map((axis, i) => {
-            const data = pctById.get(axis.id) || { pct: 0, done: 0 };
-            const fraction = animate ? Math.max(data.pct / 100, 0.02) : 0.02;
-            const p = axisPoint(i, fraction);
-            const active = data.done > 0;
-            return (
-              <circle
-                key={axis.id}
-                cx={p.x}
-                cy={p.y}
-                r={active ? 4 : 2.5}
-                fill={active ? "rgb(190,242,100)" : "rgba(255,255,255,0.4)"}
-                style={{
-                  transition: "all 1000ms cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-              />
-            );
-          })}
+              // Fill opacity: passed = 0.9 (near-solid), partial =
+              // 0.15 + fill*0.65 (rises with progress from a subtle
+              // baseline), not-released = 0 (no fill, dashed
+              // outline only).
+              let fillOpacity = 0;
+              if (notReleased) {
+                fillOpacity = 0;
+              } else if (passed) {
+                fillOpacity = animate ? 0.9 : 0.06;
+              } else {
+                fillOpacity = animate ? 0.15 + seg.fill * 0.65 : 0.06;
+              }
 
-          {/* Axis labels — icon + short text, positioned OUTSIDE the
-              outer ring. Uses foreignObject to reuse Tailwind + Lucide
-              icons rather than rebuilding icons as SVG paths. Hover
-              reveals detail via the parent tooltip strip below. */}
+              const strokeColor = notReleased
+                ? "rgba(255,255,255,0.15)"
+                : passed
+                  ? "rgba(163,230,53,0.9)"
+                  : "rgba(255,255,255,0.2)";
+
+              return (
+                <path
+                  key={`${axisIdx}-${segIdx}`}
+                  d={path}
+                  fill="rgb(163,230,53)"
+                  fillOpacity={fillOpacity}
+                  stroke={
+                    isHover
+                      ? "rgba(255,255,255,0.6)"
+                      : strokeColor
+                  }
+                  strokeWidth={isHover ? 1.4 : 0.6}
+                  strokeDasharray={notReleased ? "2 2" : undefined}
+                  style={{
+                    transition:
+                      "fill-opacity 900ms cubic-bezier(0.16, 1, 0.3, 1), stroke 200ms ease",
+                    // Passed cells glow — subtle drop shadow gives
+                    // the "lit up" feel without overwhelming the
+                    // partial cells nearby.
+                    filter: passed
+                      ? "drop-shadow(0 0 4px rgba(163,230,53,0.4))"
+                      : "none",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={() =>
+                    setHoverCell({ axisIdx, segmentIdx: segIdx })
+                  }
+                  onMouseLeave={() => setHoverCell(null)}
+                  onFocus={() =>
+                    setHoverCell({ axisIdx, segmentIdx: segIdx })
+                  }
+                  onBlur={() => setHoverCell(null)}
+                  tabIndex={0}
+                >
+                  <title>{`${skillAxisLabel(axisData.id, lang, "short")} — ${copy.lessonNumber(segIdx + 1)}`}</title>
+                </path>
+              );
+            })
+          )}
+
+          {/* Axis labels — icon + short text OUTSIDE the outer ring.
+              foreignObject so we reuse Tailwind + Lucide icons
+              rather than rebuilding icons as raw SVG paths. */}
           {SKILL_AXES.map((axis, i) => {
             const p = labelPoint(i);
-            const data = pctById.get(axis.id) || {
-              done: 0,
-              total: 0,
-              pct: 0,
-            };
+            const axisData = perAxis[i];
             const Icon = axis.Icon;
-            const active = data.done > 0;
-            const isHover = hoverAxisId === axis.id;
-            // foreignObject dims are set so the icon+label group
-            // centres on `p`. Width kept tight to avoid overlap
-            // between adjacent labels on mobile.
-            const w = 96;
+            const active = axisData && axisData.passedInLevel > 0;
+            const isHover = hoverCell?.axisIdx === i;
+            const w = 92;
             const h = 44;
             return (
               <foreignObject
@@ -268,22 +376,17 @@ export default function ProPathSkillRadar({
                 style={{ overflow: "visible" }}
               >
                 <div
-                  onMouseEnter={() => setHoverAxisId(axis.id)}
-                  onMouseLeave={() => setHoverAxisId(null)}
-                  onFocus={() => setHoverAxisId(axis.id)}
-                  onBlur={() => setHoverAxisId(null)}
-                  tabIndex={0}
-                  className={`flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-0.5 outline-none transition-colors cursor-default ${
+                  className={`flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-0.5 outline-none transition-colors ${
                     isHover ? "bg-white/[0.06]" : ""
                   }`}
                 >
                   <Icon
-                    className={`w-5 h-5 ${
+                    className={`w-4 h-4 ${
                       active ? "text-accent-300" : "text-white/40"
                     }`}
                   />
                   <span
-                    className={`text-[12px] font-bold leading-tight text-center ${
+                    className={`text-[10px] font-bold leading-tight text-center ${
                       active ? "text-white/85" : "text-white/45"
                     }`}
                   >
@@ -295,47 +398,46 @@ export default function ProPathSkillRadar({
           })}
         </svg>
 
-        {/* Detail strip — persistently shows either the hovered axis
-            or, when nothing is hovered, the axis with the LEAST
-            progress (the natural "next place to work" nudge). Keeps
-            the tile always-informative without an empty area. */}
+        {/* Detail strip — persistently shows either the hovered
+            cell or (default) the "next up" cell so the tile is
+            always informative. */}
         <SkillRadarDetail
           axis={
-            hoverAxisId
-              ? SKILL_AXES.find((a) => a.id === hoverAxisId)
-              : nextUpAxis(perAxis)
+            detailCell ? SKILL_AXES[detailCell.axisIdx] : SKILL_AXES[0]
           }
-          data={
-            hoverAxisId
-              ? pctById.get(hoverAxisId)
-              : pctById.get(nextUpAxis(perAxis)?.id || "")
+          segment={
+            detailCell
+              ? perAxis[detailCell.axisIdx]?.segments?.[
+                  detailCell.segmentIdx
+                ]
+              : null
           }
+          segmentIndex={detailCell?.segmentIdx ?? 0}
           lang={lang}
           copy={copy}
           isEmpty={isEmpty}
         />
       </div>
 
-      {/* Trial-Ready footer strip — subtle progress bar toward the
-          certificate. Sits at the base of the tile so the whole
-          "your skill state" story reads top-to-bottom in one glance. */}
+      {/* Level progress footer — subtle bar toward the certificate.
+          Uses the same fill palette as the cells for continuity. */}
       <div className="mt-5 pt-5 border-t border-white/10">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold text-white/80">
             {copy.trialReadyLabel}
           </p>
           <p className="text-xs font-black tabular-nums text-accent-300">
-            {trialReadyPct}%
+            {levelPct}%
           </p>
         </div>
         <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent-200 transition-[width] duration-1000"
-            style={{ width: animate ? `${trialReadyPct}%` : "0%" }}
+            style={{ width: animate ? `${levelPct}%` : "0%" }}
           />
         </div>
         <p className="mt-2 text-[11px] text-white/50 leading-relaxed">
-          {copy.trialReadyExplain}
+          {copy.trialReadyExplain.replace("{level}", currentLevel)}
         </p>
 
         {isEmpty && (
@@ -348,29 +450,35 @@ export default function ProPathSkillRadar({
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         )}
+
+        {certificateReady && (
+          <div className="mt-4 rounded-2xl border border-accent-400/50 bg-accent-400/[0.08] p-3 flex items-center gap-3">
+            <Trophy className="w-5 h-5 text-accent-300 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-accent-300">
+                {copy.certificateReadyEyebrow(currentLevel)}
+              </p>
+              <p className="text-xs text-white/80 mt-0.5">
+                {copy.certificateReadyBody}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-// Axis with the lowest completion % that ALSO has at least one lesson
-// available — the natural "here's where to focus next" nudge. Falls
-// back to the first axis when nothing has any lessons yet (empty
-// state), so the detail strip still has something to describe.
-function nextUpAxis(perAxis) {
-  const withLessons = perAxis.filter((a) => a.total > 0);
-  if (withLessons.length === 0) return SKILL_AXES[0];
-  const sorted = [...withLessons].sort((a, b) => a.pct - b.pct);
-  const bottomId = sorted[0].id;
-  return SKILL_AXES.find((a) => a.id === bottomId) || SKILL_AXES[0];
-}
-
-function SkillRadarDetail({ axis, data, lang, copy, isEmpty }) {
+// Detail strip — the always-visible info panel below the radar.
+// Shows the hovered cell (or, by default, the "next up" cell) with
+// context: axis, lesson number, XP earned vs threshold, state.
+function SkillRadarDetail({ axis, segment, segmentIndex, lang, copy, isEmpty }) {
   if (!axis) return null;
   const Icon = axis.Icon;
   const label = skillAxisLabel(axis.id, lang, "full");
 
-  if (isEmpty || !data || data.total === 0) {
+  // Fully empty edition (no lessons authored for any axis yet).
+  if (isEmpty || !segment) {
     return (
       <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0">
@@ -386,16 +494,71 @@ function SkillRadarDetail({ axis, data, lang, copy, isEmpty }) {
     );
   }
 
+  // Segment slot exists but no lesson released for that slot yet
+  // (content team is behind, or Level has slots not yet populated).
+  if (segment.lessonId === null) {
+    return (
+      <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4 text-white/50" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-white/85">
+            {label}
+            <span className="text-white/40 font-normal">
+              {" "}
+              · {copy.lessonNumber(segmentIndex + 1)}
+            </span>
+          </p>
+          <p className="text-[11px] text-white/50 leading-relaxed">
+            {copy.detailNotReleasedBody}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const passed = segment.passed;
+  const started = segment.earnedXp > 0;
+  const threshold = Math.round(segment.maxXp * PASS_THRESHOLD);
+  const stateLabel = passed
+    ? copy.detailPassed
+    : started
+      ? copy.detailPartial
+      : copy.detailNotStarted;
+  const accentTone = passed
+    ? "border-accent-400/40 bg-accent-400/[0.08]"
+    : "border-white/10 bg-white/[0.03]";
+  const iconTone = passed
+    ? "bg-accent-400/20 text-accent-300"
+    : "bg-white/[0.06] text-white/70";
+
   return (
-    <div className="mt-4 rounded-2xl bg-accent-400/[0.06] border border-accent-400/25 px-4 py-3 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl bg-accent-400/15 flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-accent-300" />
+    <div
+      className={`mt-4 rounded-2xl border px-4 py-3 flex items-center gap-3 transition-colors ${accentTone}`}
+    >
+      <div
+        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconTone}`}
+      >
+        <Icon className="w-4 h-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-white/90">{label}</p>
+        <p className="text-sm font-bold text-white/90 truncate">
+          {label}
+          <span className="text-white/40 font-normal">
+            {" "}
+            · {copy.lessonNumber(segmentIndex + 1)}
+          </span>
+        </p>
         <p className="text-[11px] text-white/60 leading-relaxed">
-          {data.done} / {data.total} {copy.lessonsComplete}
-          <span className="text-white/40"> · {data.pct}%</span>
+          {copy.xpOf(segment.earnedXp, segment.maxXp)}
+          <span className="text-white/40"> · {stateLabel}</span>
+          {!passed && segment.maxXp > 0 && (
+            <span className="text-white/40">
+              {" "}
+              · {copy.passesAt(threshold)}
+            </span>
+          )}
         </p>
       </div>
     </div>
