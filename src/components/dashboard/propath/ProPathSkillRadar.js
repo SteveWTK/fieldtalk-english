@@ -31,10 +31,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, Trophy } from "lucide-react";
 import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
-import {
-  LESSONS_PER_LEVEL,
-  PASS_THRESHOLD,
-} from "@/lib/hooks/useSkillRadar";
+import { LESSONS_PER_LEVEL, PASS_THRESHOLD } from "@/lib/hooks/useSkillRadar";
 
 // Local copy dictionary — same colocated pattern as the rest of the
 // Pro Path components.
@@ -85,7 +82,8 @@ const COPY = {
     xpOf: (earned, max) => `${earned} / ${max} XP`,
     passesAt: (n) => `Passa em ${n} XP`,
     certificateReadyEyebrow: (level) => `Nível ${level} concluído`,
-    certificateReadyBody: "Todos os eixos, todos os segmentos. Certificado pronto.",
+    certificateReadyBody:
+      "Todos os eixos, todos os segmentos. Certificado pronto.",
   },
 };
 
@@ -128,8 +126,7 @@ function polarPoint(angle, r) {
 // triangle-like wedge instead of a trapezoid.
 function cellPath(axisIdx, segmentIdx) {
   const angleCenter = axisAngle(axisIdx);
-  const angleStart =
-    angleCenter - SECTOR_ANGLE / 2 + CELL_GAP_ANGLE / 2;
+  const angleStart = angleCenter - SECTOR_ANGLE / 2 + CELL_GAP_ANGLE / 2;
   const angleEnd = angleCenter + SECTOR_ANGLE / 2 - CELL_GAP_ANGLE / 2;
   const innerR = (segmentIdx / LESSONS_PER_LEVEL) * R_MAX;
   const outerR = ((segmentIdx + 1) / LESSONS_PER_LEVEL) * R_MAX;
@@ -167,7 +164,7 @@ export default function ProPathSkillRadar({
   perAxis,
   currentLevel,
   levelPct,
-  axesFullyPassed,
+  // axesFullyPassed,
   totalPassedInLevel,
   totalPossibleInLevel,
   certificateReady,
@@ -243,7 +240,7 @@ export default function ProPathSkillRadar({
           aria-label={copy.aria(
             totalPassedInLevel,
             totalPossibleInLevel,
-            currentLevel
+            currentLevel,
           )}
         >
           {/* Background hex rings — subtle guidance for the eye,
@@ -321,11 +318,7 @@ export default function ProPathSkillRadar({
                   d={path}
                   fill="rgb(163,230,53)"
                   fillOpacity={fillOpacity}
-                  stroke={
-                    isHover
-                      ? "rgba(255,255,255,0.6)"
-                      : strokeColor
-                  }
+                  stroke={isHover ? "rgba(255,255,255,0.6)" : strokeColor}
                   strokeWidth={isHover ? 1.4 : 0.6}
                   strokeDasharray={notReleased ? "2 2" : undefined}
                   style={{
@@ -343,16 +336,14 @@ export default function ProPathSkillRadar({
                     setHoverCell({ axisIdx, segmentIdx: segIdx })
                   }
                   onMouseLeave={() => setHoverCell(null)}
-                  onFocus={() =>
-                    setHoverCell({ axisIdx, segmentIdx: segIdx })
-                  }
+                  onFocus={() => setHoverCell({ axisIdx, segmentIdx: segIdx })}
                   onBlur={() => setHoverCell(null)}
                   tabIndex={0}
                 >
                   <title>{`${skillAxisLabel(axisData.id, lang, "short")} — ${copy.lessonNumber(segIdx + 1)}`}</title>
                 </path>
               );
-            })
+            }),
           )}
 
           {/* Axis labels — icon + short text OUTSIDE the outer ring.
@@ -402,14 +393,10 @@ export default function ProPathSkillRadar({
             cell or (default) the "next up" cell so the tile is
             always informative. */}
         <SkillRadarDetail
-          axis={
-            detailCell ? SKILL_AXES[detailCell.axisIdx] : SKILL_AXES[0]
-          }
+          axis={detailCell ? SKILL_AXES[detailCell.axisIdx] : SKILL_AXES[0]}
           segment={
             detailCell
-              ? perAxis[detailCell.axisIdx]?.segments?.[
-                  detailCell.segmentIdx
-                ]
+              ? perAxis[detailCell.axisIdx]?.segments?.[detailCell.segmentIdx]
               : null
           }
           segmentIndex={detailCell?.segmentIdx ?? 0}
@@ -472,7 +459,14 @@ export default function ProPathSkillRadar({
 // Detail strip — the always-visible info panel below the radar.
 // Shows the hovered cell (or, by default, the "next up" cell) with
 // context: axis, lesson number, XP earned vs threshold, state.
-function SkillRadarDetail({ axis, segment, segmentIndex, lang, copy, isEmpty }) {
+function SkillRadarDetail({
+  axis,
+  segment,
+  segmentIndex,
+  lang,
+  copy,
+  isEmpty,
+}) {
   if (!axis) return null;
   const Icon = axis.Icon;
   const label = skillAxisLabel(axis.id, lang, "full");
@@ -554,10 +548,7 @@ function SkillRadarDetail({ axis, segment, segmentIndex, lang, copy, isEmpty }) 
           {copy.xpOf(segment.earnedXp, segment.maxXp)}
           <span className="text-white/40"> · {stateLabel}</span>
           {!passed && segment.maxXp > 0 && (
-            <span className="text-white/40">
-              {" "}
-              · {copy.passesAt(threshold)}
-            </span>
+            <span className="text-white/40"> · {copy.passesAt(threshold)}</span>
           )}
         </p>
       </div>
