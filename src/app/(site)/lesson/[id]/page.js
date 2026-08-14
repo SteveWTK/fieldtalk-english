@@ -42,11 +42,7 @@ import {
   getPlayerPreferredLanguage,
 } from "@/lib/supabase/queries";
 import { awardXp } from "@/lib/xp/awardXp";
-import {
-  getResume,
-  setResume,
-  clearResume,
-} from "@/lib/lessons/resume";
+import { getResume, setResume, clearResume } from "@/lib/lessons/resume";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -75,10 +71,7 @@ import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
 import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
 import PaywallCard from "@/components/PaywallCard";
-import {
-  usePlayerAccess,
-  canViewLesson,
-} from "@/lib/access/usePlayerAccess";
+import { usePlayerAccess, canViewLesson } from "@/lib/access/usePlayerAccess";
 import Link from "next/link";
 
 // Step types where Next is gated on the user having interacted with
@@ -174,7 +167,7 @@ function DynamicLessonContent() {
   const effectiveXp = baselineXp + uncommittedXpEarned;
   const packXpCost = appSettings?.pack_xp_cost || 200;
   const packProgressPct = Math.round(
-    ((effectiveXp % packXpCost) / packXpCost) * 100
+    ((effectiveXp % packXpCost) / packXpCost) * 100,
   );
   const xpToNextPack = Math.max(0, packXpCost - (effectiveXp % packXpCost));
   const [showTranslation, setShowTranslation] = useState(false);
@@ -194,9 +187,7 @@ function DynamicLessonContent() {
   const lessonEdition = lesson?.pillar?.edition || null;
   const access = usePlayerAccess(lessonEdition);
   const lessonAllowed =
-    !lessonEdition ||
-    canViewLesson(access, lesson?.id) ||
-    access.isAdmin;
+    !lessonEdition || canViewLesson(access, lesson?.id) || access.isAdmin;
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
@@ -318,7 +309,7 @@ function DynamicLessonContent() {
           .eq("source_id", lesson.id);
         serverCommitted = (data || []).reduce(
           (sum, r) => sum + (Number(r.amount) || 0),
-          0
+          0,
         );
       } catch (err) {
         console.warn("[lesson] resume server-check failed:", err);
@@ -340,7 +331,7 @@ function DynamicLessonContent() {
           setCompletedSteps(new Set(local.completedSteps));
         } else {
           setCompletedSteps(
-            new Set(Array.from({ length: local.currentStep }, (_, i) => i))
+            new Set(Array.from({ length: local.currentStep }, (_, i) => i)),
           );
         }
       }
@@ -393,26 +384,29 @@ function DynamicLessonContent() {
     // Translate step title
     if (stepData.title) {
       translationPromises.push(
-        translateContent(stepData.title, `step-title-${currentStep}`)
+        translateContent(stepData.title, `step-title-${currentStep}`),
       );
     }
 
     // Translate scenario content
     if (stepData.type === "scenario" && stepData.content) {
       translationPromises.push(
-        translateContent(stepData.content, `scenario-${currentStep}`)
+        translateContent(stepData.content, `scenario-${currentStep}`),
       );
 
       if (stepData.cultural_context) {
         translationPromises.push(
-          translateContent(stepData.cultural_context, `cultural-${currentStep}`)
+          translateContent(
+            stepData.cultural_context,
+            `cultural-${currentStep}`,
+          ),
         );
       }
 
       if (stepData.reflection_questions) {
         stepData.reflection_questions.forEach((q, idx) => {
           translationPromises.push(
-            translateContent(q, `reflection-${currentStep}-${idx}`)
+            translateContent(q, `reflection-${currentStep}-${idx}`),
           );
         });
       }
@@ -422,7 +416,7 @@ function DynamicLessonContent() {
     if (stepData.type === "completion" && stepData.achievements) {
       stepData.achievements.forEach((achievement, idx) => {
         translationPromises.push(
-          translateContent(achievement, `achievement-${currentStep}-${idx}`)
+          translateContent(achievement, `achievement-${currentStep}-${idx}`),
         );
       });
     }
@@ -432,7 +426,7 @@ function DynamicLessonContent() {
       // Translate vocabulary instructions/content
       if (stepData.content) {
         translationPromises.push(
-          translateContent(stepData.content, `vocab-content-${currentStep}`)
+          translateContent(stepData.content, `vocab-content-${currentStep}`),
         );
       }
 
@@ -440,15 +434,15 @@ function DynamicLessonContent() {
       items.forEach((item, idx) => {
         if (item.tip) {
           translationPromises.push(
-            translateContent(item.tip, `vocab-tip-${currentStep}-${idx}`)
+            translateContent(item.tip, `vocab-tip-${currentStep}-${idx}`),
           );
         }
         if (item.cultural_note) {
           translationPromises.push(
             translateContent(
               item.cultural_note,
-              `vocab-note-${currentStep}-${idx}`
-            )
+              `vocab-note-${currentStep}-${idx}`,
+            ),
           );
         }
       });
@@ -461,8 +455,8 @@ function DynamicLessonContent() {
         translationPromises.push(
           translateContent(
             config.instruction,
-            `pitch-instruction-${currentStep}`
-          )
+            `pitch-instruction-${currentStep}`,
+          ),
         );
       }
       if (config?.click_areas) {
@@ -471,8 +465,8 @@ function DynamicLessonContent() {
             translationPromises.push(
               translateContent(
                 area.description,
-                `pitch-area-desc-${currentStep}-${idx}`
-              )
+                `pitch-area-desc-${currentStep}-${idx}`,
+              ),
             );
           }
         });
@@ -486,8 +480,8 @@ function DynamicLessonContent() {
         translationPromises.push(
           translateContent(
             config.instruction,
-            `game-instruction-${currentStep}`
-          )
+            `game-instruction-${currentStep}`,
+          ),
         );
       }
       if (config?.commands) {
@@ -496,8 +490,8 @@ function DynamicLessonContent() {
             translationPromises.push(
               translateContent(
                 cmd.success_message,
-                `game-success-${currentStep}-${idx}`
-              )
+                `game-success-${currentStep}-${idx}`,
+              ),
             );
           }
         });
@@ -507,7 +501,7 @@ function DynamicLessonContent() {
     // Translate writing prompts
     if (stepData.type === "ai_writing" && stepData.prompt) {
       translationPromises.push(
-        translateContent(stepData.prompt, `writing-prompt-${currentStep}`)
+        translateContent(stepData.prompt, `writing-prompt-${currentStep}`),
       );
     }
 
@@ -515,7 +509,10 @@ function DynamicLessonContent() {
     if (stepData.type === "ai_listening_challenge") {
       if (stepData.content) {
         translationPromises.push(
-          translateContent(stepData.content, `listening-content-${currentStep}`)
+          translateContent(
+            stepData.content,
+            `listening-content-${currentStep}`,
+          ),
         );
       }
 
@@ -526,8 +523,8 @@ function DynamicLessonContent() {
             translationPromises.push(
               translateContent(
                 clip.context,
-                `listening-context-${currentStep}-${idx}`
-              )
+                `listening-context-${currentStep}-${idx}`,
+              ),
             );
           }
         });
@@ -538,13 +535,13 @@ function DynamicLessonContent() {
     if (stepData.type === "ai_speech_practice") {
       if (stepData.prompt) {
         translationPromises.push(
-          translateContent(stepData.prompt, `speech-prompt-${currentStep}`)
+          translateContent(stepData.prompt, `speech-prompt-${currentStep}`),
         );
       }
 
       if (stepData.context) {
         translationPromises.push(
-          translateContent(stepData.context, `speech-context-${currentStep}`)
+          translateContent(stepData.context, `speech-context-${currentStep}`),
         );
       }
     }
@@ -555,7 +552,7 @@ function DynamicLessonContent() {
       !["scenario", "vocabulary"].includes(stepData.type)
     ) {
       translationPromises.push(
-        translateContent(stepData.content, `content-${currentStep}`)
+        translateContent(stepData.content, `content-${currentStep}`),
       );
     }
 
@@ -877,7 +874,7 @@ function DynamicLessonContent() {
           Math.round((completedSteps.size / steps.length) * 100),
           xpEarned,
           Date.now() - startTime,
-          committedXp
+          committedXp,
         );
         // First-completion gate — re-doing a lesson must not re-grant XP.
         const additionalXp = Math.max(0, xpEarned - committedXp);
@@ -929,7 +926,7 @@ function DynamicLessonContent() {
         Math.round((completedSteps.size / steps.length) * 100),
         xpEarned,
         durationMs,
-        committedXp
+        committedXp,
       );
 
       // Log the lesson-completion XP audit event ONLY when this is the
@@ -999,7 +996,7 @@ function DynamicLessonContent() {
       // If audio_url starts with "/audio/", try to play it directly
       if (
         currentStepData.audio_url.startsWith(
-          "https://ojxmpejjvwfaxtlmcnuq.supabase.co/storage/v1/object/public/Audios"
+          "https://ojxmpejjvwfaxtlmcnuq.supabase.co/storage/v1/object/public/Audios",
         )
       ) {
         // Check if file exists first
@@ -1197,7 +1194,7 @@ function DynamicLessonContent() {
                           {translations[`reflection-${currentStep}-${index}`] ||
                             question}
                         </li>
-                      )
+                      ),
                     )}
                   </ul>
                 </div>
@@ -1249,7 +1246,7 @@ function DynamicLessonContent() {
                       ""
                     ).substring(0, 50);
                     localStorage.removeItem(
-                      `ai-writing-${lessonId}-${promptPrefix}`
+                      `ai-writing-${lessonId}-${promptPrefix}`,
                     );
                   }
                   // Force re-render by changing the key
@@ -1298,16 +1295,16 @@ function DynamicLessonContent() {
                   if (typeof window !== "undefined") {
                     // AIConversationPractice uses these keys:
                     localStorage.removeItem(
-                      `ai-conversation-${lessonId}-input`
+                      `ai-conversation-${lessonId}-input`,
                     );
                     localStorage.removeItem(
-                      `ai-conversation-${lessonId}-messages`
+                      `ai-conversation-${lessonId}-messages`,
                     );
                     localStorage.removeItem(
-                      `ai-conversation-${lessonId}-turnCount`
+                      `ai-conversation-${lessonId}-turnCount`,
                     );
                     localStorage.removeItem(
-                      `ai-conversation-${lessonId}-errors`
+                      `ai-conversation-${lessonId}-errors`,
                     );
                   }
                   // Force re-render by changing the key
@@ -1362,10 +1359,9 @@ function DynamicLessonContent() {
                   // key now includes the step id, so we mirror it
                   // here to avoid wiping a sibling step's progress).
                   if (typeof window !== "undefined") {
-                    const stepKey =
-                      currentStepData?.id || "default";
+                    const stepKey = currentStepData?.id || "default";
                     localStorage.removeItem(
-                      `lesson-${lessonId}-step-${stepKey}-aiGapFill-progress`
+                      `lesson-${lessonId}-step-${stepKey}-aiGapFill-progress`,
                     );
                   }
                   // Force re-render by changing the key
@@ -1388,7 +1384,7 @@ function DynamicLessonContent() {
             context:
               translations[`listening-context-${currentStep}-${idx}`] ||
               clip.context,
-          })
+          }),
         );
 
         return (
@@ -1522,7 +1518,7 @@ function DynamicLessonContent() {
               description:
                 translations[`pitch-area-desc-${currentStep}-${idx}`] ||
                 area.description,
-            })
+            }),
           ),
         };
         return (
@@ -1540,7 +1536,7 @@ function DynamicLessonContent() {
                   if (typeof window !== "undefined") {
                     // InteractivePitch uses a single key with JSON data
                     localStorage.removeItem(
-                      `lesson-${lessonId}-interactivePitch-progress`
+                      `lesson-${lessonId}-interactivePitch-progress`,
                     );
                   }
                   // Force re-render by changing the key
@@ -1583,7 +1579,7 @@ function DynamicLessonContent() {
                   if (typeof window !== "undefined") {
                     // InteractiveGame uses a single key with JSON data
                     localStorage.removeItem(
-                      `lesson-${lessonId}-interactiveGame-progress`
+                      `lesson-${lessonId}-interactiveGame-progress`,
                     );
                   }
                   // Force re-render by changing the key
@@ -1703,7 +1699,7 @@ function DynamicLessonContent() {
                         <Star className="w-4 h-4 text-yellow-500 mr-2 mt-0.5" />
                         &quot;{phrase}&quot;
                       </li>
-                    )
+                    ),
                   )}
                 </ul>
               </div>
@@ -1777,7 +1773,7 @@ function DynamicLessonContent() {
                                     <option key={optIndex} value={option}>
                                       {option}
                                     </option>
-                                  )
+                                  ),
                                 )}
                               </select>
                             )}
@@ -1962,11 +1958,11 @@ function DynamicLessonContent() {
                         (scenario, scenarioIndex) =>
                           scenario.gaps.some(
                             (_, gapIndex) =>
-                              !selectedAnswers[`${scenarioIndex}-${gapIndex}`]
-                          )
+                              !selectedAnswers[`${scenarioIndex}-${gapIndex}`],
+                          ),
                       )
                     : currentStepData.gaps?.some(
-                        (_, gapIndex) => !selectedAnswers[`gap-${gapIndex}`]
+                        (_, gapIndex) => !selectedAnswers[`gap-${gapIndex}`],
                       )
                 }
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -2197,7 +2193,7 @@ function DynamicLessonContent() {
                   // Check if all challenges have been answered
                   currentStepData.challenges.some(
                     (_, challengeIndex) =>
-                      !selectedAnswers[`challenge-${challengeIndex}`]
+                      !selectedAnswers[`challenge-${challengeIndex}`],
                   )
                 }
                 className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -2225,7 +2221,7 @@ function DynamicLessonContent() {
                             currentStepData.challenges.filter(
                               (challenge, index) =>
                                 selectedAnswers[`challenge-${index}`] ===
-                                challenge.correct_answer
+                                challenge.correct_answer,
                             ).length
                           } out of ${currentStepData.challenges.length} correct. Keep practicing!`}
                     </span>
@@ -2498,7 +2494,7 @@ function DynamicLessonContent() {
                                 <span className="text-red-600 mr-2">1.</span>
                                 {action}
                               </li>
-                            )
+                            ),
                           )}
                         </ul>
                       </div>
@@ -2524,7 +2520,7 @@ function DynamicLessonContent() {
                       </div>
                     )}
                   </div>
-                )
+                ),
               )}
             </div>
           </div>
@@ -2615,7 +2611,7 @@ function DynamicLessonContent() {
                           </div>
                         )}
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>
@@ -2811,7 +2807,7 @@ function DynamicLessonContent() {
 
             <div className="space-y-6">
               {Object.entries(
-                currentStepData.midfielder_communications || {}
+                currentStepData.midfielder_communications || {},
               ).map(([situationType, situationData], index) => (
                 <div
                   key={index}
@@ -2844,7 +2840,7 @@ function DynamicLessonContent() {
                                 </span>
                               )}
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -2871,7 +2867,7 @@ function DynamicLessonContent() {
                                 </span>
                               )}
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -2898,7 +2894,7 @@ function DynamicLessonContent() {
                                 </span>
                               )}
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -3014,7 +3010,7 @@ function DynamicLessonContent() {
       case "completion":
         return (
           <div className="text-center">
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-8 rounded-xl">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-primary-900/20 dark:to-primary-900/20 p-8 rounded-xl">
               {/* Translation button */}
               {/* {userPreferredLanguage !== "en" && (
                 <div className="flex justify-end mb-4">
@@ -3095,7 +3091,7 @@ function DynamicLessonContent() {
                               `achievement-${currentStep}-${index}`
                             ] || achievement}
                           </p>
-                        )
+                        ),
                       )}
                     </div>
                   )}
@@ -3115,7 +3111,7 @@ function DynamicLessonContent() {
                   <button
                     onClick={handleLessonComplete}
                     disabled={completing}
-                    className="bg-gradient-to-r from-primary-500 to-accent-500 text-whites px-6 sm:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-accent-500 text-whites px-6 sm:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {completing ? (
                       <div className="flex items-center space-x-2">
@@ -3138,7 +3134,7 @@ function DynamicLessonContent() {
                     type="button"
                     onClick={() => handleNavigateAway("/dashboard")}
                     disabled={completing}
-                    className="bg-accent-800 hover:bg-accent-700 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-accent-800 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {dashboardGoLabel}
                   </button>
@@ -3324,7 +3320,7 @@ function DynamicLessonContent() {
           // there on submit/place/finish), so going back to a step
           // already done leaves Next unlocked.
           const isAttemptRequired = ATTEMPT_REQUIRED_TYPES.has(
-            currentStepData?.type
+            currentStepData?.type,
           );
           const hasAttempted = completedSteps.has(currentStep);
           // Platform admins bypass the gate entirely so QA / content
