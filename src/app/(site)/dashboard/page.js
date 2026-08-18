@@ -51,6 +51,7 @@ import DashboardTour from "@/components/DashboardTour";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 import ProPathDashboard from "@/components/dashboard/propath/ProPathDashboard";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import PhoneCollectionModal from "@/components/whatsapp/PhoneCollectionModal";
 
 // Dashboard router. Reads the caller's edition and delegates to the
 // right dashboard component. Kept as a thin router so each edition
@@ -64,6 +65,10 @@ import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 function DashboardContent() {
   const { user } = useAuth();
   const { profile, loading } = usePlayerProfile(user?.id);
+  // Local override so a successful phone-modal save hides the modal
+  // instantly without waiting for a full profile refetch. The next
+  // navigation will pick up the persisted value from the DB.
+  const [phoneJustSaved, setPhoneJustSaved] = useState(false);
 
   // While the profile is loading we keep the loader neutral (white
   // spinner) so it doesn't briefly show WC emerald then flip to Pro
@@ -77,14 +82,37 @@ function DashboardContent() {
     );
   }
 
-  if (profile.edition === "propath_26_27") {
-    return <ProPathDashboard />;
-  }
+  // Phone-collection gate — fires ONLY when onboarding is already
+  // complete. New users are still inside WelcomeOnboarding /
+  // ProPathOnboarding at /lesson; catching them here would double up
+  // on their first-visit modal load. Existing users (who signed up
+  // before WhatsApp launch) will hit this on their next dashboard
+  // visit. The modal is unclosable — see the component's header for
+  // the rationale.
+  const needsPhone =
+    profile.onboarding_completed === true &&
+    !phoneJustSaved &&
+    (!profile.phone_e164 || profile.phone_e164.trim() === "");
 
-  // Default = WC2026 (also covers legacy "players" edition tags —
-  // those users see the WC dashboard for now; migrating them to Pro
-  // Path is a separate content decision).
-  return <WC2026DashboardContent />;
+  const dashboard =
+    profile.edition === "propath_26_27" ? (
+      <ProPathDashboard />
+    ) : (
+      // Default = WC2026 (also covers legacy "players" edition tags —
+      // those users see the WC dashboard for now; migrating them to
+      // Pro Path is a separate content decision).
+      <WC2026DashboardContent />
+    );
+
+  return (
+    <>
+      {dashboard}
+      <PhoneCollectionModal
+        open={needsPhone}
+        onSaved={() => setPhoneJustSaved(true)}
+      />
+    </>
+  );
 }
 
 // WC2026 dashboard content — the original 5-tile fan storyline

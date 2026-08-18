@@ -2,22 +2,32 @@
 //
 // PATCH /api/profile  — update the signed-in user's own profile.
 //
-// Three fields are writable here: full_name, avatar_url and position.
+// Writable fields:
+//   full_name, avatar_url, position — the profile basics.
+//   phone_e164 — canonicalised WhatsApp number.
+//   whatsapp_opted_in — LGPD consent flag; when flipping true, the
+//     client MUST also send whatsapp_consent_text so we snapshot the
+//     exact wording the user agreed to.
+//   whatsapp_nudge_frequency — 'daily' | 'every_3_days' | 'weekly' | 'off'.
+//   whatsapp_nudge_time_slot — 'morning' | 'afternoon' | 'evening'.
+//
 // Everything else on the players row (user_type, edition, email, …)
 // is read-only from this endpoint by design — those need separate,
 // more guarded paths.
-//
-// Display name is trimmed and clamped at 60 chars.
-// avatar_url is rejected unless it's a recognised flag CDN host
-// (flagcdn.com) or the project's own Supabase Storage host.
-// position must be one of the canonical POSITIONS codes (GK, RB, CB,
-// …) or null / empty string to clear. Written by the Pro Path
-// onboarding + the ProfileEditModal's post-onboarding change flow.
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { POSITIONS } from "@/lib/players/positions";
+import { normalizeBrazilianPhone } from "@/lib/utils/phone";
+
+const ALLOWED_NUDGE_FREQUENCIES = new Set([
+  "daily",
+  "every_3_days",
+  "weekly",
+  "off",
+]);
+const ALLOWED_NUDGE_TIME_SLOTS = new Set(["morning", "afternoon", "evening"]);
 
 const ALLOWED_POSITION_CODES = new Set(POSITIONS.map((p) => p.code));
 
@@ -116,6 +126,91 @@ export async function PATCH(request) {
           {
             error:
               "position must be one of the canonical codes (GK, RB, CB, …) or null",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if ("phone_e164" in body) {
+      const raw = body.phone_e164;
+      if (raw == null || raw === "") {
+        update.phone_e164 = null;
+      } else {
+        const norm = normalizeBrazilianPhone(String(raw));
+        if (!norm.ok) {
+          return NextResponse.json(
+            { error: `Invalid phone (${norm.reason})` },
+            { status: 400 }
+          );
+        }
+        update.phone_e164 = norm.e164;
+      }
+    }
+
+    if ("whatsapp_opted_in" in body) {
+      const optedIn = body.whatsapp_opted_in === true;
+      update.whatsapp_opted_in = optedIn;
+      if (optedIn) {
+        // Snapshot the consent copy the user agreed to (LGPD audit).
+        // Client must send this alongside the opt-in flip; missing =
+        // reject rather than silently store a null.
+        const consentText =
+          typeof body.whatsapp_consent_text === "string" &&
+          body.whatsapp_consent_text.trim().length > 0
+            ? body.whatsapp_consent_text.trim().slice(0, 500)
+            : null;
+        if (!consentText) {
+          return NextResponse.json(
+            {
+              error:
+                "whatsapp_consent_text is required when opting in — send the exact wording shown to the user",
+            },
+            { status: 400 }
+          );
+        }
+        update.whatsapp_consent_text = consentText;
+        update.whatsapp_opted_in_at = new Date().toISOString();
+      }
+      // Opt-out (opted_in=false) intentionally KEEPS the historical
+      // whatsapp_opted_in_at + consent_text — they're an audit trail
+      // of "you did once agree, then withdrew".
+    }
+
+    if ("whatsapp_nudge_frequency" in body) {
+      const raw = body.whatsapp_nudge_frequency;
+      if (raw == null || raw === "") {
+        update.whatsapp_nudge_frequency = null;
+      } else if (
+        typeof raw === "string" &&
+        ALLOWED_NUDGE_FREQUENCIES.has(raw.trim())
+      ) {
+        update.whatsapp_nudge_frequency = raw.trim();
+      } else {
+        return NextResponse.json(
+          {
+            error:
+              "whatsapp_nudge_frequency must be one of: daily, every_3_days, weekly, off",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if ("whatsapp_nudge_time_slot" in body) {
+      const raw = body.whatsapp_nudge_time_slot;
+      if (raw == null || raw === "") {
+        update.whatsapp_nudge_time_slot = null;
+      } else if (
+        typeof raw === "string" &&
+        ALLOWED_NUDGE_TIME_SLOTS.has(raw.trim())
+      ) {
+        update.whatsapp_nudge_time_slot = raw.trim();
+      } else {
+        return NextResponse.json(
+          {
+            error:
+              "whatsapp_nudge_time_slot must be one of: morning, afternoon, evening",
           },
           { status: 400 }
         );
