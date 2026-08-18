@@ -49,6 +49,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ReplayOnboardingButton from "@/components/ReplayOnboardingButton";
 import PackProgressBanner from "@/components/PackProgressBanner";
 import { usePlayerProgress, usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import { PASS_THRESHOLD } from "@/lib/hooks/useSkillRadar";
 import { useAppSettings } from "@/lib/hooks/useAppSettings";
 import { useTranslation } from "@/hooks/useTranslation";
 import AIWritingExercise from "@/components/exercises/AIWritingExercise";
@@ -170,6 +171,26 @@ function DynamicLessonContent() {
     ((effectiveXp % packXpCost) / packXpCost) * 100,
   );
   const xpToNextPack = Math.max(0, packXpCost - (effectiveXp % packXpCost));
+
+  // ── Pro Path lesson-progress bar ─────────────────────────────
+  // The in-lesson bar (rendered above the step content) tracks XP
+  // earned this session against the lesson's pass threshold —
+  // 80% of max_xp, matching the Skill Radar's segment-fill rule.
+  // Hitting 100% here means the radar segment for this lesson
+  // becomes fully lit; the two views tell the same story from
+  // different angles, which is deliberate.
+  //
+  // Falls back gracefully: lesson without max_xp → threshold = 0
+  // → we render nothing (the WC pack-progress bar takes over for
+  // WC users; Pro Path users just see step-count).
+  const lessonMaxXp = lesson?.max_xp || 0;
+  const lessonPassThresholdXp = Math.round(lessonMaxXp * PASS_THRESHOLD);
+  const lessonProgressPct =
+    lessonPassThresholdXp > 0
+      ? Math.min(100, Math.round((xpEarned / lessonPassThresholdXp) * 100))
+      : 0;
+  const lessonXpToPass = Math.max(0, lessonPassThresholdXp - xpEarned);
+  const lessonPassed = lessonPassThresholdXp > 0 && xpEarned >= lessonPassThresholdXp;
   const [showTranslation, setShowTranslation] = useState(false);
   const [translations, setTranslations] = useState({});
   const [translating, setTranslating] = useState(false);
@@ -3111,7 +3132,7 @@ function DynamicLessonContent() {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     {t("total_xp_earned")}
                   </p>
-                  <p className="text-3xl font-bold text-green-600">
+                  <p className="text-3xl font-bold text-accent-500">
                     {xpEarned} XP
                   </p>
                 </div>
@@ -3120,7 +3141,7 @@ function DynamicLessonContent() {
                   <button
                     onClick={handleLessonComplete}
                     disabled={completing}
-                    className="bg-accent-500 text-whites px-6 sm:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-accent-500 text-black px-6 sm:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {completing ? (
                       <div className="flex items-center space-x-2">
@@ -3143,7 +3164,7 @@ function DynamicLessonContent() {
                     type="button"
                     onClick={() => handleNavigateAway("/dashboard")}
                     disabled={completing}
-                    className="bg-accent-800 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-primary-700 text-accent-300 border-accent-300 px-6 sm:px-8 py-3 rounded-lg font-semibold transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {dashboardGoLabel}
                   </button>
@@ -3253,26 +3274,68 @@ function DynamicLessonContent() {
           </div>
         </div> */}
 
-        {/* Top bar — progress towards the next sticker pack. The
-            lesson-step counter sits underneath as a secondary indicator. */}
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
-          <div
-            className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${packProgressPct}%` }}
-          ></div>
-        </div>
-        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
-          <span>
-            {xpToNextPack === 0
-              ? "🎉 New pack ready!"
-              : `${xpToNextPack} XP to your next pack`}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {t("step_of_total")
-              .replace("{current}", currentStep + 1)
-              .replace("{total}", steps.length)}
-          </span>
-        </div>
+        {/* In-lesson progress bar. Two edition variants:
+             - WC: fills toward the next sticker pack; celebrates a
+               new pack cross-over.
+             - Pro Path: fills toward THIS lesson's pass threshold
+               (80% of max_xp). Hitting 100% ↔ full segment on the
+               Skill Radar. Lime accent + "passed" celebration
+               matches the radar's language.
+            Any future non-sticker edition falls through to the
+            Pro Path style. */}
+        {isProPath ? (
+          <>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+              <div
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  lessonPassed
+                    ? "bg-gradient-to-r from-accent-500 to-accent-300"
+                    : "bg-gradient-to-r from-accent-400 to-accent-200"
+                }`}
+                style={{ width: `${lessonProgressPct}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+              <span>
+                {lessonPassThresholdXp === 0
+                  ? `${xpEarned} XP earned`
+                  : lessonPassed
+                    ? userLanguage === "pt"
+                      ? `🎯 Segmento concluído! +${xpEarned - lessonPassThresholdXp} XP extra`
+                      : `🎯 Segment passed! +${xpEarned - lessonPassThresholdXp} XP bonus`
+                    : userLanguage === "pt"
+                      ? `${lessonXpToPass} XP para passar`
+                      : `${lessonXpToPass} XP to pass`}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {t("step_of_total")
+                  .replace("{current}", currentStep + 1)
+                  .replace("{total}", steps.length)}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+              <div
+                className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${packProgressPct}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+              <span>
+                {xpToNextPack === 0
+                  ? "🎉 New pack ready!"
+                  : `${xpToNextPack} XP to your next pack`}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {t("step_of_total")
+                  .replace("{current}", currentStep + 1)
+                  .replace("{total}", steps.length)}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Step Content */}
