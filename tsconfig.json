@@ -31,5 +31,5 @@
     "src/app/page.js",
     "src/app/layout.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "reference"]
 }
