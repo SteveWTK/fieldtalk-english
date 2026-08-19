@@ -34,7 +34,7 @@ export const STEP_XP_DEFAULTS = {
   ai_multiple_choice_gap_fill: 30,
 
   // Reading / instructional
-  scenario: 15,
+  scenario: 0,
   vocabulary: 15,
   pronunciation_drill: 20,
   timeline_drag: 30,
