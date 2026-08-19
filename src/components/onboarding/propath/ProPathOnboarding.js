@@ -48,10 +48,10 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { NOT_SURE_YET, getPosition } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
-import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
 import WhatsAppPhoneSlide from "@/components/whatsapp/onboarding/WhatsAppPhoneSlide";
 import WhatsAppPrefsSlide from "@/components/whatsapp/onboarding/WhatsAppPrefsSlide";
 import { getConsentText } from "@/lib/whatsapp/consent";
+import SkillRadarPreview from "@/components/onboarding/propath/SkillRadarPreview";
 
 const COPY = {
   en: {
@@ -710,26 +710,13 @@ function SlideReady({ copy, userName, lang }) {
         {copy.body}
       </p>
 
-      {/* Skill Radar teaser — the six axis chips arranged in a
-          hex-ish row. Not the full radar (kept small so the slide
-          doesn't feel overloaded) but enough that the user recognises
-          the axes when they see the real radar on the dashboard next. */}
-      <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
-        {SKILL_AXES.map((axis) => {
-          const Icon = axis.Icon;
-          return (
-            <div
-              key={axis.id}
-              className="flex flex-col items-center gap-1 rounded-xl bg-white/[0.03] border border-white/10 py-2.5 px-1"
-            >
-              <Icon className="w-4 h-4 text-accent-300/80" />
-              <p className="text-[10px] font-bold text-white/70 text-center leading-tight">
-                {skillAxisLabel(axis.id, lang, "short")}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+      {/* Skill Radar teaser — a static miniature of the same 24-cell
+          radar users will see on their dashboard. All cells render in
+          the not-started state (outline only) so it reads as "here's
+          what you're about to build" rather than showing pretend
+          progress. Full component + hover interactions arrive on
+          the dashboard proper. */}
+      <SkillRadarPreview lang={lang} />
     </div>
   );
 }
