@@ -1,15 +1,15 @@
 // src/components/whatsapp/PhoneCollectionModal.js
 //
-// Unclosable two-step modal that collects the WhatsApp phone + nudge
-// preferences from any player whose `players.phone_e164` is null.
-// Both new (post-onboarding) and existing (pre-WhatsApp launch) users
-// hit this — dashboards mount it and it renders only when the profile
-// says the phone is missing.
+// Unclosable two-step modal for existing users who signed up before
+// WhatsApp launch (their `players.phone_e164` is null). New users
+// flowing through onboarding now collect this inline — see the
+// WhatsAppPhoneSlide + WhatsAppPrefsSlide steps inside
+// ProPathOnboarding — so this modal is the catch-up path only.
 //
 // Why an unclosable modal? Phone is mandatory per Steve's launch plan
 // (WhatsApp coaching is the retention lever) AND LGPD consent must be
-// collected explicitly, not assumed. There's no ESC / backdrop dismiss
-// — the only way past it is a valid phone + a ticked consent box.
+// explicit, not assumed. There's no ESC / backdrop dismiss — the only
+// way past it is a valid phone + a ticked consent box.
 //
 // Persists via PATCH /api/profile with:
 //   { phone_e164, whatsapp_opted_in: true, whatsapp_consent_text,
@@ -17,35 +17,18 @@
 //
 // The consent text is bilingual and passed by-value so the server can
 // snapshot the EXACT wording the user agreed to (LGPD audit trail).
+// Copy is inline (not via t()) because the strings are unique to this
+// modal and inline conditionals match the pattern used in the two
+// onboarding components — one source of truth per string, no locale-
+// dictionary miss risk.
 "use client";
 
 import React, { useState } from "react";
-import { MessageCircle, Loader2 } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-
-const CONSENT_TEXT_EN =
-  "I agree to receive WhatsApp messages from FieldTalk with practice reminders, encouragement, tips, and updates. I can opt out at any time by replying STOP.";
-const CONSENT_TEXT_PT =
-  "Concordo em receber mensagens do FieldTalk no WhatsApp com lembretes de prática, incentivos, dicas e novidades. Posso cancelar a qualquer momento respondendo PARAR.";
-
-const FREQUENCY_OPTIONS = [
-  { code: "daily", en: "Every day", pt: "Todos os dias" },
-  {
-    code: "every_3_days",
-    en: "Every 3 days",
-    pt: "A cada 3 dias",
-    recommended: true,
-  },
-  { code: "weekly", en: "Once a week", pt: "Uma vez por semana" },
-  { code: "off", en: "Only for big news", pt: "Apenas para notícias importantes" },
-];
-
-const TIME_SLOT_OPTIONS = [
-  { code: "morning", en: "Morning", pt: "Manhã", hint: "07:00–11:00" },
-  { code: "afternoon", en: "Afternoon", pt: "Tarde", hint: "12:00–17:00" },
-  { code: "evening", en: "Evening", pt: "Noite", hint: "18:00–21:00" },
-];
+import { getConsentText } from "@/lib/whatsapp/consent";
+import WhatsAppPhoneSlide from "@/components/whatsapp/onboarding/WhatsAppPhoneSlide";
+import WhatsAppPrefsSlide from "@/components/whatsapp/onboarding/WhatsAppPrefsSlide";
 
 /**
  * @param {{ open: boolean, onSaved?: () => void }} props
@@ -53,8 +36,8 @@ const TIME_SLOT_OPTIONS = [
  * profile refetch and unmount the modal.
  */
 export default function PhoneCollectionModal({ open, onSaved }) {
-  const { t } = useTranslation();
   const { lang } = useLanguage();
+  const isPt = lang === "pt";
 
   const [step, setStep] = useState(1);
   const [phoneInput, setPhoneInput] = useState("");
@@ -66,8 +49,7 @@ export default function PhoneCollectionModal({ open, onSaved }) {
 
   if (!open) return null;
 
-  const consentText = lang === "pt" ? CONSENT_TEXT_PT : CONSENT_TEXT_EN;
-
+  const consentText = getConsentText(lang);
   const step1Complete = phoneInput.trim().length >= 8 && consent;
 
   const handleContinue = () => {
@@ -98,7 +80,7 @@ export default function PhoneCollectionModal({ open, onSaved }) {
         // reachable again.
         setError(
           json.error ||
-            (lang === "pt"
+            (isPt
               ? "Não foi possível salvar. Verifique o número."
               : "Could not save. Please check the number.")
         );
@@ -109,7 +91,7 @@ export default function PhoneCollectionModal({ open, onSaved }) {
       onSaved?.();
     } catch {
       setError(
-        lang === "pt" ? "Erro de rede. Tente novamente." : "Network error. Try again."
+        isPt ? "Erro de rede. Tente novamente." : "Network error. Try again."
       );
       setSaving(false);
     }
@@ -117,191 +99,87 @@ export default function PhoneCollectionModal({ open, onSaved }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto"
       role="dialog"
       aria-modal="true"
       // Intentionally no onClick to close — this modal is mandatory. See
       // header comment for the rationale.
     >
-      <div className="relative w-full max-w-md rounded-2xl bg-[#0b0b0b] border border-accent-400/30 p-6 sm:p-7 text-white shadow-2xl">
-        {/* Icon + step badge */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-11 h-11 rounded-full bg-accent-400/15 border border-accent-400/40 flex items-center justify-center">
-            <MessageCircle className="w-5 h-5 text-accent-300" />
-          </div>
+      <div className="relative w-full max-w-lg my-8 rounded-2xl bg-[#0b0b0b] border border-accent-400/30 p-6 sm:p-8 text-white shadow-2xl">
+        {/* Step counter — subtle, top-right */}
+        <div className="flex items-center justify-end mb-4">
           <span className="text-[11px] uppercase tracking-wider text-white/40 font-semibold">
-            {t("wa_step_of", "Step {n} of 2").replace("{n}", step)}
+            {isPt
+              ? `Passo ${step} de 2`
+              : `Step ${step} of 2`}
           </span>
         </div>
 
         {step === 1 && (
-          <>
-            <h2 className="text-lg sm:text-xl font-bold mb-1">
-              {t(
-                "wa_intro_title",
-                "Turn on WhatsApp coaching"
-              )}
-            </h2>
-            <p className="text-sm text-white/60 mb-5 leading-relaxed">
-              {t(
-                "wa_intro_body",
-                "Your FieldTalk coach will send friendly nudges, practice tips and encouragement — right where you already are."
-              )}
-            </p>
+          <WhatsAppPhoneSlide
+            lang={lang}
+            phoneValue={phoneInput}
+            onPhoneChange={setPhoneInput}
+            consent={consent}
+            onConsentChange={setConsent}
+            consentText={consentText}
+          />
+        )}
 
-            <div className="mb-4">
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                {t("wa_phone_label", "WhatsApp number")}
-              </label>
-              <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
-                placeholder="+55 86 99999-8888"
-                className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/25 focus:outline-none focus:border-accent-400"
-              />
-              <p className="mt-1 text-[11px] text-white/40">
-                {t(
-                  "wa_phone_hint",
-                  "Include the country code (e.g. +55 for Brazil)."
-                )}
-              </p>
-            </div>
+        {step === 2 && (
+          <WhatsAppPrefsSlide
+            lang={lang}
+            frequency={frequency}
+            onFrequencyChange={setFrequency}
+            timeSlot={timeSlot}
+            onTimeSlotChange={setTimeSlot}
+          />
+        )}
 
-            <label className="flex items-start gap-2.5 mb-5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded border-white/30 bg-white/5 text-accent-400 focus:ring-accent-400 shrink-0"
-              />
-              <span className="text-xs text-white/70 leading-relaxed">
-                {consentText}
-              </span>
-            </label>
+        {error && (
+          <div className="mt-4 mx-auto max-w-md p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-xs">
+            {error}
+          </div>
+        )}
 
-            {error && (
-              <div className="mb-3 p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-xs">
-                {error}
-              </div>
-            )}
-
+        <div className="mt-6 flex justify-center gap-2">
+          {step === 2 && (
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              disabled={saving}
+              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+            >
+              {isPt ? "Voltar" : "Back"}
+            </button>
+          )}
+          {step === 1 ? (
             <button
               type="button"
               onClick={handleContinue}
               disabled={!step1Complete}
-              className="w-full py-2.5 rounded-full bg-accent-500 hover:bg-accent-400 text-[#070707] text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {t("wa_continue", "Continue")}
+              {isPt ? "Continuar" : "Continue"}
             </button>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <h2 className="text-lg sm:text-xl font-bold mb-1">
-              {t("wa_prefs_title", "When should your coach reach out?")}
-            </h2>
-            <p className="text-sm text-white/60 mb-5 leading-relaxed">
-              {t(
-                "wa_prefs_body",
-                "You can change these anytime in your profile settings."
-              )}
-            </p>
-
-            <div className="mb-5">
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
-                {t("wa_prefs_frequency_label", "Reminder frequency")}
-              </label>
-              <div className="space-y-1.5">
-                {FREQUENCY_OPTIONS.map((opt) => {
-                  const active = frequency === opt.code;
-                  const label = lang === "pt" ? opt.pt : opt.en;
-                  return (
-                    <button
-                      key={opt.code}
-                      type="button"
-                      onClick={() => setFrequency(opt.code)}
-                      aria-pressed={active}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors ${
-                        active
-                          ? "border-accent-400 bg-accent-400/10 text-accent-200"
-                          : "border-white/10 bg-white/[0.03] text-white/75 hover:border-white/25 hover:text-white"
-                      }`}
-                    >
-                      <span className="font-semibold">{label}</span>
-                      {opt.recommended && (
-                        <span className="text-[10px] uppercase tracking-wider text-accent-300/80 font-bold">
-                          {t("wa_recommended", "Recommended")}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mb-5">
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
-                {t("wa_prefs_time_label", "Preferred time of day")}
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {TIME_SLOT_OPTIONS.map((opt) => {
-                  const active = timeSlot === opt.code;
-                  const label = lang === "pt" ? opt.pt : opt.en;
-                  return (
-                    <button
-                      key={opt.code}
-                      type="button"
-                      onClick={() => setTimeSlot(opt.code)}
-                      aria-pressed={active}
-                      className={`px-2 py-2 rounded-lg border text-xs font-semibold transition-colors ${
-                        active
-                          ? "border-accent-400 bg-accent-400/10 text-accent-200"
-                          : "border-white/10 bg-white/[0.03] text-white/75 hover:border-white/25 hover:text-white"
-                      }`}
-                    >
-                      <div>{label}</div>
-                      <div className="text-[10px] font-normal text-white/40 mt-0.5">
-                        {opt.hint}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-3 p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-xs">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                disabled={saving}
-                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-sm disabled:opacity-40"
-              >
-                {t("wa_back", "Back")}
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 py-2.5 rounded-full bg-accent-500 hover:bg-accent-400 text-[#070707] text-sm font-bold disabled:opacity-40 inline-flex items-center justify-center gap-2 transition-colors"
-              >
-                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                {saving
-                  ? t("wa_saving", "Saving…")
-                  : t("wa_finish", "Finish")}
-              </button>
-            </div>
-          </>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold disabled:opacity-40 inline-flex items-center justify-center gap-2 transition-colors"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              {saving
+                ? isPt
+                  ? "Salvando…"
+                  : "Saving…"
+                : isPt
+                  ? "Concluir"
+                  : "Finish"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

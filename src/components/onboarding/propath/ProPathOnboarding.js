@@ -1,19 +1,32 @@
 // src/components/onboarding/propath/ProPathOnboarding.js
 //
-// Pro Path 26/27 first-run flow. Full-screen overlay, three slides,
+// Pro Path 26/27 first-run flow. Full-screen overlay, five slides,
 // deliberately short — every second the user spends here is a second
 // not spent in a lesson. The whole flow is one emotional beat: "you
 // belong here, we know what you're after, let's go".
 //
 //   Slide 1 — Position picker    ("Where do you play?")
 //   Slide 2 — Goal picker        ("What's your goal?")
-//   Slide 3 — Ready celebration  (Skill Radar teaser → first action)
+//   Slide 3 — WhatsApp phone + consent   ("Your coach on WhatsApp")
+//   Slide 4 — WhatsApp preferences        ("When should your coach…")
+//   Slide 5 — Ready celebration           (Skill Radar teaser → CTA)
+//
+// The WhatsApp steps live inside this flow (rather than as a follow-up
+// modal on the dashboard) so users get one continuous onboarding beat.
+// The two slides render shared components — see
+// src/components/whatsapp/onboarding/{WhatsAppPhoneSlide,WhatsAppPrefsSlide}.
+// Existing users (who signed up before WhatsApp launch) hit the same
+// UI wrapped in PhoneCollectionModal on their next /dashboard visit,
+// so all three surfaces are visually identical.
 //
 // Persistence:
-//   Both selections are saved together via POST /api/onboarding/complete
-//   when the user taps the final CTA. That endpoint also flips
-//   players.onboarding_completed = true, which is the gate the parent
-//   /lesson page reads to decide whether to mount this overlay at all.
+//   Position + goal + onboarding_completed → POST /api/onboarding/complete.
+//   Phone + consent + prefs → PATCH /api/profile.
+//   The WhatsApp save runs FIRST so an invalid phone bounces the user
+//   back to slide 3 without a partially-completed onboarding row.
+//   Skip path: writes onboarding_completed=true with no phone; the
+//   dashboard's PhoneCollectionModal picks up the missing phone on
+//   the user's next visit (mandatory-phone backstop).
 //
 // Visual language:
 //   Same dark base + lime/slate ambient glows as the /propath landing
@@ -36,6 +49,9 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { NOT_SURE_YET, getPosition } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
 import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
+import WhatsAppPhoneSlide from "@/components/whatsapp/onboarding/WhatsAppPhoneSlide";
+import WhatsAppPrefsSlide from "@/components/whatsapp/onboarding/WhatsAppPrefsSlide";
+import { getConsentText } from "@/lib/whatsapp/consent";
 
 const COPY = {
   en: {
@@ -52,7 +68,7 @@ const COPY = {
     slide2: {
       eyebrow: "Your goal",
       title: "What brings you here?",
-      body: "This helps us surface the right lessons and nudges for where you are right now.",
+      body: "This helps us personalise your experience and nudges for where you are right now.",
     },
     slide3: {
       eyebrow: "You're set",
@@ -76,7 +92,7 @@ const COPY = {
     slide2: {
       eyebrow: "Seu objetivo",
       title: "O que traz você aqui?",
-      body: "Isso nos ajuda a sugerir as aulas certas e os avisos ideais para o momento em que você está.",
+      body: "Isso nos ajuda a personalizar a sua experiência e avisos para o momento em que você está.",
     },
     slide3: {
       eyebrow: "Tudo pronto",
@@ -88,10 +104,7 @@ const COPY = {
   },
 };
 
-export default function ProPathOnboarding({
-  userName,
-  onDismiss,
-}) {
+export default function ProPathOnboarding({ userName, onDismiss }) {
   const { lang } = useLanguage();
   const copy = COPY[lang] || COPY.en;
   const router = useRouter();
@@ -109,6 +122,15 @@ export default function ProPathOnboarding({
   const [position, setPosition] = useState(undefined); // undefined = untouched
   const [goal, setGoal] = useState(null);
 
+  // WhatsApp selections (slides 3 + 4). Prefs default to the
+  // "safe, non-spammy" combination — every_3_days at morning — so
+  // slide 4 always satisfies canAdvance even if the user just clicks
+  // through. Users can change these anytime from their profile.
+  const [phoneInput, setPhoneInput] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [frequency, setFrequency] = useState("every_3_days");
+  const [timeSlot, setTimeSlot] = useState("morning");
+
   useEffect(() => {
     // Defer entrance animation one paint tick so the overlay doesn't
     // land already animated.
@@ -116,13 +138,19 @@ export default function ProPathOnboarding({
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const slides = 3;
+  const slides = 5;
 
   const canAdvance = useMemo(() => {
     if (slideIdx === 0) return position !== undefined; // any selection made (incl. null "not sure")
     if (slideIdx === 1) return !!goal;
+    // Phone slide: 8+ digits (min plausible international) + consent
+    // ticked. Full E.164 validation runs server-side in the PATCH; we
+    // want the button enabled as soon as the input looks non-trivial.
+    if (slideIdx === 2) return phoneInput.trim().length >= 8 && consent;
+    // Prefs slide: both defaults are pre-selected, so always advanceable.
+    if (slideIdx === 3) return !!frequency && !!timeSlot;
     return true;
-  }, [slideIdx, position, goal]);
+  }, [slideIdx, position, goal, phoneInput, consent, frequency, timeSlot]);
 
   const goNext = () => {
     if (!canAdvance) return;
@@ -138,9 +166,41 @@ export default function ProPathOnboarding({
     setSaving(true);
     setSaveError(null);
     try {
-      // Even on skip we POST — flipping onboarding_completed=true is
-      // the mechanism that stops the modal from re-appearing. If the
-      // user skipped we simply omit position/goal from the payload.
+      // 1. WhatsApp first (skipped users bypass this — the standalone
+      //    PhoneCollectionModal on the dashboard is the mandatory-phone
+      //    backstop for skippers). Runs before the onboarding-complete
+      //    POST so an invalid phone bounces the user back to slide 3
+      //    without a partially-flipped onboarding row.
+      if (!skipped) {
+        const waRes = await fetch("/api/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone_e164: phoneInput.trim(),
+            whatsapp_opted_in: true,
+            whatsapp_consent_text: getConsentText(lang),
+            whatsapp_nudge_frequency: frequency,
+            whatsapp_nudge_time_slot: timeSlot,
+          }),
+        });
+        const waJson = await waRes.json().catch(() => ({}));
+        if (!waRes.ok) {
+          setSlideIdx(2);
+          setDirection("back");
+          setSaveError(
+            waJson.error ||
+              (lang === "pt"
+                ? "Não foi possível salvar o número. Verifique e tente novamente."
+                : "Could not save the number. Please check and try again.")
+          );
+          setSaving(false);
+          return;
+        }
+      }
+
+      // 2. Even on skip we POST — flipping onboarding_completed=true is
+      //    the mechanism that stops the modal from re-appearing. If the
+      //    user skipped we simply omit position/goal from the payload.
       const body = { onboarding_completed: true };
       if (!skipped) {
         // position may be null (== "not sure yet"), send only when
@@ -218,7 +278,11 @@ export default function ProPathOnboarding({
         <div
           key={slideKey}
           className={`w-full max-w-2xl ${
-            mounted ? (direction === "back" ? "pp-onb-rise-back" : "pp-onb-rise") : "opacity-0"
+            mounted
+              ? direction === "back"
+                ? "pp-onb-rise-back"
+                : "pp-onb-rise"
+              : "opacity-0"
           }`}
         >
           {slideIdx === 0 && (
@@ -230,14 +294,34 @@ export default function ProPathOnboarding({
             />
           )}
           {slideIdx === 1 && (
-            <SlideGoal copy={copy.slide2} value={goal} onChange={setGoal} lang={lang} />
-          )}
-          {slideIdx === 2 && (
-            <SlideReady
-              copy={copy.slide3}
-              userName={userName}
+            <SlideGoal
+              copy={copy.slide2}
+              value={goal}
+              onChange={setGoal}
               lang={lang}
             />
+          )}
+          {slideIdx === 2 && (
+            <WhatsAppPhoneSlide
+              lang={lang}
+              phoneValue={phoneInput}
+              onPhoneChange={setPhoneInput}
+              consent={consent}
+              onConsentChange={setConsent}
+              consentText={getConsentText(lang)}
+            />
+          )}
+          {slideIdx === 3 && (
+            <WhatsAppPrefsSlide
+              lang={lang}
+              frequency={frequency}
+              onFrequencyChange={setFrequency}
+              timeSlot={timeSlot}
+              onTimeSlotChange={setTimeSlot}
+            />
+          )}
+          {slideIdx === 4 && (
+            <SlideReady copy={copy.slide3} userName={userName} lang={lang} />
           )}
         </div>
       </main>
@@ -618,7 +702,8 @@ function SlideReady({ copy, userName, lang }) {
       <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
         {copy.titlePrefix}{" "}
         <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-100 bg-clip-text text-transparent">
-          {(userName || "").split(" ")[0] || (lang === "pt" ? "jogador" : "player")}
+          {(userName || "").split(" ")[0] ||
+            (lang === "pt" ? "jogador" : "player")}
         </span>
       </h2>
       <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-6">

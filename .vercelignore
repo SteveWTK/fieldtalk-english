@@ -1,0 +1,5 @@
+# .vercelignore
+
+reference/
+*.sql
+*.md
