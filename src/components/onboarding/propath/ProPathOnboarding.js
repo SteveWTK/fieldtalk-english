@@ -73,7 +73,7 @@ const COPY = {
     slide3: {
       eyebrow: "You're set",
       titlePrefix: "Welcome,",
-      body: "Your dashboard is ready. Complete at least one lesson in each of the 6 areas below to unlock your Trial-Ready certificate.",
+      body: "Your dashboard is ready. Complete 4 lessons in each of the 6 areas below to unlock your first certificate.",
       cta: "Go to my dashboard",
     },
     dots: (n, total) => `Step ${n} of ${total}`,
@@ -97,7 +97,7 @@ const COPY = {
     slide3: {
       eyebrow: "Tudo pronto",
       titlePrefix: "Bem-vindo,",
-      body: "Seu painel está pronto. Complete pelo menos uma aula em cada uma das 6 áreas abaixo para desbloquear seu certificado Pronto para Peneiras.",
+      body: "Seu painel está pronto. Complete 4 aulas em cada uma das 6 áreas abaixo para desbloquear seu primeiro certificado.",
       cta: "Ir para meu painel",
     },
     dots: (n, total) => `Passo ${n} de ${total}`,
@@ -191,7 +191,7 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
             waJson.error ||
               (lang === "pt"
                 ? "Não foi possível salvar o número. Verifique e tente novamente."
-                : "Could not save the number. Please check and try again.")
+                : "Could not save the number. Please check and try again."),
           );
           setSaving(false);
           return;
@@ -706,7 +706,7 @@ function SlideReady({ copy, userName, lang }) {
             (lang === "pt" ? "jogador" : "player")}
         </span>
       </h2>
-      <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-6">
+      <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-3">
         {copy.body}
       </p>
 

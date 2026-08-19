@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Globe, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 import { readPartnerReferrer } from "@/lib/partners/referrer";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 
@@ -149,9 +149,9 @@ export default function AuthCallbackPage() {
         <PartnerLogo placement="loading" size="lg" className="mx-auto mb-6" />
 
         <div className="flex items-center justify-center space-x-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-yellow-500 rounded-full flex items-center justify-center">
+          {/* <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-yellow-500 rounded-full flex items-center justify-center">
             <Globe className="w-6 h-6 text-white" />
-          </div>
+          </div> */}
           <span className="text-2xl font-bold tracking-tight">
             FieldTalk English
           </span>
