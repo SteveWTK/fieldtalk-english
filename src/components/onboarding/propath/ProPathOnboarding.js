@@ -321,7 +321,14 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
             />
           )}
           {slideIdx === 4 && (
-            <SlideReady copy={copy.slide3} userName={userName} lang={lang} />
+            <SlideReady
+              copy={copy.slide3}
+              userName={userName}
+              lang={lang}
+              onFinish={() => finish()}
+              saving={saving}
+              finishingLabel={copy.finishing}
+            />
           )}
         </div>
       </main>
@@ -375,24 +382,18 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => finish()}
-              disabled={saving}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-colors"
+            // Final-slide CTA lives INSIDE SlideReady (above the radar)
+            // so it's always visible without scrolling on mobile /
+            // small laptops. Hidden placeholder here keeps the footer's
+            // three-column flex layout balanced (Back · dots · CTA)
+            // so the progress dots stay dead-centre.
+            <span
+              aria-hidden
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full opacity-0 pointer-events-none text-sm font-bold"
             >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {copy.finishing}
-                </>
-              ) : (
-                <>
-                  {copy.slide3.cta}
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+              {copy.slide3.cta}
+              <ArrowRight className="w-4 h-4" />
+            </span>
           )}
         </div>
       </footer>
@@ -690,7 +691,14 @@ function SlideGoal({ copy, value, onChange, lang }) {
 }
 
 // ─── Slide 3 — ready celebration ────────────────────────────────
-function SlideReady({ copy, userName, lang }) {
+function SlideReady({
+  copy,
+  userName,
+  lang,
+  onFinish,
+  saving,
+  finishingLabel,
+}) {
   return (
     <div className="text-center">
       <div className="w-16 h-16 rounded-full bg-accent-400/20 border border-accent-400/40 mx-auto mb-4 flex items-center justify-center">
@@ -706,9 +714,32 @@ function SlideReady({ copy, userName, lang }) {
             (lang === "pt" ? "jogador" : "player")}
         </span>
       </h2>
-      <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-3">
+      <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-4">
         {copy.body}
       </p>
+
+      {/* Primary CTA — lives INSIDE the slide (not the footer) because
+          the radar preview below is tall enough to push a footer CTA
+          off-screen on mobile / smaller laptops. Users see the button
+          the moment the slide lands. */}
+      <button
+        type="button"
+        onClick={onFinish}
+        disabled={saving}
+        className="inline-flex items-center gap-1.5 px-6 py-3 mb-5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-colors shadow-[0_0_28px_rgba(163,230,53,0.35)]"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            {finishingLabel}
+          </>
+        ) : (
+          <>
+            {copy.cta}
+            <ArrowRight className="w-4 h-4" />
+          </>
+        )}
+      </button>
 
       {/* Skill Radar teaser — a static miniature of the same 24-cell
           radar users will see on their dashboard. All cells render in

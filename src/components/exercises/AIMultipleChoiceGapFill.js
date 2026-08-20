@@ -253,8 +253,72 @@ export default function AIMultipleChoiceGapFill({
     return isCorrect;
   };
 
+  // Partial-XP bookkeeping — tracks XP already granted via `onAttempt`
+  // so the "all correct" onComplete only awards the REMAINING delta,
+  // never double-counting. Reset only on unmount (state naturally dies
+  // with the component; parent doesn't need to touch it).
+  const [grantedXp, setGrantedXp] = useState(0);
+
+  // Watch showFeedback → grant proportional XP as sentences become
+  // correct. Fires onAttempt(delta) with the incremental XP earned
+  // since the last grant. Fixes the "user got some wrong, clicked
+  // Next arrow, walked away with 0 XP" bug — engagement now pays,
+  // proportional to how many they got right.
+  //
+  // Parent's onAttempt handler treats a numeric arg as an XP delta
+  // (added to xpEarned) AND a signal that the attempt gate is
+  // satisfied. Called with no args, it still opens the gate but
+  // adds nothing — kept as the default for the very first check
+  // (0 correct so far) so users who got everything wrong still
+  // unlock the Next button.
+  const [attemptFired, setAttemptFired] = useState(false);
+  React.useEffect(() => {
+    if (completed) return;
+    if (!sentences || sentences.length === 0) return;
+    const anyChecked = Object.keys(showFeedback || {}).length > 0;
+    if (!anyChecked) return;
+
+    const correctCount = sentences.filter(
+      (s) => showFeedback[s.id]?.isCorrect === true
+    ).length;
+
+    // Attempt gate: satisfied by the FIRST check, regardless of
+    // whether anything was correct. Ensures users who got everything
+    // wrong still find Next unlocked.
+    if (!attemptFired) {
+      setAttemptFired(true);
+      if (correctCount === 0 && typeof onAttempt === "function") {
+        onAttempt();
+      }
+    }
+
+    if (correctCount === 0) return;
+
+    // Proportional XP: perSentenceXp × correctCount, floor at 1 XP
+    // for at-least-one-correct so tiny lessons still budge the total.
+    const perSentenceXp = baseXp / sentences.length;
+    const targetXp = Math.max(
+      1,
+      Math.round(perSentenceXp * correctCount * 0.7),
+    );
+    const delta = targetXp - grantedXp;
+    if (delta > 0) {
+      setGrantedXp(targetXp);
+      if (typeof onAttempt === "function") onAttempt(delta);
+    }
+  }, [
+    showFeedback,
+    sentences,
+    completed,
+    baseXp,
+    grantedXp,
+    attemptFired,
+    onAttempt,
+  ]);
+
   // Watch for the "every sentence is correctly answered" state and fire
-  // onComplete (with attempts/hints scaled XP) exactly once.
+  // onComplete with the REMAINING XP (finalXP minus what was already
+  // granted via onAttempt), exactly once.
   React.useEffect(() => {
     if (completed) return;
     if (!sentences || sentences.length === 0) return;
@@ -272,6 +336,9 @@ export default function AIMultipleChoiceGapFill({
       Math.round(baseXp * 0.3),
       Math.round(baseXp * attemptsFactor * hintsFactor)
     );
+    // Subtract what onAttempt has already given so total granted
+    // never exceeds finalXP.
+    const remainingXp = Math.max(0, finalXP - grantedXp);
     if (onComplete) {
       // Cleanup-on-unmount is critical: if the user clicks the lesson
       // page's manual "Next" button before this timeout fires, the
@@ -279,7 +346,7 @@ export default function AIMultipleChoiceGapFill({
       // onComplete → bumping XP for an already-advanced step AND
       // (when paired with a parent setTimeout(handleNext, …))
       // triggering a SECOND advance, skipping the next step.
-      const id = setTimeout(() => onComplete(finalXP), 1000);
+      const id = setTimeout(() => onComplete(remainingXp), 1000);
       return () => clearTimeout(id);
     }
   }, [
@@ -289,23 +356,9 @@ export default function AIMultipleChoiceGapFill({
     attempts,
     hintUsage,
     baseXp,
+    grantedXp,
     onComplete,
   ]);
-
-  // Fire onAttempt once the user has checked at least one sentence.
-  // Decoupled from correctness so the parent's Next-button attempt
-  // gate opens as soon as the user has engaged — even if none of
-  // their answers were right. XP and full completion still wait on
-  // the all-correct effect above (users don't earn XP just for
-  // clicking Check on a wrong answer).
-  const [attemptFired, setAttemptFired] = React.useState(false);
-  React.useEffect(() => {
-    if (attemptFired) return;
-    const hasAnyCheck = Object.keys(showFeedback || {}).length > 0;
-    if (!hasAnyCheck) return;
-    setAttemptFired(true);
-    if (typeof onAttempt === "function") onAttempt();
-  }, [showFeedback, attemptFired, onAttempt]);
 
   const getAIHint = async (sentenceId, sentence) => {
     const currentHintCount = hintUsage[sentenceId] || 0;

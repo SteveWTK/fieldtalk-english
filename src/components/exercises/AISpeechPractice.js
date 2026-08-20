@@ -1,5 +1,5 @@
 // components/exercises/AISpeechPractice.js
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Mic, MicOff, Play, RotateCcw, Pause, Volume2 } from "lucide-react";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
@@ -8,11 +8,20 @@ export default function AISpeechPractice({
   expectedText,
   lessonId,
   onComplete,
+  // Grants XP without advancing the step. Fires once as soon as the
+  // AI feedback arrives so users who tap the lesson-page Next arrow
+  // (skipping the inline "Continue →" button) still earn the XP they
+  // just recorded for. Called with a numeric delta the parent adds
+  // to xpEarned; parent DOES NOT advance the step on this callback.
+  onAttempt,
   step,
 }) {
   // XP = step's base (from getStepXp) scaled by the AI's overall_score.
   // 50% floor so any submission still grants something; cap at base.
   const baseXp = getStepXp(step);
+  // Bookkeeping for onAttempt-granted XP so the "Continue →" button's
+  // onComplete only fires the REMAINING delta, never double-counting.
+  const [grantedXp, setGrantedXp] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -139,6 +148,24 @@ export default function AISpeechPractice({
       setLoading(false);
     }
   };
+
+  // Grant XP the moment feedback arrives, without waiting for the
+  // inline "Continue →" click. Fires onAttempt with the delta between
+  // the score-derived XP and any previously-granted amount, so a user
+  // who re-records and improves gets the delta (never a decrease).
+  // The parent's onAttempt handler adds XP without advancing the step
+  // — advancement stays with the outer Next arrow (or Continue button).
+  useEffect(() => {
+    if (!feedback || typeof onAttempt !== "function") return;
+    const score = Number(feedback?.overall_score) || 0;
+    const scaled = Math.round(baseXp * (score / 100));
+    const xp = Math.max(Math.round(baseXp * 0.5), scaled);
+    const delta = xp - grantedXp;
+    if (delta > 0) {
+      setGrantedXp(xp);
+      onAttempt(delta);
+    }
+  }, [feedback, baseXp, grantedXp, onAttempt]);
 
   const resetRecording = () => {
     // Clean up audio resources
@@ -376,12 +403,12 @@ export default function AISpeechPractice({
             {onComplete && (
               <button
                 onClick={() => {
-                  // XP = baseXp scaled by overall_score (0-100), with a
-                  // 50% floor so any submission grants something.
-                  const score = Number(feedback?.overall_score) || 0;
-                  const scaled = Math.round(baseXp * (score / 100));
-                  const xp = Math.max(Math.round(baseXp * 0.5), scaled);
-                  onComplete(xp);
+                  // XP has already been granted via the feedback-arrival
+                  // useEffect (which fires onAttempt with the delta),
+                  // so Continue just advances the step. Passing 0 keeps
+                  // the parent's onComplete signature unchanged while
+                  // avoiding double-counting the XP.
+                  onComplete(0);
                 }}
                 className="bg-emerald-500 hover:bg-emerald-400 text-[#070707] font-bold px-5 py-2.5 rounded-lg text-sm sm:text-base"
               >

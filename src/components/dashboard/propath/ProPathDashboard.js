@@ -120,6 +120,24 @@ export default function ProPathDashboard() {
 
   const radar = useSkillRadar(allLessons, completions);
 
+  // Deep-link to lessons: point the "Back to lessons" + "Continue
+  // lessons" CTAs at the user's most-recently completed lesson (via
+  // ?completed=<id>) so the lesson index auto-opens the right pillar
+  // and highlights the next lesson. Matches the WC edition's
+  // post-completion routing. Falls back to plain /lesson (survival
+  // pillar default) when the user hasn't completed anything yet.
+  const lessonsHref = useMemo(() => {
+    if (!Array.isArray(completions) || completions.length === 0) {
+      return "/lesson";
+    }
+    // Query orders completions DESC by completed_at, so [0] is the
+    // most recent. Support both shapes: newer joined query exposes
+    // `lessons.id`; older callers just have `lesson_id`.
+    const last = completions[0];
+    const id = last?.lessons?.id ?? last?.lesson_id;
+    return id ? `/lesson?completed=${encodeURIComponent(id)}` : "/lesson";
+  }, [completions]);
+
   // Identity strings — profile override wins for instant post-edit
   // updates (same pattern the WC dashboard uses).
   const fullName =
@@ -186,7 +204,7 @@ export default function ProPathDashboard() {
         {/* Top nav row */}
         <div className="flex items-center justify-between">
           <Link
-            href="/lesson"
+            href={lessonsHref}
             className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -260,13 +278,13 @@ export default function ProPathDashboard() {
           totalPossibleInLevel={radar.totalPossibleInLevel}
           certificateReady={radar.certificateReady}
           lang={lang}
-          lessonHref="/lesson"
+          lessonHref={lessonsHref}
         />
 
         {/* ── Quick links row ──────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <QuickLink
-            href="/lesson"
+            href={lessonsHref}
             Icon={BookOpen}
             title={copy.continueLessons}
             body={copy.continueLessonsBody}

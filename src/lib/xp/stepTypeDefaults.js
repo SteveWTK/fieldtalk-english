@@ -35,7 +35,7 @@ export const STEP_XP_DEFAULTS = {
 
   // Reading / instructional
   scenario: 0,
-  vocabulary: 15,
+  vocabulary: 0,
   pronunciation_drill: 20,
   timeline_drag: 30,
   conversation_vote: 20,

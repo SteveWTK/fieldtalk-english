@@ -40,10 +40,10 @@ export const SKILL_AXES = [
     // radiates from being able to talk in the game itself.
     id: "pitch_talk",
     en: "Pitch Talk",
-    pt: "Papo em Campo",
+    pt: "No campo",
     // Short label used inside the radar polygon where space is tight.
     shortEn: "Pitch Talk",
-    shortPt: "Papo em Campo",
+    shortPt: "No campo",
     Icon: MessageCircle,
   },
   {
@@ -72,10 +72,10 @@ export const SKILL_AXES = [
     // Combining kept the total axis count at 6 (the hexagon stays
     // legible) while opening a slot for Daily Life.
     id: "media_trials",
-    en: "Media & Trials",
-    pt: "Mídia e Peneiras",
-    shortEn: "Media & Trials",
-    shortPt: "Mídia/Peneiras",
+    en: "Media & Contracts",
+    pt: "Mídia & Contratos",
+    shortEn: "Media & Contracts",
+    shortPt: "Mídia & Contratos",
     Icon: Mic,
   },
   {
@@ -83,7 +83,7 @@ export const SKILL_AXES = [
     en: "Injuries & fitness",
     pt: "Lesões e preparo físico",
     shortEn: "Fitness",
-    shortPt: "Preparo",
+    shortPt: "Preparo físico",
     Icon: Activity,
   },
   {

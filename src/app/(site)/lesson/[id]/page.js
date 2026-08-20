@@ -1358,14 +1358,20 @@ function DynamicLessonContent() {
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
               step={currentStepData}
-              onAttempt={() => {
+              onAttempt={(deltaXp) => {
                 // Unlock the Next button as soon as the user has
                 // engaged with the step, regardless of correctness.
-                // Matches the ATTEMPT_REQUIRED_TYPES contract; fixes
-                // the June '26 regression where a wrong answer left
-                // Next stuck disabled because onComplete only fires
-                // on all-correct.
+                // Matches the ATTEMPT_REQUIRED_TYPES contract.
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
+                // Called with a numeric delta = proportional XP for
+                // sentences the user has now gotten right. Bumps
+                // running xpEarned without advancing the step so the
+                // child can keep incrementing as more become correct.
+                // The child ensures total granted never exceeds the
+                // eventual finalXP awarded by onComplete.
+                if (typeof deltaXp === "number" && deltaXp > 0) {
+                  setXpEarned((prev) => prev + deltaXp);
+                }
               }}
               onComplete={(xp) => {
                 setXpEarned((prev) => prev + xp);
@@ -1454,10 +1460,26 @@ function DynamicLessonContent() {
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
               step={currentStepData}
-              onComplete={(xp) => {
-                setXpEarned((prev) => prev + xp);
+              onAttempt={(deltaXp) => {
+                // Grants XP as soon as the AI feedback arrives, so a
+                // user who taps the OUTER Next arrow (skipping the
+                // inline Continue button) still earns their score-
+                // scaled XP. Does not advance the step — the outer
+                // arrow (or the Continue button) does that.
                 setCompletedSteps((prev) => new Set([...prev, currentStep]));
-                // For speech practice, user manually advances after reviewing feedback
+                if (typeof deltaXp === "number" && deltaXp > 0) {
+                  setXpEarned((prev) => prev + deltaXp);
+                }
+              }}
+              onComplete={(xp) => {
+                // Called by the inline "Continue →" button. XP has
+                // already been credited via onAttempt when feedback
+                // arrived; this typically fires with xp=0 and just
+                // advances the step.
+                if (typeof xp === "number" && xp > 0) {
+                  setXpEarned((prev) => prev + xp);
+                }
+                setCompletedSteps((prev) => new Set([...prev, currentStep]));
                 handleNext();
               }}
             />
@@ -3125,6 +3147,52 @@ function DynamicLessonContent() {
                       )}
                     </div>
                   )}
+
+                  {/* Pass-threshold announcement — Pro Path only.
+                      Users need to know whether they've unlocked this
+                      lesson's Skill Radar segment (80% of max_xp).
+                      Without this they can walk past the completion
+                      screen not realising they'd missed the mark and
+                      could top up by redoing a step. Two states:
+                      passed = lime celebration, not-passed = amber
+                      call-to-action pointing at the fix. */}
+                  {isProPath && lessonPassThresholdXp > 0 && (
+                    <div
+                      className={`max-w-md mx-auto mb-6 rounded-2xl border p-4 text-left ${
+                        lessonPassed
+                          ? "border-accent-400/50 bg-accent-400/[0.08]"
+                          : "border-amber-400/50 bg-amber-500/[0.08]"
+                      }`}
+                    >
+                      {lessonPassed ? (
+                        <>
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-accent-300 font-bold">
+                            {userLanguage === "pt"
+                              ? "Meta atingida"
+                              : "Threshold met"}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-800 dark:text-gray-100 leading-relaxed">
+                            {userLanguage === "pt"
+                              ? `Você desbloqueou este segmento no seu Radar de Habilidades. Bônus: +${xpEarned - lessonPassThresholdXp} XP extra.`
+                              : `You've unlocked this segment on your Skill Radar. Bonus: +${xpEarned - lessonPassThresholdXp} XP.`}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-amber-500 dark:text-amber-300 font-bold">
+                            {userLanguage === "pt"
+                              ? "Ainda não desbloqueado"
+                              : "Not unlocked yet"}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-800 dark:text-gray-100 leading-relaxed">
+                            {userLanguage === "pt"
+                              ? `Você conseguiu ${xpEarned} de ${lessonPassThresholdXp} XP. Faltam ${lessonXpToPass} XP para desbloquear este segmento no seu Radar. Volte a algumas atividades e tente de novo — é rápido.`
+                              : `You earned ${xpEarned} of ${lessonPassThresholdXp} XP. ${lessonXpToPass} XP short of unlocking this segment on your Radar. Head back to a step or two and try again — it only takes a moment.`}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
               <div className="flex flex-col gap-1">
@@ -3301,11 +3369,11 @@ function DynamicLessonContent() {
                   ? `${xpEarned} XP earned`
                   : lessonPassed
                     ? userLanguage === "pt"
-                      ? `🎯 Segmento concluído! +${xpEarned - lessonPassThresholdXp} XP extra`
-                      : `🎯 Segment passed! +${xpEarned - lessonPassThresholdXp} XP bonus`
+                      ? `${xpEarned} XP · 🎯 Segmento concluído! +${xpEarned - lessonPassThresholdXp} XP extra`
+                      : `${xpEarned} XP · 🎯 Segment passed! +${xpEarned - lessonPassThresholdXp} XP bonus`
                     : userLanguage === "pt"
-                      ? `${lessonXpToPass} XP para passar`
-                      : `${lessonXpToPass} XP to pass`}
+                      ? `${xpEarned} XP · ${lessonXpToPass} XP para passar`
+                      : `${xpEarned} XP · ${lessonXpToPass} XP to pass`}
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {t("step_of_total")

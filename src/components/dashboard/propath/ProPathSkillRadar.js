@@ -243,9 +243,10 @@ export default function ProPathSkillRadar({
             currentLevel,
           )}
         >
-          {/* Background hex rings — subtle guidance for the eye,
-              matching the previous version so the radar still reads
-              as "hexagonal" even though cells are arc-bounded. */}
+          {/* Background hex rings — nudged a touch stronger than the
+              original 0.06/0.5 so the polygon reads clearly on mobile
+              even at reduced size. Outer ring gets an extra bump so
+              the radar has a decisive outer boundary. */}
           {RING_FRACTIONS.map((f, ri) => {
             const points = SKILL_AXES.map((_, i) => {
               const p = polarPoint(axisAngle(i), f * R_MAX);
@@ -256,14 +257,14 @@ export default function ProPathSkillRadar({
                 key={ri}
                 points={points}
                 fill="none"
-                stroke="rgba(255,255,255,0.06)"
-                strokeWidth={ri === RING_FRACTIONS.length - 1 ? 1 : 0.5}
+                stroke="rgba(255,255,255,0.11)"
+                strokeWidth={ri === RING_FRACTIONS.length - 1 ? 1.4 : 0.8}
               />
             );
           })}
 
-          {/* Radial axis lines — very subtle, so hover boundaries
-              are hinted but don't compete with the cells. */}
+          {/* Radial axis lines — subtle but visible enough on mobile
+              to hint the cell boundaries when the radar shrinks. */}
           {SKILL_AXES.map((axis, i) => {
             const outer = polarPoint(axisAngle(i), R_MAX);
             return (
@@ -273,8 +274,8 @@ export default function ProPathSkillRadar({
                 y1={CY}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255,255,255,0.05)"
-                strokeWidth={0.5}
+                stroke="rgba(255,255,255,0.09)"
+                strokeWidth={0.8}
               />
             );
           })}
@@ -313,13 +314,20 @@ export default function ProPathSkillRadar({
               // stay at fillOpacity = 0; the stroke does the
               // differentiation.
 
+              // Cell outlines default to LIME across all states (matches
+              // the onboarding SkillRadarPreview) so the 24-cell shape
+              // reads clearly even before any lesson is done. Passed
+              // and started segments intensify the lime; not-started
+              // released segments use the same tone as the preview.
+              // Not-released cells stay dim white + dashed so the
+              // "content coming" state is still distinguishable.
               const strokeColor = notReleased
-                ? "rgba(255,255,255,0.12)"
+                ? "rgba(255,255,255,0.14)"
                 : passed
-                  ? "rgba(163,230,53,0.9)"
+                  ? "rgba(163,230,53,0.95)"
                   : started
-                    ? "rgba(163,230,53,0.5)"
-                    : "rgba(255,255,255,0.22)";
+                    ? "rgba(163,230,53,0.65)"
+                    : "rgba(163,230,53,0.4)";
 
               return (
                 <path
@@ -328,7 +336,7 @@ export default function ProPathSkillRadar({
                   fill="rgb(163,230,53)"
                   fillOpacity={fillOpacity}
                   stroke={isHover ? "rgba(255,255,255,0.6)" : strokeColor}
-                  strokeWidth={isHover ? 1.4 : 0.6}
+                  strokeWidth={isHover ? 1.6 : 0.85}
                   strokeDasharray={notReleased ? "2 2" : undefined}
                   style={{
                     transition:
@@ -364,8 +372,12 @@ export default function ProPathSkillRadar({
             const Icon = axis.Icon;
             const active = axisData && axisData.passedInLevel > 0;
             const isHover = hoverCell?.axisIdx === i;
-            const w = 92;
-            const h = 44;
+            // Enlarged from 92x44/w-4/text-[10px] so labels stay
+            // legible when the radar shrinks on mobile. Icon + text
+            // pair now reads at arm's length on a phone without
+            // needing to zoom in.
+            const w = 108;
+            const h = 54;
             return (
               <foreignObject
                 key={axis.id}
@@ -381,13 +393,13 @@ export default function ProPathSkillRadar({
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 ${
-                      active ? "text-accent-300" : "text-white/40"
+                    className={`w-5 h-5 ${
+                      active ? "text-accent-300" : "text-white/55"
                     }`}
                   />
                   <span
-                    className={`text-[10px] font-bold leading-tight text-center ${
-                      active ? "text-white/85" : "text-white/45"
+                    className={`text-[11px] sm:text-xs font-bold leading-tight text-center ${
+                      active ? "text-white/90" : "text-white/70"
                     }`}
                   >
                     {skillAxisLabel(axis.id, lang, "short")}
