@@ -19,7 +19,7 @@
 // component so the tile can be reused / previewed).
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 // import { useRouter } from "next/navigation";
@@ -28,7 +28,6 @@ import {
   ChevronRight,
   Pencil,
   ArrowRight,
-  BookOpen,
   Gamepad2,
   Trophy,
   Sparkles,
@@ -37,6 +36,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useSkillRadar } from "@/lib/hooks/useSkillRadar";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { listResumes } from "@/lib/lessons/resume";
 import ProfileEditModal from "@/components/ProfileEditModal";
 import Leaderboard from "@/components/Leaderboard";
 import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
@@ -92,8 +92,29 @@ export default function ProPathDashboard() {
   const { user } = useAuth();
   const { lang } = useLanguage();
   const copy = COPY[lang] || COPY.en;
-  const { profile, progress, lessons, completions, loading, refetchProgress } =
-    usePlayerDashboard(user?.id);
+  const {
+    profile,
+    progress,
+    pillars,
+    lessons,
+    completions,
+    loading,
+    refetchProgress,
+  } = usePlayerDashboard(user?.id);
+
+  // Mid-lesson resume — reads localStorage so a user who left a lesson
+  // partway through (e.g. to open the dashboard) can pick up EXACTLY
+  // where they left off. Recomputed once per mount + user change; the
+  // radar detail strip prefers this over the "first uncompleted lesson"
+  // fallback when both exist.
+  const [pendingResume, setPendingResume] = useState(null);
+  useEffect(() => {
+    if (!user?.id) {
+      setPendingResume(null);
+      return;
+    }
+    setPendingResume(listResumes(user.id)[0] || null);
+  }, [user?.id]);
 
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   // Local overrides drive instant UI feedback after the modal saves,
@@ -120,23 +141,80 @@ export default function ProPathDashboard() {
 
   const radar = useSkillRadar(allLessons, completions);
 
-  // Deep-link to lessons: point the "Back to lessons" + "Continue
-  // lessons" CTAs at the user's most-recently completed lesson (via
-  // ?completed=<id>) so the lesson index auto-opens the right pillar
-  // and highlights the next lesson. Matches the WC edition's
-  // post-completion routing. Falls back to plain /lesson (survival
-  // pillar default) when the user hasn't completed anything yet.
+  // Deep-link to lessons: point the "Back to lessons" CTA at the
+  // user's most-recently completed lesson (via ?completed=<id>) so
+  // the lesson index auto-opens the right pillar and highlights the
+  // next lesson. Matches the WC edition's post-completion routing.
+  // Falls back to plain /lesson (survival pillar default) when the
+  // user hasn't completed anything yet.
   const lessonsHref = useMemo(() => {
     if (!Array.isArray(completions) || completions.length === 0) {
       return "/lesson";
     }
-    // Query orders completions DESC by completed_at, so [0] is the
-    // most recent. Support both shapes: newer joined query exposes
-    // `lessons.id`; older callers just have `lesson_id`.
     const last = completions[0];
     const id = last?.lessons?.id ?? last?.lesson_id;
     return id ? `/lesson?completed=${encodeURIComponent(id)}` : "/lesson";
   }, [completions]);
+
+  // Compute the user's actual "next lesson" for the Skill Radar detail
+  // strip. Two-tier resolution:
+  //   1. If there's a pending mid-lesson resume in localStorage AND
+  //      the underlying lesson still exists on the user's edition,
+  //      that's the next lesson (they left it partway through — pick
+  //      up where they left off).
+  //   2. Otherwise, walk pillars in sort_order → lessons in sort_order
+  //      → first lesson NOT in completions. This mirrors the actual
+  //      progression path a user follows in the lesson index.
+  //
+  // Returns null when the user has finished every lesson (nothing
+  // "next"), or when data is still loading. Consumers show the strip
+  // gracefully in either case (SkillRadarDetail's empty branch).
+  const nextLessonInfo = useMemo(() => {
+    if (!pillars || pillars.length === 0) return null;
+    const completedIds = new Set(
+      (completions || [])
+        .map((c) => c?.lessons?.id ?? c?.lesson_id)
+        .filter(Boolean),
+    );
+
+    // Build a fast lesson-by-id lookup for the resume-match path.
+    const lessonById = new Map();
+    for (const p of pillars) {
+      for (const l of p.lessons || []) {
+        if (l?.id) lessonById.set(l.id, l);
+      }
+    }
+
+    // Tier 1: honour a fresh mid-lesson resume if the lesson still
+    // exists (edition switches / lesson unpublishes would leave a
+    // stale resume; we ignore it if the lesson is gone).
+    if (pendingResume?.lessonId) {
+      const resumeLesson = lessonById.get(pendingResume.lessonId);
+      if (resumeLesson) {
+        return buildLessonInfo(resumeLesson, {
+          isResume: true,
+          resumeStep: pendingResume.currentStep,
+        });
+      }
+    }
+
+    // Tier 2: walk in sort order for the first uncompleted lesson.
+    const sortedPillars = [...pillars].sort(
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
+    );
+    for (const pillar of sortedPillars) {
+      const orderedLessons = [...(pillar.lessons || [])].sort(
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
+      );
+      for (const lesson of orderedLessons) {
+        if (!completedIds.has(lesson.id)) {
+          return buildLessonInfo(lesson, { isResume: false });
+        }
+      }
+    }
+
+    return null;
+  }, [pillars, completions, pendingResume]);
 
   // Identity strings — profile override wins for instant post-edit
   // updates (same pattern the WC dashboard uses).
@@ -279,23 +357,21 @@ export default function ProPathDashboard() {
           certificateReady={radar.certificateReady}
           lang={lang}
           lessonHref={lessonsHref}
+          nextLessonInfo={nextLessonInfo}
         />
 
-        {/* ── Quick links row ──────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <QuickLink
-            href={lessonsHref}
-            Icon={BookOpen}
-            title={copy.continueLessons}
-            body={copy.continueLessonsBody}
-          />
-          <QuickLink
-            href="/games"
-            Icon={Gamepad2}
-            title={copy.gameCentre}
-            body={copy.gameCentreBody}
-          />
-        </div>
+        {/* ── Game Centre quick link ───────────────────────────
+             "Continue lessons" was removed here because the Skill
+             Radar's detail strip now IS the "next lesson" link —
+             having two competing CTAs muddled the visual hierarchy
+             and buried the strip's clickability. Game Centre stays
+             as a separate, distinct entry point. */}
+        <QuickLink
+          href="/games"
+          Icon={Gamepad2}
+          title={copy.gameCentre}
+          body={copy.gameCentreBody}
+        />
 
         {/* ── Leaderboard ─────────────────────────────────────── */}
         <div>
@@ -369,6 +445,29 @@ export default function ProPathDashboard() {
       />
     </div>
   );
+}
+
+/**
+ * Shape a lesson row into the minimal payload the radar's detail
+ * strip needs: id (for the link), title, sort_order (for "Aula N"),
+ * primary skill axis (for the icon + label), maxXp (for the "passes
+ * at" hint), plus flags for the resume case.
+ */
+function buildLessonInfo(lesson, { isResume, resumeStep } = {}) {
+  if (!lesson) return null;
+  const axes = Array.isArray(lesson.skill_axes) ? lesson.skill_axes : [];
+  return {
+    id: lesson.id,
+    title: lesson.title || "",
+    sortOrder: Number(lesson.sort_order) || 1,
+    primaryAxisId: axes[0] || null,
+    maxXp: Number(lesson.max_xp) || 0,
+    isResume: Boolean(isResume),
+    resumeStep:
+      typeof resumeStep === "number" && Number.isFinite(resumeStep)
+        ? resumeStep
+        : null,
+  };
 }
 
 function QuickLink({ href, Icon, title, body }) {

@@ -29,8 +29,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Sparkles, ArrowRight, Trophy } from "lucide-react";
-import { SKILL_AXES, skillAxisLabel } from "@/lib/lessons/skillAxes";
+import { Sparkles, ArrowRight, Trophy, PlayCircle } from "lucide-react";
+import {
+  SKILL_AXES,
+  getSkillAxis,
+  skillAxisLabel,
+} from "@/lib/lessons/skillAxes";
 import { LESSONS_PER_LEVEL, PASS_THRESHOLD } from "@/lib/hooks/useSkillRadar";
 
 // Local copy dictionary — same colocated pattern as the rest of the
@@ -170,6 +174,13 @@ export default function ProPathSkillRadar({
   certificateReady,
   lang = "en",
   lessonHref = "/lesson",
+  // Actual "next lesson" derived from the user's completions +
+  // pillar/lesson sort order (see ProPathDashboard). When provided,
+  // the default-state detail strip renders this as a clickable link
+  // straight to /lesson/<id> — the primary CTA of the whole tile.
+  // Falls back to the segment-walk heuristic when null (edge case:
+  // dashboard callers that don't compute a next lesson).
+  nextLessonInfo = null,
 }) {
   const copy = COPY[lang] || COPY.en;
 
@@ -410,21 +421,47 @@ export default function ProPathSkillRadar({
           })}
         </svg>
 
-        {/* Detail strip — persistently shows either the hovered
-            cell or (default) the "next up" cell so the tile is
-            always informative. */}
-        <SkillRadarDetail
-          axis={detailCell ? SKILL_AXES[detailCell.axisIdx] : SKILL_AXES[0]}
-          segment={
-            detailCell
-              ? perAxis[detailCell.axisIdx]?.segments?.[detailCell.segmentIdx]
-              : null
-          }
-          segmentIndex={detailCell?.segmentIdx ?? 0}
-          lang={lang}
-          copy={copy}
-          isEmpty={isEmpty}
-        />
+        {/* Detail strip. Priority:
+              1. If the user is hovering a cell → show that segment's
+                 details (existing behaviour, non-clickable, so
+                 casual exploration doesn't accidentally navigate).
+              2. Else if nextLessonInfo is provided → show the actual
+                 next lesson AS A CLICKABLE LINK. Primary CTA of the
+                 whole tile.
+              3. Else → fall back to the segment-walk nextUp cell
+                 (legacy behaviour for callers that don't compute
+                 a real next lesson). */}
+        {hoverCell ? (
+          <SkillRadarDetail
+            axis={SKILL_AXES[hoverCell.axisIdx]}
+            segment={
+              perAxis[hoverCell.axisIdx]?.segments?.[hoverCell.segmentIdx]
+            }
+            segmentIndex={hoverCell.segmentIdx}
+            lang={lang}
+            copy={copy}
+            isEmpty={isEmpty}
+          />
+        ) : nextLessonInfo ? (
+          <NextLessonLink
+            nextLesson={nextLessonInfo}
+            lang={lang}
+            copy={copy}
+          />
+        ) : (
+          <SkillRadarDetail
+            axis={detailCell ? SKILL_AXES[detailCell.axisIdx] : SKILL_AXES[0]}
+            segment={
+              detailCell
+                ? perAxis[detailCell.axisIdx]?.segments?.[detailCell.segmentIdx]
+                : null
+            }
+            segmentIndex={detailCell?.segmentIdx ?? 0}
+            lang={lang}
+            copy={copy}
+            isEmpty={isEmpty}
+          />
+        )}
       </div>
 
       {/* Level progress footer — subtle bar toward the certificate.
@@ -474,6 +511,72 @@ export default function ProPathSkillRadar({
         )}
       </div>
     </section>
+  );
+}
+
+// Clickable "next lesson" panel that replaces the SkillRadarDetail
+// default (no-hover) state when the dashboard has computed an actual
+// next lesson from completions + sort order. This IS the primary CTA
+// of the whole tile — big tap target, lime accent, arrow affordance.
+//
+// Resume state (isResume=true) gets a "Continue" label + PlayCircle
+// icon in place of the axis icon, signalling "pick up where you left
+// off" rather than "start something new". Copy uses the same
+// dictionary as SkillRadarDetail so the axis label + lesson number
+// read consistently across states.
+function NextLessonLink({ nextLesson, lang, copy }) {
+  const axis = getSkillAxis(nextLesson.primaryAxisId);
+  const AxisIcon = axis?.Icon ?? PlayCircle;
+  const axisLabel = axis
+    ? skillAxisLabel(axis.id, lang, "full")
+    : lang === "pt"
+      ? "Próxima aula"
+      : "Next lesson";
+  const threshold =
+    nextLesson.maxXp > 0 ? Math.round(nextLesson.maxXp * PASS_THRESHOLD) : 0;
+  const stateLabel = nextLesson.isResume
+    ? lang === "pt"
+      ? "Continuar"
+      : "Continue"
+    : lang === "pt"
+      ? "Próxima aula"
+      : "Next lesson";
+  const StateIcon = nextLesson.isResume ? PlayCircle : ArrowRight;
+
+  return (
+    <Link
+      href={`/lesson/${encodeURIComponent(nextLesson.id)}`}
+      className="mt-4 group flex items-center gap-3 rounded-2xl border border-accent-400/40 bg-accent-400/[0.08] hover:bg-accent-400/[0.14] hover:border-accent-400/70 px-4 py-3 transition-colors"
+      aria-label={
+        nextLesson.title
+          ? `${stateLabel} — ${nextLesson.title}`
+          : stateLabel
+      }
+    >
+      <div className="w-10 h-10 rounded-xl bg-accent-400/25 text-accent-200 flex items-center justify-center shrink-0">
+        <AxisIcon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-accent-300 font-bold">
+          {stateLabel}
+          <span className="text-white/40 font-normal normal-case tracking-normal">
+            {" "}
+            · {axisLabel} · {copy.lessonNumber(nextLesson.sortOrder)}
+          </span>
+        </p>
+        {nextLesson.title ? (
+          <p className="text-sm font-bold text-white/95 truncate mt-0.5">
+            {nextLesson.title}
+          </p>
+        ) : null}
+        {threshold > 0 && (
+          <p className="text-[11px] text-white/55 leading-relaxed mt-0.5">
+            {copy.passesAt(threshold)}
+          </p>
+        )}
+      </div>
+      <StateIcon className="w-4 h-4 text-accent-300 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+    </Link>
   );
 }
 
