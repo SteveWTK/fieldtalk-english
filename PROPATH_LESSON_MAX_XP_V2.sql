@@ -54,8 +54,8 @@ INSERT INTO step_type_xp_defaults (step_type, xp) VALUES
   ('ai_conversation', 35),
   ('ai_multiple_choice_gap_fill', 30),
   -- Reading / instructional
-  ('scenario', 15),
-  ('vocabulary', 15),
+  ('scenario', 0),
+  ('vocabulary', 0),
   ('pronunciation_drill', 20),
   ('timeline_drag', 30),
   ('conversation_vote', 20),
