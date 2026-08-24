@@ -31,9 +31,14 @@
 //   propath_goals         — array of strings ["trials", "academy", ...]
 //   onboarding_completed  — boolean
 //
-// Subscription filtering uses a JOIN on player_edition_access. Kept
-// as a two-step query (players → filter by ids) so we can use
-// Supabase's simpler .in()/.eq() API rather than raw SQL.
+// Note on the count-vs-fetch split: the two functions build separate
+// queries and each call .select() exactly ONCE. An earlier version
+// tried to share a baseQuery() that pre-selected then chained a second
+// .select() with { count: 'exact', head: true } — supabase-js does
+// not overlay the count options cleanly on a chained select and the
+// preview silently returned 0 while the fetch found rows. Keeping the
+// two paths cleanly separate (with a shared filter helper that DOESN'T
+// touch .select) avoids that trap.
 
 /**
  * @typedef {{
@@ -48,14 +53,12 @@
  */
 
 /**
- * Build a base query with baseline eligibility + non-subscription
- * filters applied. Subscription filter (which needs a join) is
- * handled separately by the two public functions below.
+ * Apply baseline eligibility + non-subscription filter clauses to a
+ * PostgrestFilterBuilder. Doesn't call .select() — the caller does
+ * that once with the columns/options they need.
  */
-function baseQuery(supabase, filter, selectClause) {
-  let q = supabase
-    .from("players")
-    .select(selectClause)
+function applyFilters(q, filter) {
+  q = q
     .eq("whatsapp_opted_in", true)
     .eq("whatsapp_agent_paused", false)
     .not("phone_e164", "is", null);
@@ -88,9 +91,10 @@ function baseQuery(supabase, filter, selectClause) {
 }
 
 /**
- * Fetch subscription-status → allowed player IDs mapping. Returns
- * null when the filter doesn't restrict on subscription (no
- * additional narrowing needed).
+ * Fetch subscription-status → allowed player IDs. Returns null when
+ * the filter doesn't restrict on subscription (no additional narrowing
+ * needed). Returns an empty array when the filter DID restrict but no
+ * matching subscriptions exist — caller returns 0/[] immediately.
  */
 async function playerIdsMatchingSubscription(supabase, filter) {
   if (
@@ -116,12 +120,17 @@ async function playerIdsMatchingSubscription(supabase, filter) {
  */
 export async function countMatchingRecipients(supabase, filter) {
   const subIds = await playerIdsMatchingSubscription(supabase, filter);
-  let q = baseQuery(supabase, filter, "id");
+  if (subIds !== null && subIds.length === 0) return 0;
+
+  let q = supabase
+    .from("players")
+    .select("*", { count: "exact", head: true });
+  q = applyFilters(q, filter);
   if (subIds !== null) {
-    if (subIds.length === 0) return 0;
     q = q.in("id", subIds);
   }
-  const { count, error } = await q.select("id", { count: "exact", head: true });
+
+  const { count, error } = await q;
   if (error) {
     console.error("[broadcasts/segments] count failed:", error);
     return 0;
@@ -142,16 +151,17 @@ export async function countMatchingRecipients(supabase, filter) {
  */
 export async function fetchMatchingRecipients(supabase, filter) {
   const subIds = await playerIdsMatchingSubscription(supabase, filter);
-  let q = baseQuery(
-    supabase,
-    filter,
-    "id, phone_e164, preferred_language",
-  ).order("created_at", { ascending: true });
+  if (subIds !== null && subIds.length === 0) return [];
+
+  let q = supabase
+    .from("players")
+    .select("id, phone_e164, preferred_language");
+  q = applyFilters(q, filter);
   if (subIds !== null) {
-    if (subIds.length === 0) return [];
     q = q.in("id", subIds);
   }
-  const { data, error } = await q;
+
+  const { data, error } = await q.order("created_at", { ascending: true });
   if (error) {
     console.error("[broadcasts/segments] fetch failed:", error);
     return [];
