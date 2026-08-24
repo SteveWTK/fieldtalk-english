@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
   const { data: broadcast, error } = await supabase
     .from("whatsapp_broadcasts")
     .select(
-      "id, name, body, target_filter, status, recipient_count, sent_count, failed_count, skipped_count, created_by, created_at, sent_started_at, completed_at",
+      "id, name, body, target_filter, status, recipient_count, sent_count, failed_count, skipped_count, created_by, created_at, sent_started_at, completed_at, scheduled_for, interval_seconds, window_start_hour_brt, window_end_hour_brt, send_on_days, generated_from_template_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -34,10 +34,10 @@ export async function GET(request, { params }) {
   const { data: recipients } = await supabase
     .from("whatsapp_broadcast_recipients")
     .select(
-      "id, player_id, phone_e164, language, status, provider_message_id, error, skip_reason, sent_at, created_at",
+      "id, player_id, phone_e164, language, status, provider_message_id, error, skip_reason, sent_at, created_at, scheduled_slot",
     )
     .eq("broadcast_id", id)
-    .order("created_at", { ascending: true })
+    .order("scheduled_slot", { ascending: true })
     .limit(200);
 
   return NextResponse.json({

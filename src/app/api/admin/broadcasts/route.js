@@ -20,7 +20,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("whatsapp_broadcasts")
     .select(
-      "id, name, body, target_filter, status, recipient_count, sent_count, failed_count, skipped_count, created_by, created_at, sent_started_at, completed_at",
+      "id, name, body, target_filter, status, recipient_count, sent_count, failed_count, skipped_count, created_by, created_at, sent_started_at, completed_at, scheduled_for, interval_seconds, window_start_hour_brt, window_end_hour_brt, send_on_days, generated_from_template_id",
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -88,16 +88,72 @@ export async function POST(request) {
       ? payload.target_filter
       : {};
 
+  // Phase 6 scheduling fields — all optional; defaults live in the
+  // schema. Validated here so a bad client can't sneak past.
+  const insertData = {
+    name,
+    body,
+    target_filter: targetFilter,
+    status: "draft",
+    created_by: gate.user.id,
+  };
+
+  if (payload?.scheduled_for) {
+    const parsed = new Date(payload.scheduled_for);
+    if (Number.isNaN(parsed.getTime())) {
+      return NextResponse.json(
+        { error: "scheduled_for must be a valid ISO date" },
+        { status: 400 },
+      );
+    }
+    insertData.scheduled_for = parsed.toISOString();
+  }
+  if (typeof payload?.interval_seconds === "number") {
+    const iv = Math.round(payload.interval_seconds);
+    if (iv < 3 || iv > 60) {
+      return NextResponse.json(
+        { error: "interval_seconds must be 3–60" },
+        { status: 400 },
+      );
+    }
+    insertData.interval_seconds = iv;
+  }
+  if (typeof payload?.window_start_hour_brt === "number") {
+    insertData.window_start_hour_brt = Math.round(
+      payload.window_start_hour_brt,
+    );
+  }
+  if (typeof payload?.window_end_hour_brt === "number") {
+    insertData.window_end_hour_brt = Math.round(payload.window_end_hour_brt);
+  }
+  if (Array.isArray(payload?.send_on_days)) {
+    const valid = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+    const clean = payload.send_on_days
+      .filter((d) => typeof d === "string" && valid.has(d))
+      .map((d) => d);
+    if (clean.length === 0) {
+      return NextResponse.json(
+        { error: "send_on_days must include at least one day" },
+        { status: 400 },
+      );
+    }
+    insertData.send_on_days = clean;
+  }
+  if (
+    insertData.window_end_hour_brt !== undefined &&
+    insertData.window_start_hour_brt !== undefined &&
+    insertData.window_end_hour_brt <= insertData.window_start_hour_brt
+  ) {
+    return NextResponse.json(
+      { error: "window_end_hour_brt must be greater than window_start_hour_brt" },
+      { status: 400 },
+    );
+  }
+
   const supabase = await getSupabaseAdmin();
   const { data, error } = await supabase
     .from("whatsapp_broadcasts")
-    .insert({
-      name,
-      body,
-      target_filter: targetFilter,
-      status: "draft",
-      created_by: gate.user.id,
-    })
+    .insert(insertData)
     .select("id")
     .single();
 

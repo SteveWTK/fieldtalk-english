@@ -53,8 +53,18 @@ export function getTestRecipient(id) {
   return TEST_RECIPIENTS.find((r) => r.id === id);
 }
 
-// Dispatcher tick sizing — see file header.
-export const DISPATCHER_TICK_LIMIT = 7;
+// Dispatcher tick ceiling — see file header.
+//
+// Since Phase 6, per-broadcast throttle is enforced via scheduled_slot
+// spacing at fan-out time (not via a fixed per-tick cap). The dispatcher
+// just processes any pending rows whose slot has arrived, up to this
+// ceiling. Higher = catches up faster after outages; lower = safer for
+// Vercel serverless timeouts.
+//
+// At ~500ms per WhatsApp send, 50 recipients = ~25s of cron work — well
+// within Vercel's 60s serverless timeout, comfortably below Z-API's
+// rate-limit ceilings for warm accounts.
+export const DISPATCHER_TICK_LIMIT = 50;
 
 // Supported broadcast body languages. Order matters — compose UI tabs
 // render in this order, and the "primary" language (index 0) is the

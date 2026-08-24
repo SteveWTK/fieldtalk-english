@@ -313,6 +313,42 @@ export default function BroadcastDetailPage() {
           )}
         </section>
 
+        {/* ── Schedule + timing summary ───────────────────────── */}
+        <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-3">
+            Schedule &amp; timing
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <ScheduleField
+              label="Starts at"
+              value={
+                broadcast.scheduled_for
+                  ? formatDate(broadcast.scheduled_for)
+                  : "Immediately on Send"
+              }
+            />
+            <ScheduleField
+              label="Interval between sends"
+              value={`${broadcast.interval_seconds || 8}s`}
+            />
+            <ScheduleField
+              label="Send window (BRT)"
+              value={`${String(broadcast.window_start_hour_brt ?? 8).padStart(2, "0")}:00 – ${String(broadcast.window_end_hour_brt ?? 21).padStart(2, "0")}:00`}
+            />
+            <ScheduleField
+              label="Allowed days"
+              value={(broadcast.send_on_days || [])
+                .map((d) => d[0].toUpperCase() + d.slice(1))
+                .join(", ")}
+            />
+          </div>
+          {broadcast.generated_from_template_id && (
+            <p className="text-[11px] text-white/40 mt-3">
+              Auto-generated from a recurring template.
+            </p>
+          )}
+        </section>
+
         {/* ── Recipients list ─────────────────────────────────── */}
         <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
           <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-3">
@@ -332,6 +368,17 @@ export default function BroadcastDetailPage() {
           )}
         </section>
       </main>
+    </div>
+  );
+}
+
+function ScheduleField({ label, value }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">
+        {label}
+      </p>
+      <p className="text-sm text-white/90 mt-0.5">{value}</p>
     </div>
   );
 }
@@ -358,6 +405,10 @@ function RecipientRow({ recipient }) {
         : recipient.status === "skipped"
           ? "text-white/40"
           : "text-blue-300";
+  const slotIsFuture =
+    recipient.status === "pending" &&
+    recipient.scheduled_slot &&
+    new Date(recipient.scheduled_slot).getTime() > Date.now();
   return (
     <div className="flex items-center gap-3 text-xs py-1.5 border-b border-white/[0.04] last:border-b-0">
       <span className="text-white/70 font-mono truncate flex-1">
@@ -371,6 +422,12 @@ function RecipientRow({ recipient }) {
       >
         {recipient.status}
       </span>
+      {slotIsFuture && (
+        <span className="text-blue-200/70 text-[10px]">
+          <Clock className="w-3 h-3 inline mr-1" />
+          {formatDate(recipient.scheduled_slot)}
+        </span>
+      )}
       {recipient.error && (
         <span className="text-red-300/60 text-[10px] truncate max-w-[200px]">
           <AlertTriangle className="w-3 h-3 inline mr-1" />

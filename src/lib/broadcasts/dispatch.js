@@ -42,11 +42,21 @@ export async function drainPendingRecipients(
   supabase,
   limit = DISPATCHER_TICK_LIMIT,
 ) {
+  // Only recipients whose scheduled_slot has arrived. Ordered by
+  // scheduled_slot so oldest overdue slots get processed first —
+  // keeps a warm broadcast steady even if a backlog builds up during
+  // an outage.
+  //
+  // Per-broadcast interval enforcement is done implicitly via the
+  // spacing between scheduled_slot values that fan-out set up. The
+  // dispatcher doesn't need to know about interval_seconds at all.
+  const nowIso = new Date().toISOString();
   const { data: recipients, error } = await supabase
     .from("whatsapp_broadcast_recipients")
     .select("id, broadcast_id, player_id, phone_e164, language")
     .eq("status", "pending")
-    .order("created_at", { ascending: true })
+    .lte("scheduled_slot", nowIso)
+    .order("scheduled_slot", { ascending: true })
     .limit(limit);
 
   if (error) {

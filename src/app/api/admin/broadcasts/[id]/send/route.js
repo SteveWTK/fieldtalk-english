@@ -23,6 +23,7 @@ import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { assertAdmin } from "@/lib/admin/gate";
 import { fetchMatchingRecipients } from "@/lib/broadcasts/segments";
+import { computeRecipientSlots } from "@/lib/broadcasts/slots";
 
 export async function POST(request, { params }) {
   const gate = await assertAdmin();
@@ -31,10 +32,13 @@ export async function POST(request, { params }) {
   const { id } = await params;
   const supabase = await getSupabaseAdmin();
 
-  // Load + verify status.
+  // Load + verify status. Pulls the Phase 6 scheduling fields so we
+  // can compute per-recipient slots at fan-out time.
   const { data: broadcast, error: loadErr } = await supabase
     .from("whatsapp_broadcasts")
-    .select("id, status, target_filter")
+    .select(
+      "id, status, target_filter, scheduled_for, interval_seconds, window_start_hour_brt, window_end_hour_brt, send_on_days",
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -69,14 +73,28 @@ export async function POST(request, { params }) {
     return NextResponse.json({ ok: true, recipient_count: 0 });
   }
 
+  // Compute one send slot per recipient, respecting scheduled_for +
+  // interval + window + send_on_days. Slots outside the window get
+  // bumped forward automatically (see nextAllowedSlot).
+  const slots = computeRecipientSlots(recipients.length, {
+    scheduled_for: broadcast.scheduled_for
+      ? new Date(broadcast.scheduled_for)
+      : null,
+    interval_seconds: broadcast.interval_seconds,
+    window_start_hour_brt: broadcast.window_start_hour_brt,
+    window_end_hour_brt: broadcast.window_end_hour_brt,
+    send_on_days: broadcast.send_on_days,
+  });
+
   // Bulk insert. onConflict on (broadcast_id, player_id) → silent
   // ignore, so a double-call doesn't dupe rows.
-  const rowsToInsert = recipients.map((r) => ({
+  const rowsToInsert = recipients.map((r, idx) => ({
     broadcast_id: id,
     player_id: r.id,
     phone_e164: r.phone_e164,
     language: r.preferred_language,
     status: "pending",
+    scheduled_slot: slots[idx].toISOString(),
   }));
 
   const { error: insertErr } = await supabase

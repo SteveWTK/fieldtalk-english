@@ -27,6 +27,8 @@ import {
   TestTube2,
   CheckCircle2,
   AlertTriangle,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import { BROADCAST_LANGUAGES, TEST_RECIPIENTS } from "@/lib/broadcasts/config";
 import { POSITIONS } from "@/lib/players/positions";
@@ -81,6 +83,23 @@ export default function BroadcastComposePage() {
 
   const [previewCount, setPreviewCount] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Phase 6 scheduling state. Defaults chosen so a first-time admin
+  // clicking Send Now gets sensible behaviour (8s stagger, 08:00–21:00
+  // BRT window, no Sunday).
+  const [scheduleMode, setScheduleMode] = useState("now"); // 'now' | 'later'
+  const [scheduledFor, setScheduledFor] = useState(""); // datetime-local string
+  const [intervalSeconds, setIntervalSeconds] = useState(8);
+  const [windowStart, setWindowStart] = useState(8);
+  const [windowEnd, setWindowEnd] = useState(21);
+  const [sendOnDays, setSendOnDays] = useState([
+    "mon",
+    "tue",
+    "wed",
+    "thu",
+    "fri",
+    "sat",
+  ]);
 
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -195,6 +214,19 @@ export default function BroadcastComposePage() {
       for (const lang of filledLanguages) {
         bodyPayload[lang] = bodies[lang].trim();
       }
+      // Build the scheduling payload. scheduled_for only sent when
+      // mode='later' AND the datetime input is filled — otherwise the
+      // schema default (null = send whenever fan-out triggers) applies.
+      const schedulingPayload = {
+        interval_seconds: intervalSeconds,
+        window_start_hour_brt: windowStart,
+        window_end_hour_brt: windowEnd,
+        send_on_days: sendOnDays,
+      };
+      if (scheduleMode === "later" && scheduledFor) {
+        schedulingPayload.scheduled_for = new Date(scheduledFor).toISOString();
+      }
+
       const createRes = await fetch("/api/admin/broadcasts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -202,6 +234,7 @@ export default function BroadcastComposePage() {
           name: name.trim(),
           body: bodyPayload,
           target_filter: filter,
+          ...schedulingPayload,
         }),
       });
       const createJson = await createRes.json();
@@ -361,6 +394,24 @@ export default function BroadcastComposePage() {
           )}
         </div>
 
+        {/* ── Schedule + timing ───────────────────────────────── */}
+        <SchedulePanel
+          scheduleMode={scheduleMode}
+          setScheduleMode={setScheduleMode}
+          scheduledFor={scheduledFor}
+          setScheduledFor={setScheduledFor}
+        />
+        <TimingPanel
+          intervalSeconds={intervalSeconds}
+          setIntervalSeconds={setIntervalSeconds}
+          windowStart={windowStart}
+          setWindowStart={setWindowStart}
+          windowEnd={windowEnd}
+          setWindowEnd={setWindowEnd}
+          sendOnDays={sendOnDays}
+          setSendOnDays={setSendOnDays}
+        />
+
         {/* ── Segment filters ─────────────────────────────────── */}
         <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
@@ -469,6 +520,203 @@ export default function BroadcastComposePage() {
           </button>
         </div>
       </main>
+    </div>
+  );
+}
+
+// Schedule panel — "send now" vs "schedule for later" with a
+// datetime-local input for the "later" branch. Kept separate from
+// the Timing panel below because scheduling is about WHEN to start,
+// timing is about HOW to send.
+function SchedulePanel({
+  scheduleMode,
+  setScheduleMode,
+  scheduledFor,
+  setScheduledFor,
+}) {
+  return (
+    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Calendar className="w-4 h-4 text-white/60" />
+        <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+          Schedule
+        </p>
+      </div>
+      <div className="flex gap-2 mb-3">
+        <ScheduleToggle
+          label="Send when I click"
+          active={scheduleMode === "now"}
+          onClick={() => setScheduleMode("now")}
+        />
+        <ScheduleToggle
+          label="Schedule for later"
+          active={scheduleMode === "later"}
+          onClick={() => setScheduleMode("later")}
+        />
+      </div>
+      {scheduleMode === "later" && (
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+            Start fan-out at
+          </label>
+          <input
+            type="datetime-local"
+            value={scheduledFor}
+            onChange={(e) => setScheduledFor(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+          />
+          <p className="text-[10px] text-white/40 mt-1">
+            Local time (your browser). Sends still respect the
+            business-hours window + allowed days below.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScheduleToggle({ label, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+        active
+          ? "border-accent-400 bg-accent-400/15 text-accent-200"
+          : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+// Timing panel — interval between sends, business-hours window,
+// allowed days-of-week. All settings apply per-broadcast so an
+// individual send can widen or narrow relative to defaults.
+const INTERVAL_OPTIONS = [3, 5, 8, 15, 30, 60];
+const HOUR_OPTIONS = Array.from({ length: 25 }, (_, i) => i); // 0..24
+const DAYS_OF_WEEK = [
+  { code: "mon", label: "Mon" },
+  { code: "tue", label: "Tue" },
+  { code: "wed", label: "Wed" },
+  { code: "thu", label: "Thu" },
+  { code: "fri", label: "Fri" },
+  { code: "sat", label: "Sat" },
+  { code: "sun", label: "Sun" },
+];
+
+function TimingPanel({
+  intervalSeconds,
+  setIntervalSeconds,
+  windowStart,
+  setWindowStart,
+  windowEnd,
+  setWindowEnd,
+  sendOnDays,
+  setSendOnDays,
+}) {
+  const toggleDay = (code) => {
+    if (sendOnDays.includes(code)) {
+      setSendOnDays(sendOnDays.filter((d) => d !== code));
+    } else {
+      setSendOnDays([...sendOnDays, code]);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="w-4 h-4 text-white/60" />
+        <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+          Send timing
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+            Interval between sends
+          </label>
+          <select
+            value={intervalSeconds}
+            onChange={(e) => setIntervalSeconds(Number(e.target.value))}
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+          >
+            {INTERVAL_OPTIONS.map((i) => (
+              <option key={i} value={i}>
+                {i} seconds
+              </option>
+            ))}
+          </select>
+          <p className="text-[10px] text-white/40 mt-1">
+            8s is safe for cold WhatsApp accounts.
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+            Window start (BRT)
+          </label>
+          <select
+            value={windowStart}
+            onChange={(e) => setWindowStart(Number(e.target.value))}
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+          >
+            {HOUR_OPTIONS.slice(0, 24).map((h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, "0")}:00
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+            Window end (BRT)
+          </label>
+          <select
+            value={windowEnd}
+            onChange={(e) => setWindowEnd(Number(e.target.value))}
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+          >
+            {HOUR_OPTIONS.slice(1).map((h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, "0")}:00
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+          Allowed days
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {DAYS_OF_WEEK.map((d) => {
+            const active = sendOnDays.includes(d.code);
+            return (
+              <button
+                key={d.code}
+                type="button"
+                onClick={() => toggleDay(d.code)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                  active
+                    ? "border-accent-400 bg-accent-400/15 text-accent-200"
+                    : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                }`}
+              >
+                {d.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-white/40 mt-1.5">
+          Sends outside the window OR on blocked days automatically
+          shift to the next allowed slot — nothing gets dropped.
+        </p>
+      </div>
     </div>
   );
 }
