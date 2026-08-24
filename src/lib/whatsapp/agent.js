@@ -11,6 +11,7 @@
 
 import { loadPrompt } from "./prompts";
 import { completeJson, PERSONA_MODEL, ROUTER_MODEL } from "./llm";
+import { withProductFacts } from "./product-knowledge";
 
 /**
  * @typedef {Object} AgentContext
@@ -81,8 +82,14 @@ export async function decideAgentAction(supabase, ctx) {
     return errorAction(`prompt_load_failed_${personaKind}: ${err.message}`);
   }
 
+  // Product facts appended to the persona's system prompt so the agent
+  // can answer factual questions (radar mechanics, certificates, XP
+  // thresholds, refund policy) correctly instead of hallucinating.
+  // Router intentionally does NOT get product facts — it only needs
+  // to classify intent, adding facts would inflate cost with zero
+  // classification gain.
   const personaResult = await completeJson({
-    system: personaPrompt.content,
+    system: withProductFacts(personaPrompt.content),
     user: routerUserBlock,
     model: PERSONA_MODEL,
     temperature: 0.6,
