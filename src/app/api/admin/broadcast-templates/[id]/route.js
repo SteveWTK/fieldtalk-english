@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { assertAdmin } from "@/lib/admin/gate";
-import { validateTemplatePayload } from "../route";
+import { validateTemplatePayload } from "@/lib/broadcasts/template-validation";
 
 export async function GET(_request, { params }) {
   const gate = await assertAdmin();
