@@ -24,7 +24,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Trophy, Target } from "lucide-react";
+import { ArrowRight, Target } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
@@ -85,14 +85,14 @@ const PROPATH_STRIPE = [
   "#84cc16", // lime-500
   "#94a3b8", // slate-400
 ];
-const WC_STRIPE = [
-  "#009C3B", // Brazil green
-  "#FFDF00", // Brazil yellow
-  "#FFFFFF",
-  "#CE1126",
-  "#0055A4",
-  "#75AADB",
-];
+// const WC_STRIPE = [
+//   "#009C3B", // Brazil green
+//   "#FFDF00", // Brazil yellow
+//   "#FFFFFF",
+//   "#CE1126",
+//   "#0055A4",
+//   "#75AADB",
+// ];
 
 export default function RootLandingPage() {
   const router = useRouter();
@@ -210,7 +210,7 @@ export default function RootLandingPage() {
           {copy.chooseHeading}
         </p>
 
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-1 gap-4 sm:gap-6">
           {/* Pro Path — primary card. Accent lime border + glow so
               it visually leads. */}
           <EditionCard
@@ -234,7 +234,7 @@ export default function RootLandingPage() {
           {/* WC2026 — secondary card. Emerald + gold DNA preserved
               from the tournament identity. Reads as "still here"
               rather than "not chosen". */}
-          <EditionCard
+          {/* <EditionCard
             variant="wc"
             eyebrow={copy.wc2026.eyebrow}
             title={copy.wc2026.title}
@@ -250,7 +250,7 @@ export default function RootLandingPage() {
             onContinue={goDirectly}
             mounted={mounted}
             animationDelay="1150ms"
-          />
+          /> */}
         </div>
       </main>
 
@@ -406,9 +406,7 @@ function EditionCard({
           </div>
         </div>
 
-        <p className="text-sm text-white/70 leading-relaxed mb-5">
-          {tagline}
-        </p>
+        <p className="text-sm text-white/70 leading-relaxed mb-5">{tagline}</p>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <Link
