@@ -8,8 +8,14 @@
 //   Slide 1 — Position picker    ("Where do you play?")
 //   Slide 2 — Goal picker        ("What's your goal?")
 //   Slide 3 — WhatsApp phone + consent   ("Your coach on WhatsApp")
-//   Slide 4 — WhatsApp preferences        ("When should your coach…")
-//   Slide 5 — Ready celebration           (Skill Radar teaser → CTA)
+//   Slide 4 — Ready celebration           (Skill Radar teaser → CTA)
+//
+// The nudge-preferences slide (frequency + time-of-day) was removed
+// on 2026-08-24 to simplify the flow while broadcast plans firm up.
+// The columns whatsapp_nudge_frequency / whatsapp_nudge_time_slot
+// remain on the players table so the slide can be reinstated by
+// re-adding WhatsAppPrefsSlide (component still exists) between
+// slides 3 and 4 without a migration.
 //
 // The WhatsApp steps live inside this flow (rather than as a follow-up
 // modal on the dashboard) so users get one continuous onboarding beat.
@@ -49,7 +55,6 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { NOT_SURE_YET, getPosition } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
 import WhatsAppPhoneSlide from "@/components/whatsapp/onboarding/WhatsAppPhoneSlide";
-import WhatsAppPrefsSlide from "@/components/whatsapp/onboarding/WhatsAppPrefsSlide";
 import { getConsentText } from "@/lib/whatsapp/consent";
 import SkillRadarPreview from "@/components/onboarding/propath/SkillRadarPreview";
 
@@ -122,14 +127,13 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
   const [position, setPosition] = useState(undefined); // undefined = untouched
   const [goal, setGoal] = useState(null);
 
-  // WhatsApp selections (slides 3 + 4). Prefs default to the
-  // "safe, non-spammy" combination — every_3_days at morning — so
-  // slide 4 always satisfies canAdvance even if the user just clicks
-  // through. Users can change these anytime from their profile.
+  // WhatsApp phone + consent (slide 3). Nudge-frequency + time-slot
+  // preferences were removed on 2026-08-24 (see file header). The
+  // columns still exist on the players table; if they need to be
+  // populated, do it via the profile settings screen rather than
+  // reintroducing them here.
   const [phoneInput, setPhoneInput] = useState("");
   const [consent, setConsent] = useState(false);
-  const [frequency, setFrequency] = useState("every_3_days");
-  const [timeSlot, setTimeSlot] = useState("morning");
 
   useEffect(() => {
     // Defer entrance animation one paint tick so the overlay doesn't
@@ -138,7 +142,7 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const slides = 5;
+  const slides = 4;
 
   const canAdvance = useMemo(() => {
     if (slideIdx === 0) return position !== undefined; // any selection made (incl. null "not sure")
@@ -147,10 +151,8 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
     // ticked. Full E.164 validation runs server-side in the PATCH; we
     // want the button enabled as soon as the input looks non-trivial.
     if (slideIdx === 2) return phoneInput.trim().length >= 8 && consent;
-    // Prefs slide: both defaults are pre-selected, so always advanceable.
-    if (slideIdx === 3) return !!frequency && !!timeSlot;
     return true;
-  }, [slideIdx, position, goal, phoneInput, consent, frequency, timeSlot]);
+  }, [slideIdx, position, goal, phoneInput, consent]);
 
   const goNext = () => {
     if (!canAdvance) return;
@@ -179,8 +181,6 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
             phone_e164: phoneInput.trim(),
             whatsapp_opted_in: true,
             whatsapp_consent_text: getConsentText(lang),
-            whatsapp_nudge_frequency: frequency,
-            whatsapp_nudge_time_slot: timeSlot,
           }),
         });
         const waJson = await waRes.json().catch(() => ({}));
@@ -312,15 +312,6 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
             />
           )}
           {slideIdx === 3 && (
-            <WhatsAppPrefsSlide
-              lang={lang}
-              frequency={frequency}
-              onFrequencyChange={setFrequency}
-              timeSlot={timeSlot}
-              onTimeSlotChange={setTimeSlot}
-            />
-          )}
-          {slideIdx === 4 && (
             <SlideReady
               copy={copy.slide3}
               userName={userName}

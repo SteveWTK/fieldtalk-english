@@ -37,6 +37,7 @@ import {
   ChevronRight,
   Network,
   Activity,
+  Radio,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -110,6 +111,13 @@ function AdminHubContent() {
         </header>
 
         <AdminSection title="Engagement & partners">
+          <AdminCard
+            href="/admin/broadcasts"
+            Icon={Radio}
+            title="Broadcasts"
+            body="Bulk schedule and recurring messages via WhatsApp."
+            accent="emerald"
+          />
           <AdminCard
             href="/admin/users"
             Icon={Users2}

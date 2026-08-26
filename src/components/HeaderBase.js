@@ -60,7 +60,7 @@ function HeaderBase({
       en: [
         // { href: "/lesson", label: "Home" },
         { href: "/lesson", label: "Lessons" },
-        { href: "/dashboard", label: "Ultimate Team" },
+        { href: "/dashboard", label: "Dashboard" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "About Us" },
         { href: "/pricing", label: "Pricing" },
@@ -69,7 +69,7 @@ function HeaderBase({
       pt: [
         // { href: "/", label: "Início" },
         { href: "/lesson", label: "Aulas" },
-        { href: "/dashboard", label: "Ultimate Team" },
+        { href: "/dashboard", label: "Painel" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nós" },
         { href: "/pricing", label: "Valores" },
@@ -78,7 +78,7 @@ function HeaderBase({
       es: [
         // { href: "/", label: "Inicio" },
         { href: "/lesson", label: "Lecciones" },
-        { href: "/dashboard", label: "Ultimate Team" },
+        { href: "/dashboard", label: "Panel" },
         // { href: "/admin", label: "Admin" },
         { href: "/about-us", label: "Sobre Nosotros" },
         { href: "/pricing", label: "Pricing" },
@@ -123,25 +123,13 @@ function HeaderBase({
   const rawLinks =
     localizedLinks[type]?.[lang] || localizedLinks[type]?.en || [];
 
-  // Per-edition dashboard label. WC gets its existing "Ultimate Team"
-  // wording; Pro Path swaps to "Training Ground" (EN) or "CT" (PT
-  // short — universally recognised in Brazilian football and vital
-  // in a tight nav). Other editions fall back to the raw label from
-  // the array above. Kept as a per-link post-process so the base
-  // array stays static + declarative.
-  const propathDashboardLabel = {
-    en: "Training Ground",
-    pt: "CT",
-    es: "Centro de Entrenamiento",
-    fr: "Centre d'entraînement",
-  };
-  const links = rawLinks.map((l) => {
-    if (l.href !== "/dashboard") return l;
-    if (profile?.edition === "propath_26_27") {
-      return { ...l, label: propathDashboardLabel[lang] || propathDashboardLabel.en };
-    }
-    return l;
-  });
+  // Per-edition dashboard label swap was removed on 2026-08-24 —
+  // early test users found "Training Ground" / "Centro de Treinamento"
+  // / "CT" confusing, so both editions now use the same "Dashboard"
+  // / "Painel" label from the base localized array. Kept the .map()
+  // shape here as a stable extension point in case per-edition nav
+  // labels come back for other links in the future.
+  const links = rawLinks;
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -363,7 +351,7 @@ function HeaderBase({
                           <option key={code} value={code}>
                             {flag} {label}
                           </option>
-                        )
+                        ),
                       )}
                     </select>
                   </div>

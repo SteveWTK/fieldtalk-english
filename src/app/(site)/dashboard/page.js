@@ -44,7 +44,7 @@ import { getFormation } from "@/lib/squads/squadConfig";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import Leaderboard from "@/components/Leaderboard";
 import StickerCard from "@/components/stickers/StickerCard";
-import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
+// import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import PredictionsCentreBanner from "@/components/predictions/PredictionsCentreBanner";
 import NewContentBanner from "@/components/NewContentBanner";
 import DashboardTour from "@/components/DashboardTour";
@@ -381,10 +381,11 @@ function WC2026DashboardContent() {
             something to do. */}
         <PredictionsCentreBanner />
 
-        {/* Push notification opt-in. Renders itself null if the
-            browser doesn't support push, the user already opted in,
-            or they dismissed it within the last 7 days. */}
-        <NotificationsOptIn />
+        {/* Push notification opt-in — deactivated on 2026-08-24 in
+            favour of WhatsApp for all nudges/notifications. Import
+            + render kept as comments so it can be flipped back on
+            without hunting for the mount point. */}
+        {/* <NotificationsOptIn /> */}
 
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section

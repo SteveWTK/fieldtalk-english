@@ -31,7 +31,9 @@ import {
   Gamepad2,
   Trophy,
   Sparkles,
+  PlayCircle,
 } from "lucide-react";
+import { skillAxisLabel } from "@/lib/lessons/skillAxes";
 import { useAuth } from "@/components/AuthProvider";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useSkillRadar } from "@/lib/hooks/useSkillRadar";
@@ -39,7 +41,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { listResumes } from "@/lib/lessons/resume";
 import ProfileEditModal from "@/components/ProfileEditModal";
 import Leaderboard from "@/components/Leaderboard";
-import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
+// import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import NewContentBanner from "@/components/NewContentBanner";
 import ProPathSkillRadar from "./ProPathSkillRadar";
 
@@ -52,7 +54,7 @@ const COPY = {
   en: {
     backToLessons: "Back to lessons",
     editProfile: "Edit profile",
-    heroEyebrow: "Your Training Ground",
+    heroEyebrow: "Your Dashboard",
     xp: "XP",
     continueLessons: "Continue lessons",
     continueLessonsBody: "Pick up where you left off.",
@@ -72,7 +74,7 @@ const COPY = {
   pt: {
     backToLessons: "Voltar às aulas",
     editProfile: "Editar perfil",
-    heroEyebrow: "Seu Centro de Treinamento",
+    heroEyebrow: "Seu Painel",
     xp: "XP",
     continueLessons: "Continuar aulas",
     continueLessonsBody: "Retome de onde parou.",
@@ -295,7 +297,7 @@ export default function ProPathDashboard() {
 
         {/* Push opt-in — self-nulls when browser doesn't support push,
             user's already opted in, or dismissed in last 7 days. */}
-        <NotificationsOptIn />
+        {/* <NotificationsOptIn /> */}
 
         {/* ── Hero strip ─────────────────────────────────────────── */}
         <section className="rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 p-5 sm:p-6">
@@ -332,7 +334,7 @@ export default function ProPathDashboard() {
               <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate mt-0.5">
                 {fullName}
               </h1>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <div className="flex items-center gap-x-3 gap-y-2 mt-1.5 flex-wrap">
                 {position && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400/15 border border-accent-400/30 text-accent-200 text-[11px] font-bold uppercase tracking-wider">
                     {position}
@@ -341,6 +343,50 @@ export default function ProPathDashboard() {
                 <span className="text-xs text-white/55 tabular-nums">
                   {totalXp.toLocaleString()} {copy.xp}
                 </span>
+                {/* Minimalist next-lesson chip. Moved into the Hero
+                    Strip on 2026-08-24 from the Skill Radar tile so
+                    the radar can stay focused on progress visuals.
+                    Just: state ("Próxima aula" / "Continuar") · skill
+                    area · lesson number — no title, no threshold. */}
+                {nextLessonInfo && (
+                  <Link
+                    href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
+                    className="group inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-accent-200 transition-colors"
+                  >
+                    {nextLessonInfo.isResume ? (
+                      <PlayCircle className="w-3.5 h-3.5 text-accent-300" />
+                    ) : (
+                      <ArrowRight className="w-3.5 h-3.5 text-accent-300" />
+                    )}
+                    <span>
+                      <span className="font-bold text-accent-300">
+                        {nextLessonInfo.isResume
+                          ? lang === "pt"
+                            ? "Continuar"
+                            : "Continue"
+                          : lang === "pt"
+                            ? "Próxima aula"
+                            : "Next lesson"}
+                      </span>
+                      <span className="text-white/50">
+                        {" · "}
+                        {nextLessonInfo.primaryAxisId
+                          ? skillAxisLabel(
+                              nextLessonInfo.primaryAxisId,
+                              lang,
+                              "short",
+                            )
+                          : lang === "pt"
+                            ? "Aula"
+                            : "Lesson"}
+                        {" · "}
+                        {lang === "pt" ? "Aula" : "Lesson"}{" "}
+                        {nextLessonInfo.sortOrder}
+                      </span>
+                    </span>
+                    <ChevronRight className="w-3 h-3 text-white/40 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -357,14 +403,13 @@ export default function ProPathDashboard() {
           certificateReady={radar.certificateReady}
           lang={lang}
           lessonHref={lessonsHref}
-          nextLessonInfo={nextLessonInfo}
         />
 
-        {/* ── Game Centre quick link ───────────────────────────
-             "Continue lessons" was removed here because the Skill
-             Radar's detail strip now IS the "next lesson" link —
-             having two competing CTAs muddled the visual hierarchy
-             and buried the strip's clickability. Game Centre stays
+        {/* ── Game Centre quick link ─────────────────────────────
+             The "Continue lessons" QuickLink and the radar's inline
+             "next lesson" CTA were both retired on 2026-08-24; the
+             minimalist next-lesson chip in the Hero Strip is now the
+             single primary path back into lessons. Game Centre stays
              as a separate, distinct entry point. */}
         <QuickLink
           href="/games"
@@ -436,9 +481,7 @@ export default function ProPathDashboard() {
             // sent back a position field (Pro Path save path). If
             // the modal was opened by a caller who didn't touch
             // position, prev.position stays as it was.
-            ...(next.position !== undefined
-              ? { position: next.position }
-              : {}),
+            ...(next.position !== undefined ? { position: next.position } : {}),
           }));
           refetchProgress?.();
         }}
