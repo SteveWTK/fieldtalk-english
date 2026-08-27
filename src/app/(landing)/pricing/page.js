@@ -38,7 +38,7 @@ import {
   Loader2,
   Tag,
   KeyRound,
-  Calendar,
+  // Calendar,
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -250,8 +250,9 @@ function PricingPageContent() {
     const all = listOfferingsForEdition(EDITION_ID);
     return {
       monthly:
-        all.find((o) => o.mode === "subscription" && o.interval === "monthly") ||
-        null,
+        all.find(
+          (o) => o.mode === "subscription" && o.interval === "monthly",
+        ) || null,
       yearly:
         all.find((o) => o.mode === "subscription" && o.interval === "yearly") ||
         null,
@@ -444,8 +445,8 @@ function PricingPageContent() {
                   toward yearly without hiding monthly. */}
               <div className="relative mb-5">
                 {billingInterval === "yearly" && (
-                  <div className="absolute -top-2.5 right-2 z-10">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-accent-400 text-[9px] font-black text-primary-900 tracking-wider">
+                  <div className="absolute -top-4 right-2 z-10">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-accent-200 text-[9px] font-black text-primary-900 tracking-wider">
                       {copy.toggle.yearlyBadge}
                     </span>
                   </div>
@@ -517,9 +518,7 @@ function PricingPageContent() {
               {/* CTA */}
               <button
                 type="button"
-                onClick={() =>
-                  activeOffering && handleBuy(activeOffering.id)
-                }
+                onClick={() => activeOffering && handleBuy(activeOffering.id)}
                 disabled={!activeOffering || checkoutLoading !== null}
                 className="w-full py-3 px-5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
               >
@@ -561,7 +560,7 @@ function PricingPageContent() {
 
         {/* Season Pass — one-time alternative. Quieter styling so
             the subscription card stays the primary read. */}
-        {offerings.oneTime && (
+        {/* {offerings.oneTime && (
           <section className="max-w-md mx-auto">
             <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors p-5">
               <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 font-bold mb-1">
@@ -599,7 +598,7 @@ function PricingPageContent() {
               </button>
             </div>
           </section>
-        )}
+        )} */}
 
         {/* FAQ */}
         <section className="max-w-2xl mx-auto pb-6">
