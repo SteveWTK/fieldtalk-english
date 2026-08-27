@@ -52,7 +52,7 @@ import ProPathSkillRadar from "./ProPathSkillRadar";
 // src/locales/{en,pt}.json under a propath_* key.
 const COPY = {
   en: {
-    backToLessons: "Back to lessons",
+    backToLessons: "Lessons",
     editProfile: "Edit profile",
     heroEyebrow: "Your Dashboard",
     xp: "XP",
@@ -72,7 +72,7 @@ const COPY = {
     certificatePlaceholderAlert: "Certificate download coming soon!",
   },
   pt: {
-    backToLessons: "Voltar às aulas",
+    backToLessons: "Aulas",
     editProfile: "Editar perfil",
     heroEyebrow: "Seu Painel",
     xp: "XP",
@@ -343,23 +343,25 @@ export default function ProPathDashboard() {
                 <span className="text-xs text-white/55 tabular-nums">
                   {totalXp.toLocaleString()} {copy.xp}
                 </span>
-                {/* Minimalist next-lesson chip. Moved into the Hero
-                    Strip on 2026-08-24 from the Skill Radar tile so
-                    the radar can stay focused on progress visuals.
-                    Just: state ("Próxima aula" / "Continuar") · skill
-                    area · lesson number — no title, no threshold. */}
+                {/* Next-lesson button. Sits inline with position + XP
+                    on the same wrap-friendly row; styled as a pill
+                    button (lime border + subtle lime background,
+                    brighter on hover) so it reads as clickable at a
+                    glance without dominating the hero. Content per
+                    spec: state ("Próxima aula" / "Continuar") · skill
+                    area · lesson number. No title, no threshold. */}
                 {nextLessonInfo && (
                   <Link
                     href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
-                    className="group inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-accent-200 transition-colors"
+                    className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-xs transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
                   >
                     {nextLessonInfo.isResume ? (
-                      <PlayCircle className="w-3.5 h-3.5 text-accent-300" />
+                      <PlayCircle className="w-3.5 h-3.5 text-accent-300 shrink-0" />
                     ) : (
-                      <ArrowRight className="w-3.5 h-3.5 text-accent-300" />
+                      <ArrowRight className="w-3.5 h-3.5 text-accent-300 shrink-0" />
                     )}
-                    <span>
-                      <span className="font-bold text-accent-300">
+                    <span className="whitespace-nowrap">
+                      <span className="font-bold text-accent-200 group-hover:text-accent-100">
                         {nextLessonInfo.isResume
                           ? lang === "pt"
                             ? "Continuar"
@@ -368,7 +370,7 @@ export default function ProPathDashboard() {
                             ? "Próxima aula"
                             : "Next lesson"}
                       </span>
-                      <span className="text-white/50">
+                      <span className="text-white/65">
                         {" · "}
                         {nextLessonInfo.primaryAxisId
                           ? skillAxisLabel(
@@ -384,7 +386,7 @@ export default function ProPathDashboard() {
                         {nextLessonInfo.sortOrder}
                       </span>
                     </span>
-                    <ChevronRight className="w-3 h-3 text-white/40 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
                   </Link>
                 )}
               </div>

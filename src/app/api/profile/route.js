@@ -15,11 +15,16 @@
 // is read-only from this endpoint by design — those need separate,
 // more guarded paths.
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { POSITIONS } from "@/lib/players/positions";
 import { normalizeBrazilianPhone } from "@/lib/utils/phone";
+import {
+  firstName,
+  sendSystemMessage,
+} from "@/lib/whatsapp/system-messages";
 
 const ALLOWED_NUDGE_FREQUENCIES = new Set([
   "daily",
@@ -225,6 +230,19 @@ export async function PATCH(request) {
     }
 
     const supabase = await getSupabaseAdmin();
+    // Snapshot the row BEFORE the update — needed to detect the
+    // "opt-in transition" that triggers the welcome WhatsApp. Also
+    // pulls the fields (name, language, welcome timestamp) we'll
+    // need for the send itself. Small extra query in exchange for
+    // an unambiguous trigger rule.
+    const { data: currentPlayer } = await supabase
+      .from("players")
+      .select(
+        "full_name, preferred_language, phone_e164, whatsapp_opted_in, whatsapp_welcomed_at",
+      )
+      .eq("id", user.id)
+      .maybeSingle();
+
     const { error: updateError } = await supabase
       .from("players")
       .update(update)
@@ -242,6 +260,53 @@ export async function PATCH(request) {
         },
         { status: 500 }
       );
+    }
+
+    // Post-update state — merge the incoming update on top of the
+    // pre-update snapshot so the trigger check sees the "if you
+    // saved this, what would be true" view.
+    const post = { ...(currentPlayer || {}), ...update };
+    const shouldWelcome =
+      post.whatsapp_opted_in === true &&
+      post.phone_e164 &&
+      currentPlayer?.whatsapp_welcomed_at == null;
+
+    if (shouldWelcome) {
+      // Fire welcome AFTER the response has been sent so onboarding's
+      // "your dashboard is loading" experience isn't blocked on a
+      // 1-2 second WhatsApp round-trip. If the send succeeds we set
+      // whatsapp_welcomed_at so re-visits don't re-welcome; if it
+      // fails, we DON'T set the flag — next PATCH will retry.
+      const lang = post.preferred_language || "pt";
+      const name = firstName(post.full_name, lang);
+      const phone = post.phone_e164;
+
+      after(async () => {
+        try {
+          const svc = await getSupabaseAdmin();
+          const result = await sendSystemMessage(svc, {
+            kind: "welcome",
+            playerId: user.id,
+            phoneE164: phone,
+            lang,
+            vars: { name },
+            via: "system",
+          });
+          if (result.ok) {
+            await svc
+              .from("players")
+              .update({ whatsapp_welcomed_at: new Date().toISOString() })
+              .eq("id", user.id);
+          } else {
+            console.warn(
+              "[profile] welcome send failed, will retry on next PATCH:",
+              result.error,
+            );
+          }
+        } catch (err) {
+          console.error("[profile] welcome after() threw:", err);
+        }
+      });
     }
 
     return NextResponse.json({ ok: true, updated: update });
