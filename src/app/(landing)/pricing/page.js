@@ -693,9 +693,9 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-white/65 leading-relaxed mb-4">
+        {/* <p className="text-xs sm:text-sm text-white/65 leading-relaxed mb-4">
           {copy.body}
-        </p>
+        </p> */}
 
         {success ? (
           <div className="py-4 text-center">
