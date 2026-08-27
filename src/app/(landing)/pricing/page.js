@@ -64,13 +64,13 @@ const translations = {
     },
     subscription: {
       pillLabel: "Subscription",
-      title: "Pro Path 26/27",
+      title: "Pro Path",
       monthlyPricePer: "per month",
       yearlyPricePer: "per year",
       yearlyEquivalent: "≈ {monthly}/month",
       yearlySavings: "You save {amount} vs paying monthly",
       features: [
-        "All 24 Pro Path lessons — 6 skill areas × 4 lessons each",
+        "Access to all Pro Path lessons",
         "Skill Radar to track your progress",
         "Certificate as you complete each Level",
         "Virtual Coach on WhatsApp for practice + questions",
@@ -112,10 +112,10 @@ const translations = {
     faq: {
       title: "Questions",
       items: [
-        {
-          q: "What's the difference between the subscription and the Season Pass?",
-          a: "The subscription (monthly or yearly) gives you continuing access as long as you're subscribed. The Season Pass is a single up-front payment for full access until {accessEndDate} — no auto-renewal.",
-        },
+        // {
+        //   q: "What's the difference between the subscription and the Season Pass?",
+        //   a: "The subscription (monthly or yearly) gives you continuing access as long as you're subscribed. The Season Pass is a single up-front payment for full access until {accessEndDate} — no auto-renewal.",
+        // },
         {
           q: "Can I cancel my subscription anytime?",
           a: "Yes. You can cancel from the Customer Portal at any time. Access stays until the end of the period you've already paid for.",
@@ -143,13 +143,13 @@ const translations = {
     },
     subscription: {
       pillLabel: "Assinatura",
-      title: "Pro Path 26/27",
+      title: "Pro Path",
       monthlyPricePer: "por mês",
       yearlyPricePer: "por ano",
       yearlyEquivalent: "≈ {monthly}/mês",
       yearlySavings: "Você economiza {amount} vs pagar mensalmente",
       features: [
-        "Todas as 24 aulas Pro Path — 6 áreas × 4 aulas cada",
+        "Acesso a todas as aulas Pro Path",
         "Radar de Habilidades pra acompanhar seu progresso",
         "Certificado a cada Nível concluído",
         "Técnico Virtual no WhatsApp pra prática + dúvidas",
@@ -191,10 +191,10 @@ const translations = {
     faq: {
       title: "Perguntas",
       items: [
-        {
-          q: "Qual a diferença entre a assinatura e o Season Pass?",
-          a: "A assinatura (mensal ou anual) dá acesso contínuo enquanto você mantiver a assinatura ativa. O Season Pass é um pagamento único que libera acesso total até {accessEndDate} — sem renovação automática.",
-        },
+        // {
+        //   q: "Qual a diferença entre a assinatura e o Season Pass?",
+        //   a: "A assinatura (mensal ou anual) dá acesso contínuo enquanto você mantiver a assinatura ativa. O Season Pass é um pagamento único que libera acesso total até {accessEndDate} — sem renovação automática.",
+        // },
         {
           q: "Posso cancelar a assinatura a qualquer momento?",
           a: "Sim. Você pode cancelar pelo Portal do Cliente quando quiser. O acesso continua até o fim do período já pago.",
@@ -434,9 +434,9 @@ function PricingPageContent() {
                   <h2 className="text-base sm:text-lg font-bold leading-tight">
                     {copy.subscription.title}
                   </h2>
-                  <p className="text-xs text-white/50 mt-0.5">
+                  {/* <p className="text-xs text-white/50 mt-0.5">
                     {edition.tagline}
-                  </p>
+                  </p> */}
                 </div>
               </div>
 

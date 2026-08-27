@@ -42,9 +42,9 @@ const EDITIONS = {
   },
   propath_26_27: {
     id: "propath_26_27",
-    name: "FieldTalk Pro Path 26/27",
+    name: "FieldTalk Pro Path",
     tagline:
-      "The English you'll actually use — dressing room, coach, agent, media.",
+      "The English you'll actually use - dressing room, coach, agent, media.",
     // Season pass runs Aug 2026 → Aug 2027 to match the football
     // calendar. Adjust here if the launch date slips; the webhook
     // reads this at purchase time.

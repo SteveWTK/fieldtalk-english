@@ -40,7 +40,7 @@ import { useSkillRadar } from "@/lib/hooks/useSkillRadar";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { listResumes } from "@/lib/lessons/resume";
 import ProfileEditModal from "@/components/ProfileEditModal";
-import Leaderboard from "@/components/Leaderboard";
+// import Leaderboard from "@/components/Leaderboard";
 // import NotificationsOptIn from "@/components/notifications/NotificationsOptIn";
 import NewContentBanner from "@/components/NewContentBanner";
 import ProPathSkillRadar from "./ProPathSkillRadar";
@@ -425,9 +425,9 @@ export default function ProPathDashboard() {
         />
 
         {/* ── Leaderboard ─────────────────────────────────────── */}
-        <div>
+        {/* <div>
           <Leaderboard defaultSort="xp" />
-        </div>
+        </div> */}
 
         {/* Certificate-unlocked hero — fires when radar.certificateReady
             is true (every axis has all 4 segments passed in the
