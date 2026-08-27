@@ -35,7 +35,7 @@ Estou aqui pra te ajudar com qualquer coisa da plataforma — como fazer uma aul
 
 É só mandar mensagem quando quiser praticar ou tirar uma dúvida. Bora juntos!
 
-Seu painel: ${DASHBOARD_URL}`,
+Aqui está seu link: ${DASHBOARD_URL}`,
 
     en: `Hey {name}! ⚽ FieldTalk virtual coach here 👋
 
@@ -43,17 +43,17 @@ I'm here to help with anything about the platform — how a lesson works, unders
 
 Just message me anytime you want to practice or ask a question. Let's go!
 
-Your dashboard: ${DASHBOARD_URL}`,
+Here's your link: ${DASHBOARD_URL}`,
   },
 
   inactivity_reminder: {
-    pt: `E aí, {name}! 🔥 Faz uns dias que não te vejo por aqui…
+    pt: `E aí, {name}! 🔥 Faz alguns dias que não te vejo por aqui…
 
-Você sabe: assim como no futebol, o inglês é feito de repetição — uma aulinha de 10 minutos hoje vale mais do que uma hora daqui a duas semanas. Bora manter o ritmo?
+Você sabe: assim como no futebol, o inglês é feito de repetição — uma sessão de 10 minutos hoje vale mais do que uma hora daqui a duas semanas. Vamos manter o ritmo?
 
 Sua próxima aula está esperando: ${DASHBOARD_URL}
 
-Se quiser praticar por aqui mesmo, é só me mandar uma mensagem 💪`,
+Se quiser praticar por aqui mesmo, é só me mandar uma mensagem 👍`,
 
     en: `Hey {name}! 🔥 Haven't seen you around for a few days…
 
@@ -61,7 +61,7 @@ You know the drill: just like football, English is about repetition — a quick 
 
 Your next lesson is waiting: ${DASHBOARD_URL}
 
-Or if you want to practice right here, just send me a message 💪`,
+Or if you want to practice right here, just send me a message 👍`,
   },
 };
 
