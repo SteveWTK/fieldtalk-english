@@ -96,6 +96,16 @@ export async function POST(request) {
       ALLOWED_PROPATH_GOALS.includes(propathGoal.trim())
     ) {
       update.propath_goal = propathGoal.trim();
+      // Force edition to propath_26_27 whenever the user completes
+      // Pro Path onboarding. Fixes the "user signed up as WC before,
+      // now re-signs up choosing Pro Path but the dashboard still
+      // routes them to WC" bug — ensure-player's UPDATE branch
+      // deliberately preserves edition on repeat sign-ins, so the
+      // players.edition column keeps its stale value from the first
+      // signup. The completion of Pro Path onboarding is an
+      // unambiguous signal that this user wants Pro Path, regardless
+      // of any earlier edition assignment.
+      update.edition = "propath_26_27";
     }
 
     const supabase = await getSupabaseAdmin();

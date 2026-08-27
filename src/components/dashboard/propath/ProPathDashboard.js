@@ -353,7 +353,7 @@ export default function ProPathDashboard() {
                 {nextLessonInfo && (
                   <Link
                     href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
-                    className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-xs transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
+                    className="group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-xs transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
                   >
                     {nextLessonInfo.isResume ? (
                       <PlayCircle className="w-3.5 h-3.5 text-accent-300 shrink-0" />
@@ -372,16 +372,20 @@ export default function ProPathDashboard() {
                       </span>
                       <span className="text-white/65">
                         {" · "}
-                        {nextLessonInfo.primaryAxisId
-                          ? skillAxisLabel(
+                        {/* Skill-axis segment hides on the narrowest
+                            phones (<400px) so the button fits inside
+                            the hero card without overflowing. From
+                            400px up it's back. */}
+                        {nextLessonInfo.primaryAxisId && (
+                          <span className="max-[399px]:hidden">
+                            {skillAxisLabel(
                               nextLessonInfo.primaryAxisId,
                               lang,
                               "short",
-                            )
-                          : lang === "pt"
-                            ? "Aula"
-                            : "Lesson"}
-                        {" · "}
+                            )}
+                            {" · "}
+                          </span>
+                        )}
                         {lang === "pt" ? "Aula" : "Lesson"}{" "}
                         {nextLessonInfo.sortOrder}
                       </span>

@@ -1,6 +1,14 @@
 // components/exercises/AISpeechPractice.js
 import React, { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Play, RotateCcw, Pause, Volume2 } from "lucide-react";
+import {
+  Mic,
+  // MicOff,
+  Play,
+  RotateCcw,
+  Pause,
+  Volume2,
+  Square,
+} from "lucide-react";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 export default function AISpeechPractice({
@@ -213,7 +221,7 @@ export default function AISpeechPractice({
               } text-white`}
             >
               {isRecording ? (
-                <MicOff className="w-8 h-8" />
+                <Square className="w-8 h-8" />
               ) : (
                 <Mic className="w-8 h-8" />
               )}
