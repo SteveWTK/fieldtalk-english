@@ -248,6 +248,23 @@ export async function PATCH(request) {
       .update(update)
       .eq("id", user.id);
     if (updateError) {
+      // Postgres 23505 = unique constraint violation. The only unique
+      // column PATCH touches is players.phone_e164 (constraint name
+      // `players_phone_e164_key`) — return a structured `phone_in_use`
+      // code so the client can show a friendly, translated message
+      // rather than leaking the raw Postgres string to the user.
+      if (
+        updateError.code === "23505" &&
+        (updateError.message || "").includes("phone_e164")
+      ) {
+        return NextResponse.json(
+          {
+            error: "phone_in_use",
+            message: "This phone number is already linked to another account.",
+          },
+          { status: 409 },
+        );
+      }
       console.error("[profile] update error:", updateError);
       return NextResponse.json(
         {

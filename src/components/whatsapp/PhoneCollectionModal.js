@@ -54,6 +54,22 @@ export default function PhoneCollectionModal({ open, onSaved }) {
     setSaving(true);
     setError(null);
     try {
+      // 1. Pre-check availability so users typing a number linked to
+      //    another FieldTalk account get a friendly message instead
+      //    of the raw duplicate error at commit time.
+      const checkRes = await fetch("/api/profile/check-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phoneInput.trim() }),
+      });
+      const checkJson = await checkRes.json().catch(() => ({}));
+      if (!checkRes.ok || checkJson.available === false) {
+        setError(mapPhoneError(checkJson.reason || "generic", isPt));
+        setSaving(false);
+        return;
+      }
+
+      // 2. Commit — opts them in + snapshots consent.
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -65,11 +81,23 @@ export default function PhoneCollectionModal({ open, onSaved }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
+        // Belt-and-braces: even after the pre-check, the DB might
+        // reject if a duplicate was inserted between our check and
+        // commit. Translate known error codes.
+        const knownReason =
+          json.error === "phone_in_use"
+            ? "in_use"
+            : typeof json.error === "string" &&
+                json.error.toLowerCase().includes("invalid phone")
+              ? "invalid_format"
+              : null;
         setError(
-          json.error ||
-            (isPt
-              ? "Não foi possível salvar. Verifique o número."
-              : "Could not save. Please check the number."),
+          knownReason
+            ? mapPhoneError(knownReason, isPt)
+            : json.error ||
+                (isPt
+                  ? "Não foi possível salvar. Verifique o número."
+                  : "Could not save. Please check the number."),
         );
         setSaving(false);
         return;
@@ -82,6 +110,25 @@ export default function PhoneCollectionModal({ open, onSaved }) {
       setSaving(false);
     }
   };
+
+  // Local copy of the same helper in ProPathOnboarding — both surfaces
+  // must show identical wording. If we grow more phone-facing UIs,
+  // promote to a shared util.
+  function mapPhoneError(reason, isPt) {
+    if (reason === "in_use") {
+      return isPt
+        ? "Esse número já está vinculado a outra conta FieldTalk. Se é seu, entre com aquela conta ou use um número diferente."
+        : "This number is already linked to another FieldTalk account. If it's yours, sign in with that account or use a different number.";
+    }
+    if (reason === "invalid_format") {
+      return isPt
+        ? "Número inválido. Verifique se digitou o código do país e o DDD corretamente."
+        : "Invalid number. Check that you typed the country code and area code correctly.";
+    }
+    return isPt
+      ? "Não foi possível verificar o número. Tente novamente."
+      : "Could not verify the number. Please try again.";
+  }
 
   return (
     <div

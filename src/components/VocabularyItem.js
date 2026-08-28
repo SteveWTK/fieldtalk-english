@@ -17,6 +17,18 @@ export default function VocabularyItem({
   const t = (key, fallback = "") => getTranslation(key, userLanguage, fallback);
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState(item.audio_url || null);
+  // Track image load failure so a broken/404 URL fully unmounts the
+  // Image component (and its bordered container) rather than leaving
+  // a briefly-visible outline. Combined with the stricter truthy check
+  // below, this eliminates the "empty box flickers where an image
+  // would go" glitch on vocabulary steps without images.
+  const [imgFailed, setImgFailed] = useState(false);
+  // Only render the image when the URL is a NON-EMPTY, NON-WHITESPACE
+  // string — a bare `item.image_url &&` check passed empty strings
+  // and whitespace-only strings through as truthy in some datasets,
+  // which briefly showed the border before the load errored out.
+  const hasImage =
+    typeof item.image_url === "string" && item.image_url.trim().length > 0;
 
   const generateAudio = async (text) => {
     setAudioLoading(true);
@@ -112,7 +124,7 @@ export default function VocabularyItem({
           {item.word || item.english}
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
-          {item.image_url && (
+          {hasImage && !imgFailed && (
             <Image
               src={item.image_url}
               alt={item.word || item.english || ""}
@@ -120,9 +132,7 @@ export default function VocabularyItem({
               height={56}
               sizes="56px"
               className="w-18 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
+              onError={() => setImgFailed(true)}
             />
           )}
           <button

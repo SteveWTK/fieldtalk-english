@@ -109,6 +109,29 @@ const COPY = {
   },
 };
 
+/**
+ * Map a phone check-endpoint reason (or a mapped server error) to a
+ * friendly, bilingual explanation. Kept at module scope so both the
+ * pre-check flow (goNext) and the final commit fallback (finish)
+ * render the exact same wording — one source of truth for what a
+ * user sees when their phone is rejected.
+ */
+function mapPhoneError(reason, lang) {
+  if (reason === "in_use") {
+    return lang === "pt"
+      ? "Esse número já está vinculado a outra conta FieldTalk. Se é seu, entre com aquela conta ou use um número diferente."
+      : "This number is already linked to another FieldTalk account. If it's yours, sign in with that account or use a different number.";
+  }
+  if (reason === "invalid_format") {
+    return lang === "pt"
+      ? "Número inválido. Verifique se digitou o código do país e o DDD corretamente."
+      : "Invalid number. Check that you typed the country code and area code correctly.";
+  }
+  return lang === "pt"
+    ? "Não foi possível verificar o número. Tente novamente."
+    : "Could not verify the number. Please try again.";
+}
+
 export default function ProPathOnboarding({ userName, onDismiss }) {
   const { lang } = useLanguage();
   const copy = COPY[lang] || COPY.en;
@@ -121,6 +144,12 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  // Pre-advance phone availability check state — flipped true while
+  // we're waiting on /api/profile/check-phone before allowing the
+  // user to move off the phone slide. Prevents the "reach the final
+  // slide, click Go To Dashboard, then get bounced back to the phone
+  // slide with a duplicate error" flow.
+  const [checkingPhone, setCheckingPhone] = useState(false);
 
   // Selections. `position` may be null (== "not sure yet"), which is
   // valid — we still allow advancing. Goal is required to complete.
@@ -154,8 +183,39 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
     return true;
   }, [slideIdx, position, goal, phoneInput, consent]);
 
-  const goNext = () => {
+  const goNext = async () => {
     if (!canAdvance) return;
+    // Leaving the phone slide → pre-check availability so we don't
+    // let a user carry a duplicate number through to the final
+    // "Ir para meu painel" click and hit the raw DB error.
+    if (slideIdx === 2) {
+      setCheckingPhone(true);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/profile/check-phone", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: phoneInput.trim() }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.available === false) {
+          setSaveError(
+            mapPhoneError(json.reason || "generic", lang),
+          );
+          setCheckingPhone(false);
+          return;
+        }
+      } catch {
+        setSaveError(
+          lang === "pt"
+            ? "Erro de rede. Verifique sua conexão e tente novamente."
+            : "Network error. Check your connection and try again.",
+        );
+        setCheckingPhone(false);
+        return;
+      }
+      setCheckingPhone(false);
+    }
     setDirection("forward");
     setSlideIdx((i) => Math.min(i + 1, slides - 1));
   };
@@ -187,11 +247,23 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
         if (!waRes.ok) {
           setSlideIdx(2);
           setDirection("back");
+          // Prefer the mapped friendly copy for well-known error
+          // codes. Falls back to a generic message if the server
+          // returned something unexpected.
+          const knownReason =
+            waJson.error === "phone_in_use"
+              ? "in_use"
+              : typeof waJson.error === "string" &&
+                  waJson.error.toLowerCase().includes("invalid phone")
+                ? "invalid_format"
+                : null;
           setSaveError(
-            waJson.error ||
-              (lang === "pt"
-                ? "Não foi possível salvar o número. Verifique e tente novamente."
-                : "Could not save the number. Please check and try again."),
+            knownReason
+              ? mapPhoneError(knownReason, lang)
+              : waJson.error ||
+                  (lang === "pt"
+                    ? "Não foi possível salvar o número. Verifique e tente novamente."
+                    : "Could not save the number. Please check and try again."),
           );
           setSaving(false);
           return;
@@ -366,11 +438,20 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
             <button
               type="button"
               onClick={goNext}
-              disabled={!canAdvance || saving}
+              disabled={!canAdvance || saving || checkingPhone}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-40 disabled:cursor-not-allowed text-primary-900 font-bold text-sm tracking-wide transition-colors"
             >
-              {copy.next}
-              <ArrowRight className="w-4 h-4" />
+              {checkingPhone ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {copy.finishing}
+                </>
+              ) : (
+                <>
+                  {copy.next}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           ) : (
             // Final-slide CTA lives INSIDE SlideReady (above the radar)
