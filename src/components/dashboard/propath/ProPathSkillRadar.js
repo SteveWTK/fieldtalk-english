@@ -217,14 +217,14 @@ export default function ProPathSkillRadar({
 
   return (
     <section className="rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 p-5 sm:p-6">
-      <header className="flex items-start justify-between gap-3 mb-4">
+      <header className="flex items-start justify-between gap-3 mb-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
             {copy.eyebrow(currentLevel)}
           </p>
-          <h2 className="text-lg sm:text-xl font-black tracking-tight mt-1">
+          {/* <h2 className="text-lg sm:text-xl font-black tracking-tight mt-1">
             {copy.subtitle}
-          </h2>
+          </h2> */}
         </div>
         <div className="shrink-0 text-right">
           <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
@@ -439,9 +439,7 @@ export default function ProPathSkillRadar({
                 ? perAxis[detailCell.axisIdx]?.segments?.[detailCell.segmentIdx]
                 : null
           }
-          segmentIndex={
-            hoverCell?.segmentIdx ?? detailCell?.segmentIdx ?? 0
-          }
+          segmentIndex={hoverCell?.segmentIdx ?? detailCell?.segmentIdx ?? 0}
           lang={lang}
           copy={copy}
           isEmpty={isEmpty}

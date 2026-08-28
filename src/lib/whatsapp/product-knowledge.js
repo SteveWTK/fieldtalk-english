@@ -41,6 +41,10 @@ Two editions the user can be on (their edition is provided in per-turn context):
 
 Users cannot be on both at once. Edition is set at signup.
 
+## FieldTalk English link:
+
+- Dashboard: www.fieldtalkenglish.com/dashboard
+
 ## Skill Radar (Pro Path only)
 - 6 skill axes, 4 segments per axis = 24 cells total per Level.
 - The 6 axes are:

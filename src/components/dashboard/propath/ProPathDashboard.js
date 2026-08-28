@@ -24,7 +24,7 @@ import Image from "next/image";
 import Link from "next/link";
 // import { useRouter } from "next/navigation";
 import {
-  ChevronLeft,
+  // ChevronLeft,
   ChevronRight,
   Pencil,
   ArrowRight,
@@ -280,9 +280,9 @@ export default function ProPathDashboard() {
         />
       </div>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-4 min-[760px]:space-y-6">
         {/* Top nav row */}
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Link
             href={lessonsHref}
             className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white transition-colors"
@@ -290,7 +290,7 @@ export default function ProPathDashboard() {
             <ChevronLeft className="w-4 h-4" />
             {copy.backToLessons}
           </Link>
-        </div>
+        </div> */}
 
         {/* New content notification banner (shared with WC) */}
         <NewContentBanner />
@@ -350,52 +350,96 @@ export default function ProPathDashboard() {
                     glance without dominating the hero. Content per
                     spec: state ("Próxima aula" / "Continuar") · skill
                     area · lesson number. No title, no threshold. */}
-                {nextLessonInfo && (
-                  <Link
-                    href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
-                    className="group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-xs transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
-                  >
-                    {nextLessonInfo.isResume ? (
-                      <PlayCircle className="w-3.5 h-3.5 text-accent-300 shrink-0" />
-                    ) : (
-                      <ArrowRight className="w-3.5 h-3.5 text-accent-300 shrink-0" />
-                    )}
-                    <span className="whitespace-nowrap">
-                      <span className="font-bold text-accent-200 group-hover:text-accent-100">
-                        {nextLessonInfo.isResume
-                          ? lang === "pt"
-                            ? "Continuar"
-                            : "Continue"
-                          : lang === "pt"
-                            ? "Próxima aula"
-                            : "Next lesson"}
-                      </span>
-                      <span className="text-white/65">
+              </div>
+            </div>
+            {nextLessonInfo && (
+              <Link
+                href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
+                className="max-[759px]:hidden group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-sm transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
+              >
+                {nextLessonInfo.isResume ? (
+                  <PlayCircle className="w-4 h-4 text-accent-300 shrink-0" />
+                ) : (
+                  <ArrowRight className="w-4 h-4 text-accent-300 shrink-0" />
+                )}
+                <span className="whitespace-nowrap">
+                  <span className="font-bold text-accent-200 group-hover:text-accent-100">
+                    {nextLessonInfo.isResume
+                      ? lang === "pt"
+                        ? "Continuar"
+                        : "Continue"
+                      : lang === "pt"
+                        ? "Próxima aula"
+                        : "Next lesson"}
+                  </span>
+                  <span className="text-white/65">
+                    {" · "}
+                    {/* Skill-axis segment hides on the narrowest
+                            phones (<450px) so the button fits inside
+                            the hero card without overflowing. From
+                            400px up it's back. */}
+                    {nextLessonInfo.primaryAxisId && (
+                      <span className="max-[449px]:hidden">
+                        {skillAxisLabel(
+                          nextLessonInfo.primaryAxisId,
+                          lang,
+                          "short",
+                        )}
                         {" · "}
-                        {/* Skill-axis segment hides on the narrowest
+                      </span>
+                    )}
+                    {lang === "pt" ? "Aula" : "Lesson"}{" "}
+                    {nextLessonInfo.sortOrder}
+                  </span>
+                </span>
+                <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
+              </Link>
+            )}
+          </div>
+        </section>
+        <section className="flex justify-center w-full min-[760px]:hidden">
+          {nextLessonInfo && (
+            <Link
+              href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
+              className="group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-sm transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
+            >
+              {nextLessonInfo.isResume ? (
+                <PlayCircle className="w-4 h-4 text-accent-300 shrink-0" />
+              ) : (
+                <ArrowRight className="w-4 h-4 text-accent-300 shrink-0" />
+              )}
+              <span className="whitespace-nowrap">
+                <span className="font-bold text-accent-200 group-hover:text-accent-100">
+                  {nextLessonInfo.isResume
+                    ? lang === "pt"
+                      ? "Continuar"
+                      : "Continue"
+                    : lang === "pt"
+                      ? "Próxima aula"
+                      : "Next lesson"}
+                </span>
+                <span className="text-white/65">
+                  {" · "}
+                  {/* Skill-axis segment hides on the narrowest
                             phones (<400px) so the button fits inside
                             the hero card without overflowing. From
                             400px up it's back. */}
-                        {nextLessonInfo.primaryAxisId && (
-                          <span className="max-[399px]:hidden">
-                            {skillAxisLabel(
-                              nextLessonInfo.primaryAxisId,
-                              lang,
-                              "short",
-                            )}
-                            {" · "}
-                          </span>
-                        )}
-                        {lang === "pt" ? "Aula" : "Lesson"}{" "}
-                        {nextLessonInfo.sortOrder}
-                      </span>
+                  {nextLessonInfo.primaryAxisId && (
+                    <span className="max-[449px]:hidden">
+                      {skillAxisLabel(
+                        nextLessonInfo.primaryAxisId,
+                        lang,
+                        "short",
+                      )}
+                      {" · "}
                     </span>
-                    <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
+                  )}
+                  {lang === "pt" ? "Aula" : "Lesson"} {nextLessonInfo.sortOrder}
+                </span>
+              </span>
+              <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
+            </Link>
+          )}
         </section>
 
         {/* ── Skill Radar — the flagship visual ─────────────────── */}
