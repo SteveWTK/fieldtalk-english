@@ -292,7 +292,7 @@ export default function DragDropVocabulary({
         ref={(el) => {
           targetRefsRef.current[item.id] = el;
         }}
-        className={`rounded-lg shadow-md border-2 overflow-hidden bg-primary-100 dark:bg-primary-800 transition-all ${
+        className={`rounded-lg shadow-md border-2 overflow-hidden bg-primary-100 dark:bg-primary-700 transition-all ${
           isMatched
             ? "border-green-500"
             : isHovered
