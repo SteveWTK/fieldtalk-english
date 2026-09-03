@@ -65,7 +65,7 @@ const COPY = {
     next: "Next",
     finishing: "Setting up…",
     slide1: {
-      eyebrow: "Welcome to Pro Path 26/27",
+      eyebrow: "Welcome to Pro Path",
       title: "Where do you play?",
       body: "Pick your main position. You can always change this later from your profile.",
       notSure: "Not sure yet — I play across positions",
@@ -89,7 +89,7 @@ const COPY = {
     next: "Avançar",
     finishing: "Preparando…",
     slide1: {
-      eyebrow: "Bem-vindo ao Pro Path 26/27",
+      eyebrow: "Bem-vindo ao Pro Path",
       title: "Onde você joga?",
       body: "Escolha sua posição principal. Você pode alterar isso depois no seu perfil.",
       notSure: "Ainda não sei — jogo em várias posições",

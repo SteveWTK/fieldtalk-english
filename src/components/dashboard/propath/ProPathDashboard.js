@@ -32,12 +32,14 @@ import {
   Trophy,
   Sparkles,
   PlayCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { skillAxisLabel } from "@/lib/lessons/skillAxes";
 import { useAuth } from "@/components/AuthProvider";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useSkillRadar } from "@/lib/hooks/useSkillRadar";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 import { listResumes } from "@/lib/lessons/resume";
 import ProfileEditModal from "@/components/ProfileEditModal";
 // import Leaderboard from "@/components/Leaderboard";
@@ -142,6 +144,14 @@ export default function ProPathDashboard() {
   }, [lessons]);
 
   const radar = useSkillRadar(allLessons, completions);
+
+  // Full Edition access check — drives the "Acesso Completo" badge in
+  // the hero. Uses the user's own edition (not any lesson's pillar
+  // edition) so the badge reflects "does this user have a paid /
+  // granted subscription for their edition right now?" — the same
+  // question the Manage Subscription page answers.
+  const access = usePlayerAccess(profile?.edition);
+  const hasFullAccess = !access.loading && access.hasAccess;
 
   // Deep-link to lessons: point the "Back to lessons" CTA at the
   // user's most-recently completed lesson (via ?completed=<id>) so
@@ -339,6 +349,27 @@ export default function ProPathDashboard() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400/15 border border-accent-400/30 text-accent-200 text-[11px] font-bold uppercase tracking-wider">
                     {position}
                   </span>
+                )}
+                {/* Full Edition badge — visible only for users with an
+                    active paid / trialing / granted access record.
+                    Clickable straight through to the Manage Subscription
+                    page so users can review or cancel without hunting
+                    for the setting. Emerald tint (vs the position
+                    badge's lime) so the two badges are distinct at a
+                    glance. */}
+                {hasFullAccess && (
+                  <Link
+                    href="/settings/subscription"
+                    aria-label={
+                      lang === "pt"
+                        ? "Gerenciar sua assinatura"
+                        : "Manage your subscription"
+                    }
+                    className="group inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-200 hover:bg-emerald-400/25 hover:border-emerald-300 text-[11px] font-bold uppercase tracking-wider transition-colors"
+                  >
+                    <ShieldCheck className="w-3 h-3" />
+                    {lang === "pt" ? "Acesso Completo" : "Full Access"}
+                  </Link>
                 )}
                 <span className="text-xs text-white/55 tabular-nums">
                   {totalXp.toLocaleString()} {copy.xp}

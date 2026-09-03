@@ -39,7 +39,7 @@ const COPY = {
     langLabel: "EN",
     propath: {
       eyebrow: "The season's edition",
-      title: "Pro Path 26/27",
+      title: "Pro Path",
       tagline:
         "Dressing room, coach, agent, media — the English every serious player needs.",
       cta: "Explore Pro Path",
@@ -61,7 +61,7 @@ const COPY = {
     langLabel: "PT",
     propath: {
       eyebrow: "A edição da temporada",
-      title: "Pro Path 26/27",
+      title: "Pro Path",
       tagline:
         "Vestiário, técnico, empresário, imprensa — o inglês que todo jogador sério precisa.",
       cta: "Conhecer o Pro Path",

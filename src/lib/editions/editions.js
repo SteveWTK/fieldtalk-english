@@ -163,9 +163,9 @@ const OFFERINGS = [
   // edition via the redemption path.
   {
     id: "propath_season_brl",
-    label: "Pro Path 26/27 — Season Pass",
+    label: "Pro Path — Season Pass",
     description:
-      "One-time purchase, full access through the 26/27 season (Aug 26 → Aug 27).",
+      "One-time purchase, full access through the current season (Aug 26 → Aug 27).",
     mode: "one_time",
     interval: null,
     currency: "BRL",

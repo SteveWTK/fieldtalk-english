@@ -2,11 +2,12 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun, User, Menu, X } from "lucide-react";
+import { Moon, Sun, User, Menu, X, ShieldCheck } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState } from "react";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
 // import Image from "next/image";
 
 function HeaderBase({
@@ -19,6 +20,12 @@ function HeaderBase({
 }) {
   const { user, signOut } = useAuth();
   const { profile } = usePlayerProfile(user?.id);
+  // Subtle nav-bar Full Access indicator — a small emerald shield next
+  // to the user's name for subscribers. Uses their profile edition
+  // (matches the dashboard hero's badge logic). Silent for free-tier
+  // users and while the access check is loading.
+  const access = usePlayerAccess(profile?.edition);
+  const hasFullAccess = !access.loading && access.hasAccess;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const localizedLinks = {
@@ -212,6 +219,16 @@ function HeaderBase({
                         user.email?.split("@")[0] ||
                         copy.profile}
                     </span>
+                    {/* Full-access shield — subtle emerald indicator
+                        that this user has an active subscription.
+                        Renders only for subscribers; free-tier users
+                        see the same nav without it. */}
+                    {hasFullAccess && (
+                      <ShieldCheck
+                        className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0"
+                        aria-label="Full Access"
+                      />
+                    )}
                   </Link>
                   <button
                     onClick={handleSignOut}

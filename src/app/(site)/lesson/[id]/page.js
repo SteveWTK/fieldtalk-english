@@ -202,14 +202,29 @@ function DynamicLessonContent() {
   // Next button so we can scroll quickly through lessons during QA.
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
 
-  // Edition access. We pass the lesson's pillar edition once we have
-  // it so the access check is scoped to the right product — falls
-  // back to null while lesson data is loading. Platform admins are
+  // Edition access. TWO checks run in parallel to prevent the "paid
+  // user hits paywall" bug from Sept 2026: the lesson's pillar edition
+  // (scopes the check to the specific product) AND the user's own
+  // profile edition (catches data drift where pillar.edition and
+  // player_edition_access.edition diverge — e.g., legacy pillars
+  // stamped 'players' while paid access is on 'propath_26_27').
+  // Access is granted if EITHER check passes. Platform admins are
   // marked hasAccess: true server-side so QA isn't blocked.
   const lessonEdition = lesson?.pillar?.edition || null;
   const access = usePlayerAccess(lessonEdition);
+  const profileEdition = playerProfile?.edition || null;
+  // Skip the second call when it would duplicate the first — no need
+  // to fire two identical requests just because the pillar and profile
+  // happen to already match.
+  const profileAccess = usePlayerAccess(
+    profileEdition && profileEdition !== lessonEdition ? profileEdition : null,
+  );
   const lessonAllowed =
-    !lessonEdition || canViewLesson(access, lesson?.id) || access.isAdmin;
+    !lessonEdition ||
+    canViewLesson(access, lesson?.id) ||
+    canViewLesson(profileAccess, lesson?.id) ||
+    access.isAdmin ||
+    profileAccess.isAdmin;
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
