@@ -72,6 +72,7 @@ import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
 import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
 import PaywallCard from "@/components/PaywallCard";
+import SegmentPassedCelebration from "@/components/lesson/SegmentPassedCelebration";
 import { usePlayerAccess, canViewLesson } from "@/lib/access/usePlayerAccess";
 import Link from "next/link";
 
@@ -3276,6 +3277,19 @@ function DynamicLessonContent() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 min-h-screen">
+      {/* Segment-passed celebration overlay. Fires exactly ONCE per
+          lesson-page mount, on the false→true transition of
+          lessonPassed (== the user has just earned ≥80% of max_xp,
+          which lights up their Skill Radar segment). Pro Path only —
+          WC uses the pack economy for its "you did it" moment. */}
+      {isProPath && (
+        <SegmentPassedCelebration
+          passed={lessonPassed}
+          bonusXp={Math.max(0, xpEarned - lessonPassThresholdXp)}
+          lang={userLanguage}
+        />
+      )}
+
       {/* Side rail showing live progress toward the next sticker pack.
           WC-only — Pro Path (and any future non-sticker edition)
           doesn't have a pack economy, so the "Only X XP left to
