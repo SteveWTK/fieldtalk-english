@@ -340,19 +340,74 @@ async function grantFromSubscription(
     return;
   }
 
-  const status = mapStripeStatus(subscription.status);
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
+  // Re-fetch the subscription fresh from Stripe rather than trusting
+  // the snapshot carried in the event. Rationale: Stripe fires several
+  // events for a fresh subscription (subscription.created,
+  // subscription.updated, checkout.session.completed) within the same
+  // second. Vercel processes them concurrently on separate function
+  // instances, and each event carries a snapshot from the moment IT
+  // was created — the `created` snapshot has status='incomplete',
+  // while the `updated` snapshot (fired seconds later after payment
+  // settled) has status='active'. If the `created` handler happens to
+  // finish LAST, its stale snapshot clobbers the correct 'active'
+  // state. Refreshing here means every handler sees current
+  // ground-truth from Stripe regardless of race order.
+  //
+  // Cost: one extra Stripe API call per subscription event (~50ms).
+  // Worth it to eliminate the race.
+  const stripe = getStripeClient();
+  let fresh = subscription;
+  try {
+    fresh = await stripe.subscriptions.retrieve(subscription.id);
+  } catch (err) {
+    console.warn(
+      "[stripe-webhook] subscription refresh failed, using event snapshot:",
+      err?.message ?? err
+    );
+  }
+
+  const status = mapStripeStatus(fresh.status);
+  const periodEnd = fresh.current_period_end
+    ? new Date(fresh.current_period_end * 1000).toISOString()
     : null;
+  const freshPriceId = fresh.items?.data?.[0]?.price?.id || priceId;
 
   for (const editionId of offering.editionsGranted) {
+    // Status guard — belt-and-braces backstop for the same race the
+    // refresh above already mitigates. If the current DB row already
+    // reads 'active' or 'trialing' AND we're about to write
+    // 'incomplete', skip: that write can only be coming from a stale
+    // snapshot, since Stripe reality doesn't regress active → incomplete.
+    // Legitimate transitions (active → past_due, active → canceled)
+    // are NOT blocked because they don't land in the guarded set.
+    const { data: existing } = await supabase
+      .from("player_edition_access")
+      .select("status")
+      .eq("player_id", playerId)
+      .eq("edition", editionId)
+      .maybeSingle();
+
+    if (
+      existing &&
+      ["active", "trialing"].includes(existing.status) &&
+      status === "incomplete"
+    ) {
+      console.log(
+        "[stripe-webhook] skipping stale 'incomplete' write for",
+        `sub=${fresh.id}`,
+        `edition=${editionId}`,
+        `current=${existing.status}`
+      );
+      continue;
+    }
+
     const upsertRow = {
       player_id: playerId,
       edition: editionId,
       status,
       source: "subscription",
-      stripe_subscription_id: subscription.id,
-      stripe_price_id: priceId,
+      stripe_subscription_id: fresh.id,
+      stripe_price_id: freshPriceId,
       stripe_checkout_session_id: null,
       current_period_end: periodEnd,
     };
