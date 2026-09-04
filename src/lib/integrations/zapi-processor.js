@@ -30,6 +30,7 @@ import { normalizeBrazilianPhone } from "@/lib/utils/phone";
 import { parseZapiInbound } from "@/lib/integrations/zapi";
 import { decideAgentAction } from "@/lib/whatsapp/agent";
 import { executeAgentAction } from "@/lib/whatsapp/execute";
+import { routeReviewQuizReply } from "@/lib/whatsapp/review-quiz-router";
 
 // Whole-message match, case-insensitive, whitespace tolerated. We do
 // NOT match on substring — "SAIRAM cedo hoje" (someone talking about
@@ -119,9 +120,16 @@ export async function processZapiEvent(supabase, event) {
       },
     });
     if (player) {
+      const nowIso = new Date().toISOString();
       await supabase
         .from("players")
-        .update({ whatsapp_last_outbound_at: new Date().toISOString() })
+        .update({
+          whatsapp_last_outbound_at: nowIso,
+          // Bump the shared "recent WhatsApp activity" gate too, so
+          // the review-quiz cron doesn't fire during a support convo
+          // that an admin is handling manually via WA Web.
+          last_whatsapp_activity_at: nowIso,
+        })
         .eq("id", player.id);
     }
     return { ok: true, note: "atendente_manual_captured" };
@@ -143,10 +151,32 @@ export async function processZapiEvent(supabase, event) {
   });
 
   if (player) {
+    const nowIso = new Date().toISOString();
     await supabase
       .from("players")
-      .update({ whatsapp_last_inbound_at: new Date().toISOString() })
+      .update({
+        whatsapp_last_inbound_at: nowIso,
+        // Shared inactivity gate that the review-quiz cron reads —
+        // any inbound counts as "user is active on WhatsApp right
+        // now", pausing new quiz sends for the next 30 min.
+        last_whatsapp_activity_at: nowIso,
+      })
       .eq("id", player.id);
+  }
+
+  // Review-quiz router — MUST run before the agent gate. If the
+  // player has a live quiz session, this either handles the answer
+  // (correct/wrong reply + explanation, marks session answered) or
+  // defers it and lets the agent handle the message. Runs on ALL
+  // matched-player inbounds; no-op when no session is active.
+  const quiz = await routeReviewQuizReply(supabase, {
+    player,
+    phoneE164,
+    parsed,
+    inboundMessageId: inboundId,
+  });
+  if (quiz.handled) {
+    return { ok: true, note: quiz.note ?? "quiz_handled" };
   }
 
   // Agent gates — matched players only, opted-in, not paused.

@@ -214,6 +214,16 @@ async function processRecipient(supabase, recipient, broadcastCache) {
       body,
       metadata: { broadcast_id: recipient.broadcast_id },
     });
+    // Bump the shared activity gate so the review-quiz cron doesn't
+    // fire on top of a broadcast (back-to-back unsolicited messages
+    // = bad UX).
+    await supabase
+      .from("players")
+      .update({
+        whatsapp_last_outbound_at: new Date().toISOString(),
+        last_whatsapp_activity_at: new Date().toISOString(),
+      })
+      .eq("id", recipient.player_id);
     return "sent";
   } catch (err) {
     const errMsg = err?.message ?? String(err ?? "unknown");

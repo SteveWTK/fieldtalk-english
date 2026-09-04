@@ -72,11 +72,18 @@ export async function executeAgentAction(supabase, params) {
   }
 
   // Bump last-outbound timestamp so rate-limit / activity views stay
-  // fresh. Only when we have a matched player.
+  // fresh. Only when we have a matched player. Also bumps the
+  // shared last_whatsapp_activity_at gate that the review-quiz cron
+  // reads — any agent send counts as "conversation is live", pausing
+  // new quiz spawns for the next 30 min.
   if (player?.id && action.reply) {
+    const nowIso = new Date().toISOString();
     await supabase
       .from("players")
-      .update({ whatsapp_last_outbound_at: new Date().toISOString() })
+      .update({
+        whatsapp_last_outbound_at: nowIso,
+        last_whatsapp_activity_at: nowIso,
+      })
       .eq("id", player.id);
   }
 

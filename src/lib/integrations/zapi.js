@@ -75,22 +75,100 @@ export async function sendWhatsapp(input) {
   return { messageId, status: "enviado" };
 }
 
+/**
+ * Send a WhatsApp interactive-button message (up to 3 quick-reply
+ * buttons) via Z-API's send-button-list endpoint. Used by the T+24h
+ * mini-review quiz flow — three-option MCQs.
+ *
+ * WhatsApp Cloud API caps quick-reply buttons at 3, and labels at
+ * 20 chars. The caller must enforce those limits; Z-API rejects the
+ * whole message if they're exceeded.
+ *
+ * @param {{
+ *   telefone: string,
+ *   message: string,
+ *   buttons: Array<{ id: string, label: string }>
+ * }} input
+ * @returns {Promise<{ messageId: string, status: 'enviado' }>}
+ */
+export async function sendWhatsappButtons(input) {
+  const base = zapiBaseUrl();
+
+  const norm = normalizeBrazilianPhone(input.telefone);
+  if (!norm.ok) {
+    throw new Error(
+      `Telefone inválido para Z-API (${norm.reason}): ${input.telefone}`
+    );
+  }
+  const phone = norm.e164;
+
+  const buttons = Array.isArray(input.buttons) ? input.buttons.slice(0, 3) : [];
+  if (buttons.length === 0) {
+    throw new Error("sendWhatsappButtons: buttons array is required");
+  }
+
+  if (!base) {
+    return { messageId: `stub_btn_${Date.now()}`, status: "enviado" };
+  }
+
+  const url = `${base}/send-button-list`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(process.env.ZAPI_CLIENT_TOKEN
+        ? { "Client-Token": process.env.ZAPI_CLIENT_TOKEN }
+        : {}),
+    },
+    body: JSON.stringify({
+      phone,
+      message: input.message,
+      buttonList: {
+        buttons: buttons.map((b) => ({
+          id: String(b.id),
+          label: String(b.label).slice(0, 20),
+        })),
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`Z-API send-button-list ${res.status}: ${errText}`);
+  }
+
+  const json = await res.json().catch(() => ({}));
+  const messageId =
+    json.messageId ?? json.zaapId ?? json.id ?? `sent_${Date.now()}`;
+  return { messageId, status: "enviado" };
+}
+
 /* ─────────────────────────────────────────────────────────────
    INBOUND WEBHOOK PAYLOAD
    ───────────────────────────────────────────────────────────── */
 
 /**
  * Extract the useful fields from Z-API's raw webhook body.
- * Returns null if this isn't a text message we can handle (media, groups).
+ * Returns null if this isn't a message we can handle (media, groups).
  *
  * fromMe=true events ARE returned — the processor uses them to capture
  * manual admin replies typed directly in WhatsApp Web on the shared
  * FieldTalk number. Dedupe against outbound messageIds (we log those
  * ourselves) so we don't double-count our own agent sends.
  *
+ * Button replies (interactive-message taps) come back as either
+ * `buttonsResponseMessage` or `listResponseMessage`. When either is
+ * present, `button` is populated with `{ id, label }` AND `text` is
+ * set to the button's label so downstream code that only cares about
+ * "what did they say" still works.
+ *
  * @param {unknown} body
- * @returns {{ phone: string, fromMe: boolean, isGroup: boolean,
- *   senderName?: string, messageId: string, type: string, text: string } | null}
+ * @returns {{
+ *   phone: string, fromMe: boolean, isGroup: boolean,
+ *   senderName?: string, messageId: string, type: string,
+ *   text: string,
+ *   button?: { id: string, label: string }
+ * } | null}
  */
 export function parseZapiInbound(body) {
   if (!body || typeof body !== "object") return null;
@@ -107,8 +185,39 @@ export function parseZapiInbound(body) {
     typeof raw.senderName === "string" ? raw.senderName : undefined;
   const type = typeof raw.type === "string" ? raw.type : "";
 
+  // Button-tap reply — Z-API sends the tap as either buttonsResponseMessage
+  // (send-button-list echoes) or listResponseMessage (list-message echoes).
+  // Both carry a stable button id (whatever we set at send time) plus the
+  // human-readable label the user actually saw.
+  let button;
+  const btnResp = raw.buttonsResponseMessage;
+  const listResp = raw.listResponseMessage;
+  if (btnResp && typeof btnResp === "object") {
+    const bid =
+      (typeof btnResp.buttonId === "string" && btnResp.buttonId) ||
+      (typeof btnResp.id === "string" && btnResp.id) ||
+      "";
+    const blabel =
+      (typeof btnResp.message === "string" && btnResp.message) ||
+      (typeof btnResp.title === "string" && btnResp.title) ||
+      "";
+    if (bid) button = { id: bid, label: blabel };
+  } else if (listResp && typeof listResp === "object") {
+    const bid =
+      (typeof listResp.selectedRowId === "string" && listResp.selectedRowId) ||
+      (typeof listResp.id === "string" && listResp.id) ||
+      "";
+    const blabel =
+      (typeof listResp.title === "string" && listResp.title) ||
+      (typeof listResp.message === "string" && listResp.message) ||
+      "";
+    if (bid) button = { id: bid, label: blabel };
+  }
+
   // Text lives under `text.message` for chat messages, `body` for
-  // legacy, `message` in some edge cases. Handle all three.
+  // legacy, `message` in some edge cases. Handle all three. Falls
+  // back to the button label so the downstream "logged message body"
+  // stays human-readable for button replies too.
   let text;
   const textField = raw.text;
   if (
@@ -121,8 +230,19 @@ export function parseZapiInbound(body) {
     text = raw.body;
   } else if (typeof raw.message === "string") {
     text = raw.message;
+  } else if (button) {
+    text = button.label || button.id;
   }
 
   if (!phone || isGroup || !text) return null;
-  return { phone, fromMe, isGroup, senderName, messageId, type, text };
+  return {
+    phone,
+    fromMe,
+    isGroup,
+    senderName,
+    messageId,
+    type,
+    text,
+    ...(button ? { button } : {}),
+  };
 }

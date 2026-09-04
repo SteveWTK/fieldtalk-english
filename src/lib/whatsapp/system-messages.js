@@ -146,6 +146,18 @@ export async function sendSystemMessage(supabase, params) {
       body,
       metadata: { system_message_kind: kind, language: lang },
     });
+    // Bump the shared activity gate — a system push (welcome /
+    // reminder) counts as recent outbound so the review-quiz cron
+    // doesn't stack a quiz on top within 30 min.
+    if (playerId) {
+      await supabase
+        .from("players")
+        .update({
+          whatsapp_last_outbound_at: new Date().toISOString(),
+          last_whatsapp_activity_at: new Date().toISOString(),
+        })
+        .eq("id", playerId);
+    }
     return { ok: true, messageId: result.messageId };
   } catch (err) {
     const msg = err?.message ?? String(err);
