@@ -63,9 +63,13 @@ export default function VocabularyList({
     };
   }, [audioUrlsKey]);
 
+  // Returns the saveWord promise so VocabularyItem can await it for
+  // its local "Salvando…" state. Without the return, the child's
+  // `await` would resolve instantly on undefined and the spinner
+  // state would never render.
   const handleSave = useCallback(
-    async (item) => {
-      await saveWord({
+    (item) =>
+      saveWord({
         english: item.word || item.english,
         translation: item.translation,
         englishImage: item.image_url || null,
@@ -74,8 +78,7 @@ export default function VocabularyList({
         sourceLessonId: lessonId,
         sourceStepType: "vocabulary",
         skillAxis,
-      });
-    },
+      }),
     [saveWord, lessonId, skillAxis],
   );
 

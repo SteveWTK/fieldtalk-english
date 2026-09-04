@@ -3,7 +3,12 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Volume2, BookmarkPlus, BookmarkCheck } from "lucide-react";
+import {
+  Volume2,
+  BookmarkPlus,
+  BookmarkCheck,
+  Loader2,
+} from "lucide-react";
 import { getTranslation } from "@/utils/translations";
 
 export default function VocabularyItem({
@@ -36,6 +41,25 @@ export default function VocabularyItem({
   // which briefly showed the border before the load errored out.
   const hasImage =
     typeof item.image_url === "string" && item.image_url.trim().length > 0;
+  // Local "Salvando…" state — briefly visible while the parent's
+  // saveWord promise is in flight. The optimistic UI in the parent
+  // flips isSavedToVocabulary=true very quickly, so this state
+  // usually renders for < 200ms — enough for the user to see they
+  // pressed something before the checkmark appears.
+  const [savingToVocabulary, setSavingToVocabulary] = useState(false);
+
+  const handleSaveClick = async (e) => {
+    e.stopPropagation();
+    if (isSavedToVocabulary || savingToVocabulary || !onSaveToVocabulary) {
+      return;
+    }
+    setSavingToVocabulary(true);
+    try {
+      await onSaveToVocabulary(item);
+    } finally {
+      setSavingToVocabulary(false);
+    }
+  };
 
   const generateAudio = async (text) => {
     setAudioLoading(true);
@@ -144,39 +168,18 @@ export default function VocabularyItem({
           )}
           {/* Save-to-vocabulary bookmark. Hidden entirely when the
               parent didn't wire up onSaveToVocabulary (e.g. rendered
-              outside a lesson), so no orphan button appears. Ghosted
-              when unsaved, lime when saved — feels lightweight rather
-              than shouty. Aria label narrates both states for screen
-              readers. */}
+              outside a lesson), so no orphan button appears. Three
+              states: idle → saving → saved. Explicit text label
+              alongside the icon so PT-first, less-English-exposed
+              users understand exactly what this does (a bookmark
+              icon alone was ambiguous). */}
           {onSaveToVocabulary && (
-            <button
-              type="button"
-              aria-label={
-                isSavedToVocabulary
-                  ? userLanguage === "pt"
-                    ? "Salvo no seu vocabulário"
-                    : "Saved to your vocabulary"
-                  : userLanguage === "pt"
-                    ? "Salvar no seu vocabulário"
-                    : "Save to your vocabulary"
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isSavedToVocabulary) return; // no-op on re-click
-                onSaveToVocabulary(item);
-              }}
-              className={`transition-transform hover:scale-110 ${
-                isSavedToVocabulary
-                  ? "text-accent-500 cursor-default"
-                  : "text-gray-400 hover:text-accent-500"
-              }`}
-            >
-              {isSavedToVocabulary ? (
-                <BookmarkCheck className="w-5 h-5 fill-accent-500/20" />
-              ) : (
-                <BookmarkPlus className="w-5 h-5" />
-              )}
-            </button>
+            <SaveButton
+              isSaved={isSavedToVocabulary}
+              isSaving={savingToVocabulary}
+              lang={userLanguage}
+              onClick={handleSaveClick}
+            />
           )}
           <button
             type="button"
@@ -242,5 +245,56 @@ export default function VocabularyItem({
         }
       `}</style>
     </div>
+  );
+}
+
+/**
+ * Icon-plus-label button with three states — idle, saving, saved.
+ * Colocated in this file because it's tightly coupled to the
+ * bookmark's visual language and behaviour; if we ever need it
+ * elsewhere (e.g. the MemoryMatch pair row), lift into its own
+ * component with the same prop shape.
+ */
+function SaveButton({ isSaved, isSaving, lang, onClick }) {
+  const isPt = lang === "pt";
+  const label = isSaved
+    ? isPt
+      ? "Salvo para praticar"
+      : "Saved for practice"
+    : isSaving
+      ? isPt
+        ? "Salvando…"
+        : "Saving…"
+      : isPt
+        ? "Salvar para praticar"
+        : "Save for practice";
+
+  const tone = isSaved
+    ? "text-accent-600 cursor-default"
+    : isSaving
+      ? "text-accent-500"
+      : "text-gray-500 hover:text-accent-600 hover:bg-accent-50 dark:text-gray-300 dark:hover:text-accent-400 dark:hover:bg-accent-900/10";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isSaved || isSaving}
+      aria-label={label}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+        isSaved
+          ? "border-accent-500/40 bg-accent-500/10"
+          : "border-gray-200 dark:border-gray-600"
+      } ${tone} transition-colors`}
+    >
+      {isSaved ? (
+        <BookmarkCheck className="w-4 h-4 fill-accent-500/20 shrink-0" />
+      ) : isSaving ? (
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+      ) : (
+        <BookmarkPlus className="w-4 h-4 shrink-0" />
+      )}
+      <span className="whitespace-nowrap">{label}</span>
+    </button>
   );
 }

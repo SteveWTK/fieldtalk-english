@@ -11,6 +11,7 @@ import {
   VolumeX,
   BookmarkPlus,
   BookmarkCheck,
+  Loader2,
 } from "lucide-react";
 import {
   playSuccessSound,
@@ -448,33 +449,24 @@ export default function MemoryMatch({
         </div>
 
         {/* Matched Pairs Display.
-            3-column grid: English cell · translation cell · tiny save
-            button. Third column is a fixed narrow width so the two
-            content cells retain their look; save button only renders
-            when the user is signed in (a signed-out player can still
-            play the game — save just doesn't apply). */}
+            Each matched pair renders as a self-contained card: two
+            content cells (English + translation) on top, then a
+            labelled save button below. This layout gives the save
+            action its own explicit line — matching Habitat's pattern
+            and making it obvious to PT-first users what the button
+            does. */}
         {matchedPairs.length > 0 && (
-          <div className="w-full lg:w-auto lg:flex-shrink">
+          <div className="w-full lg:w-auto lg:flex-shrink space-y-2">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold">
+              {userLanguage === "pt" ? "Pares encontrados" : "Matched pairs"}
+            </p>
             <div
-              className="grid grid-cols-[1fr_1fr_auto] gap-2 mx-auto lg:mx-0 items-center"
-              style={{ width: "min(100%, 18rem)" }}
+              className="space-y-2 mx-auto lg:mx-0"
+              style={{ width: "min(100%, 20rem)" }}
             >
-              {/* Column headers (three cells) */}
-              <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                English
-              </div>
-              <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                {userLanguage === "pt" ? "Tradução" : "Translation"}
-              </div>
-              <div aria-hidden />
-
-              {/* One row per matched pair: three cells produced via
-                  Fragment. Fixed row height keeps the panel compact
-                  even with images. */}
               {matchedPairs.map((pair, idx) => {
                 const englishText = pair.en || "";
                 const translationText = pair.pt || "";
-                const saved = isSaved(englishText);
                 const canSave =
                   !!user &&
                   !pair.enIsImage &&
@@ -482,85 +474,23 @@ export default function MemoryMatch({
                   englishText &&
                   translationText;
                 return (
-                  <React.Fragment key={idx}>
-                    <div
-                      className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
-                        pair.enIsImage
-                          ? "bg-white dark:bg-gray-700 p-0"
-                          : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
-                      }`}
-                      style={{ animationDelay: `${idx * 0.1}s` }}
-                    >
-                      {pair.enIsImage ? (
-                        <Image
-                          src={pair.enImage}
-                          alt={pair.en || "image"}
-                          fill
-                          sizes="128px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        pair.en
-                      )}
-                    </div>
-                    <div
-                      className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
-                        pair.ptIsImage
-                          ? "bg-white dark:bg-gray-700 p-0"
-                          : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
-                      }`}
-                      style={{ animationDelay: `${idx * 0.1}s` }}
-                    >
-                      {pair.ptIsImage ? (
-                        <Image
-                          src={pair.ptImage}
-                          alt={pair.pt || "image"}
-                          fill
-                          sizes="128px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        pair.pt
-                      )}
-                    </div>
-                    {canSave ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (saved) return;
-                          saveWord({
-                            english: englishText,
-                            translation: translationText,
-                            sourceLessonId: lessonId,
-                            sourceStepType: "memory_match",
-                            skillAxis,
-                          });
-                        }}
-                        aria-label={
-                          saved
-                            ? userLanguage === "pt"
-                              ? "Salvo no seu vocabulário"
-                              : "Saved to your vocabulary"
-                            : userLanguage === "pt"
-                              ? "Salvar no seu vocabulário"
-                              : "Save to your vocabulary"
-                        }
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
-                          saved
-                            ? "text-accent-500 cursor-default"
-                            : "text-gray-400 hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        }`}
-                      >
-                        {saved ? (
-                          <BookmarkCheck className="w-4 h-4 fill-accent-500/20" />
-                        ) : (
-                          <BookmarkPlus className="w-4 h-4" />
-                        )}
-                      </button>
-                    ) : (
-                      <div aria-hidden />
-                    )}
-                  </React.Fragment>
+                  <MatchedPairCard
+                    key={idx}
+                    pair={pair}
+                    idx={idx}
+                    canSave={canSave}
+                    isSaved={isSaved(englishText)}
+                    lang={userLanguage}
+                    onSave={async () =>
+                      saveWord({
+                        english: englishText,
+                        translation: translationText,
+                        sourceLessonId: lessonId,
+                        sourceStepType: "memory_match",
+                        skillAxis,
+                      })
+                    }
+                  />
                 );
               })}
             </div>
@@ -619,6 +549,112 @@ export default function MemoryMatch({
         >
           <RefreshCw className="w-4 h-4" />
           Start again
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A matched pair rendered as a self-contained card: two content
+ * cells (English + translation) on top, then a labelled save button
+ * below. Extracted from MemoryMatch's main body so we can hold local
+ * per-pair `saving` state (used for the "Salvando…" flash between
+ * click and the parent's optimistic isSaved flip).
+ */
+function MatchedPairCard({ pair, idx, canSave, isSaved, lang, onSave }) {
+  const [saving, setSaving] = useState(false);
+  const isPt = lang === "pt";
+
+  const handleClick = async () => {
+    if (isSaved || saving || !onSave) return;
+    setSaving(true);
+    try {
+      await onSave();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const label = isSaved
+    ? isPt
+      ? "Salvo para praticar"
+      : "Saved for practice"
+    : saving
+      ? isPt
+        ? "Salvando…"
+        : "Saving…"
+      : isPt
+        ? "Salvar para praticar"
+        : "Save for practice";
+
+  return (
+    <div
+      className="rounded-lg bg-white/[0.02] dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 p-2 space-y-1.5 animate-slideIn"
+      style={{ animationDelay: `${idx * 0.1}s` }}
+    >
+      <div className="grid grid-cols-2 gap-2">
+        <div
+          className={`relative rounded-md shadow-sm overflow-hidden flex items-center justify-center h-12 ${
+            pair.enIsImage
+              ? "bg-white dark:bg-gray-700 p-0"
+              : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
+          }`}
+        >
+          {pair.enIsImage ? (
+            <Image
+              src={pair.enImage}
+              alt={pair.en || "image"}
+              fill
+              sizes="128px"
+              className="object-cover"
+            />
+          ) : (
+            pair.en
+          )}
+        </div>
+        <div
+          className={`relative rounded-md shadow-sm overflow-hidden flex items-center justify-center h-12 ${
+            pair.ptIsImage
+              ? "bg-white dark:bg-gray-700 p-0"
+              : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
+          }`}
+        >
+          {pair.ptIsImage ? (
+            <Image
+              src={pair.ptImage}
+              alt={pair.pt || "image"}
+              fill
+              sizes="128px"
+              className="object-cover"
+            />
+          ) : (
+            pair.pt
+          )}
+        </div>
+      </div>
+      {canSave && (
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={isSaved || saving}
+          aria-label={label}
+          className={`w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+            isSaved
+              ? "border-accent-500/40 bg-accent-500/10 text-accent-600 dark:text-accent-400 cursor-default"
+              : saving
+                ? "border-gray-200 dark:border-gray-600 text-accent-500"
+                : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-accent-600 hover:bg-accent-50 dark:hover:text-accent-400 dark:hover:bg-accent-900/10"
+          }`}
+        >
+          {isSaved ? (
+            <BookmarkCheck className="w-4 h-4 fill-accent-500/20 shrink-0" />
+          ) : saving ? (
+            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+          ) : (
+            <BookmarkPlus className="w-4 h-4 shrink-0" />
+          )}
+          <span className="whitespace-nowrap">{label}</span>
         </button>
       )}
     </div>
