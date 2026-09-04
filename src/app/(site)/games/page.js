@@ -32,10 +32,10 @@ const GAMES = [
     // it's the most valuable practice surface: the words are ones
     // they've chosen to remember.
     title: "Vocabulary Speed Match",
-    body: "Practise the words you've saved from lessons. Drag each English word to its image or translation.",
+    body: "Arraste cada palavra em inglês para a sua imagem ou tradução.",
     Icon: BookmarkCheck,
     accent: "emerald",
-    xpReward: 15,
+    xpReward: 25,
     available: true,
   },
   {
@@ -46,17 +46,17 @@ const GAMES = [
     Icon: Brain,
     accent: "emerald",
     xpReward: 10,
-    available: true,
+    available: false,
   },
   {
     slug: "memory-match-flags",
     href: "/games/memory-match?category=flags",
     title: "Memory Match — WC2026 Flags",
-    body: "Match each World Cup 2026 nation's flag to its English name.",
+    body: "Coming soon: Match each World Cup 2026 nation's flag to its English name.",
     Icon: Flag,
     accent: "amber",
     xpReward: 10,
-    available: true,
+    available: false,
   },
   {
     slug: "pitch-positions",
@@ -71,7 +71,7 @@ const GAMES = [
     slug: "word-snake",
     href: "/games/word-snake",
     title: "Word Snake",
-    body: "Hunt the next word in a chain — coming soon when we port it from Habitat.",
+    body: "Hunt the next word in a chain — coming soon.",
     Icon: Worm,
     accent: "neutral",
     available: false,
@@ -110,9 +110,7 @@ export default function GamesHubPage() {
             Game Centre
           </h1>
           <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
-            Practise football vocabulary in short, fun bursts. Each game awards
-            XP the first time you complete it each day — keep coming back to
-            stack rewards and climb the leaderboard.
+            Pratique o vocabulário de futebol em sessões curtas e divertidas.
           </p>
         </header>
 
