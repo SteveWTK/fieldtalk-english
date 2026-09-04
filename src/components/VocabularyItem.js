@@ -150,32 +150,35 @@ export default function VocabularyItem({
           {item.word || item.english}
         </span>
         <div className="flex items-center gap-3 flex-shrink-0">
-          {hasImage && !imgFailed && (
-            <Image
-              src={item.image_url}
-              alt={item.word || item.english || ""}
-              width={72}
-              height={56}
-              sizes="56px"
-              className="w-18 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
-              onError={() => setImgFailed(true)}
-            />
-          )}
-          {/* Save-to-vocabulary bookmark. Hidden entirely when the
-              parent didn't wire up onSaveToVocabulary (e.g. rendered
-              outside a lesson), so no orphan button appears. Three
-              states: idle → saving → saved. Explicit text label
-              alongside the icon so PT-first, less-English-exposed
-              users understand exactly what this does (a bookmark
-              icon alone was ambiguous). */}
-          {onSaveToVocabulary && (
-            <SaveButton
-              isSaved={isSavedToVocabulary}
-              isSaving={savingToVocabulary}
-              lang={userLanguage}
-              onClick={handleSaveClick}
-            />
-          )}
+          {/* Vertical stack: image on top, save button below. Keeps
+              the save action tap-friendly on tablets and phones where
+              a side-by-side layout was awkward — the button now
+              always sits under the image regardless of screen width. */}
+          <div className="flex flex-col items-center gap-1.5">
+            {hasImage && !imgFailed && (
+              <Image
+                src={item.image_url}
+                alt={item.word || item.english || ""}
+                width={72}
+                height={56}
+                sizes="56px"
+                className="w-18 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
+                onError={() => setImgFailed(true)}
+              />
+            )}
+            {/* Save-to-vocabulary bookmark. Hidden entirely when the
+                parent didn't wire up onSaveToVocabulary (e.g. rendered
+                outside a lesson), so no orphan button appears. Three
+                states: idle → saving → saved. */}
+            {onSaveToVocabulary && (
+              <SaveButton
+                isSaved={isSavedToVocabulary}
+                isSaving={savingToVocabulary}
+                lang={userLanguage}
+                onClick={handleSaveClick}
+              />
+            )}
+          </div>
           <button
             type="button"
             aria-label="Play audio"

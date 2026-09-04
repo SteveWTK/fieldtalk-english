@@ -83,20 +83,20 @@ export default function MemoryMatch({
   const [flipped, setFlipped] = useState(savedState?.flipped || []);
   const [matched, setMatched] = useState(savedState?.matched || []);
   const [matchedIndices, setMatchedIndices] = useState(
-    savedState?.matchedIndices || []
+    savedState?.matchedIndices || [],
   );
   const [matchedPairs, setMatchedPairs] = useState(
-    savedState?.matchedPairs || []
+    savedState?.matchedPairs || [],
   );
   const [attempts, setAttempts] = useState(savedState?.attempts || 0);
   const [correctMatches, setCorrectMatches] = useState(
-    savedState?.correctMatches || 0
+    savedState?.correctMatches || 0,
   );
   const [isComplete, setIsComplete] = useState(savedState?.isComplete || false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [gameStarted, setGameStarted] = useState(
-    savedState?.gameStarted || false
+    savedState?.gameStarted || false,
   );
 
   const initializeGame = () => {
@@ -182,7 +182,7 @@ export default function MemoryMatch({
   const handleFlip = (index) => {
     // Check if card is already matched by comparing the specific card's ID
     const cardIsMatched = matched.some(
-      (matchedId) => cards[index].id === matchedId
+      (matchedId) => cards[index].id === matchedId,
     );
 
     if (flipped.length === 2 || flipped.includes(index) || cardIsMatched) {
@@ -467,12 +467,15 @@ export default function MemoryMatch({
               {matchedPairs.map((pair, idx) => {
                 const englishText = pair.en || "";
                 const translationText = pair.pt || "";
-                const canSave =
-                  !!user &&
-                  !pair.enIsImage &&
-                  !pair.ptIsImage &&
-                  englishText &&
-                  translationText;
+                // Save is available whenever we have BOTH the English
+                // and translation text — image-side rendering doesn't
+                // affect this, because the card's `text` field is
+                // populated from the vocabulary row regardless of
+                // whether it displays as an image. Previously we hid
+                // the button whenever either side rendered as an image,
+                // which felt broken to users completing image-based
+                // matches.
+                const canSave = !!user && !!englishText && !!translationText;
                 return (
                   <MatchedPairCard
                     key={idx}
@@ -485,6 +488,11 @@ export default function MemoryMatch({
                       saveWord({
                         english: englishText,
                         translation: translationText,
+                        // Pass through the paired images so the saved
+                        // vocabulary card shows the same thumbnail the
+                        // user just matched against.
+                        englishImage: pair.enImage || null,
+                        translationImage: pair.ptImage || null,
                         sourceLessonId: lessonId,
                         sourceStepType: "memory_match",
                         skillAxis,
