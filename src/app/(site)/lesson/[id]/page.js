@@ -1541,6 +1541,8 @@ function DynamicLessonContent() {
               englishVariant={userEnglishVariant}
               voiceGender={userVoiceGender}
               userLanguage={userLanguage}
+              lessonId={lessonId}
+              skillAxis={lesson?.skill_axes?.[0] || null}
             />
           </div>
         );
@@ -1566,6 +1568,8 @@ function DynamicLessonContent() {
             lessonId={lessonId}
             stepId={currentStepData.id || `step-${currentStep}`}
             step={currentStepData}
+            skillAxis={lesson?.skill_axes?.[0] || null}
+            userLanguage={userLanguage}
             onComplete={(xp) => {
               setXpEarned((prev) => prev + xp);
               setCompletedSteps((prev) => new Set([...prev, currentStep]));

@@ -9,6 +9,8 @@ import {
   Target,
   Volume2,
   VolumeX,
+  BookmarkPlus,
+  BookmarkCheck,
 } from "lucide-react";
 import {
   playSuccessSound,
@@ -17,6 +19,8 @@ import {
 } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
+import { useAuth } from "@/components/AuthProvider";
+import { usePersonalVocabulary } from "@/lib/hooks/usePersonalVocabulary";
 
 function shuffle(array) {
   const newArray = [...array];
@@ -33,8 +37,18 @@ export default function MemoryMatch({
   lessonId,
   stepId,
   step,
+  // Optional axis carried through from the lesson so saves record
+  // provenance. Nullable — memory match rendered outside a lesson
+  // simply omits this.
+  skillAxis = null,
+  // Language for the save-button label. Falls back to PT.
+  userLanguage = "pt",
 }) {
   const { isMuted, toggleMute } = useSoundPreference();
+  // Personal-vocabulary subscription — powers the save button on each
+  // matched pair. One fetch per game mount, then optimistic writes.
+  const { user } = useAuth();
+  const { isSaved, saveWord } = usePersonalVocabulary(user);
   // Single source of truth for XP: step.xp_reward (lesson JSON) takes
   // precedence, falling back to the centralised default in
   // stepTypeDefaults.js (currently 40 for memory_match). Attempts then
@@ -434,71 +448,121 @@ export default function MemoryMatch({
         </div>
 
         {/* Matched Pairs Display.
-            A single 2-column grid (instead of two parallel space-y columns)
-            so each pair sits in one row — the row's height matches the taller
-            of the two cells, keeping image+word pairs aligned. Tight max-width
-            and fixed row height keep the panel from dominating wide-screen
-            layouts and squeezing the game grid. */}
+            3-column grid: English cell · translation cell · tiny save
+            button. Third column is a fixed narrow width so the two
+            content cells retain their look; save button only renders
+            when the user is signed in (a signed-out player can still
+            play the game — save just doesn't apply). */}
         {matchedPairs.length > 0 && (
           <div className="w-full lg:w-auto lg:flex-shrink">
             <div
-              className="grid grid-cols-2 gap-2 mx-auto lg:mx-0"
-              style={{ width: "min(100%, 16rem)" }}
+              className="grid grid-cols-[1fr_1fr_auto] gap-2 mx-auto lg:mx-0 items-center"
+              style={{ width: "min(100%, 18rem)" }}
             >
-              {/* Column headers (two cells) */}
+              {/* Column headers (three cells) */}
               <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
                 English
               </div>
               <div className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold mb-1">
-                Image
+                {userLanguage === "pt" ? "Tradução" : "Translation"}
               </div>
+              <div aria-hidden />
 
-              {/* One row per matched pair: two cells produced via Fragment.
-                  Fixed row height keeps the panel compact even with images. */}
-              {matchedPairs.map((pair, idx) => (
-                <React.Fragment key={idx}>
-                  <div
-                    className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
-                      pair.enIsImage
-                        ? "bg-white dark:bg-gray-700 p-0"
-                        : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
-                    }`}
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    {pair.enIsImage ? (
-                      <Image
-                        src={pair.enImage}
-                        alt={pair.en || "image"}
-                        fill
-                        sizes="128px"
-                        className="object-cover"
-                      />
+              {/* One row per matched pair: three cells produced via
+                  Fragment. Fixed row height keeps the panel compact
+                  even with images. */}
+              {matchedPairs.map((pair, idx) => {
+                const englishText = pair.en || "";
+                const translationText = pair.pt || "";
+                const saved = isSaved(englishText);
+                const canSave =
+                  !!user &&
+                  !pair.enIsImage &&
+                  !pair.ptIsImage &&
+                  englishText &&
+                  translationText;
+                return (
+                  <React.Fragment key={idx}>
+                    <div
+                      className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
+                        pair.enIsImage
+                          ? "bg-white dark:bg-gray-700 p-0"
+                          : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
+                      }`}
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      {pair.enIsImage ? (
+                        <Image
+                          src={pair.enImage}
+                          alt={pair.en || "image"}
+                          fill
+                          sizes="128px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        pair.en
+                      )}
+                    </div>
+                    <div
+                      className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
+                        pair.ptIsImage
+                          ? "bg-white dark:bg-gray-700 p-0"
+                          : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
+                      }`}
+                      style={{ animationDelay: `${idx * 0.1}s` }}
+                    >
+                      {pair.ptIsImage ? (
+                        <Image
+                          src={pair.ptImage}
+                          alt={pair.pt || "image"}
+                          fill
+                          sizes="128px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        pair.pt
+                      )}
+                    </div>
+                    {canSave ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (saved) return;
+                          saveWord({
+                            english: englishText,
+                            translation: translationText,
+                            sourceLessonId: lessonId,
+                            sourceStepType: "memory_match",
+                            skillAxis,
+                          });
+                        }}
+                        aria-label={
+                          saved
+                            ? userLanguage === "pt"
+                              ? "Salvo no seu vocabulário"
+                              : "Saved to your vocabulary"
+                            : userLanguage === "pt"
+                              ? "Salvar no seu vocabulário"
+                              : "Save to your vocabulary"
+                        }
+                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+                          saved
+                            ? "text-accent-500 cursor-default"
+                            : "text-gray-400 hover:text-accent-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                      >
+                        {saved ? (
+                          <BookmarkCheck className="w-4 h-4 fill-accent-500/20" />
+                        ) : (
+                          <BookmarkPlus className="w-4 h-4" />
+                        )}
+                      </button>
                     ) : (
-                      pair.en
+                      <div aria-hidden />
                     )}
-                  </div>
-                  <div
-                    className={`relative rounded-md shadow-sm animate-slideIn overflow-hidden flex items-center justify-center h-12 ${
-                      pair.ptIsImage
-                        ? "bg-white dark:bg-gray-700 p-0"
-                        : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
-                    }`}
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    {pair.ptIsImage ? (
-                      <Image
-                        src={pair.ptImage}
-                        alt={pair.pt || "image"}
-                        fill
-                        sizes="128px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      pair.pt
-                    )}
-                  </div>
-                </React.Fragment>
-              ))}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
         )}

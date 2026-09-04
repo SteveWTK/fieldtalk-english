@@ -33,6 +33,7 @@ import {
   Sparkles,
   PlayCircle,
   ShieldCheck,
+  BookmarkCheck,
 } from "lucide-react";
 import { skillAxisLabel } from "@/lib/lessons/skillAxes";
 import { useAuth } from "@/components/AuthProvider";
@@ -62,6 +63,8 @@ const COPY = {
     continueLessonsBody: "Pick up where you left off.",
     gameCentre: "Game Centre",
     gameCentreBody: "Drill vocabulary in short rounds.",
+    myVocabulary: "My vocabulary",
+    myVocabularyBody: "Words you've saved from your lessons.",
     // Level-aware certificate copy. Functions interpolate the level
     // number so a Level-2 unlock reads "Level 2 complete" without
     // needing separate keys per level.
@@ -82,6 +85,8 @@ const COPY = {
     continueLessonsBody: "Retome de onde parou.",
     gameCentre: "Game Centre",
     gameCentreBody: "Pratique vocabulário em rodadas rápidas.",
+    myVocabulary: "Meu vocabulário",
+    myVocabularyBody: "Palavras que você salvou das aulas.",
     certificateUnlockedEyebrow: (level) => `Nível ${level} concluído`,
     certificateUnlockedTitle: (level) =>
       `Seu certificado Pro Path Nível ${level}`,
@@ -486,18 +491,28 @@ export default function ProPathDashboard() {
           lessonHref={lessonsHref}
         />
 
-        {/* ── Game Centre quick link ─────────────────────────────
-             The "Continue lessons" QuickLink and the radar's inline
-             "next lesson" CTA were both retired on 2026-08-24; the
-             minimalist next-lesson chip in the Hero Strip is now the
-             single primary path back into lessons. Game Centre stays
-             as a separate, distinct entry point. */}
-        <QuickLink
-          href="/games"
-          Icon={Gamepad2}
-          title={copy.gameCentre}
-          body={copy.gameCentreBody}
-        />
+        {/* ── Secondary quick-link row ───────────────────────────
+             My vocabulary + Game Centre. Both feed the same loop:
+             users save words they encounter in lessons → the saved
+             list becomes the practice pool for the Game Centre. The
+             "Continue lessons" QuickLink and the radar's inline
+             "next lesson" CTA were retired on 2026-08-24 — the
+             minimalist next-lesson chip in the Hero Strip is the
+             primary path back into lessons. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <QuickLink
+            href="/vocabulary"
+            Icon={BookmarkCheck}
+            title={copy.myVocabulary}
+            body={copy.myVocabularyBody}
+          />
+          <QuickLink
+            href="/games"
+            Icon={Gamepad2}
+            title={copy.gameCentre}
+            body={copy.gameCentreBody}
+          />
+        </div>
 
         {/* ── Leaderboard ─────────────────────────────────────── */}
         {/* <div>

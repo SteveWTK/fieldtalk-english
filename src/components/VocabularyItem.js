@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Volume2 } from "lucide-react";
+import { Volume2, BookmarkPlus, BookmarkCheck } from "lucide-react";
 import { getTranslation } from "@/utils/translations";
 
 export default function VocabularyItem({
@@ -13,6 +13,13 @@ export default function VocabularyItem({
   userLanguage = "en",
   shouldShake = false,
   onActivated = null,
+  // Personal vocab wiring — the parent (VocabularyList) subscribes
+  // to usePersonalVocabulary once and passes down these two props
+  // per card. Keeps the API round-trip count at one per lesson
+  // (initial fetch) plus one per save (POST) rather than N cards ×
+  // subscription.
+  isSavedToVocabulary = false,
+  onSaveToVocabulary = null,
 }) {
   const t = (key, fallback = "") => getTranslation(key, userLanguage, fallback);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -134,6 +141,42 @@ export default function VocabularyItem({
               className="w-18 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-600"
               onError={() => setImgFailed(true)}
             />
+          )}
+          {/* Save-to-vocabulary bookmark. Hidden entirely when the
+              parent didn't wire up onSaveToVocabulary (e.g. rendered
+              outside a lesson), so no orphan button appears. Ghosted
+              when unsaved, lime when saved — feels lightweight rather
+              than shouty. Aria label narrates both states for screen
+              readers. */}
+          {onSaveToVocabulary && (
+            <button
+              type="button"
+              aria-label={
+                isSavedToVocabulary
+                  ? userLanguage === "pt"
+                    ? "Salvo no seu vocabulário"
+                    : "Saved to your vocabulary"
+                  : userLanguage === "pt"
+                    ? "Salvar no seu vocabulário"
+                    : "Save to your vocabulary"
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isSavedToVocabulary) return; // no-op on re-click
+                onSaveToVocabulary(item);
+              }}
+              className={`transition-transform hover:scale-110 ${
+                isSavedToVocabulary
+                  ? "text-accent-500 cursor-default"
+                  : "text-gray-400 hover:text-accent-500"
+              }`}
+            >
+              {isSavedToVocabulary ? (
+                <BookmarkCheck className="w-5 h-5 fill-accent-500/20" />
+              ) : (
+                <BookmarkPlus className="w-5 h-5" />
+              )}
+            </button>
           )}
           <button
             type="button"

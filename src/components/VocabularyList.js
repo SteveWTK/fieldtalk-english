@@ -1,13 +1,30 @@
 // src/components/VocabularyList.js
-// Wrapper around VocabularyItem that coordinates the "attention shake"
-// across cards: when the user activates one card, the next one starts
-// shaking to invite the next click.
+// Wrapper around VocabularyItem that:
+//   1. Coordinates the "attention shake" spotlight across cards.
+//   2. Prefetches each item's audio file on mount so the first click
+//      plays without lag.
+//   3. Subscribes ONCE to usePersonalVocabulary and passes the per-
+//      item saved-state + save callback down. Keeps API traffic at
+//      one fetch per lesson (not N per card).
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import VocabularyItem from "./VocabularyItem";
+import { useAuth } from "@/components/AuthProvider";
+import { usePersonalVocabulary } from "@/lib/hooks/usePersonalVocabulary";
 
-export default function VocabularyList({ items, ...itemProps }) {
+export default function VocabularyList({
+  items,
+  // Provenance for saved words — populated by the lesson page when it
+  // mounts this list, so each saved row records where the user
+  // learned the word from. All optional.
+  lessonId = null,
+  skillAxis = null,
+  ...itemProps
+}) {
+  const { user } = useAuth();
+  const { isSaved, saveWord } = usePersonalVocabulary(user);
+
   // Index of the card currently inviting attention. Starts at 0 so the very
   // first card shakes on mount.
   const [activeShakeIndex, setActiveShakeIndex] = useState(0);
@@ -46,6 +63,22 @@ export default function VocabularyList({ items, ...itemProps }) {
     };
   }, [audioUrlsKey]);
 
+  const handleSave = useCallback(
+    async (item) => {
+      await saveWord({
+        english: item.word || item.english,
+        translation: item.translation,
+        englishImage: item.image_url || null,
+        tip: item.tip || null,
+        culturalNote: item.cultural_note || null,
+        sourceLessonId: lessonId,
+        sourceStepType: "vocabulary",
+        skillAxis,
+      });
+    },
+    [saveWord, lessonId, skillAxis],
+  );
+
   return (
     <div className="grid gap-4">
       {items.map((item, index) => (
@@ -57,9 +90,11 @@ export default function VocabularyList({ items, ...itemProps }) {
             // Move the spotlight to the next card. If this was the last card,
             // nothing further shakes (activeShakeIndex becomes out of range).
             setActiveShakeIndex((curr) =>
-              index >= curr ? index + 1 : curr
+              index >= curr ? index + 1 : curr,
             );
           }}
+          isSavedToVocabulary={isSaved(item.word || item.english)}
+          onSaveToVocabulary={user ? handleSave : null}
           {...itemProps}
         />
       ))}
