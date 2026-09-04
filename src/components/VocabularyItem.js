@@ -145,16 +145,21 @@ export default function VocabularyItem({
         shouldShake ? "vocab-attention" : ""
       }`}
     >
-      <div className="flex items-center justify-between mb-2 gap-3">
-        <span className="font-semibold text-gray-900 dark:text-white text-lg">
-          {item.word || item.english}
-        </span>
+      <div className="flex items-center justify-between mb-0 gap-3">
+        <div className="flex flex-col gap-4">
+          <span className="font-semibold text-gray-900 dark:text-white text-lg">
+            {item.word || item.english}
+          </span>
+          <p className="text-gray-600 dark:text-gray-300 mb-1">
+            {item.translation}
+          </p>
+        </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {/* Vertical stack: image on top, save button below. Keeps
               the save action tap-friendly on tablets and phones where
               a side-by-side layout was awkward — the button now
               always sits under the image regardless of screen width. */}
-          <div className="flex flex-col items-center gap-1.5">
+          <div className="flex flex-col items-center gap-2">
             {hasImage && !imgFailed && (
               <Image
                 src={item.image_url}
@@ -199,9 +204,9 @@ export default function VocabularyItem({
           </button>
         </div>
       </div>
-      <p className="text-gray-600 dark:text-gray-300 mb-1">
+      {/* <p className="text-gray-600 dark:text-gray-300 mb-1">
         {item.translation}
-      </p>
+      </p> */}
       {/* {item.example && (
         <p className="text-sm text-gray-500 dark:text-gray-400 italic">
           {t("example")}: {item.example}
