@@ -34,7 +34,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 const COPY = {
   en: {
-    back: "Settings",
+    back: "Dashboard",
     eyebrow: "Billing",
     title: "Your subscription",
     loading: "Loading your subscription…",
@@ -65,7 +65,7 @@ const COPY = {
       "Your access was manually granted by the FieldTalk team. Contact support@fieldtalkenglish.com for changes.",
   },
   pt: {
-    back: "Configurações",
+    back: "Painel",
     eyebrow: "Cobrança",
     title: "Sua assinatura",
     loading: "Carregando sua assinatura…",
@@ -165,7 +165,7 @@ function SubscriptionContent() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <button
           type="button"
-          onClick={() => router.push("/settings")}
+          onClick={() => router.push("/dashboard")}
           className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
