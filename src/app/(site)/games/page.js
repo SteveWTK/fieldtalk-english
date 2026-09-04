@@ -20,9 +20,24 @@ import {
   Layout as LayoutIcon,
   Worm,
   Sparkles,
+  BookmarkCheck,
 } from "lucide-react";
 
 const GAMES = [
+  {
+    slug: "vocabulary-speed-match",
+    href: "/games/vocabulary-speed-match",
+    // Personal-vocab practice game — drives spaced repetition off the
+    // words the player has saved from lessons. Placed first because
+    // it's the most valuable practice surface: the words are ones
+    // they've chosen to remember.
+    title: "Vocabulary Speed Match",
+    body: "Practise the words you've saved from lessons. Drag each English word to its image or translation.",
+    Icon: BookmarkCheck,
+    accent: "emerald",
+    xpReward: 15,
+    available: true,
+  },
   {
     slug: "memory-match-positions",
     href: "/games/memory-match?category=positions",
