@@ -3,12 +3,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import {
-  Volume2,
-  BookmarkPlus,
-  BookmarkCheck,
-  Loader2,
-} from "lucide-react";
+import { Volume2, BookmarkPlus, BookmarkCheck, Loader2 } from "lucide-react";
 import { getTranslation } from "@/utils/translations";
 
 export default function VocabularyItem({
@@ -259,15 +254,15 @@ function SaveButton({ isSaved, isSaving, lang, onClick }) {
   const isPt = lang === "pt";
   const label = isSaved
     ? isPt
-      ? "Salvo para praticar"
-      : "Saved for practice"
+      ? "Salvo"
+      : "Saved"
     : isSaving
       ? isPt
         ? "Salvando…"
         : "Saving…"
       : isPt
-        ? "Salvar para praticar"
-        : "Save for practice";
+        ? "Salvar"
+        : "Save";
 
   const tone = isSaved
     ? "text-accent-600 cursor-default"
