@@ -39,6 +39,13 @@ const SPAWN_LIMIT = 20;       // sends per tick
 const CANDIDATE_POOL = 200;   // rows fetched before local-time filter
 const DEFAULT_TIMEZONE = "America/Sao_Paulo";
 
+// Platform admins get their quizzes ~10 min after lesson completion
+// instead of 24h. Lets the FieldTalk team dogfood the flow end-to-end
+// (real cron, real window + inactivity gates) without waiting a day
+// per test. Non-admin users still hit the 24h threshold.
+const ADMIN_DELAY_MIN = 10;
+const REGULAR_DELAY_HOURS = 24;
+
 export async function GET(request) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -49,13 +56,20 @@ export async function GET(request) {
   const now = new Date();
 
   // Eligibility window on lesson_completions.completed_at:
-  //   [now - EXPIRY_HOURS, now - 24h]
-  // Anything older than EXPIRY_HOURS is either already sent or should
-  // be expired; anything more recent than 24h isn't due yet.
-  const dueBefore = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+  //   [now - EXPIRY_HOURS, now - ADMIN_DELAY_MIN]
+  // The SQL cutoff uses the admin-friendly 10-min threshold (loose)
+  // and non-admin rows younger than 24h are filtered out in JS. Fetching
+  // a slightly bigger pool avoids splitting into two SQL queries — the
+  // admin population is small and the extra rows are cheap.
+  const dueBefore = new Date(
+    now.getTime() - ADMIN_DELAY_MIN * 60 * 1000,
+  ).toISOString();
   const dueAfter = new Date(
     now.getTime() - EXPIRY_HOURS * 60 * 60 * 1000,
   ).toISOString();
+  const regularDelayCutoff = new Date(
+    now.getTime() - REGULAR_DELAY_HOURS * 60 * 60 * 1000,
+  );
 
   // Pull recently-completed lessons with quiz content. We join players
   // + lessons in one query, then filter in JS for the local-time
@@ -75,6 +89,7 @@ export async function GET(request) {
         preferred_language,
         phone_e164,
         timezone,
+        user_type,
         whatsapp_opted_in,
         whatsapp_agent_paused,
         whatsapp_welcomed_at,
@@ -136,6 +151,16 @@ export async function GET(request) {
   for (const row of completions) {
     const player = row.players;
     const lesson = row.lessons;
+
+    // Per-user delay: admins pass the 10-min-old threshold immediately
+    // (already met by the SQL filter); regular users still need to
+    // wait the full 24h. This is the ONLY admin bypass — window +
+    // inactivity gates apply to everyone, so we're testing the whole
+    // spawn pipeline realistically.
+    const isAdminUser = player.user_type === "platform_admin";
+    if (!isAdminUser && new Date(row.completed_at) > regularDelayCutoff) {
+      continue;
+    }
 
     // Grab first question (MVP is one-question-per-lesson).
     const questions = Array.isArray(lesson.review_questions)

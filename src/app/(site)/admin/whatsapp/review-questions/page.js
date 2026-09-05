@@ -27,6 +27,7 @@ import {
   Trash2,
   MessageSquareQuote,
   AlertCircle,
+  Send,
 } from "lucide-react";
 
 const REQUIRED_LANGS = [
@@ -279,6 +280,7 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
   const [q, setQ] = useState(() => (initial ? cloneQuestion(initial) : EMPTY_QUESTION()));
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
@@ -341,6 +343,41 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
       setMsg({ tone: "error", text: "Network error" });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleTestSend() {
+    // Sends the LOCAL editor state (not the DB) — lets us preview
+    // unsaved edits on WhatsApp directly. Still validates client-side
+    // first so we don't waste a Z-API call on obviously bad input.
+    if (clientError) {
+      setMsg({ tone: "error", text: clientError });
+      return;
+    }
+    setTesting(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/admin/review-questions/test-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lesson_id: lessonId,
+          question: q,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setMsg({ tone: "error", text: json.error || "Test send failed" });
+      } else {
+        setMsg({
+          tone: "success",
+          text: `Sent to ${json.phone}. Reply with a button to test grading.`,
+        });
+      }
+    } catch {
+      setMsg({ tone: "error", text: "Network error" });
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -429,11 +466,11 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
       </Field>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-white/10">
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || clearing}
+          disabled={saving || clearing || testing}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50 transition-colors"
         >
           {saving ? (
@@ -443,11 +480,25 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
           )}
           Save
         </button>
+        <button
+          type="button"
+          onClick={handleTestSend}
+          disabled={saving || clearing || testing}
+          title="Sends the current (unsaved) version to your own WhatsApp, bypassing the 24h wait + all gates. Reply with a button to test the router."
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 hover:text-white border border-white/15 text-sm disabled:opacity-50 transition-colors"
+        >
+          {testing ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
+          Send test to me
+        </button>
         {initial && (
           <button
             type="button"
             onClick={handleClear}
-            disabled={saving || clearing}
+            disabled={saving || clearing || testing}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-red-500/15 text-white/60 hover:text-red-300 border border-white/10 hover:border-red-500/40 text-sm disabled:opacity-50 transition-colors"
           >
             {clearing ? (
