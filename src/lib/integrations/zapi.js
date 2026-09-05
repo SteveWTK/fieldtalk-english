@@ -112,6 +112,16 @@ export async function sendWhatsappButtons(input) {
   }
 
   const url = `${base}/send-button-list`;
+  const requestBody = {
+    phone,
+    message: input.message,
+    buttonList: {
+      buttons: buttons.map((b) => ({
+        id: String(b.id),
+        label: String(b.label).slice(0, 20),
+      })),
+    },
+  };
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -120,27 +130,45 @@ export async function sendWhatsappButtons(input) {
         ? { "Client-Token": process.env.ZAPI_CLIENT_TOKEN }
         : {}),
     },
-    body: JSON.stringify({
-      phone,
-      message: input.message,
-      buttonList: {
-        buttons: buttons.map((b) => ({
-          id: String(b.id),
-          label: String(b.label).slice(0, 20),
-        })),
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    throw new Error(`Z-API send-button-list ${res.status}: ${errText}`);
+  // Read as text first — some Z-API error paths return 2xx with a
+  // machine-readable warning in the body ("message not sent, invalid
+  // format", etc.) which the JSON parse would then drop. Preserving
+  // the raw string is essential for debugging silent-drop failures.
+  const rawResponse = await res.text().catch(() => "");
+  let json = {};
+  try {
+    json = rawResponse ? JSON.parse(rawResponse) : {};
+  } catch {
+    json = {};
   }
 
-  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      `Z-API send-button-list ${res.status}: ${rawResponse.slice(0, 500)}`,
+    );
+  }
+
+  // Log the successful response body so we can see exactly what Z-API
+  // says — the "sent but not delivered" symptom is invisible without
+  // this. Also surfaces in Vercel logs for cron sends.
+  console.log(
+    "[zapi/send-button-list] request:",
+    JSON.stringify(requestBody),
+    "response:",
+    rawResponse.slice(0, 500),
+  );
+
   const messageId =
     json.messageId ?? json.zaapId ?? json.id ?? `sent_${Date.now()}`;
-  return { messageId, status: "enviado" };
+  return {
+    messageId,
+    status: "enviado",
+    raw: json,
+    rawText: rawResponse,
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────

@@ -369,9 +369,15 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
       if (!res.ok) {
         setMsg({ tone: "error", text: json.error || "Test send failed" });
       } else {
+        // Include a short slice of the raw Z-API response so a
+        // "sent 2xx but message never lands" symptom is immediately
+        // visible without opening dev tools.
+        const zapiHint = json.zapi_response
+          ? ` · Z-API: ${String(json.zapi_response).slice(0, 140)}`
+          : "";
         setMsg({
           tone: "success",
-          text: `Sent to ${json.phone}. Reply with a button to test grading.`,
+          text: `Sent to ${json.phone}. Reply with a button to test grading.${zapiHint}`,
         });
       }
     } catch {

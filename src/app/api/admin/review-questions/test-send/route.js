@@ -95,6 +95,7 @@ export async function POST(request) {
 
   // Send via Z-API (or stub — see zapi.js).
   let providerMessageId = null;
+  let zapiRawResponse = null;
   try {
     const sendResult = await sendWhatsappButtons({
       telefone: admin.phone_e164,
@@ -102,6 +103,7 @@ export async function POST(request) {
       buttons,
     });
     providerMessageId = sendResult.messageId;
+    zapiRawResponse = sendResult.rawText ?? null;
   } catch (err) {
     return NextResponse.json(
       { error: `send_failed: ${err?.message ?? String(err)}` },
@@ -132,7 +134,11 @@ export async function POST(request) {
       provider_message_id: providerMessageId,
       queued_at: nowIso,
       sent_at: nowIso,
-      metadata: { test_send: true, sent_by_admin: user.id },
+      metadata: {
+        test_send: true,
+        sent_by_admin: user.id,
+        zapi_response: zapiRawResponse,
+      },
     })
     .select("id")
     .single();
@@ -183,6 +189,9 @@ export async function POST(request) {
     session_id: session.id,
     provider_message_id: providerMessageId,
     phone: admin.phone_e164,
+    // Surfaces the raw Z-API response so an admin can spot silent-drop
+    // symptoms (2xx OK but message never lands) directly from the UI.
+    zapi_response: zapiRawResponse,
   });
 }
 
