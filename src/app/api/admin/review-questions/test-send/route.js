@@ -96,6 +96,7 @@ export async function POST(request) {
   // Send via Z-API (or stub — see zapi.js).
   let providerMessageId = null;
   let zapiRawResponse = null;
+  let zapiRequestBody = null;
   try {
     const sendResult = await sendWhatsappButtons({
       telefone: admin.phone_e164,
@@ -104,6 +105,7 @@ export async function POST(request) {
     });
     providerMessageId = sendResult.messageId;
     zapiRawResponse = sendResult.rawText ?? null;
+    zapiRequestBody = sendResult.requestBody ?? null;
   } catch (err) {
     return NextResponse.json(
       { error: `send_failed: ${err?.message ?? String(err)}` },
@@ -138,6 +140,7 @@ export async function POST(request) {
         test_send: true,
         sent_by_admin: user.id,
         zapi_response: zapiRawResponse,
+        zapi_request: zapiRequestBody,
       },
     })
     .select("id")

@@ -285,6 +285,7 @@ async function spawnQuiz(supabase, item, nowIso) {
   // Fire the WhatsApp send.
   let providerMessageId = null;
   let zapiRawResponse = null;
+  let zapiRequestBody = null;
   try {
     const sendResult = await sendWhatsappButtons({
       telefone: player.phone_e164,
@@ -293,6 +294,7 @@ async function spawnQuiz(supabase, item, nowIso) {
     });
     providerMessageId = sendResult.messageId;
     zapiRawResponse = sendResult.rawText ?? null;
+    zapiRequestBody = sendResult.requestBody ?? null;
   } catch (err) {
     const errMsg = err?.message ?? String(err);
     console.error(
@@ -311,8 +313,9 @@ async function spawnQuiz(supabase, item, nowIso) {
 
   // Mark session 'sent' + refresh snapshot (in case the lesson was
   // edited since the session was first queued). Store the raw Z-API
-  // response in metadata so "sent 2xx but didn't arrive" symptoms are
-  // debuggable from the whatsapp_review_sessions table alone.
+  // response AND the exact request body in metadata so "sent 2xx but
+  // didn't arrive" symptoms are debuggable from the row alone — we
+  // can compare payloads against a working test-send session directly.
   await supabase
     .from("whatsapp_review_sessions")
     .update({
@@ -320,7 +323,10 @@ async function spawnQuiz(supabase, item, nowIso) {
       sent_at: nowIso,
       provider_message_id: providerMessageId,
       question_snapshot: question,
-      metadata: { zapi_response: zapiRawResponse },
+      metadata: {
+        zapi_response: zapiRawResponse,
+        zapi_request: zapiRequestBody,
+      },
     })
     .eq("id", sessionId);
 

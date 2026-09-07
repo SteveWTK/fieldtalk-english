@@ -168,6 +168,11 @@ export async function sendWhatsappButtons(input) {
     status: "enviado",
     raw: json,
     rawText: rawResponse,
+    // Return the outgoing payload as well so callers can persist it
+    // for A/B debugging: "why did the working test send X but the
+    // failing cron send Y?".
+    requestBody,
+    endpoint: url,
   };
 }
 
