@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, Globe, Volume2, Save, Check } from "lucide-react";
+import {
+  Settings,
+  Globe,
+  Volume2,
+  Save,
+  Check,
+  MessageCircle,
+  Loader2,
+  AlertCircle,
+  Pencil,
+} from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { createClient } from "@/lib/supabase/client";
@@ -234,6 +244,13 @@ function SettingsContent() {
           </div>
         </div>
 
+        {/* WhatsApp phone number — separate from other settings because
+            it needs its own validation + collision check (unique
+            phone_e164 in players) and its own save endpoint. Hidden
+            entirely for users who haven't opted in yet; those users
+            still get the phone modal in onboarding. */}
+        <WhatsAppPhoneSection userId={user?.id} />
+
         {/* Interface Language Setting */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start space-x-4">
@@ -295,6 +312,226 @@ function SettingsContent() {
       </div>
     </div>
   );
+}
+
+/**
+ * WhatsApp phone section — shows the current number (masked-ish) and
+ * lets the user edit it. Uses the same check-phone + PATCH /api/profile
+ * plumbing as onboarding, so validation + collision handling stay
+ * identical across surfaces. Server-side, changing the phone resets
+ * whatsapp_welcomed_at so the new number receives a fresh welcome.
+ */
+function WhatsAppPhoneSection({ userId }) {
+  const [loading, setLoading] = useState(true);
+  const [phone, setPhone] = useState(null);
+  const [optedIn, setOptedIn] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [input, setInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("players")
+          .select("phone_e164, whatsapp_opted_in")
+          .eq("id", userId)
+          .maybeSingle();
+        if (cancelled) return;
+        setPhone(data?.phone_e164 || null);
+        setOptedIn(data?.whatsapp_opted_in === true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // Users who haven't opted in — the PhoneCollectionModal on the
+  // dashboard is the canonical entry point for them. Once opted in,
+  // this section is how they change the number.
+  if (!loading && !optedIn) return null;
+
+  function beginEdit() {
+    setInput(phone || "");
+    setError(null);
+    setSaved(false);
+    setEditing(true);
+  }
+  function cancelEdit() {
+    setEditing(false);
+    setError(null);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      // 1. Pre-check availability so a duplicate returns a friendly
+      // error instead of the raw 409 leak from PATCH.
+      const checkRes = await fetch("/api/profile/check-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: input.trim() }),
+      });
+      const checkJson = await checkRes.json().catch(() => ({}));
+      if (!checkRes.ok || checkJson.available === false) {
+        setError(mapPhoneError(checkJson.reason || "generic"));
+        setSaving(false);
+        return;
+      }
+
+      // 2. Commit. Server resets welcomed_at + re-fires welcome to
+      // the new number via after().
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone_e164: input.trim() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(
+          json.error === "phone_in_use"
+            ? mapPhoneError("in_use")
+            : json.error || "Could not save. Please check the number.",
+        );
+        setSaving(false);
+        return;
+      }
+
+      // Update local state to the normalized E.164 the server accepted.
+      setPhone(json.updated?.phone_e164 ?? input.trim());
+      setEditing(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="flex items-start space-x-4">
+        <MessageCircle className="w-6 h-6 text-green-600 dark:text-green-400 mt-1" />
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            WhatsApp number
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Your linked WhatsApp number receives the review quizzes, coaching
+            replies and occasional tips. Changing it re-links your account and
+            you&apos;ll get a fresh welcome on the new number.
+          </p>
+
+          {loading ? (
+            <div className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading…
+            </div>
+          ) : editing ? (
+            <div className="space-y-2">
+              <input
+                type="tel"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="+55 11 91234-5678"
+                autoFocus
+                className="w-full max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Include country code (55 for Brazil) + area code.
+              </p>
+              {error && (
+                <div className="inline-flex items-start gap-1.5 text-sm text-red-600 dark:text-red-400">
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving || input.trim().length < 8}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50"
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save number
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={saving}
+                  className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-sm disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-gray-900 dark:text-white text-base">
+                {phone ? formatDisplayPhone(phone) : "— not set —"}
+              </span>
+              <button
+                type="button"
+                onClick={beginEdit}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/15 text-xs font-semibold transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Change
+              </button>
+              {saved && (
+                <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 font-medium">
+                  <Check className="w-4 h-4" />
+                  Saved
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Turn a stored E.164 phone ("5511912345678") into a display string
+ * ("+55 11 91234-5678"). Falls back to the raw value on any unexpected
+ * length so we never render nothing.
+ */
+function formatDisplayPhone(e164) {
+  const digits = String(e164).replace(/\D/g, "");
+  // Brazilian pattern: 55 + 2-digit DDD + 8 or 9 digit local
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+    const cc = digits.slice(0, 2);
+    const ddd = digits.slice(2, 4);
+    const local = digits.slice(4);
+    const midpoint = local.length === 9 ? 5 : 4;
+    return `+${cc} ${ddd} ${local.slice(0, midpoint)}-${local.slice(midpoint)}`;
+  }
+  return `+${digits}`;
+}
+
+function mapPhoneError(reason) {
+  if (reason === "in_use") {
+    return "This number is already linked to another FieldTalk account.";
+  }
+  if (reason === "invalid_format") {
+    return "Invalid number. Check the country code and area code.";
+  }
+  return "Could not verify the number. Please try again.";
 }
 
 export default function SettingsPage() {

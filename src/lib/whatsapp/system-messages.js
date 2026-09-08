@@ -29,21 +29,31 @@ const DASHBOARD_URL = "www.fieldtalkenglish.com/dashboard";
 
 const DEFAULTS = {
   welcome: {
-    pt: `Oi {name}! ⚽ Aqui é seu Técnico Virtual do FieldTalk 👋
+    pt: `Oi {name}! ⚽ Bem-vindo ao FieldTalk pelo WhatsApp 👋
 
-Estou aqui pra te ajudar com qualquer coisa da plataforma — como fazer uma aula, entender seu Radar de Habilidades, dúvidas sobre certificados — e também com o inglês em si: gramática, vocabulário, expressões de campo, o que precisar.
+Sou seu Técnico Virtual — sua linha direta com a gente. Pode ficar tranquilo: nada de spam por aqui, só o essencial pra você evoluir.
 
-É só mandar mensagem quando quiser praticar ou tirar uma dúvida. Bora juntos!
+O que esperar:
+🎯 Quizzes rápidos 24h depois de cada aula, pra fixar o vocabulário
+💡 Dicas ocasionais de expressões de campo e gramática
+👨‍🏫 Respostas minhas (ou da equipe humana) sempre que precisar
 
-Aqui está seu link: ${DASHBOARD_URL}`,
+Manda mensagem quando quiser praticar, tirar uma dúvida sobre inglês ou sobre a plataforma — estou aqui pra isso.
 
-    en: `Hey {name}! ⚽ FieldTalk virtual coach here 👋
+Bora começar: ${DASHBOARD_URL}`,
 
-I'm here to help with anything about the platform — how a lesson works, understanding your Skill Radar, questions about certificates — and with English itself: grammar, vocabulary, on-pitch expressions, whatever you need.
+    en: `Hey {name}! ⚽ Welcome to FieldTalk on WhatsApp 👋
 
-Just message me anytime you want to practice or ask a question. Let's go!
+I'm your virtual coach — your direct line to the team. Don't worry: no spam here, only what actually helps you improve.
 
-Here's your link: ${DASHBOARD_URL}`,
+What to expect:
+🎯 Quick quizzes 24h after each lesson to lock in vocabulary
+💡 Occasional tips on football expressions and grammar
+👨‍🏫 Answers from me (or the human team) whenever you need a hand
+
+Message me anytime you want to practice, ask an English question, or ask about the platform — that's what I'm here for.
+
+Let's get started: ${DASHBOARD_URL}`,
   },
 
   inactivity_reminder: {

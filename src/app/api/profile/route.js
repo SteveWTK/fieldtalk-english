@@ -231,10 +231,10 @@ export async function PATCH(request) {
 
     const supabase = await getSupabaseAdmin();
     // Snapshot the row BEFORE the update — needed to detect the
-    // "opt-in transition" that triggers the welcome WhatsApp. Also
-    // pulls the fields (name, language, welcome timestamp) we'll
-    // need for the send itself. Small extra query in exchange for
-    // an unambiguous trigger rule.
+    // "opt-in transition" AND "phone-number changed" cases that
+    // trigger the welcome WhatsApp. Also pulls the fields (name,
+    // language, welcome timestamp) we'll need for the send itself.
+    // Small extra query in exchange for an unambiguous trigger rule.
     const { data: currentPlayer } = await supabase
       .from("players")
       .select(
@@ -242,6 +242,21 @@ export async function PATCH(request) {
       )
       .eq("id", user.id)
       .maybeSingle();
+
+    // Phone-number changed to a different non-null value → the user
+    // linked a new WhatsApp number. Reset welcomed_at so the welcome
+    // fires on the new number (identical logic to first-time link,
+    // just re-run). If the phone is being CLEARED (set to null), we
+    // leave welcomed_at alone — the historical timestamp still
+    // documents "user was welcomed at some point", useful for audit.
+    const phoneChanged =
+      "phone_e164" in update &&
+      update.phone_e164 &&
+      currentPlayer?.phone_e164 &&
+      update.phone_e164 !== currentPlayer.phone_e164;
+    if (phoneChanged) {
+      update.whatsapp_welcomed_at = null;
+    }
 
     const { error: updateError } = await supabase
       .from("players")
@@ -281,12 +296,14 @@ export async function PATCH(request) {
 
     // Post-update state — merge the incoming update on top of the
     // pre-update snapshot so the trigger check sees the "if you
-    // saved this, what would be true" view.
+    // saved this, what would be true" view. Uses post.whatsapp_welcomed_at
+    // (post-update) rather than currentPlayer.whatsapp_welcomed_at so
+    // the phone-change reset above properly re-enables the welcome.
     const post = { ...(currentPlayer || {}), ...update };
     const shouldWelcome =
       post.whatsapp_opted_in === true &&
       post.phone_e164 &&
-      currentPlayer?.whatsapp_welcomed_at == null;
+      post.whatsapp_welcomed_at == null;
 
     if (shouldWelcome) {
       // Fire welcome AFTER the response has been sent so onboarding's

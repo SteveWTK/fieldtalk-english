@@ -39,6 +39,7 @@ import {
   Activity,
   Radio,
   MessageSquareQuote,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -124,6 +125,13 @@ function AdminHubContent() {
             Icon={MessageSquareQuote}
             title="Review quiz questions"
             body="Author the 3-button T+24h WhatsApp mini-quizzes per lesson."
+            accent="emerald"
+          />
+          <AdminCard
+            href="/admin/leads"
+            Icon={UserPlus}
+            title="Leads"
+            body="Register, filter and work sales & partnership leads — list + kanban, WhatsApp send, activity log."
             accent="emerald"
           />
           <AdminCard

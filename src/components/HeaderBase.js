@@ -67,8 +67,8 @@ function HeaderBase({
       en: [
         // { href: "/lesson", label: "Home" },
         { href: "/lesson", label: "Lessons" },
-        { href: "/vocabulary", label: "Vocabulary" },
         { href: "/dashboard", label: "Dashboard" },
+        { href: "/vocabulary", label: "Vocabulary" },
         // { href: "/admin", label: "Admin" },
         // { href: "/about-us", label: "About Us" },
         { href: "/pricing", label: "Pricing" },
