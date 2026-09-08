@@ -14,7 +14,14 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, List, LayoutGrid, Plus, Sparkles } from "lucide-react";
+import {
+  ChevronLeft,
+  List,
+  LayoutGrid,
+  Plus,
+  Sparkles,
+  LineChart,
+} from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t } from "@/lib/leads/constants";
 
@@ -77,6 +84,12 @@ export default function LeadsAdminHeader({
                 active={currentView === "kanban"}
                 Icon={LayoutGrid}
                 label={t("page.kanbanView", lang)}
+              />
+              <ViewTab
+                href="/admin/leads/dashboard"
+                active={currentView === "dashboard"}
+                Icon={LineChart}
+                label={isPt ? "Painel" : "Dashboard"}
               />
             </div>
           )}
