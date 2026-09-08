@@ -50,10 +50,14 @@ export async function drainPendingRecipients(
   // Per-broadcast interval enforcement is done implicitly via the
   // spacing between scheduled_slot values that fan-out set up. The
   // dispatcher doesn't need to know about interval_seconds at all.
+  //
+  // Recipients can be player-keyed (`player_id`) or lead-keyed
+  // (`lead_id`). Exactly one is set — the schema CHECK guarantees
+  // that. The per-recipient handler branches on which is populated.
   const nowIso = new Date().toISOString();
   const { data: recipients, error } = await supabase
     .from("whatsapp_broadcast_recipients")
-    .select("id, broadcast_id, player_id, phone_e164, language")
+    .select("id, broadcast_id, player_id, lead_id, phone_e164, language")
     .eq("status", "pending")
     .lte("scheduled_slot", nowIso)
     .order("scheduled_slot", { ascending: true })
@@ -101,7 +105,7 @@ async function processRecipient(supabase, recipient, broadcastCache) {
   if (!broadcast) {
     const { data, error } = await supabase
       .from("whatsapp_broadcasts")
-      .select("id, body, target_filter, status")
+      .select("id, body, target_filter, target_kind, status")
       .eq("id", recipient.broadcast_id)
       .single();
     if (error || !data) {
@@ -122,6 +126,18 @@ async function processRecipient(supabase, recipient, broadcastCache) {
     return "skipped";
   }
 
+  // Lead-keyed recipients follow a simpler eligibility check: has
+  // phone still, not marked do_not_contact. No player-side gates
+  // apply (there's no player row).
+  if (recipient.lead_id) {
+    return processLeadRecipient(supabase, recipient, broadcast);
+  }
+
+  // Player-keyed path — original behaviour preserved.
+  return processPlayerRecipient(supabase, recipient, broadcast);
+}
+
+async function processPlayerRecipient(supabase, recipient, broadcast) {
   // Re-check eligibility against current player state (opted-in +
   // not paused). Snapshots at fan-out time can go stale if a user
   // opts out or gets paused between compose and dispatch.
@@ -232,6 +248,125 @@ async function processRecipient(supabase, recipient, broadcastCache) {
       recipient.id,
       errMsg,
     );
+    await supabase
+      .from("whatsapp_broadcast_recipients")
+      .update({ status: "failed", error: errMsg })
+      .eq("id", recipient.id);
+    await bumpBroadcastCounter(
+      supabase,
+      recipient.broadcast_id,
+      "failed_count",
+    );
+    return "failed";
+  }
+}
+
+/**
+ * Lead-keyed dispatch. Simpler than the player path — no opted-in /
+ * paused / subscription logic. Just re-checks the do-not-contact
+ * flag against the current lead row (which may have flipped since
+ * fan-out), then sends + logs to lead_activities + whatsapp_messages.
+ */
+async function processLeadRecipient(supabase, recipient, broadcast) {
+  const { data: lead, error: leadErr } = await supabase
+    .from("leads")
+    .select("id, phone_e164, do_not_contact, stage")
+    .eq("id", recipient.lead_id)
+    .maybeSingle();
+
+  if (leadErr || !lead) {
+    await markRecipientSkipped(supabase, recipient, "lead_lookup_failed");
+    return "skipped";
+  }
+  if (lead.do_not_contact === true) {
+    await markRecipientSkipped(
+      supabase,
+      recipient,
+      "do_not_contact_after_fanout",
+    );
+    return "skipped";
+  }
+
+  // Body-language picker — same shape as player path. Leads don't
+  // have a preferred_language column, so the recipient row's snapshot
+  // (defaulted at fan-out to 'pt') is authoritative.
+  const body = broadcast.body?.[recipient.language];
+  if (!body || typeof body !== "string" || !body.trim()) {
+    await markRecipientSkipped(supabase, recipient, "no_translation");
+    return "skipped";
+  }
+
+  try {
+    const sendResult = await sendWhatsapp({
+      telefone: recipient.phone_e164,
+      mensagem: body,
+    });
+    const nowIso = new Date().toISOString();
+    await supabase
+      .from("whatsapp_broadcast_recipients")
+      .update({
+        status: "sent",
+        provider_message_id: sendResult.messageId,
+        sent_at: nowIso,
+      })
+      .eq("id", recipient.id);
+    await bumpBroadcastCounter(supabase, recipient.broadcast_id, "sent_count");
+
+    // Log to whatsapp_messages with player_id=null — the phone
+    // snapshot is the only join key. Kept in the same table so an
+    // eventual conversation-view UI shows lead broadcasts alongside
+    // player messages.
+    await supabase.from("whatsapp_messages").insert({
+      player_id: null,
+      phone_e164: recipient.phone_e164,
+      direction: "outbound",
+      provider: "zapi",
+      provider_message_id: sendResult.messageId,
+      via: "broadcast",
+      body,
+      metadata: {
+        broadcast_id: recipient.broadcast_id,
+        lead_id: recipient.lead_id,
+      },
+    });
+
+    // Log the outbound to the lead's own activity timeline so the
+    // CRM detail view surfaces broadcasts inline with 1:1 sends.
+    await supabase.from("lead_activities").insert({
+      lead_id: recipient.lead_id,
+      activity_type: "whatsapp_outbound",
+      actor_id: null,
+      payload: {
+        body,
+        provider_message_id: sendResult.messageId,
+        broadcast_id: recipient.broadcast_id,
+      },
+      summary: `[broadcast] ${body.slice(0, 128)}${body.length > 128 ? "…" : ""}`,
+    });
+
+    // Auto-bump 'new' → 'contacted' — same rule as the 1:1 send
+    // path. A broadcast counts as first contact.
+    if (lead.stage === "new") {
+      await supabase
+        .from("leads")
+        .update({ stage: "contacted" })
+        .eq("id", recipient.lead_id);
+      await supabase.from("lead_activities").insert({
+        lead_id: recipient.lead_id,
+        activity_type: "stage_change",
+        actor_id: null,
+        payload: {
+          from: "new",
+          to: "contacted",
+          reason: "auto_broadcast_send",
+        },
+        summary: null,
+      });
+    }
+    return "sent";
+  } catch (err) {
+    const errMsg = err?.message ?? String(err ?? "unknown");
+    console.error("[broadcasts/dispatch] lead send failed:", recipient.id, errMsg);
     await supabase
       .from("whatsapp_broadcast_recipients")
       .update({ status: "failed", error: errMsg })

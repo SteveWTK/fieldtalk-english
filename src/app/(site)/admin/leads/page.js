@@ -22,6 +22,7 @@ import {
   MessageCircle,
   ChevronDown,
   Trash2,
+  Radio,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
@@ -202,6 +203,31 @@ export default function LeadsListPage() {
 
         {/* Metrics strip */}
         <MetricsStrip metrics={metrics} lang={lang} />
+
+        {/* Broadcast CTA — appears only when at least one filter is
+            active, so a "Broadcast to filtered leads" click is
+            always scoped. Full-set broadcasts are possible by simply
+            not filtering, but we hide the CTA to prevent accidents. */}
+        {hasActiveFilters && (
+          <div className="mt-4">
+            <Link
+              href={`/admin/leads/broadcast/new?${new URLSearchParams(
+                Object.fromEntries(
+                  Object.entries({
+                    ...filters,
+                    q: debouncedQ,
+                  }).filter(([, v]) => v),
+                ),
+              ).toString()}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-xs font-semibold transition-colors"
+            >
+              <Radio className="w-3.5 h-3.5" />
+              {lang === "pt"
+                ? `Broadcast para ${leads.length} filtrados`
+                : `Broadcast ${leads.length} filtered`}
+            </Link>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="mt-6 mb-4 rounded-2xl border border-white/10 bg-white/[0.02] p-3 space-y-3">

@@ -14,7 +14,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, List, LayoutGrid, Plus } from "lucide-react";
+import { ChevronLeft, List, LayoutGrid, Plus, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t } from "@/lib/leads/constants";
 
@@ -81,13 +81,23 @@ export default function LeadsAdminHeader({
             </div>
           )}
           {showNewLeadCta && (
-            <Link
-              href="/admin/leads/new"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              {t("page.newLead", lang)}
-            </Link>
+            <>
+              <Link
+                href="/admin/leads/templates"
+                title={isPt ? "Modelos de mensagem" : "Message templates"}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {isPt ? "Modelos" : "Templates"}
+              </Link>
+              <Link
+                href="/admin/leads/new"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                {t("page.newLead", lang)}
+              </Link>
+            </>
           )}
         </div>
       </div>

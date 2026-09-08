@@ -36,6 +36,7 @@ import {
   UserCheck,
   Tag as TagIcon,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
@@ -48,6 +49,7 @@ import {
   STAGE_TONES,
 } from "@/lib/leads/constants";
 import { isOrgLeadType } from "@/lib/leads/normalize";
+import { renderTemplate } from "@/lib/leads/templates";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
 import { TagPill, RelativeTime } from "@/components/admin/leads/LeadBadges";
 
@@ -1053,6 +1055,31 @@ function WhatsappSendBar({ lead, lang, onSend }) {
   const [msg, setMsg] = useState("");
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  // Lazy-load templates the first time the picker opens — small
+  // list (dozens), cheap to keep in memory once loaded.
+  useEffect(() => {
+    if (!templatesOpen || templates.length > 0) return;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/admin/lead-templates?type=${encodeURIComponent(lead.lead_type)}`,
+        );
+        const json = await res.json();
+        if (res.ok) setTemplates(json.templates || []);
+      } catch {
+        /* silent — picker just shows empty */
+      }
+    })();
+  }, [templatesOpen, templates.length, lead.lead_type]);
+
+  function applyTemplate(tpl) {
+    const rendered = renderTemplate(tpl.body, lang, lead);
+    setMsg(rendered);
+    setTemplatesOpen(false);
+  }
 
   const disabled =
     lead.do_not_contact || !lead.phone_e164 || sending || !msg.trim();
@@ -1090,6 +1117,25 @@ function WhatsappSendBar({ lead, lang, onSend }) {
         ) : (
           <div className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setTemplatesOpen((v) => !v)}
+                title={lang === "pt" ? "Modelos" : "Templates"}
+                className="inline-flex items-center gap-1 px-2.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white border border-white/10 text-xs font-semibold transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {templatesOpen && (
+                <TemplatePickerPopover
+                  templates={templates}
+                  lang={lang}
+                  onPick={applyTemplate}
+                  onClose={() => setTemplatesOpen(false)}
+                />
+              )}
+            </div>
             <input
               type="text"
               value={msg}
@@ -1124,6 +1170,83 @@ function WhatsappSendBar({ lead, lang, onSend }) {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Small popover that lists the templates fetched for this lead's
+ * type. Click applies (renders + closes); the outer click / Escape
+ * closes without applying.
+ */
+function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
+  const isPt = lang === "pt";
+  return (
+    <>
+      {/* Full-viewport catcher for outside clicks. z-index below the
+          popover so clicks on the popover itself don't propagate. */}
+      <div
+        className="fixed inset-0 z-[40]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute bottom-full left-0 mb-2 w-80 max-h-80 overflow-y-auto rounded-xl bg-[#0e0e0e] border border-white/15 shadow-2xl z-[41] p-1.5"
+        role="menu"
+      >
+        {templates.length === 0 ? (
+          <div className="p-3 text-xs text-white/50">
+            {isPt ? (
+              <>
+                Nenhum modelo ativo para este tipo.{" "}
+                <Link
+                  href="/admin/leads/templates"
+                  className="underline hover:text-white"
+                >
+                  Criar
+                </Link>
+              </>
+            ) : (
+              <>
+                No active templates for this lead type.{" "}
+                <Link
+                  href="/admin/leads/templates"
+                  className="underline hover:text-white"
+                >
+                  Create
+                </Link>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            {templates.map((tpl) => (
+              <button
+                key={tpl.id}
+                type="button"
+                onClick={() => onPick(tpl)}
+                className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+              >
+                <div className="font-semibold text-xs text-white truncate">
+                  {tpl.name}
+                </div>
+                <div className="text-[10px] text-white/45 mt-0.5 line-clamp-2 whitespace-pre-wrap">
+                  {tpl.body?.[lang] || tpl.body?.pt || tpl.body?.en || ""}
+                </div>
+              </button>
+            ))}
+            <div className="mt-1 border-t border-white/10 pt-1">
+              <Link
+                href="/admin/leads/templates"
+                onClick={onClose}
+                className="block px-3 py-1.5 text-[11px] text-emerald-300 hover:bg-emerald-500/10 rounded-lg"
+              >
+                {isPt ? "Gerenciar modelos →" : "Manage templates →"}
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

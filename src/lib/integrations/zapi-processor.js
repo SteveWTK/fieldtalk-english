@@ -162,6 +162,18 @@ export async function processZapiEvent(supabase, event) {
         last_whatsapp_activity_at: nowIso,
       })
       .eq("id", player.id);
+  } else {
+    // Unmatched player — this could still be a LEAD (Paul messaged
+    // them from the CRM, they replied). Look them up by phone_e164
+    // and log an activity + auto-bump 'new' → 'contacted' so the
+    // timeline reflects the reply. Fire-and-forget — a lead miss
+    // is fine; the agent handles unmatched-number replies below.
+    await logLeadInboundIfMatch(supabase, {
+      phoneE164,
+      body: text,
+      inboundMessageId: inboundId,
+      senderName: senderName ?? null,
+    });
   }
 
   // Review-quiz router — MUST run before the agent gate. If the
@@ -282,6 +294,68 @@ async function fetchHistory(supabase, phoneE164) {
       }));
   } catch {
     return [];
+  }
+}
+
+/**
+ * Look up a lead by phone_e164 and, if matched, log a
+ * `whatsapp_inbound` activity + auto-bump the stage from 'new' to
+ * 'contacted'. Silent no-op if no lead matches — the caller has
+ * already logged the message and can hand the inbound to the AI
+ * agent as an unmatched conversation.
+ *
+ * Never throws — a lead-side failure must not break the main webhook
+ * flow (an inbound from a lead is functionally identical to an
+ * inbound from any unmatched number: it still gets logged + agent-
+ * routed).
+ */
+async function logLeadInboundIfMatch(supabase, opts) {
+  const { phoneE164, body, inboundMessageId, senderName } = opts;
+  try {
+    const { data: lead } = await supabase
+      .from("leads")
+      .select("id, stage, full_name")
+      .eq("phone_e164", phoneE164)
+      .maybeSingle();
+    if (!lead) return;
+
+    // Activity for the CRM timeline. Preview body in summary so the
+    // row is scannable without expanding.
+    await supabase.from("lead_activities").insert({
+      lead_id: lead.id,
+      activity_type: "whatsapp_inbound",
+      actor_id: null,
+      payload: {
+        body,
+        sender_name: senderName,
+        inbound_whatsapp_message_id: inboundMessageId,
+      },
+      summary: body.slice(0, 140) + (body.length > 140 ? "…" : ""),
+    });
+
+    // Auto-bump 'new' → 'contacted'. A reply is stronger contact
+    // than an outbound send (which already bumps on POST /whatsapp)
+    // so we cover the case where the lead was created but not yet
+    // sent a message, and the LEAD reached out first.
+    if (lead.stage === "new") {
+      await supabase
+        .from("leads")
+        .update({ stage: "contacted" })
+        .eq("id", lead.id);
+      await supabase.from("lead_activities").insert({
+        lead_id: lead.id,
+        activity_type: "stage_change",
+        actor_id: null,
+        payload: {
+          from: "new",
+          to: "contacted",
+          reason: "auto_first_inbound_reply",
+        },
+        summary: null,
+      });
+    }
+  } catch (err) {
+    console.error("[zapi-processor] lead inbound log failed:", err);
   }
 }
 
