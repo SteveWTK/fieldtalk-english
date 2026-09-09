@@ -35,6 +35,8 @@ import {
   AlertTriangle,
   Radio,
   RefreshCcw,
+  Target,
+  Sparkles,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t, STAGE_TONES } from "@/lib/leads/constants";
@@ -194,6 +196,11 @@ export default function LeadsDashboardPage() {
             </div>
 
             <Scoreboard data={data} lang={lang} />
+
+            {/* Targets — appears right below the scoreboard when any
+                target is active. Empty state links to /admin/leads/targets. */}
+            <TargetsSection targets={data.targets || []} lang={lang} />
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
               <div className="lg:col-span-2">
                 <Funnel data={data} lang={lang} />
@@ -835,6 +842,214 @@ function TrendCharts({ data, lang }) {
       </div>
     </SectionCard>
   );
+}
+
+/* ─── section: targets ────────────────────────────────────────── */
+
+function TargetsSection({ targets, lang }) {
+  const isPt = lang === "pt";
+  if (!targets || targets.length === 0) {
+    return (
+      <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.01] p-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="shrink-0 w-10 h-10 rounded-xl bg-white/[0.06] text-white/50 flex items-center justify-center">
+            <Target className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white/80">
+              {isPt ? "Defina metas para o time" : "Set targets for the team"}
+            </p>
+            <p className="text-[11px] text-white/45">
+              {isPt
+                ? "Metas claras para ganhos, novos leads, taxa de conversão ou valor de pipeline."
+                : "Clear goals for wins, new leads, conversion rate, or pipeline value."}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/leads/targets"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs whitespace-nowrap"
+        >
+          <Target className="w-3.5 h-3.5" />
+          {isPt ? "Definir meta" : "Set target"}
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-4">
+      <div className="flex items-baseline justify-between mb-2">
+        <h2 className="text-sm font-black tracking-tight text-white">
+          {isPt ? "Metas" : "Targets"}
+        </h2>
+        <Link
+          href="/admin/leads/targets"
+          className="text-[11px] text-white/50 hover:text-white"
+        >
+          {isPt ? "Gerenciar →" : "Manage →"}
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {targets.map((t) => (
+          <TargetCard key={t.id} target={t} lang={lang} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TargetCard({ target, lang }) {
+  const isPt = lang === "pt";
+  const p = target.progress;
+  const statusToneClass = statusTone(p.status);
+  const barGradient = statusBarGradient(p.status);
+
+  // Value display — format depends on kind. Ratios as %, cents as R$.
+  const formatValue = (v) => {
+    if (target.kind === "conversion_rate_at") return `${(v * 100).toFixed(1)}%`;
+    if (target.kind === "pipeline_value_at") return formatBrl(v);
+    return Math.round(v);
+  };
+
+  const pctFilled = Math.min(100, p.ratio * 100);
+
+  return (
+    <div className={`relative rounded-2xl border p-4 ${statusToneClass.card} overflow-hidden`}>
+      {/* Achieved glow */}
+      {p.status === "achieved" && (
+        <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-40 shadow-[inset_0_0_50px_-10px_rgba(190,242,100,0.6)]" />
+      )}
+      <div className="relative">
+        <div className="flex items-start gap-2 mb-2">
+          <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${statusToneClass.chip}`}>
+            {p.status === "achieved" ? (
+              <Sparkles className="w-4 h-4" />
+            ) : (
+              <Target className="w-4 h-4" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm truncate">{target.title}</h3>
+            <p className="text-[10px] text-white/45 truncate">
+              {target.owner?.full_name ? (
+                <span className="text-cyan-300">{target.owner.full_name}</span>
+              ) : (
+                <span>{isPt ? "Time" : "Team"}</span>
+              )}
+              {" · "}
+              {new Date(target.target_date).toLocaleDateString(
+                isPt ? "pt-BR" : "en-GB",
+                { day: "2-digit", month: "short", year: "2-digit" },
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Big number row */}
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className={`text-3xl font-black tabular-nums ${statusToneClass.number}`}>
+            {formatValue(p.current)}
+          </span>
+          <span className="text-sm text-white/40 tabular-nums">
+            / {formatValue(p.target)}
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-2 h-2 rounded-full bg-white/[0.05] overflow-hidden relative">
+          <div
+            className={`absolute inset-y-0 left-0 rounded-full transition-all ${barGradient}`}
+            style={{ width: `${pctFilled}%` }}
+          />
+        </div>
+
+        {/* Footer row */}
+        <div className="mt-2 flex items-center justify-between text-[10px] tabular-nums">
+          <span className="text-white/50">
+            {(p.ratio * 100).toFixed(0)}%
+          </span>
+          <span className={statusToneClass.pill}>
+            {statusLabel(p.status, lang)}
+          </span>
+          <span className="text-white/40">
+            {p.days_remaining > 0 ? (
+              <>
+                {p.days_remaining}
+                {isPt ? "d restantes" : "d left"}
+              </>
+            ) : (
+              <>{isPt ? "prazo hoje" : "due today"}</>
+            )}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function statusTone(status) {
+  switch (status) {
+    case "achieved":
+      return {
+        card: "border-lime-300/50 bg-lime-400/[0.06]",
+        chip: "bg-lime-400/25 text-lime-200",
+        number: "text-lime-100",
+        pill:
+          "text-lime-200 font-bold uppercase tracking-wider",
+      };
+    case "on_track":
+      return {
+        card: "border-emerald-400/40 bg-emerald-500/[0.05]",
+        chip: "bg-emerald-500/20 text-emerald-200",
+        number: "text-emerald-100",
+        pill:
+          "text-emerald-300 font-bold uppercase tracking-wider",
+      };
+    case "behind":
+      return {
+        card: "border-amber-400/40 bg-amber-500/[0.05]",
+        chip: "bg-amber-500/20 text-amber-200",
+        number: "text-amber-100",
+        pill: "text-amber-300 font-bold uppercase tracking-wider",
+      };
+    case "at_risk":
+    default:
+      return {
+        card: "border-red-400/40 bg-red-500/[0.05]",
+        chip: "bg-red-500/20 text-red-200",
+        number: "text-red-100",
+        pill: "text-red-300 font-bold uppercase tracking-wider",
+      };
+  }
+}
+
+function statusBarGradient(status) {
+  switch (status) {
+    case "achieved":
+      return "bg-gradient-to-r from-lime-300 to-emerald-300";
+    case "on_track":
+      return "bg-gradient-to-r from-emerald-400 to-lime-300";
+    case "behind":
+      return "bg-gradient-to-r from-amber-500 to-amber-300";
+    case "at_risk":
+    default:
+      return "bg-gradient-to-r from-red-500 to-red-400";
+  }
+}
+
+function statusLabel(status, lang) {
+  const isPt = lang === "pt";
+  switch (status) {
+    case "achieved":
+      return isPt ? "Meta batida" : "Achieved";
+    case "on_track":
+      return isPt ? "No caminho" : "On track";
+    case "behind":
+      return isPt ? "Atrás do ritmo" : "Behind";
+    case "at_risk":
+    default:
+      return isPt ? "Em risco" : "At risk";
+  }
 }
 
 /* ─── shared ──────────────────────────────────────────────────── */

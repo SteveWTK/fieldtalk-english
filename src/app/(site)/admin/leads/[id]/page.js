@@ -37,6 +37,8 @@ import {
   Tag as TagIcon,
   ChevronDown,
   Sparkles,
+  Zap,
+  Play,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
@@ -62,6 +64,8 @@ export default function LeadDetailPage() {
   const [activities, setActivities] = useState([]);
   const [notes, setNotes] = useState([]);
   const [owners, setOwners] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
+  const [sequences, setSequences] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,12 +80,16 @@ export default function LeadDetailPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [detailRes, ownersRes] = await Promise.all([
+        const [detailRes, ownersRes, enrollRes, seqRes] = await Promise.all([
           fetch(`/api/admin/leads/${id}`),
           fetch(`/api/admin/leads/owners`),
+          fetch(`/api/admin/leads/${id}/enrollments`),
+          fetch(`/api/admin/lead-sequences`),
         ]);
         const detailJson = await detailRes.json();
         const ownersJson = await ownersRes.json();
+        const enrollJson = await enrollRes.json();
+        const seqJson = await seqRes.json();
         if (cancelled) return;
         if (!detailRes.ok) {
           setError(detailJson.error || "load_failed");
@@ -91,6 +99,15 @@ export default function LeadDetailPage() {
           setNotes(detailJson.notes || []);
         }
         if (ownersRes.ok) setOwners(ownersJson.owners || []);
+        if (enrollRes.ok) setEnrollments(enrollJson.enrollments || []);
+        if (seqRes.ok) {
+          // Only active sequences with at least one step are enrollable.
+          setSequences(
+            (seqJson.sequences || []).filter(
+              (s) => s.active && s.step_count > 0,
+            ),
+          );
+        }
       } catch {
         if (!cancelled) setError("network");
       } finally {
@@ -101,6 +118,39 @@ export default function LeadDetailPage() {
       cancelled = true;
     };
   }, [id]);
+
+  async function handleEnroll(sequenceId) {
+    const res = await fetch(`/api/admin/leads/${id}/enrollments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sequence_id: sequenceId }),
+    });
+    if (res.ok) {
+      // Refresh enrollments + activities.
+      const [enrollRes] = await Promise.all([
+        fetch(`/api/admin/leads/${id}/enrollments`),
+        refreshActivities(),
+      ]);
+      const enrollJson = await enrollRes.json();
+      if (enrollRes.ok) setEnrollments(enrollJson.enrollments || []);
+    } else {
+      const json = await res.json();
+      alert(json.error || "Enroll failed");
+    }
+  }
+
+  async function handleUnenroll(enrollmentId) {
+    if (!confirm("Stop this sequence for this lead?")) return;
+    const res = await fetch(
+      `/api/admin/leads/${id}/enrollments/${enrollmentId}`,
+      { method: "DELETE" },
+    );
+    if (res.ok) {
+      const enrollRes = await fetch(`/api/admin/leads/${id}/enrollments`);
+      const enrollJson = await enrollRes.json();
+      if (enrollRes.ok) setEnrollments(enrollJson.enrollments || []);
+    }
+  }
 
   function beginEdit() {
     setDraft(pickEditableFields(lead));
@@ -263,6 +313,17 @@ export default function LeadDetailPage() {
           onQuickPatch={quickPatch}
           onEdit={beginEdit}
           onDelete={handleDelete}
+        />
+
+        {/* Sequences panel — active enrollments + enroll dropdown */}
+        <SequencesRow
+          lang={lang}
+          enrollments={enrollments}
+          sequences={sequences}
+          onEnroll={handleEnroll}
+          onUnenroll={handleUnenroll}
+          leadDnc={lead.do_not_contact}
+          leadHasPhone={!!lead.phone_e164}
         />
 
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -1170,6 +1231,162 @@ function WhatsappSendBar({ lead, lang, onSend }) {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Compact panel showing active sequence enrollments + a picker to
+ * enroll in another one. Guards on lead.do_not_contact + no-phone.
+ */
+function SequencesRow({
+  lang,
+  enrollments,
+  sequences,
+  onEnroll,
+  onUnenroll,
+  leadDnc,
+  leadHasPhone,
+}) {
+  const isPt = lang === "pt";
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const activeEnrollments = enrollments.filter((e) => e.status === "active");
+  const enrolledSeqIds = new Set(
+    enrollments.map((e) => e.sequence?.id).filter(Boolean),
+  );
+  const available = sequences.filter((s) => !enrolledSeqIds.has(s.id));
+  const canEnroll = !leadDnc && leadHasPhone && available.length > 0;
+
+  return (
+    <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+      <div className="flex items-center gap-2">
+        <Zap className="w-4 h-4 text-emerald-300" />
+        <span className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+          {isPt ? "Sequências" : "Sequences"}
+        </span>
+        <div className="relative ml-auto">
+          <button
+            type="button"
+            onClick={() => setPickerOpen((v) => !v)}
+            disabled={!canEnroll}
+            title={
+              leadDnc
+                ? isPt ? "Lead marcado como não contatar" : "Lead marked do-not-contact"
+                : !leadHasPhone
+                  ? isPt ? "Sem telefone" : "No phone"
+                  : available.length === 0
+                    ? isPt ? "Nenhuma sequência disponível" : "No sequences available"
+                    : undefined
+            }
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs disabled:opacity-40"
+          >
+            <Play className="w-3 h-3" />
+            {isPt ? "Inscrever" : "Enroll"}
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          {pickerOpen && canEnroll && (
+            <SequencePickerPopover
+              sequences={available}
+              onPick={(seqId) => {
+                onEnroll(seqId);
+                setPickerOpen(false);
+              }}
+              onClose={() => setPickerOpen(false)}
+              lang={lang}
+            />
+          )}
+        </div>
+      </div>
+      {activeEnrollments.length === 0 ? (
+        <p className="mt-2 text-[11px] text-white/40">
+          {isPt
+            ? "Nenhuma sequência ativa neste lead."
+            : "No active sequences on this lead."}
+        </p>
+      ) : (
+        <ul className="mt-2 space-y-1">
+          {activeEnrollments.map((en) => (
+            <li
+              key={en.id}
+              className="flex items-center gap-2 text-xs"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="font-semibold text-white truncate flex-1">
+                {en.sequence?.name || "—"}
+              </span>
+              <span className="text-white/40">
+                {isPt ? "Passo" : "Step"} {en.current_step}
+                {en.next_step_due_at && (
+                  <> · {new Date(en.next_step_due_at).toLocaleString(isPt ? "pt-BR" : "en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</>
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => onUnenroll(en.id)}
+                className="p-1 rounded text-white/40 hover:text-red-300 hover:bg-red-500/15"
+                title={isPt ? "Parar" : "Stop"}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* Non-active enrollments (stopped/completed) — compact list */}
+      {enrollments.filter((e) => e.status !== "active").length > 0 && (
+        <details className="mt-2">
+          <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-white/40 font-semibold">
+            {isPt ? "Histórico" : "History"}
+          </summary>
+          <ul className="mt-1 space-y-1">
+            {enrollments
+              .filter((e) => e.status !== "active")
+              .map((en) => (
+                <li key={en.id} className="text-[11px] text-white/50">
+                  {en.sequence?.name} · {en.status}
+                  {en.stop_reason ? ` (${en.stop_reason})` : ""}
+                </li>
+              ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
+function SequencePickerPopover({ sequences, onPick, onClose, lang }) {
+  const isPt = lang === "pt";
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[40]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="absolute right-0 top-full mt-1 w-72 max-h-72 overflow-y-auto rounded-xl bg-[#0e0e0e] border border-white/15 shadow-2xl z-[41] p-1.5">
+        {sequences.length === 0 ? (
+          <p className="p-3 text-xs text-white/50">
+            {isPt ? "Nenhuma disponível." : "None available."}
+          </p>
+        ) : (
+          sequences.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => onPick(s.id)}
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+            >
+              <div className="font-semibold text-xs text-white truncate">
+                {s.name}
+              </div>
+              <div className="text-[10px] text-white/45 mt-0.5">
+                {s.step_count} {isPt ? "passos" : "steps"} · {s.active_enrollments}{" "}
+                {isPt ? "ativos" : "active"}
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </>
   );
 }
 

@@ -23,6 +23,7 @@ import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { assertAdmin } from "@/lib/admin/gate";
 import { LEAD_STAGES } from "@/lib/leads/constants";
+import { computeTargetProgress } from "@/lib/leads/targets";
 
 const NON_TERMINAL_STAGES = new Set([
   "new",
@@ -94,13 +95,20 @@ export async function GET(request) {
     activitiesQuery = activitiesQuery.eq("actor_id", ownerFilter);
   }
 
-  const [leadsRes, activitiesRes, ownersRes] = await Promise.all([
+  const [leadsRes, activitiesRes, ownersRes, targetsRes] = await Promise.all([
     leadsQuery,
     activitiesQuery,
     supabase
       .from("players")
       .select("id, full_name")
       .eq("user_type", "platform_admin"),
+    supabase
+      .from("metrics_targets")
+      .select(
+        `*, owner:players!metrics_targets_owner_id_fkey (id, full_name)`,
+      )
+      .eq("active", true)
+      .order("target_date", { ascending: true }),
   ]);
 
   if (leadsRes.error) {
@@ -373,6 +381,24 @@ export async function GET(request) {
     }
   }
 
+  // ── Targets progress ──────────────────────────────────────────
+  // Compute per-target progress against the (owner-filtered) lead set
+  // so per-owner targets automatically show that owner's number when
+  // the dashboard is filtered to them. Team-level targets ignore the
+  // owner filter.
+  const targets = (targetsRes.data || []).map((t) => {
+    // If dashboard owner filter is set, only the leads currently in
+    // scope will contribute — that matches the intent of "how am I
+    // doing against my target". Team targets (owner_id null) still
+    // compute against whatever leads passed the query.
+    const progress = computeTargetProgress(t, {
+      leads,
+      activities,
+      now,
+    });
+    return { ...t, progress };
+  });
+
   const dailyNew30d = Array.from(dailyNewMap.entries()).map(
     ([date, count]) => ({ date, count }),
   );
@@ -411,6 +437,7 @@ export async function GET(request) {
       stuck_contacted: stuckContacted,
       overdue_next_action: overdueNextAction,
     },
+    targets,
     series: {
       daily_new: dailyNew30d,
       weekly_won_12w: weeklyWon12w,

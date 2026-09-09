@@ -21,6 +21,9 @@ import {
   Plus,
   Sparkles,
   LineChart,
+  Upload,
+  Zap,
+  Target,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t } from "@/lib/leads/constants";
@@ -96,12 +99,36 @@ export default function LeadsAdminHeader({
           {showNewLeadCta && (
             <>
               <Link
+                href="/admin/leads/import"
+                title={isPt ? "Importar CSV" : "Import CSV"}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                {isPt ? "Importar" : "Import"}
+              </Link>
+              <Link
                 href="/admin/leads/templates"
                 title={isPt ? "Modelos de mensagem" : "Message templates"}
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 {isPt ? "Modelos" : "Templates"}
+              </Link>
+              <Link
+                href="/admin/leads/sequences"
+                title={isPt ? "Sequências" : "Sequences"}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                {isPt ? "Sequências" : "Sequences"}
+              </Link>
+              <Link
+                href="/admin/leads/targets"
+                title={isPt ? "Metas" : "Targets"}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
+              >
+                <Target className="w-3.5 h-3.5" />
+                {isPt ? "Metas" : "Targets"}
               </Link>
               <Link
                 href="/admin/leads/new"

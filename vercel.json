@@ -39,6 +39,10 @@
     {
       "path": "/api/cron/whatsapp-review-quizzes",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/lead-sequences",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
