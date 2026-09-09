@@ -38,38 +38,65 @@ const TERMINAL_STAGES = new Set(["won", "lost", "dormant"]);
 const UNTOUCHED_NEW_DAYS = 3;
 const STUCK_CONTACTED_DAYS = 7;
 
-export async function GET() {
+// Range picker → window length in days for the "this range" rollup
+// and the daily time series. 'all' skips window-based filtering
+// (uses 90d as an upper bound so the series doesn't grow unbounded).
+const RANGE_DAYS = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  all: 90,
+};
+
+export async function GET(request) {
   const gate = await assertAdmin();
   if (gate instanceof NextResponse) return gate;
+
+  const url = new URL(request.url);
+  const rangeKey = url.searchParams.get("range") || "30d";
+  const rangeDays = RANGE_DAYS[rangeKey] ?? RANGE_DAYS["30d"];
+  // Optional owner filter — restricts every rollup to a single
+  // assignee. 'all' / missing = no filter. 'unassigned' = leads with
+  // assigned_to IS NULL.
+  const ownerFilter = url.searchParams.get("owner") || "";
 
   const supabase = await getSupabaseAdmin();
   const now = new Date();
   const nowMs = now.getTime();
   const dayMs = 24 * 60 * 60 * 1000;
 
-  const weekAgo = new Date(nowMs - 7 * dayMs);
-  const twoWeeksAgo = new Date(nowMs - 14 * dayMs);
-  const monthAgo = new Date(nowMs - 30 * dayMs);
+  const rangeStart = new Date(nowMs - rangeDays * dayMs);
+  const prevRangeStart = new Date(nowMs - 2 * rangeDays * dayMs);
   const twelveWeeksAgo = new Date(nowMs - 12 * 7 * dayMs);
 
   // Fetch everything we need. Three trips, all keyed on small tables.
+  // Owner filter is applied here — cheaper than filtering downstream
+  // rollups in JS (Postgres does it as a partial-index scan).
+  let leadsQuery = supabase
+    .from("leads")
+    .select(
+      `id, stage, lead_type, source, assigned_to, phone_e164,
+       estimated_value_cents, do_not_contact,
+       created_at, updated_at,
+       next_action_at, converted_at,
+       assigned:players!leads_assigned_to_fkey (id, full_name)`,
+    );
+  let activitiesQuery = supabase
+    .from("lead_activities")
+    .select("lead_id, activity_type, actor_id, payload, created_at")
+    .gte("created_at", twelveWeeksAgo.toISOString());
+
+  if (ownerFilter === "unassigned") {
+    leadsQuery = leadsQuery.is("assigned_to", null);
+    activitiesQuery = activitiesQuery.is("actor_id", null);
+  } else if (ownerFilter && ownerFilter !== "all") {
+    leadsQuery = leadsQuery.eq("assigned_to", ownerFilter);
+    activitiesQuery = activitiesQuery.eq("actor_id", ownerFilter);
+  }
+
   const [leadsRes, activitiesRes, ownersRes] = await Promise.all([
-    supabase
-      .from("leads")
-      .select(
-        `id, stage, lead_type, source, assigned_to, phone_e164,
-         estimated_value_cents, do_not_contact,
-         created_at, updated_at,
-         next_action_at, converted_at,
-         assigned:players!leads_assigned_to_fkey (id, full_name)`,
-      ),
-    // Activities scope: 12 weeks covers every rollup + trend series
-    // we need. Larger than 12w gets filtered client-side by the
-    // dashboard if we ever add a longer window later.
-    supabase
-      .from("lead_activities")
-      .select("lead_id, activity_type, actor_id, payload, created_at")
-      .gte("created_at", twelveWeeksAgo.toISOString()),
+    leadsQuery,
+    activitiesQuery,
     supabase
       .from("players")
       .select("id, full_name")
@@ -109,6 +136,11 @@ export async function GET() {
   const byType = {};
   const bySourceTotals = {};
 
+  // Cycle time — days from created_at → won for every won lead.
+  // Reported as an average, but we keep the samples so we can add
+  // a median / distribution later without another pass.
+  const cycleDaysSamples = [];
+
   for (const l of leads) {
     if (byStage[l.stage]) {
       byStage[l.stage].count++;
@@ -123,7 +155,18 @@ export async function GET() {
       }
     }
     if (TERMINAL_STAGES.has(l.stage)) terminalWorked++;
-    if (l.stage === "won") won++;
+    if (l.stage === "won") {
+      won++;
+      // Cycle = converted_at (preferred) or updated_at (fallback) −
+      // created_at. Both stored as ISO; convert to days.
+      const wonAt = l.converted_at || l.updated_at;
+      if (wonAt && l.created_at) {
+        const days =
+          (new Date(wonAt).getTime() - new Date(l.created_at).getTime()) /
+          dayMs;
+        if (Number.isFinite(days) && days >= 0) cycleDaysSamples.push(days);
+      }
+    }
 
     byType[l.lead_type] = (byType[l.lead_type] || 0) + 1;
     bySourceTotals[l.source] = (bySourceTotals[l.source] || 0) + 1;
@@ -131,37 +174,43 @@ export async function GET() {
 
   const conversionRate =
     terminalWorked > 0 ? won / terminalWorked : 0;
+  const avgCycleDays =
+    cycleDaysSamples.length > 0
+      ? cycleDaysSamples.reduce((s, d) => s + d, 0) / cycleDaysSamples.length
+      : null;
 
-  // ── Week / month rollups ──────────────────────────────────────
-  const thisWeek = emptyWindowRollup();
-  const prevWeek = emptyWindowRollup();
-  const thisMonth = emptyWindowRollup();
+  // ── Range rollups ─────────────────────────────────────────────
+  // `this_range` = last N days, `prev_range` = the N days before that.
+  // N comes from the ?range query param (7d / 30d / 90d / all).
+  const thisRange = emptyWindowRollup();
+  const prevRange = emptyWindowRollup();
 
   for (const l of leads) {
     const createdMs = new Date(l.created_at).getTime();
-    if (createdMs >= weekAgo.getTime()) thisWeek.new++;
-    if (createdMs >= twoWeeksAgo.getTime() && createdMs < weekAgo.getTime())
-      prevWeek.new++;
-    if (createdMs >= monthAgo.getTime()) thisMonth.new++;
-
-    // Terminal-stage transitions are approximated by comparing
-    // updated_at to the window. We don't have per-transition
-    // timestamps, so this counts leads whose CURRENT stage sits in
-    // the window's updated_at range — close enough for the
-    // dashboard, and refined by the activity-based counts below.
-    const updatedMs = new Date(l.updated_at).getTime();
-    if (updatedMs >= weekAgo.getTime() && l.stage === "won") thisWeek.won++;
+    if (createdMs >= rangeStart.getTime()) thisRange.new++;
     if (
-      updatedMs >= twoWeeksAgo.getTime() &&
-      updatedMs < weekAgo.getTime() &&
-      l.stage === "won"
+      createdMs >= prevRangeStart.getTime() &&
+      createdMs < rangeStart.getTime()
     )
-      prevWeek.won++;
-    if (updatedMs >= monthAgo.getTime() && l.stage === "won") thisMonth.won++;
+      prevRange.new++;
+
+    // Won-in-range uses converted_at (preferred) or updated_at.
+    if (l.stage === "won") {
+      const wonAt = l.converted_at || l.updated_at;
+      const wonMs = wonAt ? new Date(wonAt).getTime() : null;
+      if (wonMs != null) {
+        if (wonMs >= rangeStart.getTime()) thisRange.won++;
+        if (
+          wonMs >= prevRangeStart.getTime() &&
+          wonMs < rangeStart.getTime()
+        )
+          prevRange.won++;
+      }
+    }
   }
 
   // Activity-based rollups (sends, replies, stage advances). These
-  // are the authoritative counts for the "This week" strip.
+  // are the authoritative counts for the "This range" strip.
   const ownerStats = new Map();
   const sourceConversions = {};
   const dailyNewMap = new Map(); // "yyyy-mm-dd" → count
@@ -169,40 +218,37 @@ export async function GET() {
 
   for (const a of activities) {
     const createdMs = new Date(a.created_at).getTime();
-    const inThisWeek = createdMs >= weekAgo.getTime();
-    const inPrevWeek =
-      createdMs >= twoWeeksAgo.getTime() && createdMs < weekAgo.getTime();
-    const inThisMonth = createdMs >= monthAgo.getTime();
+    const inThisRange = createdMs >= rangeStart.getTime();
+    const inPrevRange =
+      createdMs >= prevRangeStart.getTime() &&
+      createdMs < rangeStart.getTime();
 
     // Per-owner rollup — attributes the activity to the actor.
     const stats = getOwnerStats(ownerStats, a.actor_id);
 
     if (a.activity_type === "whatsapp_outbound") {
-      if (inThisWeek) thisWeek.sends++;
-      if (inPrevWeek) prevWeek.sends++;
-      if (inThisMonth) thisMonth.sends++;
-      if (inThisWeek) stats.sends_this_week++;
+      if (inThisRange) thisRange.sends++;
+      if (inPrevRange) prevRange.sends++;
+      if (inThisRange) stats.sends_this_range++;
     } else if (a.activity_type === "whatsapp_inbound") {
-      if (inThisWeek) thisWeek.replies++;
-      if (inPrevWeek) prevWeek.replies++;
-      if (inThisMonth) thisMonth.replies++;
-      if (inThisWeek) stats.replies_this_week++;
+      if (inThisRange) thisRange.replies++;
+      if (inPrevRange) prevRange.replies++;
+      if (inThisRange) stats.replies_this_range++;
     } else if (a.activity_type === "stage_change") {
       const toStage = a.payload?.to;
       const fromStage = a.payload?.from;
       if (fromStage !== toStage) {
-        if (inThisWeek) thisWeek.stage_advances++;
-        if (inPrevWeek) prevWeek.stage_advances++;
-        if (inThisMonth) thisMonth.stage_advances++;
+        if (inThisRange) thisRange.stage_advances++;
+        if (inPrevRange) prevRange.stage_advances++;
       }
-      // Refined won-this-week using the actual transition timestamp.
-      // Overrides the row-level heuristic above so the number is
-      // exact when activity trail is complete.
-      if (toStage === "won") {
-        if (inThisWeek) stats.conversions_this_week++;
+      // Refined conversions-in-range using the actual transition
+      // timestamp — more accurate than the row-level heuristic above
+      // when the activity trail is complete.
+      if (toStage === "won" && inThisRange) {
+        stats.conversions_this_range++;
       }
     } else if (a.activity_type === "converted") {
-      if (inThisWeek) stats.conversions_this_week++;
+      if (inThisRange) stats.conversions_this_range++;
     }
   }
 
@@ -228,15 +274,15 @@ export async function GET() {
       id,
       full_name: ownersById.get(id) || "—",
       leads_worked: s.leads_worked,
-      sends_this_week: s.sends_this_week,
-      replies_this_week: s.replies_this_week,
-      conversions_this_week: s.conversions_this_week,
+      sends_this_range: s.sends_this_range,
+      replies_this_range: s.replies_this_range,
+      conversions_this_range: s.conversions_this_range,
       total_conversions: s.total_conversions,
     }))
     .sort(
       (a, b) =>
-        b.conversions_this_week - a.conversions_this_week ||
-        b.sends_this_week - a.sends_this_week ||
+        b.conversions_this_range - a.conversions_this_range ||
+        b.sends_this_range - a.sends_this_range ||
         b.leads_worked - a.leads_worked,
     );
 
@@ -293,10 +339,13 @@ export async function GET() {
   }
 
   // ── Time series ───────────────────────────────────────────────
-  // Daily new leads, last 30 days. Buckets keyed by yyyy-mm-dd in UTC
-  // so a value doesn't drift when a viewer's local timezone crosses
-  // midnight.
-  for (let i = 29; i >= 0; i--) {
+  // Daily new leads, sized to the picker range (min 30 buckets so
+  // the bar chart stays readable at the 7d setting; the 7d view
+  // just renders a shorter run in the same layout). Buckets keyed
+  // by yyyy-mm-dd in UTC so a value doesn't drift when a viewer's
+  // local timezone crosses midnight.
+  const dailyBucketCount = Math.max(rangeDays, 30);
+  for (let i = dailyBucketCount - 1; i >= 0; i--) {
     const d = new Date(nowMs - i * dayMs);
     dailyNewMap.set(toDateKey(d), 0);
   }
@@ -333,12 +382,17 @@ export async function GET() {
 
   return NextResponse.json({
     generated_at: now.toISOString(),
+    range: rangeKey,
+    range_days: rangeDays,
+    owner_filter: ownerFilter || null,
     totals: {
       total: leads.length,
       active_pipeline: activePipeline,
       conversion_rate: conversionRate,
       pipeline_value_cents: pipelineValueCents,
       won_all_time: won,
+      avg_cycle_days: avgCycleDays,
+      cycle_samples: cycleDaysSamples.length,
     },
     by_stage: LEAD_STAGES.map((s) => ({
       stage: s,
@@ -349,9 +403,8 @@ export async function GET() {
       .map(([type, count]) => ({ type, count }))
       .sort((a, b) => b.count - a.count),
     by_source: bySource,
-    this_week: thisWeek,
-    prev_week: prevWeek,
-    this_month: thisMonth,
+    this_range: thisRange,
+    prev_range: prevRange,
     owner_leaderboard: ownerLeaderboard,
     aging: {
       untouched_new: untouchedNew,
@@ -359,7 +412,7 @@ export async function GET() {
       overdue_next_action: overdueNextAction,
     },
     series: {
-      daily_new_30d: dailyNew30d,
+      daily_new: dailyNew30d,
       weekly_won_12w: weeklyWon12w,
     },
   });
@@ -370,8 +423,6 @@ export async function GET() {
 function emptyWindowRollup() {
   return {
     new: 0,
-    contacted: 0, // reserved for future stage-in-window rollup
-    engaged: 0,   // (kept in the shape so the client contract is stable)
     won: 0,
     sends: 0,
     replies: 0,
@@ -385,9 +436,9 @@ function getOwnerStats(map, id) {
   if (!s) {
     s = {
       leads_worked: 0,
-      sends_this_week: 0,
-      replies_this_week: 0,
-      conversions_this_week: 0,
+      sends_this_range: 0,
+      replies_this_range: 0,
+      conversions_this_range: 0,
       total_conversions: 0,
     };
     map.set(id, s);

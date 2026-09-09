@@ -42,22 +42,47 @@ import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
 
 const REFRESH_MS = 60_000;
 
+const RANGE_OPTIONS = [
+  { key: "7d", labelPt: "7 dias", labelEn: "7d" },
+  { key: "30d", labelPt: "30 dias", labelEn: "30d" },
+  { key: "90d", labelPt: "90 dias", labelEn: "90d" },
+];
+
 export default function LeadsDashboardPage() {
   const { lang } = useLanguage();
   const isPt = lang === "pt";
   const [data, setData] = useState(null);
+  const [owners, setOwners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [lastFetched, setLastFetched] = useState(null);
+  const [range, setRange] = useState("30d");
+  const [owner, setOwner] = useState("");
   const timerRef = useRef(null);
+
+  // Load owners once (rarely changes). Used for the filter picker.
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/leads/owners");
+        const json = await res.json();
+        if (res.ok) setOwners(json.owners || []);
+      } catch {
+        /* silent — filter still works, just shows unassigned only */
+      }
+    })();
+  }, []);
 
   async function load(showSpinner = false) {
     if (showSpinner) setLoading(true);
     else setRefreshing(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/leads/metrics");
+      const params = new URLSearchParams();
+      params.set("range", range);
+      if (owner) params.set("owner", owner);
+      const res = await fetch(`/api/admin/leads/metrics?${params.toString()}`);
       const json = await res.json();
       if (!res.ok) setError(json.error || "load_failed");
       else {
@@ -72,10 +97,16 @@ export default function LeadsDashboardPage() {
     }
   }
 
+  // Fire once on mount + whenever the picker changes. The polling
+  // interval is set up in a separate effect so it doesn't restart
+  // whenever picker state changes (which would delay by REFRESH_MS
+  // every time the user tweaks a filter).
   useEffect(() => {
     load(true);
-    // Poll while visible; pause when the tab is hidden to save
-    // resources. The rest of the app follows the same convention.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, owner]);
+
+  useEffect(() => {
     function tick() {
       if (typeof document !== "undefined" && !document.hidden) {
         load(false);
@@ -83,7 +114,8 @@ export default function LeadsDashboardPage() {
     }
     timerRef.current = setInterval(tick, REFRESH_MS);
     return () => clearInterval(timerRef.current);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, owner]);
 
   return (
     <div className="min-h-screen bg-[#070707] text-white">
@@ -101,28 +133,64 @@ export default function LeadsDashboardPage() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-[11px] text-white/40 flex items-center gap-2">
-                {refreshing && <Loader2 className="w-3 h-3 animate-spin" />}
-                {isPt ? "Atualizado" : "Updated"}{" "}
-                {lastFetched
-                  ? new Intl.DateTimeFormat(isPt ? "pt-BR" : "en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(lastFetched)
-                  : "—"}
+            {/* Filter bar — range picker + owner picker + refresh */}
+            <div className="flex items-center flex-wrap gap-2 mb-4">
+              <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+                {RANGE_OPTIONS.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRange(r.key)}
+                    className={`px-3 py-1 text-xs font-bold uppercase rounded-full transition-colors ${
+                      range === r.key
+                        ? "bg-emerald-400 text-black"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    {isPt ? r.labelPt : r.labelEn}
+                  </button>
+                ))}
               </div>
-              <button
-                type="button"
-                onClick={() => load(false)}
-                disabled={refreshing}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white text-xs disabled:opacity-50"
+              <select
+                value={owner}
+                onChange={(e) => setOwner(e.target.value)}
+                className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-emerald-400/40"
               >
-                <RefreshCcw
-                  className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
-                />
-                {isPt ? "Atualizar" : "Refresh"}
-              </button>
+                <option value="" className="bg-[#0e0e0e]">
+                  {isPt ? "Todo o time" : "Whole team"}
+                </option>
+                <option value="unassigned" className="bg-[#0e0e0e]">
+                  {t("detail.notAssigned", lang)}
+                </option>
+                {owners.map((o) => (
+                  <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
+                    {o.full_name}
+                  </option>
+                ))}
+              </select>
+              <div className="ml-auto flex items-center gap-2">
+                <div className="text-[11px] text-white/40 flex items-center gap-2">
+                  {refreshing && <Loader2 className="w-3 h-3 animate-spin" />}
+                  {isPt ? "Atualizado" : "Updated"}{" "}
+                  {lastFetched
+                    ? new Intl.DateTimeFormat(isPt ? "pt-BR" : "en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(lastFetched)
+                    : "—"}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => load(false)}
+                  disabled={refreshing}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white text-xs disabled:opacity-50"
+                >
+                  <RefreshCcw
+                    className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+                  />
+                  {isPt ? "Atualizar" : "Refresh"}
+                </button>
+              </div>
             </div>
 
             <Scoreboard data={data} lang={lang} />
@@ -130,7 +198,7 @@ export default function LeadsDashboardPage() {
               <div className="lg:col-span-2">
                 <Funnel data={data} lang={lang} />
               </div>
-              <ThisWeekStrip data={data} lang={lang} />
+              <ThisRangeStrip data={data} lang={lang} range={range} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
               <Leaderboard data={data} lang={lang} />
@@ -154,18 +222,19 @@ export default function LeadsDashboardPage() {
 function Scoreboard({ data, lang }) {
   const isPt = lang === "pt";
   const totals = data.totals;
-  const thisWeekNew = data.this_week.new;
-  const prevWeekNew = data.prev_week.new;
+  const thisRangeNew = data.this_range.new;
+  const prevRangeNew = data.prev_range.new;
+  const rangeLabel = rangeShortLabel(data.range, lang);
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
       <BigStat
         label={isPt ? "Total de leads" : "Total leads"}
         value={totals.total}
         accent="emerald"
         delta={{
-          current: thisWeekNew,
-          previous: prevWeekNew,
-          label: isPt ? "novos vs semana passada" : "new vs last week",
+          current: thisRangeNew,
+          previous: prevRangeNew,
+          label: isPt ? `novos ${rangeLabel}` : `new ${rangeLabel}`,
         }}
         href="/admin/leads"
       />
@@ -184,6 +253,27 @@ function Scoreboard({ data, lang }) {
         href="/admin/leads?stage=won"
       />
       <BigStat
+        label={isPt ? "Ciclo médio" : "Avg cycle"}
+        value={
+          totals.avg_cycle_days == null
+            ? "—"
+            : `${totals.avg_cycle_days.toFixed(1)} ${isPt ? "d" : "d"}`
+        }
+        rawValue={
+          totals.avg_cycle_days == null
+            ? null
+            : Math.round(totals.avg_cycle_days * 10)
+        }
+        accent="cyan"
+        hint={
+          totals.cycle_samples > 0
+            ? isPt
+              ? `${totals.cycle_samples} ganhos`
+              : `${totals.cycle_samples} wins`
+            : null
+        }
+      />
+      <BigStat
         label={isPt ? "Valor do pipeline" : "Pipeline value"}
         value={formatBrl(totals.pipeline_value_cents)}
         accent="lime"
@@ -193,12 +283,19 @@ function Scoreboard({ data, lang }) {
   );
 }
 
+function rangeShortLabel(range, lang) {
+  const isPt = lang === "pt";
+  if (range === "7d") return isPt ? "vs 7d anterior" : "vs prev 7d";
+  if (range === "90d") return isPt ? "vs 90d anterior" : "vs prev 90d";
+  return isPt ? "vs 30d anterior" : "vs prev 30d";
+}
+
 /**
  * Big number card with optional count-up animation, trend delta,
  * and colour tone. Clickable when href is set — every number should
  * lead somewhere so the dashboard becomes a work-launcher.
  */
-function BigStat({ label, value, rawValue, accent = "emerald", delta, href, suffix }) {
+function BigStat({ label, value, rawValue, accent = "emerald", delta, href, suffix, hint }) {
   const numericTarget =
     typeof rawValue === "number"
       ? rawValue
@@ -229,6 +326,7 @@ function BigStat({ label, value, rawValue, accent = "emerald", delta, href, suff
         {display}
       </p>
       {delta && <DeltaRow delta={delta} />}
+      {hint && <p className="mt-1 text-[10px] text-white/40">{hint}</p>}
       <div className={`absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity ${tone.glow}`} />
     </div>
   );
@@ -336,71 +434,76 @@ function funnelBarClass(stage) {
 
 /* ─── section: this-week strip ────────────────────────────────── */
 
-function ThisWeekStrip({ data, lang }) {
+function ThisRangeStrip({ data, lang, range }) {
   const isPt = lang === "pt";
-  const tw = data.this_week;
-  const pw = data.prev_week;
+  const tr = data.this_range;
+  const pr = data.prev_range;
+  const rangeTitle =
+    range === "7d"
+      ? isPt ? "Esta semana" : "This week"
+      : range === "90d"
+        ? isPt ? "Últimos 90 dias" : "Last 90 days"
+        : isPt ? "Últimos 30 dias" : "Last 30 days";
+  const rangeSubtitle =
+    range === "7d"
+      ? isPt ? "Últimos 7 dias vs 7 anteriores." : "Last 7 days vs the 7 before."
+      : range === "90d"
+        ? isPt ? "Últimos 90 dias vs 90 anteriores." : "Last 90 days vs the 90 before."
+        : isPt ? "Últimos 30 dias vs 30 anteriores." : "Last 30 days vs the 30 before.";
   const rows = [
     {
       key: "new",
       label: isPt ? "Novos leads" : "New leads",
-      cur: tw.new,
-      prev: pw.new,
+      cur: tr.new,
+      prev: pr.new,
       Icon: Flame,
       accent: "emerald",
     },
     {
       key: "sends",
       label: isPt ? "Mensagens enviadas" : "Messages sent",
-      cur: tw.sends,
-      prev: pw.sends,
+      cur: tr.sends,
+      prev: pr.sends,
       Icon: Send,
       accent: "cyan",
     },
     {
       key: "replies",
       label: isPt ? "Respostas recebidas" : "Replies received",
-      cur: tw.replies,
-      prev: pw.replies,
+      cur: tr.replies,
+      prev: pr.replies,
       Icon: MessageCircle,
       accent: "amber",
     },
     {
       key: "advances",
       label: isPt ? "Avanços de estágio" : "Stage advances",
-      cur: tw.stage_advances,
-      prev: pw.stage_advances,
+      cur: tr.stage_advances,
+      prev: pr.stage_advances,
       Icon: ArrowUpRight,
       accent: "cyan",
     },
     {
       key: "won",
       label: isPt ? "Ganhos" : "Wins",
-      cur: tw.won,
-      prev: pw.won,
+      cur: tr.won,
+      prev: pr.won,
       Icon: Trophy,
       accent: "lime",
     },
   ];
   return (
-    <SectionCard
-      title={isPt ? "Esta semana" : "This week"}
-      subtitle={
-        isPt
-          ? "Últimos 7 dias vs 7 anteriores."
-          : "Last 7 days vs the 7 before."
-      }
-    >
+    <SectionCard title={rangeTitle} subtitle={rangeSubtitle}>
       <ul className="space-y-2">
         {rows.map((r) => (
-          <WeekRow key={r.key} row={r} />
+          <RangeRow key={r.key} row={r} />
         ))}
       </ul>
     </SectionCard>
   );
 }
 
-function WeekRow({ row }) {
+function RangeRow({ row }) {
   const diff = row.cur - row.prev;
   const tone = accentTones(row.accent);
   const DeltaIcon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
@@ -433,14 +536,14 @@ function WeekRow({ row }) {
 function Leaderboard({ data, lang }) {
   const isPt = lang === "pt";
   const rows = data.owner_leaderboard.slice(0, 6);
-  const maxSends = Math.max(1, ...rows.map((r) => r.sends_this_week));
+  const maxSends = Math.max(1, ...rows.map((r) => r.sends_this_range));
   return (
     <SectionCard
       title={isPt ? "Ranking do time" : "Team leaderboard"}
       subtitle={
         isPt
-          ? "Ordenado por conversões esta semana."
-          : "Sorted by conversions this week."
+          ? "Ordenado por conversões no período."
+          : "Sorted by conversions in the range."
       }
     >
       {rows.length === 0 ? (
@@ -468,7 +571,7 @@ function Leaderboard({ data, lang }) {
                     {r.full_name}
                   </span>
                   <span className="text-xs font-bold text-emerald-300 tabular-nums">
-                    {r.conversions_this_week}{" "}
+                    {r.conversions_this_range}{" "}
                     <span className="text-white/40 font-normal">
                       {isPt ? "ganhos" : "wins"}
                     </span>
@@ -478,13 +581,13 @@ function Leaderboard({ data, lang }) {
                   <div
                     className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400"
                     style={{
-                      width: `${(r.sends_this_week / maxSends) * 100}%`,
+                      width: `${(r.sends_this_range / maxSends) * 100}%`,
                     }}
                   />
                 </div>
                 <p className="mt-1 text-[10px] text-white/40 tabular-nums">
-                  {r.sends_this_week}{" "}
-                  {isPt ? "envios" : "sends"} · {r.replies_this_week}{" "}
+                  {r.sends_this_range}{" "}
+                  {isPt ? "envios" : "sends"} · {r.replies_this_range}{" "}
                   {isPt ? "respostas" : "replies"} · {r.leads_worked}{" "}
                   {isPt ? "leads" : "leads"}
                 </p>
@@ -638,20 +741,27 @@ function AttentionCallouts({ data, lang }) {
 
 function TrendCharts({ data, lang }) {
   const isPt = lang === "pt";
-  const daily = data.series.daily_new_30d;
+  const daily = data.series.daily_new;
   const weekly = data.series.weekly_won_12w;
   const dailyMax = Math.max(1, ...daily.map((d) => d.count));
   const weeklyMax = Math.max(1, ...weekly.map((w) => w.count));
   const dailyTotal = daily.reduce((s, d) => s + d.count, 0);
   const weeklyTotal = weekly.reduce((s, w) => s + w.count, 0);
 
+  const dailyLabel =
+    daily.length >= 90
+      ? isPt ? "Novos leads / dia (90d)" : "New leads / day (90d)"
+      : daily.length >= 30
+        ? isPt ? "Novos leads / dia (30d)" : "New leads / day (30d)"
+        : isPt ? "Novos leads / dia (7d)" : "New leads / day (7d)";
+
   return (
     <SectionCard
       title={isPt ? "Tendências" : "Trends"}
       subtitle={
         isPt
-          ? "Últimos 30 dias · Ganhos por semana (12 semanas)."
-          : "Last 30 days · Wins per week (12 weeks)."
+          ? "Séries longas — independentes do filtro de período do painel."
+          : "Long series — independent of the panel's range filter."
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -659,7 +769,7 @@ function TrendCharts({ data, lang }) {
         <div>
           <div className="flex items-baseline justify-between mb-2">
             <p className="text-[11px] uppercase tracking-wider text-white/50 font-semibold">
-              {isPt ? "Novos leads / dia" : "New leads / day"}
+              {dailyLabel}
             </p>
             <p className="text-xs tabular-nums text-white/60">
               <span className="text-emerald-300 font-bold">{dailyTotal}</span>{" "}
@@ -684,7 +794,7 @@ function TrendCharts({ data, lang }) {
             })}
           </div>
           <div className="mt-1 flex justify-between text-[9px] text-white/35 tabular-nums">
-            <span>-30d</span>
+            <span>-{daily.length}d</span>
             <span>{isPt ? "hoje" : "today"}</span>
           </div>
         </div>
