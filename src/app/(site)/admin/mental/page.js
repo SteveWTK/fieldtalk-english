@@ -31,6 +31,11 @@ import {
   pickLang,
 } from "@/lib/mental/constants";
 
+// The accents supported by LivingOrb — keep in sync with
+// ACCENT_PALETTES there. Extending the palette is a two-file change:
+// add here + in LivingOrb.js.
+const ORB_ACCENTS = ["teal", "violet", "emerald", "amber", "slate"];
+
 export default function MentalAdminPage() {
   return (
     <ProtectedRoute>
@@ -344,7 +349,12 @@ function ActivityEditor({
     if (res.ok) onDeleted?.();
   }
 
-  const showContentEditor = form.activity_type === "meditation" || form.activity_type === "silent_timer";
+  const showContentEditor =
+    form.activity_type === "meditation" ||
+    form.activity_type === "silent_timer" ||
+    form.activity_type === "champion_scenario" ||
+    form.activity_type === "match_prep" ||
+    form.activity_type === "voice_of_champion";
 
   return (
     <div className="space-y-3">
@@ -485,6 +495,18 @@ function ActivityEditor({
         <MeditationContentEditor form={form} set={set} lang={lang} />
       )}
 
+      {showContentEditor && form.activity_type === "champion_scenario" && (
+        <ChampionScenarioContentEditor form={form} set={set} lang={lang} />
+      )}
+
+      {showContentEditor && form.activity_type === "match_prep" && (
+        <MatchPrepContentEditor form={form} set={set} lang={lang} />
+      )}
+
+      {showContentEditor && form.activity_type === "voice_of_champion" && (
+        <VoiceOfChampionContentEditor form={form} set={set} lang={lang} />
+      )}
+
       <div className="flex items-center gap-4">
         <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
           <input
@@ -597,6 +619,20 @@ function SilentTimerContentEditor({ form, set, lang }) {
 }
 
 function MeditationContentEditor({ form, set, lang }) {
+  return (
+    <>
+      <OrbConfigEditor form={form} set={set} lang={lang} />
+      <ComprehensionQuestionEditor form={form} set={set} lang={lang} />
+    </>
+  );
+}
+
+/**
+ * Standalone comprehension-question editor — shared between meditation
+ * and voice_of_champion. Same JSONB shape, same UI, so we render one
+ * component in both cases.
+ */
+function ComprehensionQuestionEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
     <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
@@ -679,6 +715,390 @@ function MeditationContentEditor({ form, set, lang }) {
           />
         </Field>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Per-meditation orb config — accent palette + breathe cycle. Bounces
+ * through `content.orb.{accent,breathe_in,breathe_hold,breathe_out}`.
+ * Presets cover the common rhythms; custom values are accepted too.
+ */
+function OrbConfigEditor({ form, set, lang }) {
+  const isPt = lang === "pt";
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2 mb-2">
+      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        {isPt ? "Aparência do orbe" : "Orb appearance"}
+      </p>
+      <Field label={isPt ? "Cor do orbe" : "Orb accent"}>
+        <div className="flex flex-wrap gap-1.5">
+          {ORB_ACCENTS.map((a) => {
+            const active = form.orb_accent === a;
+            return (
+              <button
+                key={a}
+                type="button"
+                onClick={() => set("orb_accent", a)}
+                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
+                  active
+                    ? "border-white/50 bg-white/15 text-white"
+                    : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white"
+                }`}
+              >
+                <span className={`inline-block w-2.5 h-2.5 rounded-full mr-1.5 align-middle ${ORB_SWATCH[a]}`} />
+                {a}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold mt-3">
+        {isPt ? "Ciclo respiratório (segundos)" : "Breathe cycle (seconds)"}
+      </p>
+      <p className="text-[10px] text-white/40">
+        {isPt
+          ? "Padrão é 4-7-8. Presets abaixo cobrem as variações comuns."
+          : "Default is 4-7-8. Presets below cover the common variations."}
+      </p>
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        {BREATHE_PRESETS.map((p) => {
+          const active =
+            Number(form.breathe_in) === p.in &&
+            Number(form.breathe_hold) === p.hold &&
+            Number(form.breathe_out) === p.out;
+          return (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => {
+                set("breathe_in", p.in);
+                set("breathe_hold", p.hold);
+                set("breathe_out", p.out);
+              }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                active
+                  ? "border-white/50 bg-white/15 text-white"
+                  : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white"
+              }`}
+            >
+              {p.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <Field label={isPt ? "Inspira" : "Inhale"}>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={form.breathe_in}
+            onChange={(e) => set("breathe_in", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label={isPt ? "Segura" : "Hold"}>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={form.breathe_hold}
+            onChange={(e) => set("breathe_hold", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label={isPt ? "Expira" : "Exhale"}>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={form.breathe_out}
+            onChange={(e) => set("breathe_out", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+const ORB_SWATCH = {
+  teal: "bg-teal-400",
+  violet: "bg-violet-400",
+  emerald: "bg-emerald-400",
+  amber: "bg-amber-400",
+  slate: "bg-slate-300",
+};
+
+const BREATHE_PRESETS = [
+  { label: "4-7-8", in: 4, hold: 7, out: 8 },
+  { label: "4-4-4 (box)", in: 4, hold: 4, out: 4 },
+  { label: "6-0-6", in: 6, hold: 0, out: 6 },
+  { label: "5-2-7", in: 5, hold: 2, out: 7 },
+];
+
+/* ─── Champion Scenario editor ────────────────────────────────── */
+
+function ChampionScenarioContentEditor({ form, set, lang }) {
+  const isPt = lang === "pt";
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        {isPt ? "Cenário + opções" : "Scenario + options"}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Field label={isPt ? "Cenário PT" : "Scenario PT"}>
+          <textarea
+            value={form.scenario_pt}
+            onChange={(e) => set("scenario_pt", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+        <Field label={isPt ? "Cenário EN" : "Scenario EN"}>
+          <textarea
+            value={form.scenario_en}
+            onChange={(e) => set("scenario_en", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+      </div>
+      <p className="text-[10px] text-white/45 mt-1">
+        {isPt
+          ? "Marque a opção correta com o rádio à direita. Cada opção pode ter uma explicação separada."
+          : "Mark the correct option with the radio on the right. Each option can have its own explanation."}
+      </p>
+      {form.scenario_options.map((opt, i) => (
+        <div key={i} className="rounded-lg border border-white/10 bg-white/[0.02] p-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-white/40 font-bold w-6">
+              {String.fromCharCode(65 + i)}
+            </span>
+            <label className="ml-auto inline-flex items-center gap-1 text-[11px] text-white/60">
+              <input
+                type="radio"
+                checked={form.scenario_correct_idx === i}
+                onChange={() => set("scenario_correct_idx", i)}
+                className="accent-emerald-400"
+              />
+              {isPt ? "Correta" : "Correct"}
+            </label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={opt.label_pt}
+              onChange={(e) => updateScenarioOption(form, set, i, "label_pt", e.target.value)}
+              placeholder={`Opção ${i + 1} PT`}
+              className={inputClass}
+            />
+            <input
+              type="text"
+              value={opt.label_en}
+              onChange={(e) => updateScenarioOption(form, set, i, "label_en", e.target.value)}
+              placeholder={`Option ${i + 1} EN`}
+              className={inputClass}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={opt.explain_pt}
+              onChange={(e) => updateScenarioOption(form, set, i, "explain_pt", e.target.value)}
+              placeholder={isPt ? `Explicação PT` : "Explanation PT"}
+              className={inputClass}
+            />
+            <input
+              type="text"
+              value={opt.explain_en}
+              onChange={(e) => updateScenarioOption(form, set, i, "explain_en", e.target.value)}
+              placeholder={isPt ? `Explicação EN` : "Explanation EN"}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function updateScenarioOption(form, set, idx, field, value) {
+  const next = form.scenario_options.slice();
+  next[idx] = { ...next[idx], [field]: value };
+  set("scenario_options", next);
+}
+
+/* ─── Match Prep editor ───────────────────────────────────────── */
+
+function MatchPrepContentEditor({ form, set, lang }) {
+  const isPt = lang === "pt";
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        {isPt ? "Técnica + frases" : "Technique + phrases"}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Field label={isPt ? "Técnica PT" : "Technique PT"}>
+          <textarea
+            value={form.technique_pt}
+            onChange={(e) => set("technique_pt", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+        <Field label={isPt ? "Técnica EN" : "Technique EN"}>
+          <textarea
+            value={form.technique_en}
+            onChange={(e) => set("technique_en", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+      </div>
+
+      <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold mt-3">
+        {isPt ? "Frases de auto-fala" : "Self-talk phrases"}
+      </p>
+      {form.prep_phrases.map((p, i) => (
+        <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-start">
+          <input
+            type="text"
+            value={p.text_en}
+            onChange={(e) => updatePhrase(form, set, i, "text_en", e.target.value)}
+            placeholder="EN phrase"
+            className={inputClass}
+          />
+          <input
+            type="text"
+            value={p.text_pt}
+            onChange={(e) => updatePhrase(form, set, i, "text_pt", e.target.value)}
+            placeholder="PT tradução"
+            className={inputClass}
+          />
+          <input
+            type="text"
+            value={p.note}
+            onChange={(e) => updatePhrase(form, set, i, "note", e.target.value)}
+            placeholder={isPt ? "Nota (opcional)" : "Note (optional)"}
+            className={inputClass}
+          />
+          <button
+            type="button"
+            onClick={() =>
+              set(
+                "prep_phrases",
+                form.prep_phrases.filter((_, j) => j !== i),
+              )
+            }
+            className="p-1 rounded text-white/40 hover:text-red-300 hover:bg-red-500/15"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          set("prep_phrases", [
+            ...form.prep_phrases,
+            { text_en: "", text_pt: "", note: "" },
+          ])
+        }
+        className="text-xs text-emerald-300 hover:text-emerald-200 mt-1"
+      >
+        + {isPt ? "Adicionar frase" : "Add phrase"}
+      </button>
+    </div>
+  );
+}
+
+function updatePhrase(form, set, idx, field, value) {
+  const next = form.prep_phrases.slice();
+  next[idx] = { ...next[idx], [field]: value };
+  set("prep_phrases", next);
+}
+
+/* ─── Voice of Champions editor ───────────────────────────────── */
+
+function VoiceOfChampionContentEditor({ form, set, lang }) {
+  const isPt = lang === "pt";
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        {isPt ? "Atleta + citação" : "Athlete + quote"}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Field label={isPt ? "Nome do atleta" : "Athlete name"}>
+          <input
+            type="text"
+            value={form.athlete_name}
+            onChange={(e) => set("athlete_name", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+        <Field label={isPt ? "Subtítulo (posição/clube)" : "Subtitle (position/club)"}>
+          <input
+            type="text"
+            value={form.athlete_subtitle}
+            onChange={(e) => set("athlete_subtitle", e.target.value)}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+      <Field label={isPt ? "URL da foto" : "Photo URL"}>
+        <input
+          type="url"
+          value={form.athlete_photo_url}
+          onChange={(e) => set("athlete_photo_url", e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Field label={isPt ? "Citação PT" : "Quote PT"}>
+          <textarea
+            value={form.quote_pt}
+            onChange={(e) => set("quote_pt", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+        <Field label={isPt ? "Citação EN" : "Quote EN"}>
+          <textarea
+            value={form.quote_en}
+            onChange={(e) => set("quote_en", e.target.value)}
+            rows={3}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Field label={isPt ? "Contexto PT" : "Background PT"}>
+          <textarea
+            value={form.voice_background_pt}
+            onChange={(e) => set("voice_background_pt", e.target.value)}
+            rows={2}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+        <Field label={isPt ? "Contexto EN" : "Background EN"}>
+          <textarea
+            value={form.voice_background_en}
+            onChange={(e) => set("voice_background_en", e.target.value)}
+            rows={2}
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+      </div>
+      <p className="text-[10px] text-white/45 mt-1">
+        {isPt
+          ? "Pergunta de compreensão opcional — reutiliza os campos abaixo do bloco de meditação."
+          : "Optional comprehension question — reuses the meditation editor's Q/A fields below."}
+      </p>
+      {/* Reuse the Q&A editor — same shape as meditation but WITHOUT
+          the orb config which is meditation-only. */}
+      <ComprehensionQuestionEditor form={form} set={set} lang={lang} />
     </div>
   );
 }
@@ -776,6 +1196,7 @@ function EMPTY_ACTIVITY() {
 
 function normalizeInitial(a) {
   const q = a?.content?.comprehension_question || {};
+  const orb = a?.content?.orb || {};
   const options = Array.isArray(q.options) ? q.options : [];
   // Pad options up to 4 slots so the editor always has 4 rows.
   const padded = [0, 1, 2, 3].map((i) => {
@@ -810,6 +1231,13 @@ function normalizeInitial(a) {
     q_correct_idx: correctIdx >= 0 ? correctIdx : 0,
     q_explain_pt: q.explanation?.pt || "",
     q_explain_en: q.explanation?.en || "",
+    // Orb config — defaults match LivingOrb's own defaults, so an
+    // activity saved without touching these fields still renders as
+    // teal 4-7-8.
+    orb_accent: orb.accent || "teal",
+    breathe_in: Number.isFinite(Number(orb.breathe_in)) ? orb.breathe_in : 4,
+    breathe_hold: Number.isFinite(Number(orb.breathe_hold)) ? orb.breathe_hold : 7,
+    breathe_out: Number.isFinite(Number(orb.breathe_out)) ? orb.breathe_out : 8,
     // Silent timer fields
     silent_presets:
       Array.isArray(silent.presets) && silent.presets.length > 0
@@ -821,23 +1249,74 @@ function normalizeInitial(a) {
         ? silent.bell_intervals.join(", ")
         : SILENT_TIMER_BELL_INTERVALS.join(", "),
     silent_bell_url: silent.bell_sound_url || "",
+    // Champion scenario fields — 4 option slots regardless of how
+    // many the stored content has, so the editor always renders as
+    // a clean 4-option quiz.
+    scenario_pt: a?.content?.scenario?.pt || "",
+    scenario_en: a?.content?.scenario?.en || "",
+    scenario_options: padScenarioOptions(a?.content?.options || []),
+    scenario_correct_idx: (() => {
+      const opts = a?.content?.options || [];
+      const i = opts.findIndex((o) => o?.correct === true);
+      return i >= 0 ? i : 0;
+    })(),
+    // Match prep fields
+    technique_pt: a?.content?.technique?.pt || "",
+    technique_en: a?.content?.technique?.en || "",
+    prep_phrases: Array.isArray(a?.content?.phrases)
+      ? a.content.phrases.map((p) => ({
+          text_en: p.text_en || "",
+          text_pt: p.text_pt || "",
+          note: p.note || "",
+        }))
+      : [],
+    // Voice of champion fields
+    athlete_name: a?.content?.athlete?.name || "",
+    athlete_subtitle: a?.content?.athlete?.subtitle || "",
+    athlete_photo_url: a?.content?.athlete?.photo_url || "",
+    quote_pt: a?.content?.quote?.pt || "",
+    quote_en: a?.content?.quote?.en || "",
+    voice_background_pt: a?.content?.background?.pt || "",
+    voice_background_en: a?.content?.background?.en || "",
   };
+}
+
+function padScenarioOptions(options) {
+  return [0, 1, 2, 3].map((i) => {
+    const o = options[i];
+    return {
+      label_pt: o?.label?.pt || "",
+      label_en: o?.label?.en || "",
+      correct: o?.correct === true,
+      explain_pt: o?.explanation?.pt || "",
+      explain_en: o?.explanation?.en || "",
+    };
+  });
 }
 
 function buildContent(form) {
   if (form.activity_type === "meditation") {
+    const content = {};
+    // Orb config — always saved so a per-activity change sticks even
+    // if the admin never fills in a comprehension question.
+    content.orb = {
+      accent: form.orb_accent || "teal",
+      breathe_in: Number(form.breathe_in) || 4,
+      breathe_hold: Number(form.breathe_hold) || 0,
+      breathe_out: Number(form.breathe_out) || 8,
+    };
     const hasQuestion = form.q_prompt_pt.trim() || form.q_prompt_en.trim();
-    if (!hasQuestion) return {};
-    return {
-      comprehension_question: {
+    if (hasQuestion) {
+      content.comprehension_question = {
         prompt: { pt: form.q_prompt_pt, en: form.q_prompt_en },
         options: form.q_options.map((o, i) => ({
           label: { pt: o.pt, en: o.en },
           correct: i === form.q_correct_idx,
         })),
         explanation: { pt: form.q_explain_pt, en: form.q_explain_en },
-      },
-    };
+      };
+    }
+    return content;
   }
   if (form.activity_type === "silent_timer") {
     const parseList = (s) =>
@@ -851,6 +1330,67 @@ function buildContent(form) {
       bell_intervals: parseList(form.silent_bells),
       bell_sound_url: form.silent_bell_url || null,
     };
+  }
+  if (form.activity_type === "champion_scenario") {
+    // Only keep options with at least one language filled in — an
+    // empty slot from the padded 4 shouldn't render as a phantom
+    // 4th button on the player.
+    const options = form.scenario_options
+      .map((o, i) => ({
+        idx: i,
+        label: { pt: o.label_pt, en: o.label_en },
+        correct: i === form.scenario_correct_idx,
+        explanation: { pt: o.explain_pt, en: o.explain_en },
+        _empty: !o.label_pt && !o.label_en,
+      }))
+      .filter((o) => !o._empty)
+      .map(({ _empty, idx, ...rest }) => {
+        void _empty;
+        void idx;
+        return rest;
+      });
+    return {
+      scenario: { pt: form.scenario_pt, en: form.scenario_en },
+      options,
+    };
+  }
+  if (form.activity_type === "match_prep") {
+    return {
+      technique: { pt: form.technique_pt, en: form.technique_en },
+      phrases: form.prep_phrases
+        .filter((p) => p.text_en || p.text_pt)
+        .map((p) => ({
+          text_en: p.text_en || "",
+          text_pt: p.text_pt || "",
+          note: p.note || "",
+        })),
+    };
+  }
+  if (form.activity_type === "voice_of_champion") {
+    const content = {
+      athlete: {
+        name: form.athlete_name || "",
+        subtitle: form.athlete_subtitle || "",
+        photo_url: form.athlete_photo_url || "",
+      },
+      quote: { pt: form.quote_pt, en: form.quote_en },
+      background: {
+        pt: form.voice_background_pt,
+        en: form.voice_background_en,
+      },
+    };
+    // Optional comprehension question — same fields as meditation.
+    if (form.q_prompt_pt.trim() || form.q_prompt_en.trim()) {
+      content.comprehension_question = {
+        prompt: { pt: form.q_prompt_pt, en: form.q_prompt_en },
+        options: form.q_options.map((o, i) => ({
+          label: { pt: o.pt, en: o.en },
+          correct: i === form.q_correct_idx,
+        })),
+        explanation: { pt: form.q_explain_pt, en: form.q_explain_en },
+      };
+    }
+    return content;
   }
   return {};
 }

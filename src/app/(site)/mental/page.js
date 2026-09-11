@@ -30,7 +30,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import MeditationPlayer from "@/components/mental/MeditationPlayer";
+import MentalActivityPlayer from "@/components/mental/MentalActivityPlayer";
+import GrowingTree from "@/components/mental/GrowingTree";
 import {
   t,
   pickLang,
@@ -141,6 +142,15 @@ function MentalHubContent() {
           <>
             <StatsStrip stats={stats} lang={lang} />
 
+            {/* Growing tree — sits between stats and mood picker as
+                a "your progress lives here" anchor. Renders a compact
+                inviting sapling even on day 1. */}
+            <div className="mb-8">
+              <GrowingTree
+                completionsByDay={stats?.completions_by_day || []}
+              />
+            </div>
+
             <MoodPicker
               lang={lang}
               current={mood}
@@ -206,7 +216,7 @@ function MentalHubContent() {
       </main>
 
       {activePlayer && (
-        <MeditationPlayer
+        <MentalActivityPlayer
           activity={activePlayer}
           onClose={() => {
             setActivePlayer(null);
@@ -220,41 +230,91 @@ function MentalHubContent() {
 
 /* ─── Rippling backdrop ───────────────────────────────────────── */
 
+/**
+ * Ambient water-ripple backdrop. Two layers stacked:
+ *   - Slow drifting radial washes (the water surface tint)
+ *   - Concentric expanding rings from 3 origin points (the ripples)
+ *
+ * Rings each cycle 9s, staggered by animation-delay so at any given
+ * moment ~2-3 rings from each origin are visible at different sizes,
+ * building a continuous "raindrops on water" texture.
+ *
+ * Deliberately positioned OUTSIDE the max-w container (uses viewport
+ * units) so ripples originate off-screen for cinematic scale — you
+ * see them enter the frame rather than pop into existence.
+ */
 function RippleBackdrop() {
   return (
-    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-      <div className="ripple ripple-a" />
-      <div className="ripple ripple-b" />
-      <div className="ripple ripple-c" />
+    <div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      aria-hidden="true"
+    >
+      {/* Water surface — bold-enough radial washes so the effect
+          reads on the darkest devices. Blur is intentional but
+          smaller than the previous 80px so colour actually surfaces. */}
+      <div className="wash wash-a" />
+      <div className="wash wash-b" />
+      <div className="wash wash-c" />
+
+      {/* Ripple sources — 3 origins each spawning expanding rings.
+          Colours are teal-family so the whole hub feels cool + calm. */}
+      <div className="ripple-source src-a">
+        <span className="ripple-ring" style={{ animationDelay: "0s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-3s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-6s" }} />
+      </div>
+      <div className="ripple-source src-b">
+        <span className="ripple-ring" style={{ animationDelay: "-1.5s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-4.5s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-7.5s" }} />
+      </div>
+      <div className="ripple-source src-c">
+        <span className="ripple-ring" style={{ animationDelay: "-2.2s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-5.2s" }} />
+        <span className="ripple-ring" style={{ animationDelay: "-8.2s" }} />
+      </div>
+
       <style jsx>{`
-        .ripple {
+        .wash {
           position: absolute;
           border-radius: 9999px;
-          filter: blur(80px);
-          opacity: 0.5;
+          filter: blur(60px);
+          opacity: 0.75;
         }
-        .ripple-a {
-          top: -20%;
+        .wash-a {
+          top: -15%;
           left: -10%;
-          width: 60vw;
-          height: 60vw;
-          background: radial-gradient(circle, rgba(20,184,166,0.35), transparent 65%);
+          width: 70vw;
+          height: 70vw;
+          background: radial-gradient(
+            circle,
+            rgba(20, 184, 166, 0.55),
+            rgba(20, 184, 166, 0) 65%
+          );
           animation: drift-a 40s ease-in-out infinite alternate;
         }
-        .ripple-b {
-          bottom: -25%;
+        .wash-b {
+          bottom: -20%;
           right: -15%;
-          width: 55vw;
-          height: 55vw;
-          background: radial-gradient(circle, rgba(76,29,149,0.25), transparent 65%);
+          width: 65vw;
+          height: 65vw;
+          background: radial-gradient(
+            circle,
+            rgba(76, 29, 149, 0.45),
+            rgba(76, 29, 149, 0) 65%
+          );
           animation: drift-b 55s ease-in-out infinite alternate;
         }
-        .ripple-c {
-          top: 30%;
-          right: 25%;
-          width: 40vw;
-          height: 40vw;
-          background: radial-gradient(circle, rgba(59,130,246,0.18), transparent 65%);
+        .wash-c {
+          top: 25%;
+          right: 20%;
+          width: 45vw;
+          height: 45vw;
+          background: radial-gradient(
+            circle,
+            rgba(59, 130, 246, 0.35),
+            rgba(59, 130, 246, 0) 65%
+          );
           animation: drift-c 70s ease-in-out infinite alternate;
         }
         @keyframes drift-a {
@@ -268,6 +328,52 @@ function RippleBackdrop() {
         @keyframes drift-c {
           from { transform: translate(0, 0) scale(1); }
           to   { transform: translate(-3vw, 4vh) scale(1.1); }
+        }
+
+        /* Ripple source — an origin point that emits expanding rings.
+           Positioned via top/left; the child rings scale up + fade. */
+        .ripple-source {
+          position: absolute;
+          width: 0;
+          height: 0;
+        }
+        .src-a { top: 22%; left: 15%; }
+        .src-b { top: 65%; left: 78%; }
+        .src-c { top: 45%; left: 50%; }
+
+        .ripple-ring {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 1px;
+          height: 1px;
+          border-radius: 9999px;
+          border: 2px solid rgba(103, 232, 249, 0.55);
+          box-shadow:
+            0 0 40px rgba(103, 232, 249, 0.25),
+            inset 0 0 20px rgba(103, 232, 249, 0.15);
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 0;
+          animation: ripple-expand 9s ease-out infinite;
+        }
+        @keyframes ripple-expand {
+          0% {
+            transform: translate(-50%, -50%) scale(0.4);
+            opacity: 0;
+            border-width: 3px;
+          }
+          10% {
+            opacity: 0.8;
+          }
+          60% {
+            opacity: 0.35;
+            border-width: 2px;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(80);
+            opacity: 0;
+            border-width: 0.5px;
+          }
         }
       `}</style>
     </div>
@@ -482,45 +588,84 @@ function ActivityCard({ activity, lang, onOpen }) {
   const durationMin = activity.duration_seconds
     ? Math.round(activity.duration_seconds / 60)
     : null;
+  const hasCover =
+    typeof activity.cover_image_url === "string" &&
+    activity.cover_image_url.trim().length > 0;
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className={`text-left rounded-2xl border ${tone.border} bg-white/[0.02] hover:bg-white/[0.04] p-4 transition-colors group relative overflow-hidden`}
+      className={`text-left rounded-2xl border ${tone.border} bg-white/[0.02] hover:bg-white/[0.04] transition-colors group relative overflow-hidden`}
     >
-      {/* Type-tone diagonal accent — subtle, on hover only. */}
-      <div
-        className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-0 group-hover:opacity-30 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
-        aria-hidden="true"
-      />
-      <div className="relative">
-        <div className="flex items-center justify-between mb-2">
+      {/* Optional hero cover — rendered as a full-bleed image at the
+          top of the card. Height fixed at 128px so text below stays
+          on a consistent baseline across cards with / without covers.
+          Gradient overlay keeps the type badge legible even when the
+          image is bright. */}
+      {hasCover && (
+        <div className="relative h-32 overflow-hidden">
+          {/* Plain <img> rather than next/image — cover URLs come from
+              any host the admin pastes; next/image would require the
+              domain to be in next.config's remotePatterns allowlist. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={activity.cover_image_url}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${tone.chip}`}
+            className={`absolute top-2 left-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${tone.chip}`}
           >
             {pickLang(tone.label, lang)}
           </span>
           {completedToday && (
-            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+            <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-300 drop-shadow" />
           )}
         </div>
-        <h3 className="font-semibold text-white text-base leading-tight">
-          {title}
-        </h3>
-        {subtitle && (
-          <p className="text-xs text-white/50 mt-1 line-clamp-2">{subtitle}</p>
+      )}
+
+      <div className="p-4 relative">
+        {/* Type-tone diagonal accent — subtle, on hover only. Only
+            shown when there's no cover image (covers already provide
+            visual interest). */}
+        {!hasCover && (
+          <div
+            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-0 group-hover:opacity-30 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
+            aria-hidden="true"
+          />
         )}
-        <div className="flex items-center justify-between mt-3 text-[11px] text-white/45">
-          {durationMin && (
-            <span className="tabular-nums">
-              {durationMin} {lang === "pt" ? "min" : "min"}
-            </span>
+        <div className="relative">
+          {!hasCover && (
+            <div className="flex items-center justify-between mb-2">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${tone.chip}`}
+              >
+                {pickLang(tone.label, lang)}
+              </span>
+              {completedToday && (
+                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+              )}
+            </div>
           )}
-          <span className="inline-flex items-center gap-1 group-hover:text-white transition-colors">
-            <Play className="w-3 h-3" />
-            {lang === "pt" ? "Começar" : "Start"}
-          </span>
+          <h3 className="font-semibold text-white text-base leading-tight">
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="text-xs text-white/50 mt-1 line-clamp-2">{subtitle}</p>
+          )}
+          <div className="flex items-center justify-between mt-3 text-[11px] text-white/45">
+            {durationMin && (
+              <span className="tabular-nums">
+                {durationMin} {lang === "pt" ? "min" : "min"}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 group-hover:text-white transition-colors">
+              <Play className="w-3 h-3" />
+              {lang === "pt" ? "Começar" : "Start"}
+            </span>
+          </div>
         </div>
       </div>
     </button>

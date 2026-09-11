@@ -37,9 +37,12 @@ import {
 import LivingOrb from "@/components/mental/LivingOrb";
 import { awardXp } from "@/lib/xp/awardXp";
 
-const BREATHE_CYCLE_MS = 19_000; // 4 + 7 + 8 seconds — matches orb keyframe
-const BREATHE_INHALE_MS = 4_000;
-const BREATHE_HOLD_MS = 7_000;
+// Default 4-7-8 rhythm — activities can override via
+// content.orb.breathe_{in,hold,out}. The phase label ("Breathe in"
+// / "Hold" / "Breathe out") is derived from the CURRENT elapsed sec
+// modulo the cycle length, so it stays in sync with whatever cycle
+// the orb is animating.
+const DEFAULT_BREATHE = { in: 4, hold: 7, out: 8 };
 
 /**
  * @param {{
@@ -59,9 +62,19 @@ export default function MeditationPlayer({
   const mode =
     modeProp ||
     (activity?.activity_type === "silent_timer" ? "silent" : "guided");
+
+  // Orb config — per-activity overrides in `content.orb`, falls back
+  // to type-default accent + 4-7-8 breathing.
+  const orbConfig = activity?.content?.orb || {};
   const accent =
+    orbConfig.accent ||
     ACTIVITY_TONES[activity?.activity_type || "meditation"]?.accent ||
     "teal";
+  const breatheIn = Number(orbConfig.breathe_in) || DEFAULT_BREATHE.in;
+  const breatheHold = Number.isFinite(Number(orbConfig.breathe_hold))
+    ? Number(orbConfig.breathe_hold)
+    : DEFAULT_BREATHE.hold;
+  const breatheOut = Number(orbConfig.breathe_out) || DEFAULT_BREATHE.out;
 
   const [phase, setPhase] = useState(mode === "silent" ? "setup" : "playing");
   const [audioLang, setAudioLang] = useState(lang === "en" ? "en" : "pt");
@@ -141,6 +154,14 @@ export default function MeditationPlayer({
     if (paused) audio.pause();
     else audio.play().catch(() => {});
   }, [paused, mode]);
+
+  // Mute toggle — react to state changes on the audio element. The
+  // earlier setup effect only applied `muted` when the audio first
+  // loaded, so clicking the button mid-session had no effect.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) audio.muted = muted;
+  }, [muted]);
 
   // ── Silent timer — bells + end-of-session ──────────────────────
   useEffect(() => {
@@ -269,6 +290,9 @@ export default function MeditationPlayer({
               paused={paused}
               audioLang={audioLang}
               lang={lang}
+              breatheIn={breatheIn}
+              breatheHold={breatheHold}
+              breatheOut={breatheOut}
             />
             <PlayerControls
               lang={lang}
@@ -367,8 +391,11 @@ function PhaseAndOrb({
   paused,
   audioLang,
   lang,
+  breatheIn,
+  breatheHold,
+  breatheOut,
 }) {
-  const phase = phaseFromElapsed(elapsedSec);
+  const phase = phaseFromElapsed(elapsedSec, breatheIn, breatheHold, breatheOut);
   const phaseLabel =
     phase === "in"
       ? t("player.breatheIn", lang)
@@ -392,6 +419,9 @@ function PhaseAndOrb({
         subLabel={subLabel}
         paused={paused}
         accent={accent}
+        breatheIn={breatheIn}
+        breatheHold={breatheHold}
+        breatheOut={breatheOut}
       />
       <p className="mt-2 text-3xl font-light tabular-nums text-white/85">
         {formatMMSS(elapsedSec)}
@@ -679,14 +709,18 @@ function CompletionScreen({ title, xpAwarded, onClose, lang }) {
 /* ─── helpers ─────────────────────────────────────────────────── */
 
 /**
- * Which phase of the 4-7-8 breathe cycle we're in RIGHT NOW, given
- * elapsed seconds since session start. Matches the orb keyframes so
- * the phase label reads in sync with what the eye sees.
+ * Which phase of the breathe cycle we're in RIGHT NOW, given elapsed
+ * seconds + the current activity's in/hold/out timings. Matches the
+ * orb keyframes so the phase label reads in sync with what the eye
+ * sees, regardless of the configured rhythm.
  */
-function phaseFromElapsed(elapsedSec) {
-  const posInCycle = (elapsedSec * 1000) % BREATHE_CYCLE_MS;
-  if (posInCycle < BREATHE_INHALE_MS) return "in";
-  if (posInCycle < BREATHE_INHALE_MS + BREATHE_HOLD_MS) return "hold";
+function phaseFromElapsed(elapsedSec, breatheIn, breatheHold, breatheOut) {
+  const cycleMs = Math.max(2000, (breatheIn + breatheHold + breatheOut) * 1000);
+  const inhaleMs = breatheIn * 1000;
+  const holdMs = breatheHold * 1000;
+  const posInCycle = (elapsedSec * 1000) % cycleMs;
+  if (posInCycle < inhaleMs) return "in";
+  if (posInCycle < inhaleMs + holdMs) return "hold";
   return "out";
 }
 

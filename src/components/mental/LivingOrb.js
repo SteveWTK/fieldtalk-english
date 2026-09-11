@@ -32,6 +32,9 @@ import React from "react";
  *   subLabel?: string,        // smaller secondary text (e.g. "Feche os olhos…")
  *   paused?: boolean,         // freeze the breathe animation
  *   accent?: 'teal' | 'violet' | 'emerald' | 'amber' | 'slate',
+ *   breatheIn?: number,       // inhale seconds (default 4)
+ *   breatheHold?: number,     // hold seconds (default 7)
+ *   breatheOut?: number,      // exhale seconds (default 8)
  * }} props
  */
 export default function LivingOrb({
@@ -40,8 +43,23 @@ export default function LivingOrb({
   subLabel,
   paused = false,
   accent = "teal",
+  breatheIn = 4,
+  breatheHold = 7,
+  breatheOut = 8,
 }) {
   const palette = ACCENT_PALETTES[accent] || ACCENT_PALETTES.teal;
+
+  // Total cycle + the two milestone percentages. The keyframe below
+  // holds `scale(1.18)` between inhale-end and hold-end, then eases
+  // back to scale(1) by cycle-end. If someone configures a 6-0-6
+  // (no hold) rhythm, `endInhalePct === startExhalePct` and the
+  // scale-up cleanly flips into scale-down with no plateau.
+  const totalSec = Math.max(2, breatheIn + breatheHold + breatheOut);
+  const inhaleEndPct = ((breatheIn / totalSec) * 100).toFixed(2);
+  const holdEndPct = (
+    ((breatheIn + breatheHold) / totalSec) *
+    100
+  ).toFixed(2);
 
   return (
     <div
@@ -120,12 +138,15 @@ export default function LivingOrb({
       )}
 
       <style jsx>{`
-        /* ── The orb — a soft-glow disk that breathes 4-7-8 ─── */
+        /* ── The orb — a soft-glow disk that breathes a custom cycle.
+             Duration + phase percentages come from props so an
+             activity's content.orb.breathe_{in,hold,out} tunes the
+             rhythm without a component change. */
         .orb {
           position: absolute;
           border-radius: 9999px;
           filter: blur(8px);
-          animation: breathe 19s ease-in-out infinite;
+          animation: breathe ${totalSec}s ease-in-out infinite;
           box-shadow:
             0 0 60px 20px ${palette.glow1},
             0 0 120px 40px ${palette.glow2};
@@ -158,14 +179,14 @@ export default function LivingOrb({
           opacity: 0.65;
         }
 
-        /* ── 4-7-8 breathe cycle — 19s total, matches the numbers ── */
+        /* ── Breathe cycle — percentages computed from prop values so
+             any rhythm works: default is 4-7-8, but a 6-2-6 or 5-0-5
+             flows just as well. If breatheHold is 0 the two plateau
+             stops sit at the same percent → clean rise-and-fall. */
         @keyframes breathe {
-          /* 0-21%   : inhale 4s → scale up */
-          /* 21-58%  : hold 7s   → hold size */
-          /* 58-100% : exhale 8s → scale down */
           0% { transform: scale(1); }
-          21% { transform: scale(1.18); }
-          58% { transform: scale(1.18); }
+          ${inhaleEndPct}% { transform: scale(1.18); }
+          ${holdEndPct}% { transform: scale(1.18); }
           100% { transform: scale(1); }
         }
 

@@ -13,7 +13,7 @@
 import { useEffect, useState } from "react";
 import { Sparkles, Play, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import MeditationPlayer from "@/components/mental/MeditationPlayer";
+import MentalActivityPlayer from "@/components/mental/MentalActivityPlayer";
 import {
   ACTIVITY_TONES,
   pickLang,
@@ -66,6 +66,9 @@ export default function PillarMentalSlot({ unitId }) {
   const durationMin = activity.duration_seconds
     ? Math.round(activity.duration_seconds / 60)
     : null;
+  const hasCover =
+    typeof activity.cover_image_url === "string" &&
+    activity.cover_image_url.trim().length > 0;
 
   return (
     <>
@@ -74,11 +77,28 @@ export default function PillarMentalSlot({ unitId }) {
         onClick={() => setOpen(true)}
         className={`w-full text-left mt-2 rounded-xl border-2 ${tone.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 group relative overflow-hidden transition-colors`}
       >
-        {/* Type-tone glow — subtle on rest, brighter on hover. */}
-        <div
-          className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 group-hover:opacity-60 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
-          aria-hidden="true"
-        />
+        {/* Cover image — thumbnail on the left, replacing the icon
+            square. Falls back to the type gradient glow when no
+            cover is set. */}
+        {hasCover ? (
+          <div
+            className="absolute inset-y-0 left-0 w-24 sm:w-28 opacity-40 group-hover:opacity-70 transition-opacity"
+            aria-hidden="true"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activity.cover_image_url}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#070707]" />
+          </div>
+        ) : (
+          <div
+            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 group-hover:opacity-60 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
+            aria-hidden="true"
+          />
+        )}
         <div className="relative flex items-center gap-3">
           <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${tone.chip}`}>
             <Sparkles className="w-5 h-5" />
@@ -117,7 +137,7 @@ export default function PillarMentalSlot({ unitId }) {
       </button>
 
       {open && (
-        <MeditationPlayer
+        <MentalActivityPlayer
           activity={activity}
           onClose={() => setOpen(false)}
         />

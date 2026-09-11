@@ -173,12 +173,29 @@ export async function GET() {
   const byType = {};
   let minutesAllTime = 0;
   let minutesThisWeek = 0;
+  // Roll rows up per-day so the Growing Tree can render one leaf per
+  // day the player was active, coloured by which types they did.
+  const byDay = new Map(); // day_key → { day_key, activity_types: Set }
   for (const r of rows) {
     byType[r.activity_type] = (byType[r.activity_type] || 0) + 1;
     const mins = Math.round((r.duration_seconds || 0) / 60);
     minutesAllTime += mins;
     if (r.completed_at >= weekAgo) minutesThisWeek += mins;
+    let bucket = byDay.get(r.day_key);
+    if (!bucket) {
+      bucket = { day_key: r.day_key, activity_types: new Set() };
+      byDay.set(r.day_key, bucket);
+    }
+    bucket.activity_types.add(r.activity_type);
   }
+  const completionsByDay = Array.from(byDay.values())
+    .map((d) => ({
+      day_key: d.day_key,
+      activity_types: Array.from(d.activity_types),
+    }))
+    // Newest first — matches the DB order and the Growing Tree's
+    // "newest leaves at the top" placement rule.
+    .sort((a, b) => (a.day_key < b.day_key ? 1 : -1));
 
   const streak = await computeStreak(supabase, user.id, rows);
 
@@ -188,6 +205,7 @@ export async function GET() {
     minutes_all_time: minutesAllTime,
     completed_all_time: rows.length,
     by_type: byType,
+    completions_by_day: completionsByDay,
   });
 }
 
