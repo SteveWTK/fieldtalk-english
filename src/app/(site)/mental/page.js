@@ -142,15 +142,6 @@ function MentalHubContent() {
           <>
             <StatsStrip stats={stats} lang={lang} />
 
-            {/* Growing tree — sits between stats and mood picker as
-                a "your progress lives here" anchor. Renders a compact
-                inviting sapling even on day 1. */}
-            <div className="mb-8">
-              <GrowingTree
-                completionsByDay={stats?.completions_by_day || []}
-              />
-            </div>
-
             <MoodPicker
               lang={lang}
               current={mood}
@@ -210,6 +201,16 @@ function MentalHubContent() {
                   ))}
                 </div>
               )}
+            </section>
+
+            {/* Growing tree — placed below the activity library for
+                now so activity selection stays visible above the fold.
+                Placement is intentionally provisional; move this
+                block wherever it lands best after the team review. */}
+            <section className="mt-8">
+              <GrowingTree
+                completionsByDay={stats?.completions_by_day || []}
+              />
             </section>
           </>
         )}
@@ -274,12 +275,26 @@ function RippleBackdrop() {
         <span className="ripple-ring" style={{ animationDelay: "-8.2s" }} />
       </div>
 
+      {/*
+        BACKDROP TWEAK POINT — this is where to dim or brighten the
+        ambient water effect. Two axes to play with:
+          1. Wash gradient RGBA alphas (currently 0.14 - 0.22) — the
+             coloured mist behind everything. Increase for more
+             colour saturation.
+          2. Ripple-ring border rgba + box-shadow alpha + the peak
+             opacity inside @keyframes ripple-expand (currently 0.28
+             peak) — the expanding-ring raindrops. Increase for more
+             visible rings.
+        Raise any of these to make the effect more visible; lower
+        them to soften. Search this file for BACKDROP TWEAK POINT to
+        find this spot quickly.
+      */}
       <style jsx>{`
         .wash {
           position: absolute;
           border-radius: 9999px;
-          filter: blur(60px);
-          opacity: 0.75;
+          filter: blur(70px);
+          opacity: 0.6;
         }
         .wash-a {
           top: -15%;
@@ -288,7 +303,7 @@ function RippleBackdrop() {
           height: 70vw;
           background: radial-gradient(
             circle,
-            rgba(20, 184, 166, 0.55),
+            rgba(20, 184, 166, 0.22),
             rgba(20, 184, 166, 0) 65%
           );
           animation: drift-a 40s ease-in-out infinite alternate;
@@ -300,7 +315,7 @@ function RippleBackdrop() {
           height: 65vw;
           background: radial-gradient(
             circle,
-            rgba(76, 29, 149, 0.45),
+            rgba(76, 29, 149, 0.18),
             rgba(76, 29, 149, 0) 65%
           );
           animation: drift-b 55s ease-in-out infinite alternate;
@@ -312,7 +327,7 @@ function RippleBackdrop() {
           height: 45vw;
           background: radial-gradient(
             circle,
-            rgba(59, 130, 246, 0.35),
+            rgba(59, 130, 246, 0.14),
             rgba(59, 130, 246, 0) 65%
           );
           animation: drift-c 70s ease-in-out infinite alternate;
@@ -348,26 +363,26 @@ function RippleBackdrop() {
           width: 1px;
           height: 1px;
           border-radius: 9999px;
-          border: 2px solid rgba(103, 232, 249, 0.55);
+          border: 1.5px solid rgba(103, 232, 249, 0.22);
           box-shadow:
-            0 0 40px rgba(103, 232, 249, 0.25),
-            inset 0 0 20px rgba(103, 232, 249, 0.15);
+            0 0 30px rgba(103, 232, 249, 0.08),
+            inset 0 0 12px rgba(103, 232, 249, 0.05);
           transform: translate(-50%, -50%) scale(0);
           opacity: 0;
-          animation: ripple-expand 9s ease-out infinite;
+          animation: ripple-expand 10s ease-out infinite;
         }
         @keyframes ripple-expand {
           0% {
             transform: translate(-50%, -50%) scale(0.4);
             opacity: 0;
-            border-width: 3px;
+            border-width: 2px;
           }
           10% {
-            opacity: 0.8;
+            opacity: 0.28;
           }
           60% {
-            opacity: 0.35;
-            border-width: 2px;
+            opacity: 0.12;
+            border-width: 1.5px;
           }
           100% {
             transform: translate(-50%, -50%) scale(80);
