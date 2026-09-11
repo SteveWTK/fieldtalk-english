@@ -9,6 +9,7 @@ export const TARGET_KINDS = [
   "leads_created_in_range",
   "conversion_rate_at",
   "pipeline_value_at",
+  "closed_value_in_range",
 ];
 
 const MAX_TITLE = 120;
@@ -145,6 +146,25 @@ export function computeTargetProgress(target, ctx) {
       // Active pipeline only — terminal stages don't contribute.
       if (!["new", "contacted", "engaged", "qualified", "proposal"].includes(l.stage)) continue;
       if (Number.isFinite(l.estimated_value_cents)) {
+        current += l.estimated_value_cents;
+      }
+    }
+  } else if (target.kind === "closed_value_in_range") {
+    // Actual banked value — sum estimated_value_cents across leads
+    // WON inside the range window. This is the lagging financial
+    // indicator ("we closed R$X in Q4") vs the leading pipeline
+    // indicator above.
+    for (const l of leads) {
+      if (l.stage !== "won") continue;
+      if (target.owner_id && l.assigned_to !== target.owner_id) continue;
+      const wonAt = l.converted_at || l.updated_at;
+      if (!wonAt) continue;
+      const wonMs = new Date(wonAt).getTime();
+      if (
+        wonMs >= rangeStart.getTime() &&
+        wonMs <= targetDate.getTime() &&
+        Number.isFinite(l.estimated_value_cents)
+      ) {
         current += l.estimated_value_cents;
       }
     }

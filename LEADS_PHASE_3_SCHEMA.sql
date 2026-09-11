@@ -175,7 +175,8 @@ CREATE TABLE IF NOT EXISTS metrics_targets (
                     'wins_in_range',
                     'leads_created_in_range',
                     'conversion_rate_at',
-                    'pipeline_value_at'
+                    'pipeline_value_at',
+                    'closed_value_in_range'
                   )),
 
   title           TEXT NOT NULL,

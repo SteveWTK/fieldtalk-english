@@ -40,6 +40,7 @@ import {
   Radio,
   MessageSquareQuote,
   UserPlus,
+  Brain,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -192,6 +193,13 @@ function AdminHubContent() {
             title="Lessons CMS"
             body="Author, edit and order lesson content across pillars."
             accent="neutral"
+          />
+          <AdminCard
+            href="/admin/mental"
+            Icon={Brain}
+            title="Mental Training"
+            body="Author meditations, silent-timer settings, and unit-slot assignments."
+            accent="emerald"
           />
           <AdminCard
             href="/admin/matches"

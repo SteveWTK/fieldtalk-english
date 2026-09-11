@@ -35,6 +35,10 @@ const KIND_LABELS = {
     pt: "Valor de pipeline até a data",
     en: "Pipeline value by date",
   },
+  closed_value_in_range: {
+    pt: "Valor fechado no período",
+    en: "Closed value in range",
+  },
 };
 
 const KIND_HINTS = {
@@ -51,8 +55,12 @@ const KIND_HINTS = {
     en: "Goal: conversion rate ≥ X% by target date (enter 0.15 for 15%).",
   },
   pipeline_value_at: {
-    pt: "Meta: valor de pipeline ≥ R$ X até a data alvo (em centavos: 1500000 = R$15k).",
-    en: "Goal: pipeline value ≥ R$ X by target date (in cents: 1500000 = R$15k).",
+    pt: "Meta: valor de pipeline ativo ≥ R$ X até a data alvo (em centavos: 1500000 = R$15k). Indicador líder — mostra o que está no funil.",
+    en: "Goal: active pipeline value ≥ R$ X by target date (in cents: 1500000 = R$15k). Leading indicator — what's in the funnel.",
+  },
+  closed_value_in_range: {
+    pt: "Meta: valor fechado (leads ganhos) ≥ R$ X entre início e data alvo (em centavos). Indicador de resultado — dinheiro efetivamente conquistado.",
+    en: "Goal: closed value (won leads) ≥ R$ X between start and target (in cents). Lagging indicator — money actually booked.",
   },
 };
 

@@ -40,6 +40,7 @@ import WelcomeOnboarding from "@/components/WelcomeOnboarding";
 import ProPathOnboarding from "@/components/onboarding/propath/ProPathOnboarding";
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
+import PillarMentalSlot from "@/components/mental/PillarMentalSlot";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -852,10 +853,15 @@ function PlayerLessonsMenu() {
               </button>
 
               {/* Expanded lessons — only mounted for the open Unit so
-                  closed Units stay light in the DOM. */}
+                  closed Units stay light in the DOM. The Mental
+                  Training slot renders after the six lessons — it
+                  fetches its own assigned activity from
+                  /api/mental/unit-slot/{pillar.id} and self-hides
+                  when nothing's assigned. */}
               {isExpanded && (
                 <div className="px-4 sm:px-6 pb-6 border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
                   {renderPillarLessons(pillar)}
+                  <PillarMentalSlot unitId={pillar.id} />
                 </div>
               )}
             </div>

@@ -907,7 +907,11 @@ function TargetCard({ target, lang }) {
   // Value display — format depends on kind. Ratios as %, cents as R$.
   const formatValue = (v) => {
     if (target.kind === "conversion_rate_at") return `${(v * 100).toFixed(1)}%`;
-    if (target.kind === "pipeline_value_at") return formatBrl(v);
+    if (
+      target.kind === "pipeline_value_at" ||
+      target.kind === "closed_value_in_range"
+    )
+      return formatBrl(v);
     return Math.round(v);
   };
 
