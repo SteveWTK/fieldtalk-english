@@ -1107,20 +1107,32 @@ function VoiceOfChampionContentEditor({ form, set, lang }) {
 
 function AssignmentsTab({ slots, activities, onChanged, lang }) {
   const isPt = lang === "pt";
+  const [assignError, setAssignError] = useState(null);
   const activeActivities = useMemo(
     () => activities.filter((a) => a.active),
     [activities],
   );
 
   async function assign(unitId, activityId) {
-    await fetch("/api/admin/mental/unit-slots", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        unit_id: unitId,
-        mental_activity_id: activityId || null,
-      }),
-    });
+    setAssignError(null);
+    try {
+      const res = await fetch("/api/admin/mental/unit-slots", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unit_id: unitId,
+          mental_activity_id: activityId || null,
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setAssignError(json.message || json.error || "assign_failed");
+        return;
+      }
+    } catch (err) {
+      setAssignError(err?.message || "network_error");
+      return;
+    }
     onChanged();
   }
 
@@ -1131,6 +1143,11 @@ function AssignmentsTab({ slots, activities, onChanged, lang }) {
           ? "Para cada unidade, escolha qual atividade aparece como 7ª carta após a Lição 6."
           : "For each unit, pick which activity appears as the 7th card after Lesson 6."}
       </p>
+      {assignError && (
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-2 text-xs text-red-200">
+          {isPt ? "Falha ao salvar:" : "Save failed:"} {assignError}
+        </div>
+      )}
       {slots.map((row) => (
         <div
           key={row.unit_id}

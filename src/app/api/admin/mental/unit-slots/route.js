@@ -62,9 +62,16 @@ export async function PUT(request) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  const unitId = typeof body?.unit_id === "string" ? body.unit_id : "";
-  if (!unitId) {
+  // pillars.id is INTEGER, so the client sends unit_id as a JS number.
+  // The previous string-only check silently 400'd every request —
+  // accept number OR string, coerce to Number for the DB.
+  const rawUnitId = body?.unit_id;
+  if (rawUnitId == null || rawUnitId === "") {
     return NextResponse.json({ error: "unit_id_required" }, { status: 400 });
+  }
+  const unitId = Number(rawUnitId);
+  if (!Number.isFinite(unitId)) {
+    return NextResponse.json({ error: "unit_id_invalid" }, { status: 400 });
   }
   const activityId =
     body?.mental_activity_id == null || body.mental_activity_id === ""

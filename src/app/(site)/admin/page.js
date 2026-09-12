@@ -41,6 +41,7 @@ import {
   MessageSquareQuote,
   UserPlus,
   Brain,
+  Gauge,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -133,6 +134,13 @@ function AdminHubContent() {
             Icon={UserPlus}
             title="Leads"
             body="Register, filter and work sales & partnership leads — list + kanban, WhatsApp send, activity log."
+            accent="emerald"
+          />
+          <AdminCard
+            href="/admin/coach-dashboard"
+            Icon={Gauge}
+            title="Coach dashboard"
+            body="Track player rosters — lesson progression + mental training engagement, at-risk callouts, per-academy filters."
             accent="emerald"
           />
           <AdminCard
