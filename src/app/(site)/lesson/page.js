@@ -213,7 +213,7 @@ function PlayerLessonsMenu() {
   };
   const previewLessonSet = useMemo(
     () => new Set(access.previewLessonIds || []),
-    [access.previewLessonIds]
+    [access.previewLessonIds],
   );
   const showInlinePaywall = !!user && !access.loading && !access.hasAccess;
 
@@ -235,7 +235,7 @@ function PlayerLessonsMenu() {
     const openLessons = lessons.filter((l) => !l.under_construction);
     if (openLessons.length === 0) return;
     const completedIds = new Set(
-      (completions || []).map((c) => c.lesson_id).filter(Boolean)
+      (completions || []).map((c) => c.lesson_id).filter(Boolean),
     );
     const allOpenDone = openLessons.every((l) => completedIds.has(l.id));
     if (!allOpenDone) return;
@@ -255,7 +255,7 @@ function PlayerLessonsMenu() {
     try {
       window.localStorage.setItem(
         `ft.allOpenLessonsDone.${user.id}.${openCount}`,
-        "1"
+        "1",
       );
     } catch {
       /* private mode — non-fatal */
@@ -273,12 +273,12 @@ function PlayerLessonsMenu() {
     if (appliedCompletedRef.current === completedParam) return;
 
     const sourcePillar = pillars.find((p) =>
-      (p.lessons || []).some((l) => l.id === completedParam)
+      (p.lessons || []).some((l) => l.id === completedParam),
     );
     if (!sourcePillar) return;
 
     const lessonsSorted = [...(sourcePillar.lessons || [])].sort(
-      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
     );
     const idx = lessonsSorted.findIndex((l) => l.id === completedParam);
     const nextInPillar = idx >= 0 ? lessonsSorted[idx + 1] : null;
@@ -289,14 +289,14 @@ function PlayerLessonsMenu() {
       setEndOfUnitJump(null);
     } else {
       const pillarsSorted = [...pillars].sort(
-        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
       );
       const pIdx = pillarsSorted.findIndex((p) => p.name === sourcePillar.name);
       const nextPillar = pIdx >= 0 ? pillarsSorted[pIdx + 1] : null;
 
       if (nextPillar) {
         const firstNextLesson = [...(nextPillar.lessons || [])].sort(
-          (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+          (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
         )[0];
         setSelectedPillar(nextPillar.name);
         setHighlightLessonId(firstNextLesson?.id || null);
@@ -331,13 +331,19 @@ function PlayerLessonsMenu() {
             <div className="h-8 w-64 bg-primary-800 rounded" />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-primary-panel border border-primary-700 h-24 rounded-card" />
+                <div
+                  key={i}
+                  className="bg-primary-panel border border-primary-700 h-24 rounded-card"
+                />
               ))}
             </div>
             <div className="bg-primary-panel border border-primary-700 h-40 rounded-card" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-primary-panel border border-primary-700 h-40 rounded-card" />
+                <div
+                  key={i}
+                  className="bg-primary-panel border border-primary-700 h-40 rounded-card"
+                />
               ))}
             </div>
           </div>
@@ -415,7 +421,7 @@ function PlayerLessonsMenu() {
 
     const previousLessons = pillarLessons.slice(0, lessonIndex);
     const allPreviousCompleted = previousLessons.every((prevLesson) =>
-      completions?.some((c) => c.lesson_id === prevLesson.id)
+      completions?.some((c) => c.lesson_id === prevLesson.id),
     );
 
     if (allPreviousCompleted) {
@@ -445,14 +451,14 @@ function PlayerLessonsMenu() {
     ? lessons.filter((l) => !l.under_construction)
     : [];
   const completedIds = new Set(
-    (completions || []).map((c) => c.lesson_id).filter(Boolean)
+    (completions || []).map((c) => c.lesson_id).filter(Boolean),
   );
   const overallProgressPct =
     openLessons.length > 0
       ? Math.round(
           (openLessons.filter((l) => completedIds.has(l.id)).length /
             openLessons.length) *
-            100
+            100,
         )
       : 0;
 
@@ -463,11 +469,11 @@ function PlayerLessonsMenu() {
   // then shows the paywall CTA instead).
   const nextLesson = (() => {
     const pillarsSorted = [...pillars].sort(
-      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
     );
     for (const p of pillarsSorted) {
       const ls = [...(p.lessons || [])].sort(
-        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
       );
       for (const l of ls) {
         if (l.under_construction && !isPlatformAdmin) continue;
@@ -516,7 +522,7 @@ function PlayerLessonsMenu() {
 
         {/* Header — welcome + eyebrow. Speaks the same visual
             language as the coach dashboard and mental hub. */}
-        <header className="mb-6">
+        {/* <header className="mb-6">
           <Eyebrow className="mb-1">Global Player · Training Ground</Eyebrow>
           <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight text-primary-50">
             {isGuest
@@ -528,12 +534,12 @@ function PlayerLessonsMenu() {
               ? "Every lesson gets you closer to trial-ready English."
               : "Pick up where you left off — your next lesson is one tap away."}
           </p>
-        </header>
+        </header> */}
 
         {/* Vitals strip — 4-up KPI row. Total XP carries tone="accent"
             as the composite hero metric (per DS "one accented tile
             per row" rule). */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <StatTile
             label={<StatIcon Icon={Trophy}>Level</StatIcon>}
             value={playerData.current_level}
@@ -557,14 +563,14 @@ function PlayerLessonsMenu() {
             value={playerData.current_streak}
             caption={playerData.current_streak > 0 ? "day streak" : "no streak yet"}
           />
-        </div>
+        </div> */}
 
         {/* Continue where you left off — hero card. Only renders when
             we have a next lesson. Carries THE lime CTA for this
             screen (per DS "one accent button per view"). */}
         {nextLesson && (
           <Panel
-            eyebrow="Continue where you left off"
+            // eyebrow="Continue where you left off"
             title={nextLesson.lesson.title}
             className="mb-4"
             headerAction={
@@ -590,7 +596,9 @@ function PlayerLessonsMenu() {
             <div className="mt-2">
               <MetricBar
                 label={
-                  userLanguage === "pt" ? "Progresso na edição" : "Edition progress"
+                  userLanguage === "pt"
+                    ? "Progresso na edição"
+                    : "Edition progress"
                 }
                 value={overallProgressPct}
                 signal="accent"
@@ -676,9 +684,7 @@ function PlayerLessonsMenu() {
             className="mb-8"
           >
             <Panel
-              eyebrow={
-                currentPillar.image_url ? undefined : undefined
-              }
+              eyebrow={currentPillar.image_url ? undefined : undefined}
               title={currentPillar.display_name || currentPillar.name}
               meta={
                 userLanguage === "pt"
@@ -714,15 +720,12 @@ function PlayerLessonsMenu() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[...currentLessons]
-                    .sort(
-                      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
-                    )
+                    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
                     .map((lesson, lessonIndex) => {
                       const status = getLessonStatus(lesson);
                       const highlight =
                         (showStartPrompt && lessonIndex === 0) ||
-                        (highlightLessonId &&
-                          lesson.id === highlightLessonId);
+                        (highlightLessonId && lesson.id === highlightLessonId);
                       return (
                         <LessonCard
                           key={lesson.id}
@@ -730,9 +733,7 @@ function PlayerLessonsMenu() {
                           status={status}
                           highlight={highlight}
                           userLanguage={userLanguage}
-                          onConstruction={() =>
-                            setShowConstructionModal(true)
-                          }
+                          onConstruction={() => setShowConstructionModal(true)}
                           profile={profile}
                           t={t}
                         />
@@ -934,17 +935,17 @@ function LessonCard({
     status !== "construction" &&
     status !== "edition_paywall";
 
-  const statusStyle = {
-    completed:
-      "border-primary-700 bg-primary-panel hover:border-accent-400/40",
-    current:
-      "border-accent-400/50 bg-primary-panel hover:border-accent-400",
-    locked: "border-primary-700 bg-primary-panel/50 opacity-60",
-    construction:
-      "border-signal-performance/40 border-dashed bg-primary-panel",
-    edition_paywall:
-      "border-signal-performance/40 border-dashed bg-primary-panel",
-  }[status] || "border-primary-700 bg-primary-panel";
+  const statusStyle =
+    {
+      completed:
+        "border-primary-700 bg-primary-panel hover:border-accent-400/40",
+      current: "border-accent-400/50 bg-primary-panel hover:border-accent-400",
+      locked: "border-primary-700 bg-primary-panel/50 opacity-60",
+      construction:
+        "border-signal-performance/40 border-dashed bg-primary-panel",
+      edition_paywall:
+        "border-signal-performance/40 border-dashed bg-primary-panel",
+    }[status] || "border-primary-700 bg-primary-panel";
 
   const inner = (
     <>
@@ -1038,7 +1039,11 @@ function LessonCard({
   }
   if (status === "construction") {
     return (
-      <button type="button" onClick={onConstruction} className={`${baseClass} text-left`}>
+      <button
+        type="button"
+        onClick={onConstruction}
+        className={`${baseClass} text-left`}
+      >
         {inner}
       </button>
     );
