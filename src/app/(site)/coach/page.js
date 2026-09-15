@@ -1,21 +1,24 @@
-// src/app/(site)/admin/coach-dashboard/page.js
+// src/app/(site)/coach/page.js
 //
-// Coach / agent / academy-owner view of a player roster.
+// The coach-facing roster page. Same visual language as the admin
+// mirror at /admin/coach-dashboard, but hits /api/coach/roster
+// (scoped by user_type) and drops the admin-shaped chrome:
 //
-// This page is a top-tier sales surface: an agent or academy director
-// evaluating whether to buy seats will judge Global Player by what
-// they see here. Every metric answers "how engaged is my roster?"
-// with a visual an evaluator can absorb in one glance.
+//   - Header eyebrow reads "Coach dashboard" instead of "Squad
+//     platform · admin"
+//   - Player cards link out to /coach/player/[id] (v3 shell), not
+//     the admin view
+//   - No "Back to admin" link — coaches don't have an admin surface
+//     to go back to
 //
-// Layout:
-//   Header — back link, eyebrow, title, filter chips (academy, refresh)
-//   Engagement summary — 5-tile StatTile strip + weekly engagement MetricBar
-//   Filter row — search, sort, status chips
-//   Player grid — signal-tinted cards, one per player
+// Access: `coach` OR `platform_admin` (server-gated by assertCoach
+// on the API route + ProtectedRoute on the client).
 //
-// Access: platform_admin for now (server-gated by assertAdmin). When
-// the coach user_type lands (roadmap v2), this same page renders for
-// that role too and the route moves to /coach.
+// v2.5 follow-ups queued (see coach roadmap in memory):
+//   - Multi-academy support via player_coach_links table
+//   - Academy switcher for coaches representing multiple clubs
+//   - Coach signup / invite flow
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -29,9 +32,9 @@ import {
   AlertTriangle,
   Sparkles,
   Search,
-  ChevronLeft,
   Trophy,
   RefreshCcw,
+  ArrowRight,
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Avatar from "@/components/ui/avatar";
@@ -40,20 +43,19 @@ import StatTile from "@/components/ui/stat-tile";
 import MetricBar from "@/components/ui/metric-bar";
 import Chip from "@/components/ui/chip";
 
-export default function CoachDashboardPage() {
+export default function CoachPage() {
   return (
-    <ProtectedRoute>
-      <CoachDashboardContent />
+    <ProtectedRoute allowedRoles={["coach", "platform_admin"]}>
+      <CoachContent />
     </ProtectedRoute>
   );
 }
 
-function CoachDashboardContent() {
+function CoachContent() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [academyId, setAcademyId] = useState("");
   const [q, setQ] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -63,11 +65,7 @@ function CoachDashboardContent() {
     else setRefreshing(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (academyId) params.set("academy_id", academyId);
-      const res = await fetch(
-        `/api/admin/coach/roster?${params.toString()}`,
-      );
+      const res = await fetch("/api/coach/roster");
       const json = await res.json();
       if (!res.ok) setError(json.error || "load_failed");
       else setData(json);
@@ -81,8 +79,7 @@ function CoachDashboardContent() {
 
   useEffect(() => {
     load(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [academyId]);
+  }, []);
 
   const filteredSorted = useMemo(() => {
     if (!data) return [];
@@ -106,7 +103,6 @@ function CoachDashboardContent() {
           return (a.full_name || "").localeCompare(b.full_name || "");
         case "recent":
         default: {
-          // Nulls to the bottom, then newest activity first.
           if (!a.last_activity_at && !b.last_activity_at) return 0;
           if (!a.last_activity_at) return 1;
           if (!b.last_activity_at) return -1;
@@ -120,54 +116,29 @@ function CoachDashboardContent() {
   return (
     <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-1 text-sm text-primary-400 hover:text-primary-100 transition-colors mb-4"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to admin
-        </Link>
-
         <header className="mb-6 flex items-end justify-between flex-wrap gap-3">
           <div>
-            <Eyebrow className="mb-1">Global Player · Squad platform</Eyebrow>
+            <Eyebrow className="mb-1">Global Player · Coach dashboard</Eyebrow>
             <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight text-primary-50">
-              Player roster
+              Your roster
             </h1>
             <p className="text-sm text-primary-400 mt-2 max-w-xl leading-relaxed">
-              Track lesson progression and mental training engagement across
-              your academy or coaching group.
+              Every player you coach, in one view. Track lesson progression
+              and mental training engagement — see who&apos;s on a roll and who
+              needs a nudge.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {data?.academies?.length > 0 && (
-              <select
-                value={academyId}
-                onChange={(e) => setAcademyId(e.target.value)}
-                className="bg-primary-panel border border-primary-700 text-primary-100 text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-accent-400 transition-colors"
-              >
-                <option value="" className="bg-primary-800 text-primary-50">
-                  All academies
-                </option>
-                {data.academies.map((a) => (
-                  <option key={a.id} value={a.id} className="bg-primary-800 text-primary-50">
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            )}
-            <button
-              type="button"
-              onClick={() => load(false)}
-              disabled={refreshing}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary-panel hover:bg-primary-800 text-primary-200 hover:text-primary-50 border border-primary-700 text-xs disabled:opacity-50 transition-colors"
-            >
-              <RefreshCcw
-                className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => load(false)}
+            disabled={refreshing}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary-panel hover:bg-primary-800 text-primary-200 hover:text-primary-50 border border-primary-700 text-xs disabled:opacity-50 transition-colors"
+          >
+            <RefreshCcw
+              className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
         </header>
 
         {loading ? (
@@ -177,18 +148,26 @@ function CoachDashboardContent() {
           </div>
         ) : error ? (
           <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
-            Could not load roster.
+            Could not load your roster.
+          </div>
+        ) : data.coach?.needs_academy_link ? (
+          // Onboarding gap — coach exists but isn't linked to an
+          // academy. This will get a proper invite/link UI in v2.5;
+          // for now a plain message with a contact prompt.
+          <div className="rounded-card border border-primary-700 bg-primary-panel p-8 text-center">
+            <Users2 className="w-10 h-10 text-primary-500 mx-auto mb-3" />
+            <p className="text-primary-100 font-semibold">
+              Your account isn&apos;t linked to an academy yet.
+            </p>
+            <p className="text-sm text-primary-400 mt-1 max-w-md mx-auto">
+              Once Global Player links your coach account to an academy,
+              your players will appear here.
+            </p>
           </div>
         ) : (
           <>
             <AggregateStrip aggregate={data.aggregate} />
 
-            {/* Weekly roster engagement — the single MetricBar on this
-                page. Reads "68% of your roster active this week" as a
-                sales-story headline. Uses accent-400 (the composite
-                readiness colour, reserved for the top-line success
-                signal). Total-players guard prevents the bar rendering
-                if the coach has an empty roster. */}
             {data.aggregate.total_players > 0 && (
               <div className="mt-4">
                 <MetricBar
@@ -203,7 +182,6 @@ function CoachDashboardContent() {
               </div>
             )}
 
-            {/* Filter + search + sort row */}
             <div className="mt-6 mb-4 rounded-card border border-primary-700 bg-primary-panel p-3 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -265,10 +243,6 @@ function CoachDashboardContent() {
 /* ─── aggregate strip ─────────────────────────────────────────── */
 
 function AggregateStrip({ aggregate }) {
-  // 5-up StatTile row. The "Active this week" tile carries
-  // tone="accent" as the sales-headline hero — an agent's first
-  // question is always "how many of my players are actually using
-  // this?" We answer it in the primary position with lime.
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       <StatTile
@@ -296,8 +270,6 @@ function AggregateStrip({ aggregate }) {
   );
 }
 
-// Small helper to render a StatTile label as icon + text without
-// forcing every caller to write the same span-flex boilerplate.
 function StatIcon({ Icon, children }) {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -309,19 +281,9 @@ function StatIcon({ Icon, children }) {
 
 /* ─── filter chips ────────────────────────────────────────────── */
 
-// Status filter row — one Chip per bucket, each in its own signal
-// tone so a coach's peripheral vision maps colour → status:
-//   Active → accent (lime, the "winning" state)
-//   Dormant → performance (orange, needs attention)
-//   At risk → alert (red, urgent)
-//   Never → slate (never engaged)
-//   All → slate (no signal)
 function StatusChipRow({ statusFilter, setStatusFilter, players }) {
   const items = [
     { value: "all", label: "All", count: players.length, signal: undefined },
-    // Active — no explicit signal, so Chip falls to its default lime
-    // selected state. Semantically this is the "winning" bucket, the
-    // sales-headline segment, so it belongs on accent-400.
     {
       value: "active",
       label: "Active",
@@ -372,12 +334,14 @@ function PlayerCard({ player }) {
   const statusTone = STATUS_STYLES[player.status] || STATUS_STYLES.never;
   const daysSince = player.days_since_last;
 
+  // Coach player cards link to the drill-in shell. Wrapping the
+  // whole card in a Link makes the entire tile clickable, which reads
+  // "explore this player" more clearly than a small chevron button.
   return (
-    <article
-      className={`relative rounded-card border ${statusTone.card} p-4 overflow-hidden transition-colors hover:brightness-110`}
+    <Link
+      href={`/coach/player/${player.id}`}
+      className={`group relative rounded-card border ${statusTone.card} p-4 overflow-hidden transition-colors hover:brightness-110 block`}
     >
-      {/* Corner status dot — pulses on 'active' so a coach's eye
-          catches the players currently on a roll. */}
       <span
         className={`absolute top-3 right-3 w-2 h-2 rounded-full ${statusTone.dot} ${
           player.status === "active" ? "animate-status-pulse" : ""
@@ -392,18 +356,16 @@ function PlayerCard({ player }) {
           size="md"
         />
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-primary-50 text-sm truncate">
+          <h3 className="font-semibold text-primary-50 text-sm truncate group-hover:text-accent-400 transition-colors">
             {player.full_name || "—"}
           </h3>
           <p className="text-[10px] uppercase tracking-label text-primary-400">
             {player.edition || "—"}
           </p>
         </div>
+        <ArrowRight className="w-4 h-4 text-primary-500 group-hover:text-accent-400 transition-colors" />
       </div>
 
-      {/* Three-metric row: lessons / streak / XP. Signal palette
-          maps feature identity: sky = English/skills, orange =
-          performance/streak, lime = composite XP. */}
       <div className="grid grid-cols-3 gap-2 mb-3">
         <Metric
           Icon={Trophy}
@@ -427,7 +389,6 @@ function PlayerCard({ player }) {
         />
       </div>
 
-      {/* Bottom row — mental minutes + last-activity chip */}
       <div className="flex items-center justify-between text-[11px]">
         <span className="text-primary-400">
           <span className="tabular-nums text-primary-100 font-semibold">
@@ -449,7 +410,7 @@ function PlayerCard({ player }) {
           animation: status-pulse 2s ease-out infinite;
         }
       `}</style>
-    </article>
+    </Link>
   );
 }
 
@@ -474,10 +435,6 @@ function Metric({ Icon, value, sub, signal }) {
   );
 }
 
-// STATUS_STYLES — rebuilt on the signal palette. Active is the
-// "winning" state so it carries accent-400 (the composite success
-// colour); dormant/at_risk carry performance/alert per the DS
-// convention; never-active sits on neutral slate.
 const STATUS_STYLES = {
   active: {
     card: "border-accent-400/30 bg-accent-400/[0.04]",
