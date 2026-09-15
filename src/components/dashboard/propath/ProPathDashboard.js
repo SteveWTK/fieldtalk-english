@@ -268,14 +268,14 @@ export default function ProPathDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#070707] flex items-center justify-center">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden">
       {/* Ambient glows — lime + slate to match the /propath landing
           identity. Kept subtle so the tiles carry the visual weight. */}
       <div className="absolute inset-0 pointer-events-none">
@@ -315,13 +315,13 @@ export default function ProPathDashboard() {
         {/* <NotificationsOptIn /> */}
 
         {/* ── Hero strip ─────────────────────────────────────────── */}
-        <section className="rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 p-5 sm:p-6">
+        <section className="rounded-panel bg-primary-panel backdrop-blur-sm border border-primary-700 p-5 sm:p-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setProfileModalOpen(true)}
               aria-label={copy.editProfile}
-              className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shrink-0 ring-2 ring-white/15 hover:ring-accent-400 transition-shadow"
+              className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shrink-0 ring-2 ring-primary-600 hover:ring-accent-400 transition-shadow"
             >
               {avatarUrl ? (
                 <Image
@@ -333,17 +333,17 @@ export default function ProPathDashboard() {
                   unoptimized
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-300 flex items-center justify-center text-primary-900 font-black text-xl">
+                <div className="w-full h-full bg-primary-700 flex items-center justify-center text-primary-50 font-black text-xl">
                   {initials || "•"}
                 </div>
               )}
-              <span className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-primary-800 border-2 border-[#070707] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Pencil className="w-3 h-3 text-white/80" />
+              <span className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-primary-800 border-2 border-primary-900 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Pencil className="w-3 h-3 text-primary-100" />
               </span>
             </button>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-accent-400 font-bold">
                 {copy.heroEyebrow}
               </p>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate mt-0.5">
@@ -351,7 +351,7 @@ export default function ProPathDashboard() {
               </h1>
               <div className="flex items-center gap-x-3 gap-y-2 mt-1.5 flex-wrap">
                 {position && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400/15 border border-accent-400/30 text-accent-200 text-[11px] font-bold uppercase tracking-wider">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400/15 border border-accent-400/30 text-accent-300 text-[11px] font-bold uppercase tracking-wider">
                     {position}
                   </span>
                 )}
@@ -359,9 +359,9 @@ export default function ProPathDashboard() {
                     active paid / trialing / granted access record.
                     Clickable straight through to the Manage Subscription
                     page so users can review or cancel without hunting
-                    for the setting. Emerald tint (vs the position
-                    badge's lime) so the two badges are distinct at a
-                    glance. */}
+                    for the setting. Uses the primary slate tint so it
+                    reads as neutral status alongside the position
+                    badge's lime. */}
                 {hasFullAccess && (
                   <Link
                     href="/settings/subscription"
@@ -370,13 +370,13 @@ export default function ProPathDashboard() {
                         ? "Gerenciar sua assinatura"
                         : "Manage your subscription"
                     }
-                    className="group inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-200 hover:bg-emerald-400/25 hover:border-emerald-300 text-[11px] font-bold uppercase tracking-wider transition-colors"
+                    className="group inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-700 border border-primary-600 text-primary-100 hover:bg-primary-600 hover:border-primary-400 text-[11px] font-bold uppercase tracking-wider transition-colors"
                   >
                     <ShieldCheck className="w-3 h-3" />
                     {lang === "pt" ? "Acesso Completo" : "Full Access"}
                   </Link>
                 )}
-                <span className="text-xs text-white/55 tabular-nums">
+                <span className="text-xs text-primary-400 tabular-nums">
                   {totalXp.toLocaleString()} {copy.xp}
                 </span>
                 {/* Next-lesson button. Sits inline with position + XP
@@ -391,15 +391,15 @@ export default function ProPathDashboard() {
             {nextLessonInfo && (
               <Link
                 href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
-                className="max-[759px]:hidden group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-sm transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
+                className="max-[759px]:hidden group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold transition-colors"
               >
                 {nextLessonInfo.isResume ? (
-                  <PlayCircle className="w-4 h-4 text-accent-300 shrink-0" />
+                  <PlayCircle className="w-4 h-4 shrink-0" />
                 ) : (
-                  <ArrowRight className="w-4 h-4 text-accent-300 shrink-0" />
+                  <ArrowRight className="w-4 h-4 shrink-0" />
                 )}
                 <span className="whitespace-nowrap">
-                  <span className="font-bold text-accent-200 group-hover:text-accent-100">
+                  <span className="font-bold">
                     {nextLessonInfo.isResume
                       ? lang === "pt"
                         ? "Continuar"
@@ -408,7 +408,7 @@ export default function ProPathDashboard() {
                         ? "Próxima aula"
                         : "Next lesson"}
                   </span>
-                  <span className="text-white/65">
+                  <span className="font-normal">
                     {" · "}
                     {/* Skill-axis segment hides on the narrowest
                             phones (<450px) so the button fits inside
@@ -428,7 +428,7 @@ export default function ProPathDashboard() {
                     {nextLessonInfo.sortOrder}
                   </span>
                 </span>
-                <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
+                <ChevronRight className="w-3 h-3 shrink-0 group-hover:translate-x-0.5 transition-all" />
               </Link>
             )}
           </div>
@@ -437,15 +437,15 @@ export default function ProPathDashboard() {
           {nextLessonInfo && (
             <Link
               href={`/lesson/${encodeURIComponent(nextLessonInfo.id)}`}
-              className="group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-accent-400/40 bg-accent-400/[0.10] hover:bg-accent-400/[0.22] hover:border-accent-400/70 text-sm transition-colors shadow-[0_0_18px_rgba(163,230,53,0.10)] hover:shadow-[0_0_24px_rgba(163,230,53,0.20)]"
+              className="group inline-flex items-center gap-1 sm:gap-1.5 max-w-full px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold transition-colors"
             >
               {nextLessonInfo.isResume ? (
-                <PlayCircle className="w-4 h-4 text-accent-300 shrink-0" />
+                <PlayCircle className="w-4 h-4 shrink-0" />
               ) : (
-                <ArrowRight className="w-4 h-4 text-accent-300 shrink-0" />
+                <ArrowRight className="w-4 h-4 shrink-0" />
               )}
               <span className="whitespace-nowrap">
-                <span className="font-bold text-accent-200 group-hover:text-accent-100">
+                <span className="font-bold">
                   {nextLessonInfo.isResume
                     ? lang === "pt"
                       ? "Continuar"
@@ -454,7 +454,7 @@ export default function ProPathDashboard() {
                       ? "Próxima aula"
                       : "Next lesson"}
                 </span>
-                <span className="text-white/65">
+                <span className="font-normal">
                   {" · "}
                   {/* Skill-axis segment hides on the narrowest
                             phones (<400px) so the button fits inside
@@ -473,7 +473,7 @@ export default function ProPathDashboard() {
                   {lang === "pt" ? "Aula" : "Lesson"} {nextLessonInfo.sortOrder}
                 </span>
               </span>
-              <ChevronRight className="w-3 h-3 text-accent-300/70 shrink-0 group-hover:translate-x-0.5 group-hover:text-accent-200 transition-all" />
+              <ChevronRight className="w-3 h-3 shrink-0 group-hover:translate-x-0.5 transition-all" />
             </Link>
           )}
         </section>
@@ -525,19 +525,19 @@ export default function ProPathDashboard() {
             confirmation; this section is the celebration moment
             with a real download CTA. */}
         {radar.certificateReady && (
-          <section className="rounded-3xl bg-gradient-to-br from-accent-400/[0.15] via-accent-400/[0.08] to-transparent border border-accent-400/40 p-5 sm:p-6">
+          <section className="rounded-panel bg-primary-panel border border-accent-400/40 p-5 sm:p-6">
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-accent-400/25 flex items-center justify-center shrink-0">
-                <Trophy className="w-6 h-6 text-accent-300" />
+              <div className="w-12 h-12 rounded-card bg-accent-400/20 flex items-center justify-center shrink-0">
+                <Trophy className="w-6 h-6 text-accent-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300 font-bold">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-accent-400 font-bold">
                   {copy.certificateUnlockedEyebrow(radar.currentLevel)}
                 </p>
                 <h3 className="text-lg font-black mt-1">
                   {copy.certificateUnlockedTitle(radar.currentLevel)}
                 </h3>
-                <p className="text-sm text-white/75 mt-1 leading-relaxed">
+                <p className="text-sm text-primary-300 mt-1 leading-relaxed">
                   {copy.certificateUnlockedBody}
                 </p>
                 <button
@@ -613,18 +613,18 @@ function QuickLink({ href, Icon, title, body }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.06] border border-white/10 hover:border-accent-400/40 p-4 transition-colors"
+      className="group flex items-center gap-3 rounded-card bg-primary-panel hover:bg-primary-800 border border-primary-700 hover:border-accent-400/40 p-4 transition-colors"
     >
-      <div className="w-10 h-10 rounded-xl bg-accent-400/15 flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5 text-accent-300" />
+      <div className="w-10 h-10 rounded-card bg-accent-400/15 flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5 text-accent-400" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-white truncate">{title}</p>
-        <p className="text-[11px] text-white/55 leading-relaxed truncate">
+        <p className="text-sm font-bold text-primary-50 truncate">{title}</p>
+        <p className="text-[11px] text-primary-400 leading-relaxed truncate">
           {body}
         </p>
       </div>
-      <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-accent-300 group-hover:translate-x-0.5 transition-all shrink-0" />
+      <ChevronRight className="w-4 h-4 text-primary-500 group-hover:text-accent-400 group-hover:translate-x-0.5 transition-all shrink-0" />
     </Link>
   );
 }

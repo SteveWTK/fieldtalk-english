@@ -23,7 +23,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
   t,
@@ -36,6 +36,10 @@ import {
 } from "@/lib/mental/constants";
 import LivingOrb from "@/components/mental/LivingOrb";
 import { awardXp } from "@/lib/xp/awardXp";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Chip } from "@/components/ui/chip";
+import { Input } from "@/components/ui/input";
 
 // Default 4-7-8 rhythm — activities can override via
 // content.orb.breathe_{in,hold,out}. The phase label ("Breathe in"
@@ -64,12 +68,14 @@ export default function MeditationPlayer({
     (activity?.activity_type === "silent_timer" ? "silent" : "guided");
 
   // Orb config — per-activity overrides in `content.orb`, falls back
-  // to type-default accent + 4-7-8 breathing.
+  // to type-default signal + 4-7-8 breathing. `signal` is a DS signal
+  // name (mental|performance|english) or null for silent_timer, in
+  // which case we hand the orb "slate" so it stays neutral.
   const orbConfig = activity?.content?.orb || {};
   const accent =
     orbConfig.accent ||
-    ACTIVITY_TONES[activity?.activity_type || "meditation"]?.accent ||
-    "teal";
+    ACTIVITY_TONES[activity?.activity_type || "meditation"]?.signal ||
+    "slate";
   const breatheIn = Number(orbConfig.breathe_in) || DEFAULT_BREATHE.in;
   const breatheHold = Number.isFinite(Number(orbConfig.breathe_hold))
     ? Number(orbConfig.breathe_hold)
@@ -249,7 +255,7 @@ export default function MeditationPlayer({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black text-white overflow-hidden"
+      className="fixed inset-0 z-50 bg-primary-900 text-primary-50 overflow-hidden"
       role="dialog"
       aria-modal="true"
     >
@@ -258,16 +264,22 @@ export default function MeditationPlayer({
           the visual center. */}
       <AmbientBackdrop accent={accent} />
 
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute top-4 right-4 z-30 p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white"
-        aria-label={t("player.close", lang)}
-      >
-        <X className="w-5 h-5" />
-      </button>
+      <div className="absolute top-4 right-4 z-30">
+        <IconButton
+          Icon={X}
+          label={t("player.close", lang)}
+          variant="ghost"
+          size="md"
+          onClick={onClose}
+        />
+      </div>
 
-      <div className="relative z-10 h-full flex flex-col items-center justify-center p-4">
+      {/* Outer flex column — vertical centring is turned off in
+          favour of `justify-start` + top padding so the controls
+          never fall below the fold on short laptop viewports. The
+          orb-and-controls stack (roughly 500-560px tall on a 240-
+          radius orb) fits inside ~700px with room for the header X. */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-start pt-14 pb-6 px-4 overflow-y-auto">
         {phase === "setup" && (
           <SilentSetup
             lang={lang}
@@ -346,14 +358,16 @@ export default function MeditationPlayer({
 }
 
 function AmbientBackdrop({ accent }) {
+  // Signal-tinted radial washes — one per LivingOrb accent key. These
+  // sit behind the orb art so they're allowed to use raw signal hexes
+  // (feature identity), not brand tokens.
   const gradient = {
-    teal: "radial-gradient(ellipse at 20% 20%, rgba(20,184,166,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(59,130,246,0.12), transparent 55%)",
-    violet:
-      "radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(219,39,119,0.10), transparent 55%)",
-    emerald:
-      "radial-gradient(ellipse at 20% 20%, rgba(16,185,129,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(163,230,53,0.10), transparent 55%)",
-    amber:
-      "radial-gradient(ellipse at 20% 20%, rgba(245,158,11,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.10), transparent 55%)",
+    mental:
+      "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
+    english:
+      "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,58,138,0.10), transparent 55%)",
+    performance:
+      "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(124,45,18,0.10), transparent 55%)",
     slate:
       "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,41,59,0.30), transparent 55%)",
   }[accent] || "";
@@ -407,14 +421,17 @@ function PhaseAndOrb({
     mode === "silent" ? t("player.justBreathe", lang) : null;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-2">
       {title && (
-        <p className="text-[11px] uppercase tracking-[0.35em] text-white/40 font-semibold">
+        <p className="text-[11px] uppercase tracking-[0.35em] text-primary-500 font-semibold">
           {title}
         </p>
       )}
+      {/* Orb size 240 (was 280) so PhaseAndOrb + PlayerControls fit
+          inside a laptop viewport (~800px inner height) without the
+          controls being clipped at the bottom. */}
       <LivingOrb
-        size={280}
+        size={240}
         phaseLabel={phaseLabel}
         subLabel={subLabel}
         paused={paused}
@@ -423,7 +440,7 @@ function PhaseAndOrb({
         breatheHold={breatheHold}
         breatheOut={breatheOut}
       />
-      <p className="mt-2 text-3xl font-light tabular-nums text-white/85">
+      <p className="text-2xl sm:text-3xl font-light tabular-nums text-primary-100">
         {formatMMSS(elapsedSec)}
       </p>
     </div>
@@ -448,13 +465,13 @@ function PlayerControls({
     durationSec > 0 ? Math.min(100, (elapsedSec / durationSec) * 100) : 0;
 
   return (
-    <div className="mt-8 w-full max-w-md flex flex-col items-center gap-4">
+    <div className="mt-3 w-full max-w-md flex flex-col items-center gap-3">
       {/* Progress bar — thin, unobtrusive. Only shown when we know
           the total (silent mode always; guided once metadata loads). */}
       {durationSec > 0 && (
-        <div className="w-full h-0.5 rounded-full bg-white/[0.06] overflow-hidden">
+        <div className="w-full h-0.5 rounded-full bg-primary-800 overflow-hidden">
           <div
-            className="h-full bg-white/70 transition-all"
+            className="h-full bg-primary-300 transition-all"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -462,7 +479,7 @@ function PlayerControls({
 
       <div className="flex items-center gap-3">
         {showAudioLangSwitch && (
-          <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5 mr-2">
+          <div className="inline-flex rounded-full bg-primary-800 border border-primary-700 p-0.5 mr-2">
             {["pt", "en"].map((code) => (
               <button
                 key={code}
@@ -470,8 +487,8 @@ function PlayerControls({
                 onClick={() => onAudioLangChange(code)}
                 className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-full transition-colors ${
                   audioLang === code
-                    ? "bg-white/20 text-white"
-                    : "text-white/50 hover:text-white"
+                    ? "bg-primary-600 text-primary-50"
+                    : "text-primary-400 hover:text-primary-50"
                 }`}
               >
                 {code}
@@ -482,23 +499,24 @@ function PlayerControls({
         <button
           type="button"
           onClick={onPauseToggle}
-          className="w-14 h-14 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 flex items-center justify-center transition-colors"
+          aria-label={paused ? t("player.resume", lang) : t("player.pause", lang)}
+          className="w-14 h-14 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-500 flex items-center justify-center text-primary-50 transition-colors"
         >
           {paused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
         </button>
         {showMute && (
-          <button
-            type="button"
+          <IconButton
+            Icon={muted ? VolumeX : Volume2}
+            label={muted ? t("player.unmute", lang) : t("player.mute", lang)}
+            variant="ghost"
+            size="md"
             onClick={onMuteToggle}
-            className="w-10 h-10 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-white/70"
-          >
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+          />
         )}
         <button
           type="button"
           onClick={onEnd}
-          className="ml-4 text-xs text-white/45 hover:text-white/80 underline underline-offset-4"
+          className="ml-4 text-xs text-primary-400 hover:text-primary-100 underline underline-offset-4"
         >
           {t("player.complete", lang)}
         </button>
@@ -527,82 +545,77 @@ function SilentSetup({
 
   return (
     <div className="w-full max-w-lg text-center">
-      <p className="text-[10px] uppercase tracking-[0.35em] text-white/40 font-semibold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.35em] text-primary-500 font-semibold mb-2">
         {t("player.silentSetupTitle", lang)}
       </p>
-      <h2 className="text-2xl sm:text-3xl font-light tracking-tight mb-6">
+      <h2 className="text-2xl sm:text-3xl font-light tracking-tight mb-6 text-primary-50">
         {t("hub.silentTimerCard.title", lang)}
       </h2>
 
       {/* Length picker */}
       <div className="mb-6">
-        <p className="text-xs uppercase tracking-wider text-white/50 font-semibold mb-3">
+        <p className="text-xs uppercase tracking-wider text-primary-400 font-semibold mb-3">
           {t("player.silentLength", lang)}
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {presets.map((m) => (
-            <button
+            <Chip
               key={m}
-              type="button"
+              as="button"
+              size="sm"
+              selected={silentMinutes === m}
               onClick={() => setSilentMinutes(m)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
-                silentMinutes === m
-                  ? "border-white/40 bg-white/15 text-white"
-                  : "border-white/10 bg-white/[0.03] text-white/60 hover:text-white hover:border-white/25"
-              }`}
             >
               {m} {t("player.silentLengthMin", lang)}
-            </button>
+            </Chip>
           ))}
         </div>
-        <div className="mt-3 inline-flex items-center gap-2 text-xs text-white/50">
-          <span>{t("player.silentCustom", lang)}</span>
-          <input
+        <div className="mt-3 inline-flex items-end gap-2 text-xs text-primary-400">
+          <span className="pb-3">{t("player.silentCustom", lang)}</span>
+          <Input
             type="number"
             min={1}
             max={120}
             value={silentMinutes}
             onChange={(e) => setSilentMinutes(Number(e.target.value) || 1)}
-            className="w-16 bg-white/[0.06] border border-white/15 rounded-lg px-2 py-1 text-center text-white text-sm tabular-nums focus:outline-none focus:border-white/40"
+            wrapperClassName="w-20"
+            className="text-center tabular-nums"
           />
-          <span>{t("player.silentLengthMin", lang)}</span>
+          <span className="pb-3">{t("player.silentLengthMin", lang)}</span>
         </div>
       </div>
 
       {/* Bell interval */}
       <div className="mb-8">
-        <p className="text-xs uppercase tracking-wider text-white/50 font-semibold mb-3">
+        <p className="text-xs uppercase tracking-wider text-primary-400 font-semibold mb-3">
           {t("player.silentBellInterval", lang)}
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {bellOptions.map((m) => (
-            <button
+            <Chip
               key={m}
-              type="button"
+              as="button"
+              size="sm"
+              selected={bellIntervalMin === m}
               onClick={() => setBellIntervalMin(m)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                bellIntervalMin === m
-                  ? "border-white/40 bg-white/15 text-white"
-                  : "border-white/10 bg-white/[0.03] text-white/60 hover:text-white hover:border-white/25"
-              }`}
             >
               {m === 0
                 ? t("player.silentBellsOff", lang)
                 : `${m} ${t("player.silentLengthMin", lang)}`}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
 
-      <button
-        type="button"
+      <Button
+        variant="primary"
+        size="md"
+        Icon={Play}
         onClick={onStart}
         disabled={silentMinutes < 1}
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-bold text-sm disabled:opacity-50"
       >
-        <Play className="w-4 h-4" />
         {t("player.silentBegin", lang)}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -618,28 +631,31 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
 
   return (
     <div className="w-full max-w-md text-center">
-      <p className="text-[10px] uppercase tracking-[0.35em] text-white/40 font-semibold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.35em] text-primary-500 font-semibold mb-2">
         {t("player.comprehensionTitle", lang)}
       </p>
-      <h2 className="text-xl font-light tracking-tight mb-6">{prompt}</h2>
+      <h2 className="text-xl font-light tracking-tight mb-6 text-primary-50">{prompt}</h2>
       <div className="space-y-2 mb-6">
         {options.map((opt, i) => {
           const label = pickLang(opt.label, audioLang);
           const isSelected = selectedIdx === i;
           const isCorrect = opt.correct === true;
+          // Reveal palette — correct = accent lime, incorrect selection
+          // = signal-alert red, non-selected muted. Before answering
+          // the row is a neutral primary-800 pill.
           const revealStyle = answered
             ? isCorrect
-              ? "border-emerald-400/60 bg-emerald-500/10 text-white"
+              ? "border-accent-400/60 bg-accent-400/10 text-primary-50"
               : isSelected
-                ? "border-red-400/60 bg-red-500/10 text-white"
-                : "border-white/10 bg-white/[0.02] text-white/50"
-            : "border-white/15 bg-white/[0.04] text-white/85 hover:border-white/30";
+                ? "border-signal-alert/60 bg-signal-alert/10 text-primary-50"
+                : "border-primary-700 bg-primary-panel text-primary-400"
+            : "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500";
           return (
             <button
               key={i}
               type="button"
               onClick={() => !answered && onSelect(i)}
-              className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${revealStyle}`}
+              className={`w-full text-left px-4 py-3 rounded-card border transition-colors ${revealStyle}`}
             >
               {label}
             </button>
@@ -647,23 +663,23 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
         })}
       </div>
       {answered && explanation && (
-        <p className="text-sm text-white/70 mb-4">
-          <span className={correct ? "text-emerald-300 font-bold" : "text-amber-300 font-bold"}>
+        <p className="text-sm text-primary-300 mb-4">
+          <span className={correct ? "text-accent-300 font-bold" : "text-signal-performance font-bold"}>
             {correct ? t("player.correct", lang) : t("player.notQuite", lang)}
           </span>{" "}
           {explanation}
         </p>
       )}
       {answered && (
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
           onClick={onContinue}
           disabled={submitting}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm disabled:opacity-50"
+          loading={submitting}
         >
-          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {t("player.continue", lang)}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -672,26 +688,22 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
 function CompletionScreen({ title, xpAwarded, onClose, lang }) {
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
-      <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
-        <Sparkles className="w-7 h-7 text-emerald-300" />
+      <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
+        <Sparkles className="w-7 h-7 text-accent-300" />
       </div>
-      <h2 className="text-2xl font-light tracking-tight mb-2">
+      <h2 className="text-2xl font-light tracking-tight mb-2 text-primary-50">
         {t("player.completedCelebration", lang)}
       </h2>
-      {title && <p className="text-sm text-white/60 mb-4">{title}</p>}
+      {title && <p className="text-sm text-primary-300 mb-4">{title}</p>}
       {xpAwarded > 0 && (
-        <p className="inline-block px-4 py-2 rounded-full bg-emerald-500/15 text-emerald-200 font-bold text-lg tabular-nums">
+        <p className="inline-block px-4 py-2 rounded-full bg-accent-400/15 text-accent-300 font-bold text-lg tabular-nums">
           {t("player.xpAwarded", lang).replace("{n}", xpAwarded)}
         </p>
       )}
       <div className="mt-6">
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm"
-        >
+        <Button variant="primary" size="md" onClick={onClose}>
           {t("player.close", lang)}
-        </button>
+        </Button>
       </div>
       <style jsx>{`
         @keyframes fade-in {

@@ -76,8 +76,8 @@ function DashboardContent() {
   // user sees on their dashboard. Small detail, matters.
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-[#070707] flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-white/40 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -281,14 +281,14 @@ function WC2026DashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#070707] flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden">
       {/* Ambient glows — same vocabulary as the WC landing */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -316,7 +316,7 @@ function WC2026DashboardContent() {
         <div className="flex items-center justify-between">
           <Link
             href="/lesson"
-            className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
           >
             <ChevronLeft className="w-4 h-4" />
             {t("back_to_lessons", "Back to lessons")}
@@ -328,7 +328,7 @@ function WC2026DashboardContent() {
             {profile?.user_type === "platform_admin" && (
               <Link
                 href="/games"
-                className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white"
+                className="inline-flex items-center gap-1.5 text-sm text-primary-300 hover:text-primary-50"
               >
                 <Gamepad2 className="w-4 h-4" />
                 {t("game_centre_link", "Game Centre")}
@@ -346,24 +346,24 @@ function WC2026DashboardContent() {
         {pendingResume && resumeHref && (
           <Link
             href={resumeHref}
-            className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-transparent border border-emerald-400/40 hover:border-emerald-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
+            className="group flex items-center justify-between gap-3 rounded-card bg-accent-400/10 border border-accent-400/40 hover:border-accent-300 px-4 sm:px-5 py-3 sm:py-3.5 transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="shrink-0 w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center">
-                <BookOpen className="w-4 h-4 text-emerald-200" />
+              <div className="shrink-0 w-9 h-9 rounded-full bg-accent-400/20 flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-accent-300" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-wider text-emerald-200/80 font-semibold">
+                <p className="text-[11px] uppercase tracking-wider text-accent-300 font-semibold">
                   {t("resume_eyebrow", "Pick up where you left off")}
                 </p>
-                <p className="text-sm sm:text-base font-bold text-white truncate">
+                <p className="text-sm sm:text-base font-bold text-primary-50 truncate">
                   {pendingResume.lessonTitle
                     ? `${t("resume_named_prefix", "Resume — ")}${pendingResume.lessonTitle}`
                     : t("resume_generic", "Resume your lesson")}
                 </p>
               </div>
             </div>
-            <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500 group-hover:bg-emerald-400 text-[#062013] text-xs sm:text-sm font-bold tracking-wide">
+            <span className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent-400 group-hover:bg-accent-300 text-primary-900 text-xs sm:text-sm font-bold tracking-wide">
               {t("resume_cta", "Resume")}
               <ArrowRight className="w-3.5 h-3.5" />
             </span>
@@ -390,7 +390,7 @@ function WC2026DashboardContent() {
         {/* ── Hero strip ─────────────────────────────────────────────── */}
         <section
           data-tour-id="xp-bar"
-          className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6"
+          className="rounded-panel bg-primary-panel border border-primary-700 backdrop-blur-sm p-5 sm:p-6"
         >
           <div className="flex items-center gap-4">
             {/* Avatar — image if set, otherwise initials on a gradient. */}
@@ -398,7 +398,7 @@ function WC2026DashboardContent() {
               type="button"
               onClick={() => setProfileModalOpen(true)}
               aria-label="Edit profile"
-              className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0 ring-2 ring-white/15 hover:ring-emerald-400 transition-shadow"
+              className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shrink-0 ring-2 ring-primary-600 hover:ring-accent-400 transition-shadow"
             >
               {avatarUrl ? (
                 <Image
@@ -414,11 +414,11 @@ function WC2026DashboardContent() {
                   unoptimized
                 />
               ) : (
-                <span className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-blue-700 text-white font-bold text-lg sm:text-xl">
+                <span className="absolute inset-0 flex items-center justify-center bg-primary-700 text-primary-50 font-bold text-lg sm:text-xl">
                   {initials || "?"}
                 </span>
               )}
-              <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="absolute inset-0 flex items-center justify-center bg-primary-900/70 text-primary-50 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Pencil className="w-4 h-4" />
               </span>
             </button>
@@ -429,7 +429,7 @@ function WC2026DashboardContent() {
                   <button
                     type="button"
                     onClick={() => setProfileModalOpen(true)}
-                    className="text-left hover:text-white/90 min-w-0"
+                    className="text-left hover:text-primary-100 min-w-0"
                     aria-label={t("edit_profile", "Edit profile")}
                   >
                     <h1 className="text-lg sm:text-xl font-bold truncate">
@@ -439,27 +439,27 @@ function WC2026DashboardContent() {
                   <button
                     type="button"
                     onClick={() => setProfileModalOpen(true)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-emerald-500/20 border border-white/15 hover:border-emerald-400/60 text-white/80 hover:text-emerald-200 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap shrink-0"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-700 hover:bg-accent-400/20 border border-primary-600 hover:border-accent-400/60 text-primary-100 hover:text-accent-300 text-[11px] font-semibold tracking-wide transition-colors whitespace-nowrap shrink-0"
                   >
                     <Pencil className="w-3 h-3" />
                     {t("edit_profile", "Edit profile")}
                   </button>
                 </div>
-                <span className="text-xs text-white/60">
-                  <span className="font-bold text-white">
+                <span className="text-xs text-primary-400">
+                  <span className="font-bold text-primary-50">
                     {totalXp.toLocaleString()}
                   </span>{" "}
                   XP
                 </span>
               </div>
               <div className="mt-3">
-                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-2 rounded-full bg-primary-700 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-[width] duration-500"
+                    className="h-full bg-accent-400 transition-[width] duration-500"
                     style={{ width: `${heroPackProgressPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-white/60 mt-1.5">
+                <div className="flex justify-between text-xs text-primary-400 mt-1.5">
                   <span>
                     {packsAvailable > 0
                       ? packsAvailable === 1
@@ -473,7 +473,7 @@ function WC2026DashboardContent() {
                           "{xp} XP to your next pack"
                         ).replace("{xp}", xpToNextPack)}
                   </span>
-                  <span className="text-white/40">
+                  <span className="text-primary-500">
                     {t("squad_value_short", "Squad value {value}/{max}")
                       .replace("{value}", squadValue)
                       .replace("{max}", squadMax)}
@@ -489,7 +489,7 @@ function WC2026DashboardContent() {
           {/* Squad pitch — takes 2 columns on lg */}
           <section
             data-tour-id="squad-pitch"
-            className="lg:col-span-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5 sm:p-6"
+            className="lg:col-span-2 rounded-panel bg-primary-panel border border-primary-700 backdrop-blur-sm p-5 sm:p-6"
           >
             <div className="flex items-center justify-between mb-4">
               {/* "Ultimate Team" is the same in both languages by design
@@ -501,7 +501,7 @@ function WC2026DashboardContent() {
               </h2>
               <Link
                 href="/dashboard/squad"
-                className="text-xs sm:text-sm text-emerald-300 hover:text-emerald-200 flex items-center gap-0.5 font-semibold"
+                className="text-xs sm:text-sm text-accent-400 hover:text-accent-300 flex items-center gap-0.5 font-semibold"
               >
                 {t("edit_team_link", "Edit team")}{" "}
                 <ChevronRight className="w-4 h-4" />
@@ -511,7 +511,7 @@ function WC2026DashboardContent() {
               positions={squadPositions}
               stickersById={squadStickersById}
             />
-            <p className="text-center text-xs text-white/50 mt-3">
+            <p className="text-center text-xs text-primary-400 mt-3">
               {t(
                 "build_xi_hint",
                 "Open packs to collect stickers, then build your XI here"
@@ -522,36 +522,36 @@ function WC2026DashboardContent() {
           {/* Side tiles */}
           <div className="space-y-6">
             {/* Squad Value */}
-            <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
-              <div className="flex items-center gap-2 text-white/60 text-xs tracking-wider uppercase mb-2">
+            <section className="rounded-panel bg-primary-panel border border-primary-700 backdrop-blur-sm p-5">
+              <div className="flex items-center gap-2 text-primary-400 text-xs tracking-wider uppercase mb-2">
                 <Trophy className="w-3.5 h-3.5" />
                 {t("squad_value_label", "Squad Value")}
               </div>
               <div className="text-3xl sm:text-4xl font-black">
                 {squadValue}
-                <span className="text-base font-medium text-white/40">
+                <span className="text-base font-medium text-primary-500">
                   {" "}
                   / {squadMax}
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-3">
+              <div className="h-1.5 rounded-full bg-primary-700 overflow-hidden mt-3">
                 <div
-                  className="h-full bg-emerald-400 transition-[width] duration-500"
+                  className="h-full bg-accent-400 transition-[width] duration-500"
                   style={{ width: `${(squadValue / squadMax) * 100}%` }}
                 />
               </div>
             </section>
 
             {/* Pack vault */}
-            <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
-              <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
+            <section className="rounded-panel bg-primary-panel border border-primary-700 backdrop-blur-sm p-5">
+              <div className="flex items-center justify-between text-primary-400 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Package className="w-3.5 h-3.5" />
                   {t("pack_vault_label", "Pack Vault")}
                 </div>
                 <Link
                   href="/dashboard/album"
-                  className="text-emerald-300 hover:text-emerald-200 normal-case tracking-normal flex items-center gap-0.5"
+                  className="text-accent-400 hover:text-accent-300 normal-case tracking-normal flex items-center gap-0.5"
                 >
                   {t("album_link", "Album")} <ChevronRight className="w-3 h-3" />
                 </Link>
@@ -564,17 +564,17 @@ function WC2026DashboardContent() {
                   <button
                     type="button"
                     onClick={() => setPackModalOpen(true)}
-                    className="mt-3 w-full px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-[#070707] text-sm font-bold tracking-wide transition-colors"
+                    className="mt-3 w-full px-3 py-2 rounded-control bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold tracking-wide transition-colors"
                   >
                     {t("open_a_pack", "Open a pack")}
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="text-3xl sm:text-4xl font-black text-white/30">
+                  <div className="text-3xl sm:text-4xl font-black text-primary-500">
                     0
                   </div>
-                  <p className="text-xs text-white/50 mt-2">
+                  <p className="text-xs text-primary-400 mt-2">
                     {(totalXp >= packXpCost
                       ? t(
                           "earn_more_xp_next",
@@ -589,7 +589,7 @@ function WC2026DashboardContent() {
                 </>
               )}
               {collection.length > 0 && (
-                <p className="mt-3 text-xs text-white/50">
+                <p className="mt-3 text-xs text-primary-400">
                   {collection.length === 1
                     ? t(
                         "unique_sticker_collected_singular",
@@ -604,8 +604,8 @@ function WC2026DashboardContent() {
             </section>
 
             {/* Predictions stats */}
-            <section className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-5">
-              <div className="flex items-center justify-between text-white/60 text-xs tracking-wider uppercase mb-2">
+            <section className="rounded-panel bg-primary-panel border border-primary-700 backdrop-blur-sm p-5">
+              <div className="flex items-center justify-between text-primary-400 text-xs tracking-wider uppercase mb-2">
                 <div className="flex items-center gap-2">
                   <Crosshair className="w-3.5 h-3.5" />
                   {t("predictions_label", "Predictions")}
@@ -613,7 +613,7 @@ function WC2026DashboardContent() {
                 {predictionCounts.total > 0 && (
                   <Link
                     href="/dashboard/predictions"
-                    className="text-emerald-300 hover:text-emerald-200 normal-case tracking-normal flex items-center gap-0.5"
+                    className="text-accent-400 hover:text-accent-300 normal-case tracking-normal flex items-center gap-0.5"
                   >
                     {t("view_link", "View")} <ChevronRight className="w-3 h-3" />
                   </Link>
@@ -623,21 +623,21 @@ function WC2026DashboardContent() {
                 <>
                   <div className="text-3xl sm:text-4xl font-black">
                     {predictionCounts.pending}
-                    <span className="text-base font-medium text-white/40">
+                    <span className="text-base font-medium text-primary-500">
                       {" "}
                       {t("pending_label", "pending")}
                     </span>
                   </div>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-white/50">
+                  <div className="mt-2 flex items-center gap-3 text-xs text-primary-400">
                     <span>
-                      <span className="text-white/80 font-semibold">
+                      <span className="text-primary-100 font-semibold">
                         {predictionCounts.resolved}
                       </span>{" "}
                       {t("resolved_label", "resolved")}
                     </span>
                     {predictionCounts.totalBonusXp > 0 && (
                       <span>
-                        <span className="text-emerald-300 font-semibold">
+                        <span className="text-accent-400 font-semibold">
                           +{predictionCounts.totalBonusXp} XP
                         </span>{" "}
                         {t("bonus_label", "bonus")}
@@ -647,10 +647,10 @@ function WC2026DashboardContent() {
                 </>
               ) : (
                 <>
-                  <div className="text-3xl sm:text-4xl font-black text-white/30">
+                  <div className="text-3xl sm:text-4xl font-black text-primary-500">
                     0
                   </div>
-                  <p className="text-xs text-white/50 mt-2">
+                  <p className="text-xs text-primary-400 mt-2">
                     {t(
                       "predictions_empty_hint",
                       "Your predictions will appear here once they're saved from lessons"
@@ -664,17 +664,17 @@ function WC2026DashboardContent() {
                   the predictions tile so it builds on the existing
                   predictions storyline (resolved + bonus + hat-tricks). */}
               {(progress?.hat_trick_count || 0) > 0 && (
-                <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2">
+                <div className="mt-3 pt-3 border-t border-primary-700 flex items-center gap-2">
                   <span className="text-xl">🎩</span>
                   <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-wider text-amber-200/80 font-bold">
+                    <p className="text-[11px] uppercase tracking-wider text-signal-performance font-bold">
                       {progress.hat_trick_count === 1
                         ? t("hat_trick_singular", "Hat-trick")
                         : t("hat_tricks_plural", "Hat-tricks")}
                     </p>
-                    <p className="text-sm font-bold text-amber-100">
+                    <p className="text-sm font-bold text-signal-performance">
                       {progress.hat_trick_count}
-                      <span className="text-xs font-normal text-white/50 ml-1.5">
+                      <span className="text-xs font-normal text-primary-400 ml-1.5">
                         {t(
                           "hat_trick_hint",
                           "all 3 picks correct on one match"
@@ -916,7 +916,7 @@ function DashboardPitch({ positions = {}, stickersById = {} }) {
                 />
               </div>
             ) : (
-              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 border-dashed border-white/40 bg-white/5 flex items-center justify-center text-[9px] sm:text-[10px] font-semibold text-white/40">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 border-dashed border-primary-500 bg-primary-800 flex items-center justify-center text-[9px] sm:text-[10px] font-semibold text-primary-500">
                 {slot.label}
               </div>
             )}

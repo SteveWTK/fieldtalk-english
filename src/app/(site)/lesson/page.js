@@ -1,5 +1,29 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/app/(site)/lesson/page.js
+//
+// The Training Ground — player-facing home for lesson progression.
+//
+// Layout (revamped 2026-09-15):
+//   Header       — Eyebrow + welcome
+//   Vitals strip — 4-up StatTile row (Level / XP / Lessons / Streak)
+//   Continue     — hero card pointing at the player's next lesson,
+//                  with an overall-progress MetricBar
+//   End-of-unit  — celebratory CTA after finishing a Unit's last lesson
+//   Pillar chips — horizontal Chip row, one per Unit + progress %
+//   Lesson grid  — 2-col responsive grid of lesson cards for the
+//                  selected Unit; the 7th "Mental Training" slot
+//                  renders below.
+//
+// The previous accordion+row layout was a single narrow column that
+// under-used the surface a training ground deserves. The chip picker
+// keeps "one unit visible at a time" (the affordance the accordion
+// gave) while letting the lessons render as a proper card grid — the
+// visual language the rest of the app now uses.
+//
+// All business logic (onboarding, first-lesson prompt, end-of-unit
+// hop, paywall gating, all-open-lessons-done modal, deep-link
+// completion handling) is preserved verbatim; only the JSX
+// structure + subcomponents changed.
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -24,11 +48,10 @@ import {
   Trophy,
   ArrowRight,
   Sparkles,
+  Flame,
+  Zap,
 } from "lucide-react";
-import AnimatedProgressBar from "@/components/AnimatedProgressBar";
-// import AnimatedCounter from "@/components/AnimatedCounter";
 import XPGainAnimation from "@/components/XPGainAnimation";
-// import MatchCountdown from "@/components/MatchCountdown";
 import { usePlayerDashboard } from "@/lib/hooks/usePlayerData";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -42,6 +65,15 @@ import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
 import PillarMentalSlot from "@/components/mental/PillarMentalSlot";
 
+// DS primitives — the same set that lives in the coach + mental
+// dashboards, so this page speaks the same visual language.
+import Eyebrow from "@/components/ui/eyebrow";
+import Panel from "@/components/ui/panel";
+import Button from "@/components/ui/button";
+import Chip from "@/components/ui/chip";
+import StatTile from "@/components/ui/stat-tile";
+import MetricBar from "@/components/ui/metric-bar";
+
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
   const [showXPGain, setShowXPGain] = useState(false);
@@ -54,17 +86,15 @@ function PlayerLessonsMenu() {
   // the useEffect below for trigger logic.
   const [showAllOpenLessonsDoneModal, setShowAllOpenLessonsDoneModal] =
     useState(false);
-  // Smooth-scroll the newly-expanded Unit card into view when the
-  // user picks a different Unit. block: "nearest" means we only
-  // scroll if the card isn't already on screen — avoids jolting the
-  // page when the user expands a Unit that's already visible.
+  // Smooth-scroll the newly-selected Unit's lesson grid into view
+  // after a chip click. block: "nearest" avoids jolting when the
+  // grid is already visible.
   useEffect(() => {
     if (!selectedPillar) return;
     if (typeof document === "undefined") return;
     const el = document.querySelector(`[data-pillar-name="${selectedPillar}"]`);
     if (!el) return;
-    // Defer one frame so the expanded content has mounted; otherwise
-    // we'd scroll to the card's pre-expansion height and stop short.
+    // Defer one frame so the grid has mounted before we scroll.
     const id = window.setTimeout(() => {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 60);
@@ -161,19 +191,12 @@ function PlayerLessonsMenu() {
   const handleProPathOnboardingClose = () => {
     setShowProPathOnboarding(false);
     setOnboardingDismissed(true);
-    // Refetch so profile.position + propath_goal + onboarding_completed
-    // reflect what the API just wrote — the dashboard hero badge will
-    // pick up the position on next render.
     refetchProgress?.();
   };
 
   const handleWelcomeClose = (nextAction) => {
     setShowWelcome(false);
     setOnboardingDismissed(true);
-    // Marker the dashboard tour reads to defer itself for the few
-    // minutes immediately after the welcome flow ends. Set on every
-    // close (open_pack OR skip) so users who skip without opening
-    // the pack aren't ambushed by the dashboard tour either.
     try {
       localStorage.setItem("ft.welcome.completed_at", String(Date.now()));
     } catch {
@@ -186,9 +209,6 @@ function PlayerLessonsMenu() {
 
   const handleStarterPackClose = () => {
     setShowStarterPack(false);
-    // Refresh dashboard data so the pack vault count + collection
-    // reflect what was just opened. We're already on /lesson, so the
-    // FirstLessonPrompt naturally surfaces Unit 1 Lesson 1.
     refetchProgress?.();
   };
   const previewLessonSet = useMemo(
@@ -201,9 +221,6 @@ function PlayerLessonsMenu() {
   //   - data has loaded
   //   - the user is signed in
   //   - they have no completed lessons yet
-  // The component itself also respects a localStorage dismissal flag, so
-  // setting this to true won't force the prompt to re-appear after it was
-  // already dismissed in a prior session.
   useEffect(() => {
     if (loading || !user) return;
     setShowStartPrompt((completions?.length || 0) === 0);
@@ -211,10 +228,7 @@ function PlayerLessonsMenu() {
 
   // "All open lessons completed" detection. Triggers a one-time
   // congratulatory modal the first time the user catches up to the
-  // construction wall — they've finished every lesson with
-  // under_construction = false. Localstorage key includes the open-
-  // lesson count, so a future release of 4 more lessons will re-arm
-  // the modal once they complete those too.
+  // construction wall.
   useEffect(() => {
     if (loading || !user?.id) return;
     if (!Array.isArray(lessons) || lessons.length === 0) return;
@@ -225,8 +239,6 @@ function PlayerLessonsMenu() {
     );
     const allOpenDone = openLessons.every((l) => completedIds.has(l.id));
     if (!allOpenDone) return;
-    // Per (user, open-lesson-count) gate — naturally re-arms when
-    // we release more content and they catch up again.
     const storageKey = `ft.allOpenLessonsDone.${user.id}.${openLessons.length}`;
     try {
       if (window.localStorage.getItem(storageKey) === "1") return;
@@ -258,19 +270,13 @@ function PlayerLessonsMenu() {
     if (loading || !user) return;
     if (!completedParam) return;
     if (!pillars || pillars.length === 0) return;
-    // Only auto-apply once per unique completedParam value. Without this
-    // guard, a parent-render-induced new `pillars` reference would re-fire
-    // the effect and snap the user back to the auto-selected pillar even
-    // after they've clicked a different pillar card.
     if (appliedCompletedRef.current === completedParam) return;
 
-    // Find the pillar that contains the just-completed lesson.
     const sourcePillar = pillars.find((p) =>
       (p.lessons || []).some((l) => l.id === completedParam)
     );
     if (!sourcePillar) return;
 
-    // Sort lessons within the pillar to know the "next" one.
     const lessonsSorted = [...(sourcePillar.lessons || [])].sort(
       (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
     );
@@ -278,15 +284,10 @@ function PlayerLessonsMenu() {
     const nextInPillar = idx >= 0 ? lessonsSorted[idx + 1] : null;
 
     if (nextInPillar) {
-      // Stay on this pillar; highlight the next lesson. (The lesson
-      // page now skips this case in the streamlined flow — it routes
-      // straight to the next lesson — but we keep it for direct URL
-      // navigation and admin debug.)
       setSelectedPillar(sourcePillar.name);
       setHighlightLessonId(nextInPillar.id);
       setEndOfUnitJump(null);
     } else {
-      // Last lesson of the pillar — find the next pillar by sort_order.
       const pillarsSorted = [...pillars].sort(
         (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
       );
@@ -299,9 +300,6 @@ function PlayerLessonsMenu() {
         )[0];
         setSelectedPillar(nextPillar.name);
         setHighlightLessonId(firstNextLesson?.id || null);
-        // Stash the next-unit info for the hero CTA + card highlight.
-        // unitPillarName is the lookup key for highlighting the matching
-        // unit card; unitName is the human-facing display string.
         if (firstNextLesson) {
           setEndOfUnitJump({
             unitName: nextPillar.display_name || nextPillar.name,
@@ -313,48 +311,50 @@ function PlayerLessonsMenu() {
           setEndOfUnitJump(null);
         }
       } else {
-        // No further pillars — they've finished everything.
         setSelectedPillar(sourcePillar.name);
         setHighlightLessonId(null);
         setEndOfUnitJump(null);
       }
     }
 
-    // Mark this completedParam as applied so we don't re-run for it…
     appliedCompletedRef.current = completedParam;
-    // …and strip it from the URL so a refresh doesn't restart the effect
-    // and the user's current selection persists naturally.
     router.replace("/lesson", { scroll: false });
   }, [loading, user, completedParam, pillars, router]);
 
-  // Loading state
+  // Loading state — dark skeleton that matches the final layout so
+  // the paint-in feels intentional instead of a flash.
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-200 h-32 rounded-xl"></div>
-            ))}
-          </div>
-          <div className="bg-gray-200 h-64 rounded-xl mb-8"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-gray-200 h-96 rounded-xl"></div>
-            <div className="bg-gray-200 h-96 rounded-xl"></div>
+      <div className="min-h-screen bg-primary-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-64 bg-primary-800 rounded" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-primary-panel border border-primary-700 h-24 rounded-card" />
+              ))}
+            </div>
+            <div className="bg-primary-panel border border-primary-700 h-40 rounded-card" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-primary-panel border border-primary-700 h-40 rounded-card" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // If no user, show error
   if (!user) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-primary-900 dark:text-white mb-4">
-            Please sign in to view your Lesson Menu
-          </h2>
+      <div className="min-h-screen bg-primary-900 text-primary-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-display font-bold mb-4">
+              Please sign in to view your Lesson Menu
+            </h2>
+          </div>
         </div>
       </div>
     );
@@ -404,21 +404,15 @@ function PlayerLessonsMenu() {
 
     const lessonIndex = pillarLessons.findIndex((l) => l.id === lesson.id);
 
-    // Edition paywall — applies AFTER the preview lesson. The first
-    // lesson per pillar is in previewLessonSet, so it never reaches
-    // here. Unlocking a paid edition flips access.hasAccess to true
-    // and this branch never trips.
     const isPreview = previewLessonSet.has(lesson.id);
     if (!access.loading && !access.hasAccess && !isPreview) {
       return "edition_paywall";
     }
 
-    // First lesson is always available
     if (lessonIndex === 0) {
       return "current";
     }
 
-    // Check if all previous lessons in this pillar are completed
     const previousLessons = pillarLessons.slice(0, lessonIndex);
     const allPreviousCompleted = previousLessons.every((prevLesson) =>
       completions?.some((c) => c.lesson_id === prevLesson.id)
@@ -429,60 +423,6 @@ function PlayerLessonsMenu() {
     }
 
     return "locked";
-  };
-
-  const recentAchievements = achievements?.slice(0, 3) || [
-    {
-      achievement: {
-        name: "Welcome to Global Player",
-        description: "Started your English learning journey",
-        icon: "Star",
-      },
-      earned_at: "Today",
-    },
-  ];
-
-  // const upcomingMatches = [
-  //   { opponent: "Brighton", date: "Dec 28", type: "Premier League" },
-  //   { opponent: "Arsenal", date: "Jan 2", type: "Premier League" },
-  //   { opponent: "Man City", date: "Jan 15", type: "FA Cup" },
-  // ];
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "current":
-        return <Play className="w-5 h-5 text-blue-500" />;
-      case "locked":
-        return <Lock className="w-5 h-5 text-gray-400" />;
-      case "edition_paywall":
-        // Sparkles in gold/amber distinguishes "Full edition content"
-        // from sequence-locked content (grey Lock). Two different
-        // shapes (sparkles vs lock) read at a glance — users can tell
-        // "I need to unlock this with progress" from "I need to
-        // purchase the edition" without looking twice.
-        return <Sparkles className="w-5 h-5 text-amber-300" />;
-      case "construction":
-        return <Construction className="w-5 h-5 text-white" />;
-      default:
-        return null;
-    }
-  };
-
-  const getDifficultyColor = (level_name) => {
-    switch (level_name) {
-      case "Survival":
-        return "bg-attention-100 text-attention-800";
-      case "Survival Absolute":
-        return "bg-accent-100 text-accent-800";
-      case "Precision":
-        return "bg-attention-100 text-attention-800";
-      case "Fluency":
-        return "bg-rose-100 text-rose-800";
-      default:
-        return "bg-primary-100 text-primary-800";
-    }
   };
 
   const getIconComponent = (iconName) => {
@@ -497,507 +437,440 @@ function PlayerLessonsMenu() {
     return icons[iconName] || Star;
   };
 
-  // Render the lesson list for a given pillar. Pulled out into a
-  // helper so the accordion above can call it per-pillar without
-  // duplicating ~120 lines of JSX. Reads the same component-scope
-  // refs (status helpers, showStartPrompt, profile, etc.) as the
-  // old inline block did.
-  const renderPillarLessons = (pillar) => {
-    const lessons = pillar?.lessons || [];
-    return (
-      <>
-        {/* Inline paywall — sits above the cards when the user is
-            signed in but hasn't unlocked the edition. */}
-        {/* {showInlinePaywall && (
-          <PaywallCard
-            edition={profile?.edition || "wc2026"}
-            variant="inline"
-          />
-        )} */}
+  // Overall edition progress — a single 0-100 number for the
+  // MetricBar in the Continue hero. Counts open lessons (excludes
+  // under_construction) as the denominator so the bar doesn't stall
+  // at 90% when the last two lessons are hidden behind construction.
+  const openLessons = Array.isArray(lessons)
+    ? lessons.filter((l) => !l.under_construction)
+    : [];
+  const completedIds = new Set(
+    (completions || []).map((c) => c.lesson_id).filter(Boolean)
+  );
+  const overallProgressPct =
+    openLessons.length > 0
+      ? Math.round(
+          (openLessons.filter((l) => completedIds.has(l.id)).length /
+            openLessons.length) *
+            100
+        )
+      : 0;
 
-        {/* "Start here" prompt — only shows on the first pillar's
-            first lesson, by virtue of FirstLessonPrompt's own
-            shouldShow gate + showStartPrompt being computed against
-            the overall completions count, not per-pillar. */}
-        {selectedPillar === pillar.name && (
-          <FirstLessonPrompt
-            shouldShow={showStartPrompt}
-            onDismiss={() => setShowStartPrompt(false)}
-          />
-        )}
-
-        {lessons.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
-              No lessons available for this pillar yet.
-            </p>
-          </div>
-        ) : (
-          lessons.map((lesson, lessonIndex) => {
-            const status = getLessonStatus(lesson);
-            const isClickable =
-              status !== "locked" &&
-              status !== "construction" &&
-              status !== "edition_paywall";
-            const highlight =
-              (showStartPrompt &&
-                lessonIndex === 0 &&
-                selectedPillar === pillar.name) ||
-              (highlightLessonId && lesson.id === highlightLessonId);
-
-            return (
-              <div
-                key={lesson.id}
-                className={`p-4 rounded-lg border hover:scale-[1.01] transition-all duration-200 ${
-                  status === "current"
-                    ? "border-growth-500 bg-growth-50 dark:bg-growth-900/20"
-                    : status === "completed"
-                      ? "border-accent-200 bg-accent-50/50 dark:bg-accent-900/20"
-                      : status === "construction"
-                        ? "border-primary-200 bg-primary-50/50 dark:bg-primary-900/20 opacity-75"
-                        : "border-primary-200 dark:border-primary-700"
-                } ${highlight ? "fl-first-lesson-pulse next-attention" : ""}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-grow">
-                    {getStatusIcon(status)}
-                    <div className="flex-grow">
-                      <h4 className="font-medium text-gray-900 dark:text-white">
-                        {lesson.title}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                        {lesson.description_pt}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(lesson.difficulty)}`}
-                        >
-                          {lesson.level_name}
-                        </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {lesson.xp_reward} XP
-                        </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {lesson.estimated_duration} min
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  {lesson.image_url && (
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ml-3 shrink-0">
-                      <Image
-                        src={lesson.image_url}
-                        alt=""
-                        fill
-                        sizes="(max-width: 640px) 64px, 80px"
-                        className="object-cover"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
-                  {isClickable ? (
-                    <Link
-                      href={`/lesson/${lesson.id}`}
-                      className="p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors ml-4"
-                    >
-                      {status === "completed" ? (
-                        <CheckCircle className="w-5 h-5" />
-                      ) : (
-                        <ChevronRight className="w-5 h-5" />
-                      )}
-                    </Link>
-                  ) : status === "construction" ? (
-                    <button
-                      onClick={() => setShowConstructionModal(true)}
-                      className="p-2 text-white hover:bg-accent-100 dark:hover:bg-accent-900/20 rounded-lg transition-colors ml-4"
-                    >
-                      <Construction className="w-5 h-5" />
-                    </button>
-                  ) : status === "edition_paywall" ? (
-                    <Link
-                      href={`/pricing?edition=${encodeURIComponent(profile?.edition || "wc2026")}`}
-                      className="ml-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-300/15 hover:bg-amber-300/25 border border-amber-300/40 hover:border-amber-300/70 text-amber-200 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap"
-                      aria-label="Get the full edition to unlock"
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      {userLanguage === "pt"
-                        ? "Edição completa"
-                        : "Full edition"}
-                    </Link>
-                  ) : (
-                    <div className="p-2 text-gray-400 ml-4">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                  )}
-                </div>
-                {status === "locked" && (
-                  <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                    {t("complete_prev_to_unlock")}
-                  </div>
-                )}
-                {status === "construction" && (
-                  <div className="mt-3 text-xs text-white dark:text-white">
-                    {t("lesson_under_construction")}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </>
+  // "Continue where you left off" target — the first available
+  // (non-locked, non-completed, non-construction) lesson in the
+  // current pillar. Walks pillars in sort order so first-visit users
+  // land on Unit 1 Lesson 1. Skips if a paywall applies (the hero
+  // then shows the paywall CTA instead).
+  const nextLesson = (() => {
+    const pillarsSorted = [...pillars].sort(
+      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
     );
-  };
+    for (const p of pillarsSorted) {
+      const ls = [...(p.lessons || [])].sort(
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+      );
+      for (const l of ls) {
+        if (l.under_construction && !isPlatformAdmin) continue;
+        if (completedIds.has(l.id)) continue;
+        // Same paywall check as getLessonStatus.
+        const isPreview = previewLessonSet.has(l.id);
+        if (!access.loading && !access.hasAccess && !isPreview) continue;
+        return { lesson: l, pillar: p };
+      }
+    }
+    return null;
+  })();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* First-visit WC2026 welcome — fullscreen overlay, mounts
-          before any other content so the user lands directly in the
-          intro flow. When the user finishes the flow, they can
-          either "Open my first pack" (→ PackOpeningModal below) or
-          dismiss; either way the modal closes and the lesson list
-          becomes visible. */}
-      {showWelcome && (
-        <WelcomeOnboarding userId={user?.id} onClose={handleWelcomeClose} />
-      )}
+    <div className="min-h-screen bg-primary-900 text-primary-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        {/* First-visit onboarding overlays — WC or Pro Path variant
+            picks itself by profile.edition. */}
+        {showWelcome && (
+          <WelcomeOnboarding userId={user?.id} onClose={handleWelcomeClose} />
+        )}
+        {showProPathOnboarding && (
+          <ProPathOnboarding
+            userName={
+              profile?.full_name ||
+              user?.user_metadata?.full_name ||
+              user?.email?.split("@")[0] ||
+              ""
+            }
+            onDismiss={handleProPathOnboardingClose}
+          />
+        )}
+        {showStarterPack && (
+          <PackOpeningModal
+            open={showStarterPack}
+            onClose={handleStarterPackClose}
+          />
+        )}
 
-      {/* Pro Path first-visit overlay — parallel to WelcomeOnboarding
-          above; only one mounts at a time (the useEffect above picks
-          exactly one based on profile.edition). On dismiss the user
-          is routed to /dashboard by the component itself so they
-          land directly on their Skill Radar. */}
-      {showProPathOnboarding && (
-        <ProPathOnboarding
-          userName={
-            profile?.full_name ||
-            user?.user_metadata?.full_name ||
-            user?.email?.split("@")[0] ||
-            ""
-          }
-          onDismiss={handleProPathOnboardingClose}
-        />
-      )}
-
-      {/* Starter sticker pack — opens the moment the WelcomeOnboarding
-          completes with the "open_pack" action. On close, the user
-          stays on /lesson where Unit 1 Lesson 1 is already highlighted
-          by FirstLessonPrompt. */}
-      {showStarterPack && (
-        <PackOpeningModal
-          open={showStarterPack}
-          onClose={handleStarterPackClose}
-        />
-      )}
-
-      {/* "New content available" — sits at the top so returning users
-          spot it before scrolling the unit grid. Renders null when
-          the user has already acknowledged the latest open-lesson
-          count. */}
-      <div className="mb-6">
-        <NewContentBanner />
-      </div>
-      {/* <h1 className="text-2xl font-bold text-primary-900 dark:text-white">
-        World Cup 2026 Edition
-      </h1> */}
-      {/* Welcome Message */}
-      {/* <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-white">
-          {isGuest
-            ? t("welcome_to_fieldtalk")
-            : `${t("welcome_back")} ${playerData.name}!`}
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Continue your English learning journey
-        </p>
-      </div> */}
-
-      {/* End-of-unit hero CTA — sits ABOVE the unit cards so it's
-          the first thing a user sees after completing the final
-          lesson of a unit. Points them at the highlighted next-unit
-          card (which carries an emerald glow). Clicking that card
-          uses the existing #lessons anchor jump, so the page
-          smoothly scrolls down to reveal the next unit's lesson
-          list with its first lesson already highlighted. */}
-      {endOfUnitJump && (
-        <div className="mb-6 sm:mb-8 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-amber-300/10 border border-emerald-400/50 px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="shrink-0 w-11 h-11 rounded-full bg-emerald-500/30 flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-amber-200" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-wider text-emerald-200 font-semibold flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3" />
-                  {userLanguage === "pt"
-                    ? "Unidade concluída!"
-                    : "Unit complete!"}
-                </p>
-                <p className="text-sm sm:text-base font-bold text-white">
-                  {userLanguage === "pt"
-                    ? `Toque em ${endOfUnitJump.unitName} para começar a próxima unidade`
-                    : `Tap ${endOfUnitJump.unitName} to start the next unit`}
-                </p>
-              </div>
-            </div>
-            <ArrowRight
-              className="w-5 h-5 text-emerald-300 shrink-0 onb-arrow-nudge"
-              aria-hidden
-            />
-          </div>
-          {/* Animations declared in the single styled-jsx block at
-              the bottom of this component — Next.js only allows one
-              <style jsx> tree per render. */}
+        {/* "New content available" — banner surfaces before scrolling
+            so returning users spot new units. Self-renders null when
+            already acknowledged. */}
+        <div className="mb-6">
+          <NewContentBanner />
         </div>
-      )}
 
-      {/* Units — accordion layout. Each Unit is a full-width card
-          that expands inline to reveal its lessons when tapped. This
-          replaces the previous "grid of unit cards above + lesson
-          list below" layout, which scaled poorly past ~6 units (user
-          had to scroll up-down-up to compare units and find lessons).
-          Single-expanded with collapse: clicking a different unit
-          collapses the previous and expands the new one. Clicking
-          the currently-expanded unit collapses it — matches the
-          chevron-rotates-down affordance that everyone tries
-          instinctively. Smooth-scrolls the newly-expanded card into view.
-          Width capped at max-w-3xl (768px) and centred: on mobile
-          the cards fill the screen (correct); on tablet they hit
-          the natural iPad-portrait width; on laptop/desktop they
-          stay at the comfortable reading column with whitespace on
-          either side. Same pattern Duolingo / Brilliant / Khan
-          Academy use — prevents the unnatural card-stretching that
-          a 1280px-wide accordion would produce on a 27" monitor. */}
-      <div className="space-y-4 mb-8 max-w-2xl mx-auto" data-pillars-container>
-        {pillars.map((pillar, index) => {
-          const IconComponent = getIconComponent(pillar.icon);
-          const isExpanded = selectedPillar === pillar.name;
-          const isStartNextUnit = endOfUnitJump?.unitPillarName === pillar.name;
-          return (
-            <div
-              key={pillar.name}
-              data-pillar-name={pillar.name}
-              className={`rounded-xl border-2 transition-all duration-200 overflow-hidden bg-white dark:bg-primary-800 ${
-                isStartNextUnit
-                  ? "border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.25)] start-next-unit-pulse next-attention"
-                  : isExpanded
-                    ? "border-accent-500"
-                    : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
-              }`}
-            >
-              {/* Header — banner image + title + progress. The whole
-                  area is clickable. Clicking the open unit collapses
-                  it (selectedPillar → null); clicking a closed unit
-                  expands it and collapses any other open one. The
-                  rest of the app handles a null selectedPillar
-                  cleanly: the completion-jump effect always sets a
-                  named pillar, and the currentPillar fallback uses
-                  pillars[0] for any non-render consumers. */}
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedPillar(isExpanded ? null : pillar.name)
-                }
-                className="block w-full text-left p-6"
+        {/* Header — welcome + eyebrow. Speaks the same visual
+            language as the coach dashboard and mental hub. */}
+        <header className="mb-6">
+          <Eyebrow className="mb-1">Global Player · Training Ground</Eyebrow>
+          <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight text-primary-50">
+            {isGuest
+              ? "Welcome to Global Player"
+              : `Welcome back, ${playerData.name.split(" ")[0]}`}
+          </h1>
+          <p className="text-sm text-primary-400 mt-2 max-w-2xl leading-relaxed">
+            {profile?.edition === "propath_26_27"
+              ? "Every lesson gets you closer to trial-ready English."
+              : "Pick up where you left off — your next lesson is one tap away."}
+          </p>
+        </header>
+
+        {/* Vitals strip — 4-up KPI row. Total XP carries tone="accent"
+            as the composite hero metric (per DS "one accented tile
+            per row" rule). */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <StatTile
+            label={<StatIcon Icon={Trophy}>Level</StatIcon>}
+            value={playerData.current_level}
+          />
+          <StatTile
+            label={<StatIcon Icon={Zap}>Total XP</StatIcon>}
+            value={formatNumber(playerData.total_xp)}
+            tone="accent"
+          />
+          <StatTile
+            label={<StatIcon Icon={BookOpen}>Lessons</StatIcon>}
+            value={playerData.completedLessons}
+            caption={
+              openLessons.length > 0
+                ? `of ${openLessons.length} open`
+                : undefined
+            }
+          />
+          <StatTile
+            label={<StatIcon Icon={Flame}>Streak</StatIcon>}
+            value={playerData.current_streak}
+            caption={playerData.current_streak > 0 ? "day streak" : "no streak yet"}
+          />
+        </div>
+
+        {/* Continue where you left off — hero card. Only renders when
+            we have a next lesson. Carries THE lime CTA for this
+            screen (per DS "one accent button per view"). */}
+        {nextLesson && (
+          <Panel
+            eyebrow="Continue where you left off"
+            title={nextLesson.lesson.title}
+            className="mb-4"
+            headerAction={
+              <Button
+                as="a"
+                href={`/lesson/${nextLesson.lesson.id}`}
+                variant="primary"
+                size="md"
+                Icon={Play}
               >
-                {pillar.image_url ? (
-                  <div className="relative -mx-6 -mt-6 mb-4 h-32 overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
-                    <Image
-                      src={pillar.image_url}
-                      alt={pillar.display_name || ""}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 100vw"
-                      className="object-cover"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 bg-gradient-to-r from-accent-600 to-accent-400 rounded-lg flex items-center justify-center mb-4">
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </div>
-                )}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      {pillar.display_name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      {pillar.description_pt}
-                    </p>
-                  </div>
-                  {/* Chevron indicator — rotates to point down when
-                      the card is expanded. Visual cue that the card
-                      can open. */}
-                  <ChevronRight
-                    className={`w-5 h-5 text-gray-400 shrink-0 mt-1 transition-transform duration-200 ${
-                      isExpanded ? "rotate-90" : ""
-                    }`}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {pillar.progress}%
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <AnimatedProgressBar
-                    value={pillar.progress}
-                    maxValue={100}
-                    color="bg-gradient-to-r from-accent-600 to-accent-400"
-                    showPercentage={false}
-                    animationDelay={index * 200 + 500}
-                  />
-                </div>
-              </button>
+                {userLanguage === "pt" ? "Continuar" : "Continue"}
+              </Button>
+            }
+          >
+            <p className="text-sm text-primary-400 leading-relaxed">
+              {nextLesson.pillar.display_name || nextLesson.pillar.name}
+              {nextLesson.lesson.description_pt && userLanguage === "pt"
+                ? ` · ${nextLesson.lesson.description_pt}`
+                : nextLesson.lesson.description && userLanguage !== "pt"
+                  ? ` · ${nextLesson.lesson.description}`
+                  : ""}
+            </p>
+            <div className="mt-2">
+              <MetricBar
+                label={
+                  userLanguage === "pt" ? "Progresso na edição" : "Edition progress"
+                }
+                value={overallProgressPct}
+                signal="accent"
+              />
+            </div>
+          </Panel>
+        )}
 
-              {/* Expanded lessons — only mounted for the open Unit so
-                  closed Units stay light in the DOM. The Mental
-                  Training slot renders after the six lessons — it
-                  fetches its own assigned activity from
-                  /api/mental/unit-slot/{pillar.id} and self-hides
-                  when nothing's assigned. */}
-              {isExpanded && (
-                <div className="px-4 sm:px-6 pb-6 border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-                  {renderPillarLessons(pillar)}
-                  <PillarMentalSlot unitId={pillar.id} />
+        {/* End-of-unit CTA — sits ABOVE the pillar chips so it's the
+            first thing a user sees after finishing a Unit's last
+            lesson. Rebuilt on DS tokens; keeps the pulse/wiggle
+            animations declared at the bottom of this component. */}
+        {endOfUnitJump && (
+          <div className="mb-4 rounded-card bg-accent-400/10 border border-accent-400/40 px-4 sm:px-6 py-4 sm:py-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="shrink-0 w-11 h-11 rounded-full bg-accent-400/20 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-accent-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-label text-accent-300 font-semibold flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3" />
+                    {userLanguage === "pt"
+                      ? "Unidade concluída!"
+                      : "Unit complete!"}
+                  </p>
+                  <p className="text-sm sm:text-base font-bold text-primary-50">
+                    {userLanguage === "pt"
+                      ? `Toque em ${endOfUnitJump.unitName} para começar a próxima unidade`
+                      : `Tap ${endOfUnitJump.unitName} to start the next unit`}
+                  </p>
+                </div>
+              </div>
+              <ArrowRight
+                className="w-5 h-5 text-accent-400 shrink-0 onb-arrow-nudge"
+                aria-hidden
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Pillar chip picker — horizontal, one Chip per Unit with
+            per-pillar progress %. Wraps on narrow screens. Selected
+            chip renders lime; unselected chips take a neutral slate
+            treatment per DS Chip default. */}
+        <div className="mb-4">
+          <p className="text-[11px] uppercase tracking-label text-primary-400 font-semibold mb-2">
+            {userLanguage === "pt" ? "Unidades" : "Units"}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {pillars.map((pillar) => {
+              const isActive = selectedPillar === pillar.name;
+              const isNextUp =
+                endOfUnitJump?.unitPillarName === pillar.name && !isActive;
+              const Icon = getIconComponent(pillar.icon);
+              return (
+                <Chip
+                  key={pillar.name}
+                  as="button"
+                  size="md"
+                  Icon={Icon}
+                  selected={isActive}
+                  onClick={() => setSelectedPillar(pillar.name)}
+                  className={isNextUp ? "next-attention" : ""}
+                >
+                  <span>{pillar.display_name || pillar.name}</span>
+                  <span className="opacity-70 tabular-nums">
+                    · {pillar.progress || 0}%
+                  </span>
+                </Chip>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Unit — its lesson grid. Uses Panel for the whole
+            block so the pillar header + grid + mental slot read as
+            one unit of content. */}
+        {currentPillar && (
+          <section
+            data-pillar-name={currentPillar.name}
+            data-pillars-container
+            className="mb-8"
+          >
+            <Panel
+              eyebrow={
+                currentPillar.image_url ? undefined : undefined
+              }
+              title={currentPillar.display_name || currentPillar.name}
+              meta={
+                userLanguage === "pt"
+                  ? `${currentPillar.progress || 0}% concluído`
+                  : `${currentPillar.progress || 0}% complete`
+              }
+            >
+              {currentPillar.description_pt && userLanguage === "pt" && (
+                <p className="text-sm text-primary-300 leading-relaxed">
+                  {currentPillar.description_pt}
+                </p>
+              )}
+              {currentPillar.description && userLanguage !== "pt" && (
+                <p className="text-sm text-primary-300 leading-relaxed">
+                  {currentPillar.description}
+                </p>
+              )}
+
+              {/* "Start here" prompt — only shows on the first pillar's
+                  first lesson (component gates itself on shouldShow +
+                  its own localStorage flag). */}
+              <FirstLessonPrompt
+                shouldShow={showStartPrompt}
+                onDismiss={() => setShowStartPrompt(false)}
+              />
+
+              {currentLessons.length === 0 ? (
+                <div className="rounded-card border border-primary-700 bg-primary-900 p-6 text-center">
+                  <p className="text-sm text-primary-400">
+                    No lessons available for this unit yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[...currentLessons]
+                    .sort(
+                      (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+                    )
+                    .map((lesson, lessonIndex) => {
+                      const status = getLessonStatus(lesson);
+                      const highlight =
+                        (showStartPrompt && lessonIndex === 0) ||
+                        (highlightLessonId &&
+                          lesson.id === highlightLessonId);
+                      return (
+                        <LessonCard
+                          key={lesson.id}
+                          lesson={lesson}
+                          status={status}
+                          highlight={highlight}
+                          userLanguage={userLanguage}
+                          onConstruction={() =>
+                            setShowConstructionModal(true)
+                          }
+                          profile={profile}
+                          t={t}
+                        />
+                      );
+                    })}
                 </div>
               )}
-            </div>
-          );
-        })}
-      </div>
 
-      {/* The lessons grid that used to sit below the Units (with an
-          empty sidebar column) is gone — lessons now render inline
-          inside each expanded Unit card above. The empty sidebar
-          slot (commented-out "Recent Achievements" / "Quick
-          Practice") was removed entirely; if either gets reinstated
-          later it can live in its own section. */}
+              {/* The Mental Training "7th slot" — self-hides when
+                  no activity is assigned to this unit. Renders full-
+                  width below the grid so it's the natural finish for
+                  each unit's practice set. */}
+              <PillarMentalSlot unitId={currentPillar.id} />
+            </Panel>
+          </section>
+        )}
 
-      {/* XP Gain Animation */}
-      <XPGainAnimation
-        xp={50}
-        show={showXPGain}
-        onComplete={() => setShowXPGain(false)}
-      />
+        {/* XP Gain Animation */}
+        <XPGainAnimation
+          xp={50}
+          show={showXPGain}
+          onComplete={() => setShowXPGain(false)}
+        />
 
-      {/* Under Construction Modal */}
-      {showConstructionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-attention-900/20 rounded-full flex items-center justify-center">
-                <Construction className="w-8 h-8 text-primary-500" />
+        {/* Under Construction Modal — rebuilt on DS tokens. */}
+        {showConstructionModal && (
+          <div className="fixed inset-0 bg-primary-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-primary-panel border border-primary-700 rounded-panel p-6 max-w-md w-full">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-signal-performance/15 border border-signal-performance/30 flex items-center justify-center">
+                  <Construction className="w-8 h-8 text-signal-performance" />
+                </div>
               </div>
+              <h3 className="text-xl font-display font-bold text-primary-50 text-center mb-3">
+                {t("lesson_under_construction")}
+              </h3>
+              <p className="text-sm text-primary-300 text-center mb-6 leading-relaxed">
+                {t("lesson_under_construction_msg")}
+              </p>
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={() => setShowConstructionModal(false)}
+                className="w-full"
+              >
+                {t("ok")}
+              </Button>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-3">
-              {t("lesson_under_construction")}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-              {t("lesson_under_construction_msg")}
-            </p>
-            <button
-              onClick={() => setShowConstructionModal(false)}
-              className="w-full bg-accent-500 hover:bg-accent-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-            >
-              {t("ok")}
-            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* "All open lessons completed" — fires once per (user, open-
-          lesson-count) when the user catches up to the construction
-          wall. Auto-dismissed by the localStorage flag in
-          dismissAllOpenLessonsDoneModal. */}
-      {showAllOpenLessonsDoneModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-emerald-400/30">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-emerald-500 dark:text-emerald-300" />
+        {/* "All open lessons completed" — fires once per (user, open-
+            lesson-count) when the user catches up to the construction
+            wall. Rebuilt on DS tokens. */}
+        {showAllOpenLessonsDoneModal && (
+          <div className="fixed inset-0 bg-primary-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-primary-panel border border-accent-400/30 rounded-panel p-6 sm:p-7 max-w-md w-full">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-accent-400/15 border border-accent-400/30 flex items-center justify-center">
+                  <Trophy className="w-8 h-8 text-accent-400" />
+                </div>
               </div>
-            </div>
-            <h3 className="text-xl font-black text-gray-900 dark:text-white text-center mb-3">
-              {t("all_open_lessons_done_title")}
-            </h3>
-            <p className="text-sm text-gray-700 dark:text-white/75 text-center leading-relaxed mb-5">
-              {t("all_open_lessons_done_body_1")}
-            </p>
-            {(() => {
-              // Game Centre is still admin-only while we polish it —
-              // same gate as the dashboard nav link. Drop the
-              // user_type check in both places when ready for public.
-              const showGameCentreCard =
-                profile?.user_type === "platform_admin";
-              return (
-                <>
-                  <div
-                    className={`rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/20 p-4 ${
-                      showGameCentreCard ? "mb-3" : "mb-6"
-                    }`}
-                  >
-                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200 mb-1">
-                      {t("all_open_lessons_done_body_2_heading")}
-                    </p>
-                    <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed">
-                      {t("all_open_lessons_done_body_2")}
-                    </p>
-                  </div>
-                  {showGameCentreCard && (
-                    <div className="rounded-xl bg-amber-50 dark:bg-amber-300/10 border border-amber-200 dark:border-amber-300/30 p-4 mb-6">
-                      <p className="text-sm font-bold text-amber-700 dark:text-amber-200 mb-1">
-                        {t("all_open_lessons_done_game_centre_heading")}
+              <h3 className="text-xl font-display font-black text-primary-50 text-center mb-3">
+                {t("all_open_lessons_done_title")}
+              </h3>
+              <p className="text-sm text-primary-300 text-center leading-relaxed mb-5">
+                {t("all_open_lessons_done_body_1")}
+              </p>
+              {(() => {
+                const showGameCentreCard =
+                  profile?.user_type === "platform_admin";
+                return (
+                  <>
+                    <div
+                      className={`rounded-card bg-accent-400/10 border border-accent-400/30 p-4 ${
+                        showGameCentreCard ? "mb-3" : "mb-6"
+                      }`}
+                    >
+                      <p className="text-sm font-bold text-accent-300 mb-1">
+                        {t("all_open_lessons_done_body_2_heading")}
                       </p>
-                      <p className="text-sm text-gray-700 dark:text-white/75 leading-relaxed mb-3">
-                        {t("all_open_lessons_done_game_centre")}
+                      <p className="text-sm text-primary-300 leading-relaxed">
+                        {t("all_open_lessons_done_body_2")}
                       </p>
-                      <Link
-                        href="/games"
-                        onClick={dismissAllOpenLessonsDoneModal}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-300 text-[#1a0e00] hover:bg-amber-200 transition-colors"
-                      >
-                        {t("all_open_lessons_done_game_centre_cta")}
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
                     </div>
-                  )}
-                </>
-              );
-            })()}
-            <button
-              onClick={dismissAllOpenLessonsDoneModal}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold py-3 px-4 rounded-xl transition-colors tracking-wide"
-            >
-              {t("all_open_lessons_done_cta")}
-            </button>
+                    {showGameCentreCard && (
+                      <div className="rounded-card bg-signal-performance/10 border border-signal-performance/30 p-4 mb-6">
+                        <p className="text-sm font-bold text-signal-performance mb-1">
+                          {t("all_open_lessons_done_game_centre_heading")}
+                        </p>
+                        <p className="text-sm text-primary-300 leading-relaxed mb-3">
+                          {t("all_open_lessons_done_game_centre")}
+                        </p>
+                        <Link
+                          href="/games"
+                          onClick={dismissAllOpenLessonsDoneModal}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-signal-performance text-primary-900 hover:brightness-110 transition-all"
+                        >
+                          {t("all_open_lessons_done_game_centre_cta")}
+                          <ArrowRight className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={dismissAllOpenLessonsDoneModal}
+                className="w-full"
+              >
+                {t("all_open_lessons_done_cta")}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
 
-      {/* Single styled-jsx block for the whole page — Next.js only
-          permits one <style jsx> tree per component render, so the
-          end-of-unit CTA's keyframes live here alongside the
-          Start-here pulse rather than inline. */}
+      {/* Single styled-jsx block — Next.js only permits one <style jsx>
+          tree per component render. Keyframes drive the "next-attention"
+          wiggle on the next-up pillar chip and the "fl-first-lesson-pulse"
+          on the first available lesson card. */}
       <style jsx global>{`
         @keyframes fl-first-lesson-pulse {
           0%,
           100% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+            box-shadow: 0 0 0 0 rgba(163, 230, 53, 0.45);
           }
           50% {
-            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 8px rgba(163, 230, 53, 0);
           }
         }
         .fl-first-lesson-pulse {
           animation: fl-first-lesson-pulse 2s ease-out infinite;
-          border-color: rgb(16 185 129) !important;
         }
-
-        /* End-of-unit CTA: nudging arrow + pulsing glow on the
-           highlighted next-unit card. */
         @keyframes onb-arrow-nudge {
           0%,
           100% {
@@ -1010,23 +883,6 @@ function PlayerLessonsMenu() {
         .onb-arrow-nudge {
           animation: onb-arrow-nudge 1.4s ease-in-out infinite;
         }
-        @keyframes start-next-unit-pulse {
-          0%,
-          100% {
-            box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
-          }
-          50% {
-            box-shadow: 0 0 36px rgba(16, 185, 129, 0.45);
-          }
-        }
-        .start-next-unit-pulse {
-          animation: start-next-unit-pulse 2.2s ease-in-out infinite;
-        }
-
-        /* Gentle attention wiggle — same vocabulary as the vocab
-           cards (translate ±2px + rotate ±0.4deg) but on a slightly
-           longer cycle so the highlighted next-unit and next-lesson
-           cards read as "ready when you are" rather than "alert". */
         @keyframes next-attention {
           0%,
           18%,
@@ -1050,21 +906,216 @@ function PlayerLessonsMenu() {
         .next-attention {
           animation: next-attention 3.6s ease-in-out infinite;
         }
-        /* When a card carries both the pulse + the wiggle, compose
-           the animations so neither cancels the other. */
-        .start-next-unit-pulse.next-attention {
-          animation:
-            start-next-unit-pulse 2.2s ease-in-out infinite,
-            next-attention 3.6s ease-in-out infinite;
-        }
-        .fl-first-lesson-pulse.next-attention {
-          animation:
-            fl-first-lesson-pulse 2s ease-out infinite,
-            next-attention 3.6s ease-in-out infinite;
-        }
       `}</style>
     </div>
   );
+}
+
+/* ─── LessonCard ──────────────────────────────────────────────── */
+
+// Grid-friendly lesson card. Renders one of five visual states
+// driven by `status`:
+//   completed         — muted with a check tick, still clickable
+//   current           — accent-400 border + Play cta (the "next up")
+//   locked            — dimmed, not clickable
+//   construction      — dashed border-signal-performance, opens modal
+//   edition_paywall   — nudges to /pricing with a Sparkles chip
+function LessonCard({
+  lesson,
+  status,
+  highlight,
+  userLanguage,
+  onConstruction,
+  profile,
+  t,
+}) {
+  const isClickable =
+    status !== "locked" &&
+    status !== "construction" &&
+    status !== "edition_paywall";
+
+  const statusStyle = {
+    completed:
+      "border-primary-700 bg-primary-panel hover:border-accent-400/40",
+    current:
+      "border-accent-400/50 bg-primary-panel hover:border-accent-400",
+    locked: "border-primary-700 bg-primary-panel/50 opacity-60",
+    construction:
+      "border-signal-performance/40 border-dashed bg-primary-panel",
+    edition_paywall:
+      "border-signal-performance/40 border-dashed bg-primary-panel",
+  }[status] || "border-primary-700 bg-primary-panel";
+
+  const inner = (
+    <>
+      {lesson.image_url && (
+        <div className="relative -mx-4 -mt-4 mb-3 h-28 sm:h-32 overflow-hidden rounded-t-card bg-primary-800">
+          <Image
+            src={lesson.image_url}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, 50vw"
+            className="object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+          {/* Bottom gradient wash so the title chip legibility stays
+              solid over bright cover images. */}
+          <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-primary-panel to-transparent" />
+        </div>
+      )}
+
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <h4 className="font-display font-semibold text-primary-50 text-sm leading-tight">
+          {lesson.title}
+        </h4>
+        <StatusPill status={status} />
+      </div>
+
+      {(lesson.description_pt || lesson.description) && (
+        <p className="text-xs text-primary-400 leading-relaxed line-clamp-2 mb-2">
+          {userLanguage === "pt"
+            ? lesson.description_pt || lesson.description
+            : lesson.description || lesson.description_pt}
+        </p>
+      )}
+
+      <div className="flex items-center flex-wrap gap-1.5 mt-auto pt-1">
+        {lesson.level_name && (
+          <Chip size="sm" signal={levelSignal(lesson.level_name)}>
+            {lesson.level_name}
+          </Chip>
+        )}
+        <span className="text-[11px] text-primary-400 tabular-nums">
+          {lesson.xp_reward || 0} XP
+        </span>
+        {lesson.estimated_duration && (
+          <span className="text-[11px] text-primary-500 tabular-nums">
+            · {lesson.estimated_duration} min
+          </span>
+        )}
+      </div>
+
+      {status === "locked" && (
+        <p className="text-[11px] text-primary-500 mt-2">
+          {t("complete_prev_to_unlock")}
+        </p>
+      )}
+      {status === "construction" && (
+        <p className="text-[11px] text-signal-performance mt-2">
+          {t("lesson_under_construction")}
+        </p>
+      )}
+      {status === "edition_paywall" && (
+        <div className="mt-3">
+          <Link
+            href={`/pricing?edition=${encodeURIComponent(profile?.edition || "wc2026")}`}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-signal-performance/15 hover:bg-signal-performance/25 border border-signal-performance/40 hover:border-signal-performance/70 text-signal-performance text-[10px] font-bold uppercase tracking-label transition-colors"
+            aria-label="Get the full edition to unlock"
+          >
+            <Sparkles className="w-3 h-3" />
+            {userLanguage === "pt" ? "Edição completa" : "Full edition"}
+          </Link>
+        </div>
+      )}
+    </>
+  );
+
+  const baseClass = `flex flex-col h-full p-4 rounded-card border transition-all ${statusStyle} ${
+    highlight ? "fl-first-lesson-pulse" : ""
+  }`;
+
+  if (isClickable) {
+    return (
+      <Link
+        href={`/lesson/${lesson.id}`}
+        className={`${baseClass} hover:brightness-105`}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  if (status === "construction") {
+    return (
+      <button type="button" onClick={onConstruction} className={`${baseClass} text-left`}>
+        {inner}
+      </button>
+    );
+  }
+  return <div className={baseClass}>{inner}</div>;
+}
+
+function StatusPill({ status }) {
+  const meta = {
+    completed: {
+      Icon: CheckCircle,
+      className: "bg-accent-400/15 text-accent-400 border-accent-400/30",
+      label: "Done",
+    },
+    current: {
+      Icon: Play,
+      className: "bg-accent-400 text-primary-900 border-transparent",
+      label: "Next",
+    },
+    locked: {
+      Icon: Lock,
+      className: "bg-primary-800 text-primary-500 border-primary-700",
+      label: "Locked",
+    },
+    construction: {
+      Icon: Construction,
+      className:
+        "bg-signal-performance/10 text-signal-performance border-signal-performance/30",
+      label: "Soon",
+    },
+    edition_paywall: {
+      Icon: Sparkles,
+      className:
+        "bg-signal-performance/10 text-signal-performance border-signal-performance/30",
+      label: "Full",
+    },
+  }[status] || {
+    Icon: Play,
+    className: "bg-primary-800 text-primary-300 border-primary-700",
+    label: "",
+  };
+  const { Icon, className, label } = meta;
+  return (
+    <span
+      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-label ${className}`}
+    >
+      <Icon className="w-3 h-3" />
+      {label && <span>{label}</span>}
+    </span>
+  );
+}
+
+// Map lesson.level_name → DS signal for the level Chip. "Survival"
+// is entry-level (sky), "Precision" is mid (violet), "Fluency" is
+// advanced (orange). Falls back to no-signal (default slate).
+function levelSignal(name) {
+  if (!name) return undefined;
+  const n = name.toLowerCase();
+  if (n.includes("survival")) return "english";
+  if (n.includes("precision")) return "mental";
+  if (n.includes("fluency")) return "performance";
+  return undefined;
+}
+
+function StatIcon({ Icon, children }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <Icon className="w-3.5 h-3.5" />
+      <span>{children}</span>
+    </span>
+  );
+}
+
+function formatNumber(n) {
+  if (!Number.isFinite(n)) return "0";
+  if (Math.abs(n) >= 1000) return n.toLocaleString("en-US");
+  return String(n);
 }
 
 export default function PlayerDashboard() {

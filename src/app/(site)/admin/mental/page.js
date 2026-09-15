@@ -30,11 +30,19 @@ import {
   SILENT_TIMER_BELL_INTERVALS,
   pickLang,
 } from "@/lib/mental/constants";
+import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
+import Button from "@/components/ui/button";
+import Switch from "@/components/ui/switch";
+import Chip from "@/components/ui/chip";
 
 // The accents supported by LivingOrb — keep in sync with
 // ACCENT_PALETTES there. Extending the palette is a two-file change:
-// add here + in LivingOrb.js.
-const ORB_ACCENTS = ["teal", "violet", "emerald", "amber", "slate"];
+// add here + in LivingOrb.js. Values are DS signal names (mental =
+// violet, english = sky, performance = amber-orange, slate = neutral).
+// Legacy accent names on existing rows (teal/violet/emerald/amber)
+// still render via the alias map in LivingOrb — no migration needed.
+const ORB_ACCENTS = ["mental", "english", "performance", "slate"];
 
 export default function MentalAdminPage() {
   return (
@@ -74,38 +82,38 @@ function MentalAdminContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white mb-4"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           {isPt ? "Admin" : "Admin"}
         </Link>
 
         <header className="mb-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-teal-300/80 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400 font-semibold mb-1">
             Global Player · CMS
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             {isPt ? "Treino Mental" : "Mental Training"}
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-xl leading-relaxed">
+          <p className="text-sm text-primary-400 mt-2 max-w-xl leading-relaxed">
             {isPt
               ? "Gerencie atividades, moods e atribuições por unidade."
               : "Manage activities, moods, and per-unit assignments."}
           </p>
         </header>
 
-        <div className="mb-4 inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+        <div className="mb-4 inline-flex rounded-full bg-primary-800 border border-primary-700 p-0.5">
           <button
             type="button"
             onClick={() => setTab("activities")}
             className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
               tab === "activities"
-                ? "bg-white text-black"
-                : "text-white/60 hover:text-white"
+                ? "bg-accent-400 text-primary-900"
+                : "text-primary-400 hover:text-primary-100"
             }`}
           >
             {isPt ? "Atividades" : "Activities"}
@@ -115,8 +123,8 @@ function MentalAdminContent() {
             onClick={() => setTab("assignments")}
             className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
               tab === "assignments"
-                ? "bg-white text-black"
-                : "text-white/60 hover:text-white"
+                ? "bg-accent-400 text-primary-900"
+                : "text-primary-400 hover:text-primary-100"
             }`}
           >
             {isPt ? "Atribuições por unidade" : "Unit assignments"}
@@ -124,7 +132,7 @@ function MentalAdminContent() {
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60 py-8">
+          <div className="flex items-center gap-2 text-primary-300 py-8">
             <Loader2 className="w-5 h-5 animate-spin" />
             {isPt ? "Carregando…" : "Loading…"}
           </div>
@@ -182,23 +190,23 @@ function ActivitiesTab({
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-black uppercase tracking-wider text-white/70">
+        <h2 className="text-sm font-black uppercase tracking-wider text-primary-300">
           {isPt ? "Atividades" : "Activities"} ({activities.length})
         </h2>
         {!creating && (
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
+            Icon={Plus}
             onClick={onStartCreate}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs"
           >
-            <Plus className="w-3.5 h-3.5" />
             {isPt ? "Nova atividade" : "New activity"}
-          </button>
+          </Button>
         )}
       </div>
 
       {creating && (
-        <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.03] p-4">
+        <div className="mb-4 rounded-card border border-accent-400/30 bg-accent-400/[0.03] p-4">
           <ActivityEditor
             mode="create"
             initial={EMPTY_ACTIVITY()}
@@ -210,7 +218,7 @@ function ActivitiesTab({
       )}
 
       {activities.length === 0 && !creating ? (
-        <p className="text-sm text-white/40 py-6 text-center">
+        <p className="text-sm text-primary-500 py-6 text-center">
           {isPt
             ? "Nenhuma atividade ainda. Crie a primeira acima."
             : "No activities yet. Create the first one above."}
@@ -237,30 +245,30 @@ function ActivitiesTab({
 function ActivityRow({ activity, isEditing, onExpand, onSaved, onDeleted, lang }) {
   const tone = ACTIVITY_TONES[activity.activity_type] || ACTIVITY_TONES.meditation;
   return (
-    <div className={`rounded-2xl border ${tone.border} bg-white/[0.02] overflow-hidden`}>
+    <div className={`rounded-card border ${tone.border} bg-primary-panel overflow-hidden`}>
       <button
         type="button"
         onClick={onExpand}
-        className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] text-left"
+        className="w-full flex items-center gap-3 p-3 hover:bg-primary-800 text-left"
       >
-        <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${tone.chip}`}>
+        <div className={`shrink-0 w-8 h-8 rounded-control flex items-center justify-center ${tone.chip}`}>
           <Sparkles className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
+          <p className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold">
             {pickLang(tone.label, lang)}
           </p>
           <h3 className="font-semibold text-sm truncate">
             {pickLang(activity.title, lang) || "(sem título)"}
           </h3>
         </div>
-        <div className="text-[10px] text-white/40">
+        <div className="text-[10px] text-primary-500">
           {activity.active ? (lang === "pt" ? "ativa" : "active") : (lang === "pt" ? "inativa" : "inactive")}
         </div>
-        <Pencil className="w-4 h-4 text-white/40 ml-2" />
+        <Pencil className="w-4 h-4 text-primary-500 ml-2" />
       </button>
       {isEditing && (
-        <div className="border-t border-white/10 p-4 bg-black/25">
+        <div className="border-t border-primary-700 p-4 bg-primary-900">
           <ActivityEditor
             mode="edit"
             activityId={activity.id}
@@ -356,116 +364,99 @@ function ActivityEditor({
     form.activity_type === "match_prep" ||
     form.activity_type === "voice_of_champion";
 
+  const typeOptions = ACTIVITY_TYPES.map((tCode) => ({
+    value: tCode,
+    label: pickLang(ACTIVITY_TONES[tCode].label, lang),
+  }));
+
   return (
     <div className="space-y-3">
-      <Field label={isPt ? "Tipo" : "Type"}>
-        <select
-          value={form.activity_type}
-          onChange={(e) => set("activity_type", e.target.value)}
-          className={inputClass}
-        >
-          {ACTIVITY_TYPES.map((tCode) => (
-            <option key={tCode} value={tCode} className="bg-[#0e0e0e]">
-              {pickLang(ACTIVITY_TONES[tCode].label, lang)}
-            </option>
-          ))}
-        </select>
-      </Field>
+      <Select
+        label={isPt ? "Tipo" : "Type"}
+        value={form.activity_type}
+        onChange={(e) => set("activity_type", e.target.value)}
+        options={typeOptions}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={`${isPt ? "Título" : "Title"} PT`}>
-          <input
-            type="text"
-            value={form.title_pt}
-            onChange={(e) => set("title_pt", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={`${isPt ? "Título" : "Title"} EN`}>
-          <input
-            type="text"
-            value={form.title_en}
-            onChange={(e) => set("title_en", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={`${isPt ? "Subtítulo" : "Subtitle"} PT`}>
-          <input
-            type="text"
-            value={form.subtitle_pt}
-            onChange={(e) => set("subtitle_pt", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={`${isPt ? "Subtítulo" : "Subtitle"} EN`}>
-          <input
-            type="text"
-            value={form.subtitle_en}
-            onChange={(e) => set("subtitle_en", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Duração (seg)" : "Duration (sec)"}>
-          <input
-            type="number"
-            min={0}
-            value={form.duration_seconds}
-            onChange={(e) => set("duration_seconds", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Ordem" : "Sort order"}>
-          <input
-            type="number"
-            value={form.sort_order}
-            onChange={(e) => set("sort_order", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={`${isPt ? "URL áudio" : "Audio URL"} PT`}>
-          <input
-            type="url"
-            value={form.audio_url_pt}
-            onChange={(e) => set("audio_url_pt", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={`${isPt ? "URL áudio" : "Audio URL"} EN`}>
-          <input
-            type="url"
-            value={form.audio_url_en}
-            onChange={(e) => set("audio_url_en", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <Field label={isPt ? "URL da imagem de capa" : "Cover image URL"}>
-        <input
-          type="url"
-          value={form.cover_image_url}
-          onChange={(e) => set("cover_image_url", e.target.value)}
-          className={inputClass}
+        <Input
+          label={`${isPt ? "Título" : "Title"} PT`}
+          type="text"
+          value={form.title_pt}
+          onChange={(e) => set("title_pt", e.target.value)}
         />
-      </Field>
+        <Input
+          label={`${isPt ? "Título" : "Title"} EN`}
+          type="text"
+          value={form.title_en}
+          onChange={(e) => set("title_en", e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Input
+          label={`${isPt ? "Subtítulo" : "Subtitle"} PT`}
+          type="text"
+          value={form.subtitle_pt}
+          onChange={(e) => set("subtitle_pt", e.target.value)}
+        />
+        <Input
+          label={`${isPt ? "Subtítulo" : "Subtitle"} EN`}
+          type="text"
+          value={form.subtitle_en}
+          onChange={(e) => set("subtitle_en", e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Input
+          label={isPt ? "Duração (seg)" : "Duration (sec)"}
+          type="number"
+          min={0}
+          value={form.duration_seconds}
+          onChange={(e) => set("duration_seconds", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Ordem" : "Sort order"}
+          type="number"
+          value={form.sort_order}
+          onChange={(e) => set("sort_order", e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Input
+          label={`${isPt ? "URL áudio" : "Audio URL"} PT`}
+          type="url"
+          value={form.audio_url_pt}
+          onChange={(e) => set("audio_url_pt", e.target.value)}
+        />
+        <Input
+          label={`${isPt ? "URL áudio" : "Audio URL"} EN`}
+          type="url"
+          value={form.audio_url_en}
+          onChange={(e) => set("audio_url_en", e.target.value)}
+        />
+      </div>
+
+      <Input
+        label={isPt ? "URL da imagem de capa" : "Cover image URL"}
+        type="url"
+        value={form.cover_image_url}
+        onChange={(e) => set("cover_image_url", e.target.value)}
+      />
 
       <Field label={isPt ? "Moods" : "Moods"}>
         <div className="flex flex-wrap gap-1.5">
           {MOODS.map((m) => {
             const active = form.moods.includes(m.key);
             return (
-              <button
+              <Chip
                 key={m.key}
-                type="button"
+                as="button"
+                size="sm"
+                Icon={m.Icon}
+                selected={active}
                 onClick={() =>
                   set(
                     "moods",
@@ -474,14 +465,9 @@ function ActivityEditor({
                       : [...form.moods, m.key],
                   )
                 }
-                className={`px-2 py-1 rounded-full text-[11px] font-semibold border ${
-                  active
-                    ? "border-white/40 bg-white/15 text-white"
-                    : "border-white/10 bg-white/[0.02] text-white/60"
-                }`}
               >
-                {m.emoji} {lang === "pt" ? m.pt : m.en}
-              </button>
+                {lang === "pt" ? m.pt : m.en}
+              </Chip>
             );
           })}
         </div>
@@ -508,59 +494,53 @@ function ActivityEditor({
       )}
 
       <div className="flex items-center gap-4">
-        <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(e) => set("active", e.target.checked)}
-            className="accent-emerald-400"
-          />
-          {isPt ? "Ativa" : "Active"}
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={form.featured}
-            onChange={(e) => set("featured", e.target.checked)}
-            className="accent-amber-400"
-          />
-          {isPt ? "Destacar" : "Featured"}
-        </label>
+        <Switch
+          checked={form.active}
+          onChange={(v) => set("active", v)}
+          label={isPt ? "Ativa" : "Active"}
+        />
+        <Switch
+          checked={form.featured}
+          onChange={(v) => set("featured", v)}
+          label={isPt ? "Destacar" : "Featured"}
+        />
       </div>
 
-      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-white/10">
-        <button
-          type="button"
+      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-primary-700">
+        <Button
+          variant="primary"
+          size="md"
+          Icon={Save}
+          loading={saving}
           onClick={save}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
         >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {isPt ? "Salvar" : "Save"}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          Icon={X}
           onClick={onCancel}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm disabled:opacity-50"
         >
-          <X className="w-4 h-4" />
           {isPt ? "Cancelar" : "Cancel"}
-        </button>
+        </Button>
         {mode === "edit" && (
-          <button
-            type="button"
-            onClick={del}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-red-500/15 text-white/50 hover:text-red-300 border border-white/10 hover:border-red-500/40 text-sm ml-auto"
-          >
-            <Trash2 className="w-4 h-4" />
-            {isPt ? "Excluir" : "Delete"}
-          </button>
+          <div className="ml-auto">
+            <Button
+              variant="danger"
+              size="sm"
+              Icon={Trash2}
+              onClick={del}
+            >
+              {isPt ? "Excluir" : "Delete"}
+            </Button>
+          </div>
         )}
         {msg && (
           <div
             className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-              msg.tone === "err" ? "text-red-300" : "text-emerald-300"
+              msg.tone === "err" ? "text-signal-alert" : "text-accent-400"
             }`}
           >
             {msg.tone === "err" ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
@@ -575,45 +555,37 @@ function ActivityEditor({
 function SilentTimerContentEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Configuração do timer silencioso" : "Silent timer settings"}
       </p>
-      <Field label={isPt ? "Presets de duração (min, vírgula)" : "Length presets (min, comma)"}>
-        <input
-          type="text"
-          value={form.silent_presets}
-          onChange={(e) => set("silent_presets", e.target.value)}
-          placeholder={SILENT_TIMER_LENGTHS.join(", ")}
-          className={inputClass}
-        />
-      </Field>
-      <Field label={isPt ? "Duração padrão (min)" : "Default length (min)"}>
-        <input
-          type="number"
-          min={1}
-          value={form.silent_default}
-          onChange={(e) => set("silent_default", e.target.value)}
-          className={inputClass}
-        />
-      </Field>
-      <Field label={isPt ? "Intervalos de sinos (min, vírgula, 0 = sem)" : "Bell intervals (min, comma, 0 = none)"}>
-        <input
-          type="text"
-          value={form.silent_bells}
-          onChange={(e) => set("silent_bells", e.target.value)}
-          placeholder={SILENT_TIMER_BELL_INTERVALS.join(", ")}
-          className={inputClass}
-        />
-      </Field>
-      <Field label={isPt ? "URL do sino (opcional)" : "Bell sound URL (optional)"}>
-        <input
-          type="url"
-          value={form.silent_bell_url}
-          onChange={(e) => set("silent_bell_url", e.target.value)}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={isPt ? "Presets de duração (min, vírgula)" : "Length presets (min, comma)"}
+        type="text"
+        value={form.silent_presets}
+        onChange={(e) => set("silent_presets", e.target.value)}
+        placeholder={SILENT_TIMER_LENGTHS.join(", ")}
+      />
+      <Input
+        label={isPt ? "Duração padrão (min)" : "Default length (min)"}
+        type="number"
+        min={1}
+        value={form.silent_default}
+        onChange={(e) => set("silent_default", e.target.value)}
+      />
+      <Input
+        label={isPt ? "Intervalos de sinos (min, vírgula, 0 = sem)" : "Bell intervals (min, comma, 0 = none)"}
+        type="text"
+        value={form.silent_bells}
+        onChange={(e) => set("silent_bells", e.target.value)}
+        placeholder={SILENT_TIMER_BELL_INTERVALS.join(", ")}
+      />
+      <Input
+        label={isPt ? "URL do sino (opcional)" : "Bell sound URL (optional)"}
+        type="url"
+        value={form.silent_bell_url}
+        onChange={(e) => set("silent_bell_url", e.target.value)}
+      />
     </div>
   );
 }
@@ -635,29 +607,25 @@ function MeditationContentEditor({ form, set, lang }) {
 function ComprehensionQuestionEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Pergunta de compreensão (opcional)" : "Comprehension question (optional)"}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label="Prompt PT">
-          <input
-            type="text"
-            value={form.q_prompt_pt}
-            onChange={(e) => set("q_prompt_pt", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Prompt EN">
-          <input
-            type="text"
-            value={form.q_prompt_en}
-            onChange={(e) => set("q_prompt_en", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label="Prompt PT"
+          type="text"
+          value={form.q_prompt_pt}
+          onChange={(e) => set("q_prompt_pt", e.target.value)}
+        />
+        <Input
+          label="Prompt EN"
+          type="text"
+          value={form.q_prompt_en}
+          onChange={(e) => set("q_prompt_en", e.target.value)}
+        />
       </div>
-      <p className="text-[10px] text-white/45 mt-1">
+      <p className="text-[10px] text-primary-500 mt-1">
         {isPt
           ? "Marque a opção correta com o rádio à direita."
           : "Mark the correct option with the radio on the right."}
@@ -686,34 +654,30 @@ function ComprehensionQuestionEditor({ form, set, lang }) {
             placeholder={`Option ${i + 1} EN`}
             className={inputClass}
           />
-          <label className="inline-flex items-center gap-1 text-[11px] text-white/60">
+          <label className="inline-flex items-center gap-1 text-[11px] text-primary-300">
             <input
               type="radio"
               checked={form.q_correct_idx === i}
               onChange={() => set("q_correct_idx", i)}
-              className="accent-emerald-400"
+              className="accent-accent-400"
             />
             {isPt ? "Correta" : "Correct"}
           </label>
         </div>
       ))}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Explicação PT" : "Explanation PT"}>
-          <input
-            type="text"
-            value={form.q_explain_pt}
-            onChange={(e) => set("q_explain_pt", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Explicação EN" : "Explanation EN"}>
-          <input
-            type="text"
-            value={form.q_explain_en}
-            onChange={(e) => set("q_explain_en", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Explicação PT" : "Explanation PT"}
+          type="text"
+          value={form.q_explain_pt}
+          onChange={(e) => set("q_explain_pt", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Explicação EN" : "Explanation EN"}
+          type="text"
+          value={form.q_explain_en}
+          onChange={(e) => set("q_explain_en", e.target.value)}
+        />
       </div>
     </div>
   );
@@ -727,8 +691,8 @@ function ComprehensionQuestionEditor({ form, set, lang }) {
 function OrbConfigEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2 mb-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2 mb-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Aparência do orbe" : "Orb appearance"}
       </p>
       <Field label={isPt ? "Cor do orbe" : "Orb accent"}>
@@ -742,8 +706,8 @@ function OrbConfigEditor({ form, set, lang }) {
                 onClick={() => set("orb_accent", a)}
                 className={`px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
                   active
-                    ? "border-white/50 bg-white/15 text-white"
-                    : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white"
+                    ? "border-primary-600 bg-primary-600 text-primary-50"
+                    : "border-primary-700 bg-primary-panel text-primary-300 hover:text-primary-100"
                 }`}
               >
                 <span className={`inline-block w-2.5 h-2.5 rounded-full mr-1.5 align-middle ${ORB_SWATCH[a]}`} />
@@ -753,10 +717,10 @@ function OrbConfigEditor({ form, set, lang }) {
           })}
         </div>
       </Field>
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold mt-3">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold mt-3">
         {isPt ? "Ciclo respiratório (segundos)" : "Breathe cycle (seconds)"}
       </p>
-      <p className="text-[10px] text-white/40">
+      <p className="text-[10px] text-primary-500">
         {isPt
           ? "Padrão é 4-7-8. Presets abaixo cobrem as variações comuns."
           : "Default is 4-7-8. Presets below cover the common variations."}
@@ -778,8 +742,8 @@ function OrbConfigEditor({ form, set, lang }) {
               }}
               className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
                 active
-                  ? "border-white/50 bg-white/15 text-white"
-                  : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white"
+                  ? "border-primary-600 bg-primary-600 text-primary-50"
+                  : "border-primary-700 bg-primary-panel text-primary-300 hover:text-primary-100"
               }`}
             >
               {p.label}
@@ -788,47 +752,43 @@ function OrbConfigEditor({ form, set, lang }) {
         })}
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <Field label={isPt ? "Inspira" : "Inhale"}>
-          <input
-            type="number"
-            min={0}
-            max={30}
-            value={form.breathe_in}
-            onChange={(e) => set("breathe_in", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Segura" : "Hold"}>
-          <input
-            type="number"
-            min={0}
-            max={30}
-            value={form.breathe_hold}
-            onChange={(e) => set("breathe_hold", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Expira" : "Exhale"}>
-          <input
-            type="number"
-            min={0}
-            max={30}
-            value={form.breathe_out}
-            onChange={(e) => set("breathe_out", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Inspira" : "Inhale"}
+          type="number"
+          min={0}
+          max={30}
+          value={form.breathe_in}
+          onChange={(e) => set("breathe_in", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Segura" : "Hold"}
+          type="number"
+          min={0}
+          max={30}
+          value={form.breathe_hold}
+          onChange={(e) => set("breathe_hold", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Expira" : "Exhale"}
+          type="number"
+          min={0}
+          max={30}
+          value={form.breathe_out}
+          onChange={(e) => set("breathe_out", e.target.value)}
+        />
       </div>
     </div>
   );
 }
 
+// Swatches shown next to each accent name in the admin picker. Uses
+// the DS signal Tailwind tokens so what admin sees matches what
+// LivingOrb actually renders in the player.
 const ORB_SWATCH = {
-  teal: "bg-teal-400",
-  violet: "bg-violet-400",
-  emerald: "bg-emerald-400",
-  amber: "bg-amber-400",
-  slate: "bg-slate-300",
+  mental: "bg-signal-mental",
+  english: "bg-signal-english",
+  performance: "bg-signal-performance",
+  slate: "bg-primary-300",
 };
 
 const BREATHE_PRESETS = [
@@ -843,45 +803,43 @@ const BREATHE_PRESETS = [
 function ChampionScenarioContentEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Cenário + opções" : "Scenario + options"}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Cenário PT" : "Scenario PT"}>
-          <textarea
-            value={form.scenario_pt}
-            onChange={(e) => set("scenario_pt", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
-        <Field label={isPt ? "Cenário EN" : "Scenario EN"}>
-          <textarea
-            value={form.scenario_en}
-            onChange={(e) => set("scenario_en", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Cenário PT" : "Scenario PT"}
+          multiline
+          rows={3}
+          value={form.scenario_pt}
+          onChange={(e) => set("scenario_pt", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Cenário EN" : "Scenario EN"}
+          multiline
+          rows={3}
+          value={form.scenario_en}
+          onChange={(e) => set("scenario_en", e.target.value)}
+        />
       </div>
-      <p className="text-[10px] text-white/45 mt-1">
+      <p className="text-[10px] text-primary-500 mt-1">
         {isPt
           ? "Marque a opção correta com o rádio à direita. Cada opção pode ter uma explicação separada."
           : "Mark the correct option with the radio on the right. Each option can have its own explanation."}
       </p>
       {form.scenario_options.map((opt, i) => (
-        <div key={i} className="rounded-lg border border-white/10 bg-white/[0.02] p-2 space-y-1">
+        <div key={i} className="rounded-control border border-primary-700 bg-primary-panel p-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-white/40 font-bold w-6">
+            <span className="text-[10px] uppercase tracking-wider text-primary-500 font-bold w-6">
               {String.fromCharCode(65 + i)}
             </span>
-            <label className="ml-auto inline-flex items-center gap-1 text-[11px] text-white/60">
+            <label className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary-300">
               <input
                 type="radio"
                 checked={form.scenario_correct_idx === i}
                 onChange={() => set("scenario_correct_idx", i)}
-                className="accent-emerald-400"
+                className="accent-accent-400"
               />
               {isPt ? "Correta" : "Correct"}
             </label>
@@ -935,30 +893,28 @@ function updateScenarioOption(form, set, idx, field, value) {
 function MatchPrepContentEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Técnica + frases" : "Technique + phrases"}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Técnica PT" : "Technique PT"}>
-          <textarea
-            value={form.technique_pt}
-            onChange={(e) => set("technique_pt", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
-        <Field label={isPt ? "Técnica EN" : "Technique EN"}>
-          <textarea
-            value={form.technique_en}
-            onChange={(e) => set("technique_en", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Técnica PT" : "Technique PT"}
+          multiline
+          rows={3}
+          value={form.technique_pt}
+          onChange={(e) => set("technique_pt", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Técnica EN" : "Technique EN"}
+          multiline
+          rows={3}
+          value={form.technique_en}
+          onChange={(e) => set("technique_en", e.target.value)}
+        />
       </div>
 
-      <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold mt-3">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold mt-3">
         {isPt ? "Frases de auto-fala" : "Self-talk phrases"}
       </p>
       {form.prep_phrases.map((p, i) => (
@@ -992,7 +948,7 @@ function MatchPrepContentEditor({ form, set, lang }) {
                 form.prep_phrases.filter((_, j) => j !== i),
               )
             }
-            className="p-1 rounded text-white/40 hover:text-red-300 hover:bg-red-500/15"
+            className="p-1 rounded text-primary-500 hover:text-signal-alert hover:bg-signal-alert/15"
           >
             ×
           </button>
@@ -1006,7 +962,7 @@ function MatchPrepContentEditor({ form, set, lang }) {
             { text_en: "", text_pt: "", note: "" },
           ])
         }
-        className="text-xs text-emerald-300 hover:text-emerald-200 mt-1"
+        className="text-xs text-accent-400 hover:text-accent-300 mt-1"
       >
         + {isPt ? "Adicionar frase" : "Add phrase"}
       </button>
@@ -1025,73 +981,63 @@ function updatePhrase(form, set, idx, field, value) {
 function VoiceOfChampionContentEditor({ form, set, lang }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-xl border border-white/10 bg-black/25 p-3 space-y-2">
-      <p className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-card border border-primary-700 bg-primary-900 p-3 space-y-2">
+      <p className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
         {isPt ? "Atleta + citação" : "Athlete + quote"}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Nome do atleta" : "Athlete name"}>
-          <input
-            type="text"
-            value={form.athlete_name}
-            onChange={(e) => set("athlete_name", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Subtítulo (posição/clube)" : "Subtitle (position/club)"}>
-          <input
-            type="text"
-            value={form.athlete_subtitle}
-            onChange={(e) => set("athlete_subtitle", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-      <Field label={isPt ? "URL da foto" : "Photo URL"}>
-        <input
-          type="url"
-          value={form.athlete_photo_url}
-          onChange={(e) => set("athlete_photo_url", e.target.value)}
-          className={inputClass}
+        <Input
+          label={isPt ? "Nome do atleta" : "Athlete name"}
+          type="text"
+          value={form.athlete_name}
+          onChange={(e) => set("athlete_name", e.target.value)}
         />
-      </Field>
+        <Input
+          label={isPt ? "Subtítulo (posição/clube)" : "Subtitle (position/club)"}
+          type="text"
+          value={form.athlete_subtitle}
+          onChange={(e) => set("athlete_subtitle", e.target.value)}
+        />
+      </div>
+      <Input
+        label={isPt ? "URL da foto" : "Photo URL"}
+        type="url"
+        value={form.athlete_photo_url}
+        onChange={(e) => set("athlete_photo_url", e.target.value)}
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Citação PT" : "Quote PT"}>
-          <textarea
-            value={form.quote_pt}
-            onChange={(e) => set("quote_pt", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
-        <Field label={isPt ? "Citação EN" : "Quote EN"}>
-          <textarea
-            value={form.quote_en}
-            onChange={(e) => set("quote_en", e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Citação PT" : "Quote PT"}
+          multiline
+          rows={3}
+          value={form.quote_pt}
+          onChange={(e) => set("quote_pt", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Citação EN" : "Quote EN"}
+          multiline
+          rows={3}
+          value={form.quote_en}
+          onChange={(e) => set("quote_en", e.target.value)}
+        />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Field label={isPt ? "Contexto PT" : "Background PT"}>
-          <textarea
-            value={form.voice_background_pt}
-            onChange={(e) => set("voice_background_pt", e.target.value)}
-            rows={2}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
-        <Field label={isPt ? "Contexto EN" : "Background EN"}>
-          <textarea
-            value={form.voice_background_en}
-            onChange={(e) => set("voice_background_en", e.target.value)}
-            rows={2}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Contexto PT" : "Background PT"}
+          multiline
+          rows={2}
+          value={form.voice_background_pt}
+          onChange={(e) => set("voice_background_pt", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Contexto EN" : "Background EN"}
+          multiline
+          rows={2}
+          value={form.voice_background_en}
+          onChange={(e) => set("voice_background_en", e.target.value)}
+        />
       </div>
-      <p className="text-[10px] text-white/45 mt-1">
+      <p className="text-[10px] text-primary-500 mt-1">
         {isPt
           ? "Pergunta de compreensão opcional — reutiliza os campos abaixo do bloco de meditação."
           : "Optional comprehension question — reuses the meditation editor's Q/A fields below."}
@@ -1138,35 +1084,35 @@ function AssignmentsTab({ slots, activities, onChanged, lang }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] text-white/50 mb-3">
+      <p className="text-[11px] text-primary-400 mb-3">
         {isPt
           ? "Para cada unidade, escolha qual atividade aparece como 7ª carta após a Lição 6."
           : "For each unit, pick which activity appears as the 7th card after Lesson 6."}
       </p>
       {assignError && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-2 text-xs text-red-200">
+        <div className="rounded-control border border-signal-alert/40 bg-signal-alert/10 p-2 text-xs text-signal-alert">
           {isPt ? "Falha ao salvar:" : "Save failed:"} {assignError}
         </div>
       )}
       {slots.map((row) => (
         <div
           key={row.unit_id}
-          className="rounded-2xl border border-white/10 bg-white/[0.02] p-3 flex items-center gap-3"
+          className="rounded-card border border-primary-700 bg-primary-panel p-3 flex items-center gap-3"
         >
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-white/45">{row.edition}</p>
+            <p className="text-xs text-primary-500">{row.edition}</p>
             <h3 className="font-semibold text-sm truncate">{row.unit_name}</h3>
           </div>
           <select
             value={row.slot?.mental_activity_id || ""}
             onChange={(e) => assign(row.unit_id, e.target.value || null)}
-            className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-400/50 min-w-[220px]"
+            className="bg-primary-800 border border-primary-700 text-primary-50 text-xs rounded-control px-2 py-1.5 focus:outline-none focus:border-accent-400 min-w-[220px]"
           >
-            <option value="" className="bg-[#0e0e0e]">
+            <option value="" className="bg-primary-800">
               {isPt ? "Nenhuma" : "None"}
             </option>
             {activeActivities.map((a) => (
-              <option key={a.id} value={a.id} className="bg-[#0e0e0e]">
+              <option key={a.id} value={a.id} className="bg-primary-800">
                 {pickLang(a.title, lang) || "(sem título)"} —{" "}
                 {pickLang(ACTIVITY_TONES[a.activity_type]?.label, lang)}
               </option>
@@ -1181,12 +1127,12 @@ function AssignmentsTab({ slots, activities, onChanged, lang }) {
 /* ─── helpers ─────────────────────────────────────────────────── */
 
 const inputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
+  "w-full bg-primary-900 border border-primary-700 rounded-control px-3 py-2 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none";
 
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
+      <label className="block text-[10px] uppercase tracking-wider text-primary-400 font-semibold mb-1">
         {label}
       </label>
       {children}

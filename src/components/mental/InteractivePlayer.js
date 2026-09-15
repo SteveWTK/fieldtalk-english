@@ -29,6 +29,7 @@ import {
   pickLang,
   ACTIVITY_TONES,
 } from "@/lib/mental/constants";
+import Button from "@/components/ui/button";
 
 /**
  * @param {{
@@ -90,16 +91,16 @@ export default function InteractivePlayer({ activity, onClose, onCompleted }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black text-white overflow-y-auto"
+      className="fixed inset-0 z-50 bg-primary-900 text-primary-50 overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
-      <AmbientTint accent={tone.accent} />
+      <AmbientTint accent={tone.signal} />
 
       <button
         type="button"
         onClick={onClose}
-        className="fixed top-4 right-4 z-30 p-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white"
+        className="fixed top-4 right-4 z-30 p-2 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-300 hover:text-primary-50"
         aria-label={t("player.close", lang)}
       >
         <X className="w-5 h-5" />
@@ -157,16 +158,23 @@ export default function InteractivePlayer({ activity, onClose, onCompleted }) {
 }
 
 /* ─── Shared ambient tint ─────────────────────────────────────── */
+//
+// Bespoke atmospheric overlay — the whole player leans on it for mood,
+// so per DS this is treated as art (like the LivingOrb) and keeps its
+// multi-stop radial gradients. Hex constants are aligned to the signal
+// palette (mental=violet #c084fc, performance=orange #fb923c,
+// english=sky #38bdf8, slate=neutral).
 
 function AmbientTint({ accent }) {
   const gradient = {
-    teal: "radial-gradient(ellipse at 20% 20%, rgba(20,184,166,0.15), transparent 55%)",
-    violet:
-      "radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(219,39,119,0.12), transparent 55%)",
-    emerald:
-      "radial-gradient(ellipse at 20% 20%, rgba(16,185,129,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(163,230,53,0.10), transparent 55%)",
-    amber:
-      "radial-gradient(ellipse at 20% 20%, rgba(245,158,11,0.18), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.10), transparent 55%)",
+    mental:
+      "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
+    performance:
+      "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.18), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.10), transparent 55%)",
+    english:
+      "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(163,230,53,0.10), transparent 55%)",
+    slate:
+      "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.12), transparent 55%)",
   }[accent] || "radial-gradient(ellipse at center, rgba(255,255,255,0.05), transparent)";
   return (
     <div
@@ -196,7 +204,7 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
       <p className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}>
         {pickLang(tone.label, lang)}
       </p>
-      <h2 className="text-lg sm:text-xl font-light text-white/95 leading-relaxed mb-8 whitespace-pre-wrap">
+      <h2 className="text-lg sm:text-xl font-light text-primary-50 leading-relaxed mb-8 whitespace-pre-wrap">
         {scenario}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xl mx-auto">
@@ -206,20 +214,20 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
           const isCorrect = opt.correct === true;
           let styleClass;
           if (!answered) {
-            styleClass = "border-white/15 bg-white/[0.04] text-white/85 hover:border-white/30 hover:bg-white/[0.08]";
+            styleClass = "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500 hover:bg-primary-800";
           } else if (isCorrect) {
-            styleClass = "border-emerald-400/60 bg-emerald-500/10 text-white";
+            styleClass = "border-accent-400/60 bg-accent-400/10 text-primary-50";
           } else if (isPicked) {
-            styleClass = "border-red-400/60 bg-red-500/10 text-white";
+            styleClass = "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
           } else {
-            styleClass = "border-white/10 bg-white/[0.02] text-white/40";
+            styleClass = "border-primary-700 bg-primary-panel text-primary-500";
           }
           return (
             <button
               key={i}
               type="button"
               onClick={() => !answered && setPickedIdx(i)}
-              className={`text-left px-4 py-3 rounded-xl border transition-colors ${styleClass}`}
+              className={`text-left px-4 py-3 rounded-control border transition-colors ${styleClass}`}
             >
               <span className="text-[10px] uppercase tracking-wider opacity-60 font-bold block mb-1">
                 {String.fromCharCode(65 + i)}
@@ -232,34 +240,34 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
 
       {answered && (
         <div className="mt-6 max-w-xl mx-auto text-left space-y-3">
-          <p className={`text-sm font-bold ${pickedCorrect ? "text-emerald-300" : "text-amber-300"}`}>
+          <p className={`text-sm font-bold ${pickedCorrect ? "text-accent-300" : "text-amber-300"}`}>
             {pickedCorrect
               ? t("player.correct", lang)
               : t("player.notQuite", lang)}
           </p>
           {picked?.explanation && (
-            <p className="text-sm text-white/75 leading-relaxed">
+            <p className="text-sm text-primary-100 leading-relaxed">
               {pickLang(picked.explanation, lang)}
             </p>
           )}
           {!pickedCorrect && correctIdx >= 0 && options[correctIdx]?.explanation && (
-            <p className="text-sm text-white/60 leading-relaxed border-l-2 border-emerald-400/40 pl-3">
-              <span className="text-emerald-300 font-bold">
+            <p className="text-sm text-primary-300 leading-relaxed border-l-2 border-accent-400/40 pl-3">
+              <span className="text-accent-300 font-bold">
                 {isPt ? "A resposta certa:" : "The right answer:"}
               </span>{" "}
               {pickLang(options[correctIdx].explanation, lang)}
             </p>
           )}
           <div className="pt-3">
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() =>
                 onComplete({ index: pickedIdx, correct: pickedCorrect })
               }
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm"
             >
               {t("player.continue", lang)}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -303,11 +311,11 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
       <p className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}>
         {pickLang(tone.label, lang)}
       </p>
-      <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-white/95 mb-2">
+      <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-primary-50 mb-2">
         {pickLang(activity?.title, lang)}
       </h2>
       {technique && (
-        <p className="text-sm text-white/70 leading-relaxed mb-6 whitespace-pre-wrap">
+        <p className="text-sm text-primary-300 leading-relaxed mb-6 whitespace-pre-wrap">
           {technique}
         </p>
       )}
@@ -317,22 +325,22 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
           hint below. */}
       {phrases.length > 0 && (
         <div className="space-y-2 mb-6">
-          <p className="text-[10px] uppercase tracking-wider text-white/45 font-bold">
+          <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
             {isPt ? "Frases de auto-fala" : "Self-talk phrases"}
           </p>
           {phrases.map((p, i) => (
             <div
               key={i}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+              className="rounded-control border border-primary-700 bg-primary-800 p-3"
             >
-              <p className="text-lg font-medium text-white">
+              <p className="text-lg font-medium text-primary-50">
                 {p.text_en || ""}
               </p>
               {p.text_pt && (
-                <p className="text-xs text-white/50 mt-1">{p.text_pt}</p>
+                <p className="text-xs text-primary-400 mt-1">{p.text_pt}</p>
               )}
               {p.note && (
-                <p className="text-[11px] text-white/40 mt-2 italic">
+                <p className="text-[11px] text-primary-500 mt-2 italic">
                   {p.note}
                 </p>
               )}
@@ -343,15 +351,15 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
 
       {/* Optional pre-match audio */}
       {audioUrl && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 mb-6">
-          <p className="text-[11px] uppercase tracking-wider text-white/60 font-semibold mb-2">
+        <div className="rounded-control border border-primary-700 bg-primary-800 p-4 mb-6">
+          <p className="text-[11px] uppercase tracking-wider text-primary-300 font-semibold mb-2">
             {isPt ? "Ouça antes do próximo jogo" : "Listen before your next match"}
           </p>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={togglePlay}
-              className="w-12 h-12 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 flex items-center justify-center"
+              className="w-12 h-12 rounded-full bg-primary-800 hover:bg-primary-600 border border-primary-500 flex items-center justify-center"
             >
               {playing ? (
                 <Pause className="w-5 h-5" />
@@ -362,7 +370,7 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              className="w-10 h-10 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-white/70"
+              className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-700 flex items-center justify-center text-primary-300"
             >
               {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
@@ -377,14 +385,9 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
       )}
 
       <div className="pt-2">
-        <button
-          type="button"
-          onClick={onComplete}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm"
-        >
-          <Sparkles className="w-4 h-4" />
+        <Button variant="primary" Icon={Sparkles} onClick={onComplete}>
           {t("player.complete", lang)}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -456,7 +459,7 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
           <img
             src={athlete.photo_url}
             alt={athlete.name || ""}
-            className="w-14 h-14 rounded-full object-cover ring-2 ring-white/20"
+            className="w-14 h-14 rounded-full object-cover ring-2 ring-primary-600"
           />
         ) : (
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-400 flex items-center justify-center text-xl font-black">
@@ -464,11 +467,11 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
           </div>
         )}
         <div>
-          <p className="font-semibold text-white text-lg">
+          <p className="font-semibold text-primary-50 text-lg">
             {athlete.name || "—"}
           </p>
           {athlete.subtitle && (
-            <p className="text-xs text-white/50">{athlete.subtitle}</p>
+            <p className="text-xs text-primary-400">{athlete.subtitle}</p>
           )}
         </div>
       </div>
@@ -480,30 +483,30 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
             <span className="absolute left-0 top-0 text-4xl leading-none text-violet-400/60">
               &ldquo;
             </span>
-            <p className="text-xl sm:text-2xl font-light leading-relaxed text-white/95 italic">
+            <p className="text-xl sm:text-2xl font-light leading-relaxed text-primary-50 italic">
               {quoteEn}
             </p>
             {quotePt && (
-              <p className="text-sm text-white/50 mt-3 italic">{quotePt}</p>
+              <p className="text-sm text-primary-400 mt-3 italic">{quotePt}</p>
             )}
           </blockquote>
 
           {background && (
-            <p className="text-sm text-white/60 leading-relaxed mb-6">
+            <p className="text-sm text-primary-300 leading-relaxed mb-6">
               {background}
             </p>
           )}
 
           {audioUrl && (
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 mb-6">
-              <p className="text-[11px] uppercase tracking-wider text-white/60 font-semibold mb-2">
+            <div className="rounded-control border border-primary-700 bg-primary-800 p-4 mb-6">
+              <p className="text-[11px] uppercase tracking-wider text-primary-300 font-semibold mb-2">
                 {isPt ? "Ouça na voz" : "Listen"}
               </p>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={togglePlay}
-                  className="w-12 h-12 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/20 flex items-center justify-center"
+                  className="w-12 h-12 rounded-full bg-primary-800 hover:bg-primary-600 border border-primary-500 flex items-center justify-center"
                 >
                   {playing ? (
                     <Pause className="w-5 h-5" />
@@ -514,7 +517,7 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
                 <button
                   type="button"
                   onClick={() => setMuted((m) => !m)}
-                  className="w-10 h-10 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-white/70"
+                  className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-700 flex items-center justify-center text-primary-300"
                 >
                   {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
@@ -533,10 +536,10 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
       {/* Optional comprehension question */}
       {showQuestion && hasQuestion && (
         <div className="space-y-3">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-white/40 font-semibold">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-primary-500 font-semibold">
             {t("player.comprehensionTitle", lang)}
           </p>
-          <p className="text-lg font-light text-white/95">
+          <p className="text-lg font-light text-primary-50">
             {pickLang(q.prompt, lang)}
           </p>
           <div className="space-y-2">
@@ -546,20 +549,20 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
               const isCorrect = opt.correct === true;
               let styleClass;
               if (!answered) {
-                styleClass = "border-white/15 bg-white/[0.04] text-white/85 hover:border-white/30";
+                styleClass = "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500";
               } else if (isCorrect) {
-                styleClass = "border-emerald-400/60 bg-emerald-500/10 text-white";
+                styleClass = "border-accent-400/60 bg-accent-400/10 text-primary-50";
               } else if (isPicked) {
-                styleClass = "border-red-400/60 bg-red-500/10 text-white";
+                styleClass = "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
               } else {
-                styleClass = "border-white/10 bg-white/[0.02] text-white/40";
+                styleClass = "border-primary-700 bg-primary-panel text-primary-500";
               }
               return (
                 <button
                   key={i}
                   type="button"
                   onClick={() => pickedIdx == null && setPickedIdx(i)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${styleClass}`}
+                  className={`w-full text-left px-4 py-3 rounded-control border transition-colors ${styleClass}`}
                 >
                   {pickLang(opt.label, lang)}
                 </button>
@@ -567,7 +570,7 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
             })}
           </div>
           {pickedIdx != null && q.explanation && (
-            <p className="text-sm text-white/70 pt-2">
+            <p className="text-sm text-primary-300 pt-2">
               {pickLang(q.explanation, lang)}
             </p>
           )}
@@ -575,16 +578,15 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
       )}
 
       <div className="pt-4">
-        <button
-          type="button"
+        <Button
+          variant="primary"
           onClick={handleContinue}
           disabled={showQuestion && hasQuestion && pickedIdx == null}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm disabled:opacity-40"
         >
           {showQuestion || !hasQuestion
             ? t("player.complete", lang)
             : t("player.continue", lang)}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -595,30 +597,26 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
 function CompletionScreen({ title, xpAwarded, onClose, lang, submitting }) {
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
-      <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+      <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
         {submitting ? (
-          <Loader2 className="w-7 h-7 text-emerald-300 animate-spin" />
+          <Loader2 className="w-7 h-7 text-accent-300 animate-spin" />
         ) : (
-          <Sparkles className="w-7 h-7 text-emerald-300" />
+          <Sparkles className="w-7 h-7 text-accent-300" />
         )}
       </div>
       <h2 className="text-2xl font-light tracking-tight mb-2">
         {t("player.completedCelebration", lang)}
       </h2>
-      {title && <p className="text-sm text-white/60 mb-4">{title}</p>}
+      {title && <p className="text-sm text-primary-300 mb-4">{title}</p>}
       {xpAwarded > 0 && (
-        <p className="inline-block px-4 py-2 rounded-full bg-emerald-500/15 text-emerald-200 font-bold text-lg tabular-nums">
+        <p className="inline-block px-4 py-2 rounded-full bg-accent-400/15 text-accent-300 font-bold text-lg tabular-nums">
           {t("player.xpAwarded", lang).replace("{n}", xpAwarded)}
         </p>
       )}
       <div className="mt-6">
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-bold text-sm"
-        >
+        <Button variant="primary" onClick={onClose}>
           {t("player.close", lang)}
-        </button>
+        </Button>
       </div>
       <style jsx>{`
         @keyframes fade-in {

@@ -4,6 +4,16 @@
 // Mental Training feature. Single source of truth so schema
 // constraints, API validation, and UI dropdowns never drift.
 
+import {
+  Waves,
+  Flame,
+  Moon,
+  HeartCrack,
+  Target,
+  Feather,
+  Sparkles,
+} from "lucide-react";
+
 export const ACTIVITY_TYPES = [
   "meditation",
   "champion_scenario",
@@ -13,57 +23,79 @@ export const ACTIVITY_TYPES = [
 ];
 
 // Mood catalog — keys are stable (used in mental_activities.moods
-// TEXT[]), labels are bilingual, tones drive card gradients.
+// TEXT[]), labels are bilingual, tones drive card gradients. `Icon`
+// is a lucide component reference (was `emoji` — swapped so the
+// mood picker matches the sharp, sleek register of the rest of the
+// app). Icon choice mirrors the old emoji intent:
+//   🌊 → Waves, 🔥 → Flame, 🌙 → Moon, 💔 → HeartCrack,
+//   🎯 → Target, 🧘 → Feather (lighter than a lotus glyph),
+//   ✨ → Sparkles.
 export const MOODS = [
-  { key: "pre_match", pt: "Ansioso antes do jogo", en: "Pre-match nerves", tone: "sky", emoji: "🌊" },
-  { key: "pre_training", pt: "Foco antes do treino", en: "Focus before training", tone: "emerald", emoji: "🔥" },
-  { key: "cant_sleep", pt: "Sem conseguir dormir", en: "Can't sleep", tone: "indigo", emoji: "🌙" },
-  { key: "disappointment", pt: "Após uma decepção", en: "After a setback", tone: "amber", emoji: "💔" },
-  { key: "big_game_prep", pt: "Visualização de jogo grande", en: "Big game visualization", tone: "violet", emoji: "🎯" },
-  { key: "wind_down", pt: "Só descansar a mente", en: "Just wind down", tone: "teal", emoji: "🧘" },
-  { key: "general", pt: "Qualquer momento", en: "Anytime", tone: "neutral", emoji: "✨" },
+  { key: "pre_match", pt: "Ansioso antes do jogo", en: "Pre-match nerves", tone: "sky", Icon: Waves },
+  { key: "pre_training", pt: "Foco antes do treino", en: "Focus before training", tone: "emerald", Icon: Flame },
+  { key: "cant_sleep", pt: "Sem conseguir dormir", en: "Can't sleep", tone: "indigo", Icon: Moon },
+  { key: "disappointment", pt: "Após uma decepção", en: "After a setback", tone: "amber", Icon: HeartCrack },
+  { key: "big_game_prep", pt: "Visualização de jogo grande", en: "Big game visualization", tone: "violet", Icon: Target },
+  { key: "wind_down", pt: "Só descansar a mente", en: "Just wind down", tone: "teal", Icon: Feather },
+  { key: "general", pt: "Qualquer momento", en: "Anytime", tone: "neutral", Icon: Sparkles },
 ];
 
 export const MOOD_KEYS = MOODS.map((m) => m.key);
 
 // One tone descriptor per activity_type — drives coloured borders on
-// hub cards + accent on the player. Deliberately not overlapping with
-// the leads-admin palette so mental training feels distinct.
+// hub cards + accent on the player. Global Player DS: mental training
+// is a single feature identity, so the pillar's own colour
+// (`signal-mental`, violet) leads. Sub-types differentiate by icon +
+// chip label first, colour second:
+//
+//   meditation, voice_of_champion → signal-mental (violet). Core
+//     "quiet the mind" practice.
+//   champion_scenario           → signal-performance (orange). Tests
+//     performance under pressure, sits in the performance bucket.
+//   match_prep                  → signal-english (sky). Activation /
+//     focus before match — closest neighbour to the football English
+//     pillar's own colour, which reads "match-day ready".
+//   silent_timer                → slate. It's a tool, not a curated
+//     activity, so it doesn't take a signal.
+//
+// The `glow` field replaces the old `gradient` — a single solid
+// signal-tinted blob that blurs behind the card. Per DS "no gradients",
+// but a blurred colour wash is atmospheric, not a shadow.
 export const ACTIVITY_TONES = {
   meditation: {
     label: { pt: "Meditação guiada", en: "Guided meditation" },
-    accent: "teal",
-    gradient: "from-teal-400 via-cyan-400 to-blue-400",
-    border: "border-teal-400/40",
-    chip: "bg-teal-500/15 text-teal-200",
+    signal: "mental",
+    glow: "bg-signal-mental/30",
+    border: "border-signal-mental/40",
+    chip: "bg-signal-mental/15 text-signal-mental",
   },
   champion_scenario: {
     label: { pt: "Cenário de campeão", en: "Champion scenario" },
-    accent: "amber",
-    gradient: "from-amber-400 via-orange-400 to-red-400",
-    border: "border-amber-400/40",
-    chip: "bg-amber-500/15 text-amber-200",
+    signal: "performance",
+    glow: "bg-signal-performance/30",
+    border: "border-signal-performance/40",
+    chip: "bg-signal-performance/15 text-signal-performance",
   },
   match_prep: {
     label: { pt: "Ritual pré-jogo", en: "Match prep ritual" },
-    accent: "emerald",
-    gradient: "from-emerald-400 via-lime-400 to-yellow-400",
-    border: "border-emerald-400/40",
-    chip: "bg-emerald-500/15 text-emerald-200",
+    signal: "english",
+    glow: "bg-signal-english/30",
+    border: "border-signal-english/40",
+    chip: "bg-signal-english/15 text-signal-english",
   },
   voice_of_champion: {
     label: { pt: "Voz de campeão", en: "Voice of champions" },
-    accent: "violet",
-    gradient: "from-violet-400 via-fuchsia-400 to-pink-400",
-    border: "border-violet-400/40",
-    chip: "bg-violet-500/15 text-violet-200",
+    signal: "mental",
+    glow: "bg-signal-mental/30",
+    border: "border-signal-mental/40",
+    chip: "bg-signal-mental/15 text-signal-mental",
   },
   silent_timer: {
     label: { pt: "Meditação silenciosa", en: "Silent meditation" },
-    accent: "slate",
-    gradient: "from-slate-400 via-slate-300 to-white",
-    border: "border-white/25",
-    chip: "bg-white/[0.08] text-white/85",
+    signal: null,
+    glow: "bg-primary-600/30",
+    border: "border-primary-600",
+    chip: "bg-primary-700 text-primary-200",
   },
 };
 

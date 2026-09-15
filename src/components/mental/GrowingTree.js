@@ -10,8 +10,11 @@
 //   - Branches unfold at 1, 3, 6, 9, 12 active-week milestones.
 //   - Leaves appear on branches by the ratio of "days completed / 84"
 //     over the last 12 weeks. Leaves colour-shift by which activity
-//     types the player has done, so a scenario-heavy player has a
-//     mix of amber + emerald, a meditation-heavy player is teal.
+//     types the player has done — a scenario-heavy player has orange
+//     leaves, a match-prep-heavy player has sky, a meditation-heavy
+//     player is violet — matching the signal palette from
+//     `ACTIVITY_TONES` so the tree reads as an aggregate of the
+//     same visual language used in the activity cards.
 //
 // Interactive: hovering a leaf tooltips the date + activity type it
 // represents. Newest leaves gently sway to draw the eye.
@@ -21,12 +24,16 @@
 import { useMemo } from "react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
+// Leaf hex colours — match the DS signal palette so the tree
+// aggregates the same identity colours used elsewhere in mental
+// training. Kept as hex (not tailwind tokens) because these are
+// SVG `fill` attributes, not classes.
 const TYPE_COLOR = {
-  meditation: "#5eead4",        // teal-300
-  silent_timer: "#e2e8f0",      // slate-200
-  champion_scenario: "#fcd34d", // amber-300
-  match_prep: "#86efac",        // emerald-300
-  voice_of_champion: "#d8b4fe", // violet-300
+  meditation: "#c084fc",         // signal-mental (violet)
+  voice_of_champion: "#c084fc",  // signal-mental (violet)
+  champion_scenario: "#fb923c",  // signal-performance (orange)
+  match_prep: "#38bdf8",         // signal-english (sky)
+  silent_timer: "#cbd5e1",       // primary-300 (slate) — no signal
 };
 
 /**
@@ -52,25 +59,25 @@ export default function GrowingTree({ completionsByDay = [] }) {
   const trunkThickness = 6 + trunkGrowth * 4;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 relative overflow-hidden">
+    <div className="rounded-card border border-primary-700 bg-primary-panel p-4 relative overflow-hidden">
       <div className="flex items-baseline justify-between mb-2">
         <div>
-          <h2 className="text-sm font-black tracking-tight text-white">
+          <h2 className="text-sm font-display font-black tracking-tight text-primary-50">
             {isPt ? "Sua consistência" : "Your consistency"}
           </h2>
-          <p className="text-[11px] text-white/45">
+          <p className="text-[11px] text-primary-400">
             {isPt
               ? "A árvore cresce a cada semana ativa. Cada folha é um dia de prática."
               : "The tree grows with every active week. Each leaf is a day of practice."}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-black tabular-nums text-emerald-300">
+          <p className="text-2xl font-display font-black tabular-nums text-accent-400">
             {dayCount}
           </p>
-          <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold">
+          <p className="text-[10px] uppercase tracking-label text-primary-400 font-semibold">
             {isPt ? "dias · " : "days · "}
-            <span className="text-white/60">{weekCount}</span>{" "}
+            <span className="text-primary-300">{weekCount}</span>{" "}
             {isPt ? "semanas" : "weeks"}
           </p>
         </div>
@@ -85,10 +92,14 @@ export default function GrowingTree({ completionsByDay = [] }) {
             isPt ? "Árvore de consistência" : "Consistency tree"
           }
         >
-          {/* Ground curve — subtle horizon line under the tree. */}
+          {/* Ground curve — subtle horizon line under the tree.
+              Deliberate rgba (not a Tailwind class) so the stroke
+              tints without needing a CSS variable — the surrounding
+              panel is bg-primary-panel so this reads as a subtle
+              hairline over it. */}
           <path
             d="M 20,280 Q 150,290 280,280"
-            stroke="rgba(255,255,255,0.1)"
+            stroke="rgba(148,163,184,0.2)"
             strokeWidth="2"
             fill="none"
           />
@@ -164,7 +175,7 @@ export default function GrowingTree({ completionsByDay = [] }) {
         {/* If no completions yet, invite the first tap. */}
         {dayCount === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-xs text-white/50 text-center max-w-[220px]">
+            <p className="text-xs text-primary-400 text-center max-w-[220px]">
               {isPt
                 ? "Comece com uma prática — a árvore vai crescer com você."
                 : "Start with one practice — the tree grows with you."}
@@ -175,17 +186,17 @@ export default function GrowingTree({ completionsByDay = [] }) {
 
       {/* Milestone strip — shows the next unlock so the player has a
           concrete goal to reach. */}
-      <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-wider font-semibold">
+      <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-label font-semibold">
         {MILESTONES.map((m, i) => {
           const reached = weekCount >= m.weeks;
           return (
             <div
               key={i}
               className={`flex flex-col items-center gap-0.5 ${
-                reached ? "text-emerald-300" : "text-white/25"
+                reached ? "text-accent-400" : "text-primary-500"
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${reached ? "bg-emerald-400" : "bg-white/15"}`} />
+              <span className={`w-2 h-2 rounded-full ${reached ? "bg-accent-400" : "bg-primary-600"}`} />
               <span>{m.label[lang]}</span>
             </div>
           );

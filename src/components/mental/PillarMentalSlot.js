@@ -75,11 +75,12 @@ export default function PillarMentalSlot({ unitId }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`w-full text-left mt-2 rounded-xl border-2 ${tone.border} bg-white/[0.02] hover:bg-white/[0.05] p-4 group relative overflow-hidden transition-colors`}
+        className={`w-full text-left mt-2 rounded-card border-2 ${tone.border} bg-primary-panel hover:bg-primary-800 p-4 group relative overflow-hidden transition-colors`}
       >
         {/* Cover image — thumbnail on the left, replacing the icon
-            square. Falls back to the type gradient glow when no
-            cover is set. */}
+            square. Falls back to the type-signal glow when no cover
+            is set (a blurred signal-tinted wash, not a gradient — DS
+            "no brand-mix gradients"). */}
         {hasCover ? (
           <div
             className="absolute inset-y-0 left-0 w-24 sm:w-28 opacity-40 group-hover:opacity-70 transition-opacity"
@@ -91,16 +92,16 @@ export default function PillarMentalSlot({ unitId }) {
               alt=""
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#070707]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-primary-panel" />
           </div>
         ) : (
           <div
-            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 group-hover:opacity-60 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
+            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 group-hover:opacity-60 transition-opacity ${tone.glow} blur-3xl`}
             aria-hidden="true"
           />
         )}
         <div className="relative flex items-center gap-3">
-          <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${tone.chip}`}>
+          <div className={`shrink-0 w-11 h-11 rounded-control flex items-center justify-center ${tone.chip}`}>
             <Sparkles className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -111,25 +112,25 @@ export default function PillarMentalSlot({ unitId }) {
                 {pickLang(tone.label, lang)}
               </span>
               {completedToday && (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent-400" />
               )}
             </div>
-            <h4 className="font-bold text-gray-900 dark:text-white text-sm leading-tight">
+            <h4 className="font-bold text-primary-50 text-sm leading-tight">
               {title}
             </h4>
             {subtitle && (
-              <p className="text-xs text-gray-600 dark:text-white/60 mt-0.5 line-clamp-1">
+              <p className="text-xs text-primary-400 mt-0.5 line-clamp-1">
                 {subtitle}
               </p>
             )}
           </div>
-          <div className="shrink-0 flex items-center gap-2 text-xs text-gray-500 dark:text-white/50">
+          <div className="shrink-0 flex items-center gap-2 text-xs text-primary-400">
             {durationMin && (
               <span className="tabular-nums">
                 {durationMin} min
               </span>
             )}
-            <span className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center group-hover:scale-110 transition-transform text-primary-100">
               <Play className="w-3.5 h-3.5" />
             </span>
           </div>

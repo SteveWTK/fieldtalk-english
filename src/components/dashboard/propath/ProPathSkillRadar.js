@@ -216,10 +216,10 @@ export default function ProPathSkillRadar({
   const isEmpty = perAxis.every((a) => a.available === 0);
 
   return (
-    <section className="rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 p-5 sm:p-6">
+    <section className="rounded-panel bg-primary-panel backdrop-blur-sm border border-primary-700 p-5 sm:p-6">
       <header className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-accent-400 font-bold">
             {copy.eyebrow(currentLevel)}
           </p>
           {/* <h2 className="text-lg sm:text-xl font-black tracking-tight mt-1">
@@ -227,12 +227,12 @@ export default function ProPathSkillRadar({
           </h2> */}
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
+          <p className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold">
             {copy.passedLabel}
           </p>
-          <p className="text-2xl font-black tabular-nums text-accent-300">
+          <p className="text-2xl font-black tabular-nums text-accent-400">
             {totalPassedInLevel}
-            <span className="text-white/40 text-sm font-bold">
+            <span className="text-primary-500 text-sm font-bold">
               /{totalPossibleInLevel}
             </span>
           </p>
@@ -253,7 +253,8 @@ export default function ProPathSkillRadar({
           {/* Background hex rings — nudged a touch stronger than the
               original 0.06/0.5 so the polygon reads clearly on mobile
               even at reduced size. Outer ring gets an extra bump so
-              the radar has a decisive outer boundary. */}
+              the radar has a decisive outer boundary. Stroke uses the
+              primary-700 hairline register from the DS. */}
           {RING_FRACTIONS.map((f, ri) => {
             const points = SKILL_AXES.map((_, i) => {
               const p = polarPoint(axisAngle(i), f * R_MAX);
@@ -264,7 +265,7 @@ export default function ProPathSkillRadar({
                 key={ri}
                 points={points}
                 fill="none"
-                stroke="rgba(255,255,255,0.11)"
+                stroke="rgba(30,41,59,1)"
                 strokeWidth={ri === RING_FRACTIONS.length - 1 ? 1.4 : 0.8}
               />
             );
@@ -281,7 +282,7 @@ export default function ProPathSkillRadar({
                 y1={CY}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255,255,255,0.09)"
+                stroke="rgba(30,41,59,1)"
                 strokeWidth={0.8}
               />
             );
@@ -395,18 +396,18 @@ export default function ProPathSkillRadar({
                 style={{ overflow: "visible" }}
               >
                 <div
-                  className={`flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-0.5 outline-none transition-colors ${
-                    isHover ? "bg-white/[0.06]" : ""
+                  className={`flex flex-col items-center justify-center gap-0.5 rounded-control px-1 py-0.5 outline-none transition-colors ${
+                    isHover ? "bg-primary-800" : ""
                   }`}
                 >
                   <Icon
                     className={`w-5 h-5 ${
-                      active ? "text-accent-300" : "text-white/55"
+                      active ? "text-accent-400" : "text-primary-400"
                     }`}
                   />
                   <span
                     className={`text-[11px] sm:text-xs font-bold leading-tight text-center ${
-                      active ? "text-white/90" : "text-white/70"
+                      active ? "text-primary-100" : "text-primary-300"
                     }`}
                   >
                     {skillAxisLabel(axis.id, lang, "short")}
@@ -448,22 +449,22 @@ export default function ProPathSkillRadar({
 
       {/* Level progress footer — subtle bar toward the certificate.
           Uses the same fill palette as the cells for continuity. */}
-      <div className="mt-5 pt-5 border-t border-white/10">
+      <div className="mt-5 pt-5 border-t border-primary-700">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold text-white/80">
+          <p className="text-xs font-bold text-primary-100">
             {copy.trialReadyLabel}
           </p>
-          <p className="text-xs font-black tabular-nums text-accent-300">
+          <p className="text-xs font-black tabular-nums text-accent-400">
             {levelPct}%
           </p>
         </div>
-        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-primary-700 overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent-200 transition-[width] duration-1000"
+            className="h-full rounded-full bg-accent-400 transition-[width] duration-1000"
             style={{ width: animate ? `${levelPct}%` : "0%" }}
           />
         </div>
-        <p className="mt-2 text-[11px] text-white/50 leading-relaxed">
+        <p className="mt-2 text-[11px] text-primary-400 leading-relaxed">
           {copy.trialReadyExplain.replace("{level}", currentLevel)}
         </p>
 
@@ -479,13 +480,13 @@ export default function ProPathSkillRadar({
         )}
 
         {certificateReady && (
-          <div className="mt-4 rounded-2xl border border-accent-400/50 bg-accent-400/[0.08] p-3 flex items-center gap-3">
-            <Trophy className="w-5 h-5 text-accent-300 shrink-0" />
+          <div className="mt-4 rounded-card border border-accent-400/50 bg-accent-400/10 p-3 flex items-center gap-3">
+            <Trophy className="w-5 h-5 text-accent-400 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-accent-300">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-accent-400">
                 {copy.certificateReadyEyebrow(currentLevel)}
               </p>
-              <p className="text-xs text-white/80 mt-0.5">
+              <p className="text-xs text-primary-100 mt-0.5">
                 {copy.certificateReadyBody}
               </p>
             </div>
@@ -514,13 +515,13 @@ function SkillRadarDetail({
   // Fully empty edition (no lessons authored for any axis yet).
   if (isEmpty || !segment) {
     return (
-      <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-white/50" />
+      <div className="mt-4 rounded-card bg-primary-800 border border-primary-700 px-4 py-3 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-control bg-primary-700 flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4 text-primary-400" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-white/85">{label}</p>
-          <p className="text-[11px] text-white/50 leading-relaxed">
+          <p className="text-sm font-bold text-primary-100">{label}</p>
+          <p className="text-[11px] text-primary-400 leading-relaxed">
             {copy.detailEmptyBody}
           </p>
         </div>
@@ -532,19 +533,19 @@ function SkillRadarDetail({
   // (content team is behind, or Level has slots not yet populated).
   if (segment.lessonId === null) {
     return (
-      <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-white/50" />
+      <div className="mt-4 rounded-card bg-primary-800 border border-primary-700 px-4 py-3 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-control bg-primary-700 flex items-center justify-center shrink-0">
+          <Icon className="w-4 h-4 text-primary-400" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-white/85">
+          <p className="text-sm font-bold text-primary-100">
             {label}
-            <span className="text-white/40 font-normal">
+            <span className="text-primary-500 font-normal">
               {" "}
               · {copy.lessonNumber(segmentIndex + 1)}
             </span>
           </p>
-          <p className="text-[11px] text-white/50 leading-relaxed">
+          <p className="text-[11px] text-primary-400 leading-relaxed">
             {copy.detailNotReleasedBody}
           </p>
         </div>
@@ -561,34 +562,34 @@ function SkillRadarDetail({
       ? copy.detailPartial
       : copy.detailNotStarted;
   const accentTone = passed
-    ? "border-accent-400/40 bg-accent-400/[0.08]"
-    : "border-white/10 bg-white/[0.03]";
+    ? "border-accent-400/40 bg-accent-400/10"
+    : "border-primary-700 bg-primary-800";
   const iconTone = passed
-    ? "bg-accent-400/20 text-accent-300"
-    : "bg-white/[0.06] text-white/70";
+    ? "bg-accent-400/20 text-accent-400"
+    : "bg-primary-700 text-primary-300";
 
   return (
     <div
-      className={`mt-4 rounded-2xl border px-4 py-3 flex items-center gap-3 transition-colors ${accentTone}`}
+      className={`mt-4 rounded-card border px-4 py-3 flex items-center gap-3 transition-colors ${accentTone}`}
     >
       <div
-        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconTone}`}
+        className={`w-9 h-9 rounded-control flex items-center justify-center shrink-0 ${iconTone}`}
       >
         <Icon className="w-4 h-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-white/90 truncate">
+        <p className="text-sm font-bold text-primary-100 truncate">
           {label}
-          <span className="text-white/40 font-normal">
+          <span className="text-primary-500 font-normal">
             {" "}
             · {copy.lessonNumber(segmentIndex + 1)}
           </span>
         </p>
-        <p className="text-[11px] text-white/60 leading-relaxed">
+        <p className="text-[11px] text-primary-400 leading-relaxed">
           {copy.xpOf(segment.earnedXp, segment.maxXp)}
-          <span className="text-white/40"> · {stateLabel}</span>
+          <span className="text-primary-500"> · {stateLabel}</span>
           {!passed && segment.maxXp > 0 && (
-            <span className="text-white/40"> · {copy.passesAt(threshold)}</span>
+            <span className="text-primary-500"> · {copy.passesAt(threshold)}</span>
           )}
         </p>
       </div>

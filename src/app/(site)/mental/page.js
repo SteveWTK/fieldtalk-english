@@ -32,6 +32,8 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import MentalActivityPlayer from "@/components/mental/MentalActivityPlayer";
 import GrowingTree from "@/components/mental/GrowingTree";
+import { Chip } from "@/components/ui/chip";
+import { StatTile } from "@/components/ui/stat-tile";
 import {
   t,
   pickLang,
@@ -114,7 +116,7 @@ function MentalHubContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden">
       {/* Rippling water ambient — pure CSS. Two very slow-moving
           radial gradients layered so a subtle horizon is always
           moving, but never in a way that competes with the cards. */}
@@ -122,19 +124,19 @@ function MentalHubContent() {
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <header className="mb-8">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-teal-300/80 font-semibold mb-2">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-accent-300 font-semibold mb-2">
             Global Player
           </p>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
             {t("hub.title", lang)}
           </h1>
-          <p className="text-sm text-white/60 mt-2 max-w-xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-xl leading-relaxed">
             {t("hub.subtitle", lang)}
           </p>
         </header>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/50 py-8">
+          <div className="flex items-center gap-2 text-primary-400 py-8">
             <Loader2 className="w-5 h-5 animate-spin" />
             {lang === "pt" ? "Carregando…" : "Loading…"}
           </div>
@@ -158,7 +160,7 @@ function MentalHubContent() {
 
             {featured.length > 0 && (
               <section className="mt-8">
-                <h2 className="text-sm font-black tracking-tight text-white mb-3">
+                <h2 className="text-sm font-black tracking-tight text-primary-50 mb-3">
                   {t("hub.featured", lang)}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -176,7 +178,7 @@ function MentalHubContent() {
 
             <section className="mt-8">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-black tracking-tight text-white">
+                <h2 className="text-sm font-black tracking-tight text-primary-50">
                   {t("hub.library", lang)}
                 </h2>
                 <TypeFilters
@@ -186,7 +188,7 @@ function MentalHubContent() {
                 />
               </div>
               {filtered.length === 0 ? (
-                <p className="text-sm text-white/40 py-6 text-center">
+                <p className="text-sm text-primary-500 py-6 text-center">
                   {t("hub.empty", lang)}
                 </p>
               ) : (
@@ -403,58 +405,56 @@ function StatsStrip({ stats, lang }) {
   const minutesAll = stats?.minutes_all_time ?? 0;
   const completed = stats?.completed_all_time ?? 0;
 
+  const streakSuffix = t("hub.stats.streakDays", lang);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-      <StatCard
-        Icon={Flame}
-        tone="amber"
-        label={t("hub.stats.streak", lang)}
-        value={streak}
-        suffix={t("hub.stats.streakDays", lang)}
+      <StatTile
+        tone="accent"
+        label={
+          <span className="inline-flex items-center gap-2">
+            <Flame className="w-3.5 h-3.5" aria-hidden="true" />
+            {t("hub.stats.streak", lang)}
+          </span>
+        }
+        value={
+          <>
+            {streak}
+            {streakSuffix && (
+              <span className="text-xs font-normal text-primary-400 ml-1">
+                {streakSuffix}
+              </span>
+            )}
+          </>
+        }
       />
-      <StatCard
-        Icon={Clock}
-        tone="teal"
-        label={t("hub.stats.minutesThisWeek", lang)}
+      <StatTile
+        label={
+          <span className="inline-flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+            {t("hub.stats.minutesThisWeek", lang)}
+          </span>
+        }
         value={minutesWeek}
       />
-      <StatCard
-        Icon={Timer}
-        tone="violet"
-        label={t("hub.stats.minutesAllTime", lang)}
+      <StatTile
+        label={
+          <span className="inline-flex items-center gap-2">
+            <Timer className="w-3.5 h-3.5" aria-hidden="true" />
+            {t("hub.stats.minutesAllTime", lang)}
+          </span>
+        }
         value={minutesAll}
       />
-      <StatCard
-        Icon={Sparkles}
-        tone="emerald"
-        label={t("hub.stats.completedAllTime", lang)}
+      <StatTile
+        label={
+          <span className="inline-flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+            {t("hub.stats.completedAllTime", lang)}
+          </span>
+        }
         value={completed}
       />
-    </div>
-  );
-}
-
-function StatCard({ Icon, tone, label, value, suffix }) {
-  const toneClass = {
-    amber: "border-amber-400/30 bg-amber-500/[0.05] text-amber-200",
-    teal: "border-teal-400/30 bg-teal-500/[0.05] text-teal-200",
-    violet: "border-violet-400/30 bg-violet-500/[0.05] text-violet-200",
-    emerald: "border-emerald-400/30 bg-emerald-500/[0.05] text-emerald-200",
-  }[tone];
-  return (
-    <div className={`rounded-2xl border p-3 ${toneClass}`}>
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-3.5 h-3.5" />
-        <p className="text-[10px] uppercase tracking-wider opacity-80 font-semibold">
-          {label}
-        </p>
-      </div>
-      <p className="text-2xl font-black tracking-tight tabular-nums">
-        {value}
-        {suffix && (
-          <span className="text-xs font-normal opacity-70 ml-1">{suffix}</span>
-        )}
-      </p>
     </div>
   );
 }
@@ -464,28 +464,38 @@ function StatCard({ Icon, tone, label, value, suffix }) {
 function MoodPicker({ lang, current, onChange }) {
   return (
     <section className="mb-8">
-      <p className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-semibold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.3em] text-primary-500 font-semibold mb-2">
         {t("hub.moodPickerTitle", lang)}
       </p>
-      <p className="text-xs text-white/50 mb-3">
+      <p className="text-xs text-primary-400 mb-3">
         {t("hub.moodPickerHint", lang)}
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
         {MOODS.map((m) => {
           const active = current === m.key;
+          const Icon = m.Icon;
           return (
             <button
               key={m.key}
               type="button"
               onClick={() => onChange(active ? null : m.key)}
-              className={`group relative rounded-2xl border p-3 text-left transition-all ${moodToneClass(m.tone, active)}`}
+              className={`group relative rounded-card border p-3 text-left transition-all ${moodToneClass(m.tone, active)}`}
             >
-              <div className="text-xl mb-1">{m.emoji}</div>
-              <p className={`text-xs font-semibold leading-tight ${active ? "text-white" : "text-white/85"}`}>
+              {/* Icon — was an emoji; now a lucide glyph to match the
+                  app's sharp, sleek register. Uses currentColor so it
+                  inherits the mood tone from the parent button. */}
+              {Icon && (
+                <Icon
+                  className={`w-5 h-5 mb-1.5 ${active ? "text-primary-50" : "text-primary-100"}`}
+                  aria-hidden="true"
+                  strokeWidth={1.75}
+                />
+              )}
+              <p className={`text-xs font-semibold leading-tight ${active ? "text-primary-50" : "text-primary-100"}`}>
                 {lang === "pt" ? m.pt : m.en}
               </p>
               {active && (
-                <div className="absolute top-1 right-1 text-white">
+                <div className="absolute top-1 right-1 text-primary-50">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </div>
               )}
@@ -514,7 +524,7 @@ function moodToneClass(tone, active) {
     case "teal":
       return `${active ? "border-teal-400/60 bg-teal-500/15" : "border-teal-400/20 bg-teal-500/[0.04]"} ${base}`;
     default:
-      return `${active ? "border-white/40 bg-white/10" : "border-white/10 bg-white/[0.03]"} ${base}`;
+      return `${active ? "border-primary-500 bg-primary-700" : "border-primary-700 bg-primary-800"} ${base}`;
   }
 }
 
@@ -525,29 +535,29 @@ function SilentHeroCard({ activity, lang, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="w-full text-left mb-6 rounded-3xl border border-white/15 bg-gradient-to-br from-slate-800/60 via-slate-900/40 to-black hover:from-slate-700/70 transition-colors p-5 sm:p-6 relative overflow-hidden group"
+      className="w-full text-left mb-6 rounded-card border border-primary-600 bg-primary-panel hover:bg-primary-800 transition-colors p-5 sm:p-6 relative overflow-hidden group"
     >
       <div className="absolute inset-0 pointer-events-none opacity-70">
         <div
-          className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/[0.04] blur-3xl animate-slow-pulse"
+          className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-primary-900 blur-3xl animate-slow-pulse"
           aria-hidden="true"
         />
       </div>
       <div className="relative flex items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-white/45 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-primary-400 font-semibold mb-1">
             {t("hub.silentTimerCard.title", lang)}
           </p>
-          <h2 className="text-xl sm:text-2xl font-light tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-light tracking-tight text-primary-50">
             {pickLang(activity.title, lang) || t("hub.silentTimerCard.title", lang)}
           </h2>
-          <p className="text-sm text-white/60 mt-1">
+          <p className="text-sm text-primary-300 mt-1">
             {pickLang(activity.subtitle, lang) ||
               t("hub.silentTimerCard.subtitle", lang)}
           </p>
         </div>
-        <div className="shrink-0 w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-          <Play className="w-6 h-6 text-white" />
+        <div className="shrink-0 w-14 h-14 rounded-full bg-primary-700 border border-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <Play className="w-6 h-6 text-primary-50" />
         </div>
       </div>
       <style jsx>{`
@@ -574,19 +584,23 @@ function TypeFilters({ current, onChange, lang }) {
           tKey === "all"
             ? t("hub.filterAll", lang)
             : pickLang(ACTIVITY_TONES[tKey]?.label, lang);
+        // "All" + silent_timer chips carry no signal — silent_timer's
+        // tone.signal is explicitly null in constants.js. Other types
+        // borrow their activity signal so the selected pill reads the
+        // filter's feature identity.
+        const chipSignal =
+          tKey === "all" ? undefined : ACTIVITY_TONES[tKey]?.signal || undefined;
         return (
-          <button
+          <Chip
             key={tKey}
-            type="button"
+            as="button"
+            size="sm"
+            selected={active}
+            signal={chipSignal}
             onClick={() => onChange(tKey)}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
-              active
-                ? "bg-white text-black"
-                : "bg-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.1]"
-            }`}
           >
             {label}
-          </button>
+          </Chip>
         );
       })}
     </div>
@@ -611,7 +625,7 @@ function ActivityCard({ activity, lang, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className={`text-left rounded-2xl border ${tone.border} bg-white/[0.02] hover:bg-white/[0.04] transition-colors group relative overflow-hidden`}
+      className={`text-left rounded-card border ${tone.border} bg-primary-panel hover:bg-primary-800 transition-colors group relative overflow-hidden`}
     >
       {/* Optional hero cover — rendered as a full-bleed image at the
           top of the card. Height fixed at 128px so text below stays
@@ -629,14 +643,14 @@ function ActivityCard({ activity, lang, onOpen }) {
             alt=""
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 via-primary-900/30 to-transparent" />
           <span
             className={`absolute top-2 left-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${tone.chip}`}
           >
             {pickLang(tone.label, lang)}
           </span>
           {completedToday && (
-            <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-emerald-300 drop-shadow" />
+            <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-accent-400 drop-shadow" />
           )}
         </div>
       )}
@@ -647,7 +661,7 @@ function ActivityCard({ activity, lang, onOpen }) {
             visual interest). */}
         {!hasCover && (
           <div
-            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-0 group-hover:opacity-30 transition-opacity bg-gradient-to-br ${tone.gradient} blur-3xl`}
+            className={`absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-0 group-hover:opacity-30 transition-opacity ${tone.glow} blur-3xl`}
             aria-hidden="true"
           />
         )}
@@ -660,23 +674,23 @@ function ActivityCard({ activity, lang, onOpen }) {
                 {pickLang(tone.label, lang)}
               </span>
               {completedToday && (
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <CheckCircle2 className="w-4 h-4 text-accent-400" />
               )}
             </div>
           )}
-          <h3 className="font-semibold text-white text-base leading-tight">
+          <h3 className="font-semibold text-primary-50 text-base leading-tight">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-xs text-white/50 mt-1 line-clamp-2">{subtitle}</p>
+            <p className="text-xs text-primary-400 mt-1 line-clamp-2">{subtitle}</p>
           )}
-          <div className="flex items-center justify-between mt-3 text-[11px] text-white/45">
+          <div className="flex items-center justify-between mt-3 text-[11px] text-primary-500">
             {durationMin && (
               <span className="tabular-nums">
                 {durationMin} {lang === "pt" ? "min" : "min"}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 group-hover:text-white transition-colors">
+            <span className="inline-flex items-center gap-1 group-hover:text-primary-50 transition-colors">
               <Play className="w-3 h-3" />
               {lang === "pt" ? "Começar" : "Start"}
             </span>

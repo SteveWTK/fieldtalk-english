@@ -26,28 +26,42 @@
 import React from "react";
 
 /**
+/**
  * @param {{
  *   size?: number,            // orb diameter in px at rest (default 260)
  *   phaseLabel?: string,      // overlay text ("Breathe in", etc.)
  *   subLabel?: string,        // smaller secondary text (e.g. "Feche os olhos…")
  *   paused?: boolean,         // freeze the breathe animation
- *   accent?: 'teal' | 'violet' | 'emerald' | 'amber' | 'slate',
+ *   accent?: 'mental' | 'performance' | 'english' | 'slate',
  *   breatheIn?: number,       // inhale seconds (default 4)
  *   breatheHold?: number,     // hold seconds (default 7)
  *   breatheOut?: number,      // exhale seconds (default 8)
  * }} props
+ *
+ * The `accent` prop takes the DS signal names now — `mental` (violet
+ * palette, the default for meditation + voice of champion),
+ * `performance` (warm amber, for scenarios), `english` (cool teal,
+ * for match prep), or `slate` (neutral, for silent timer). This
+ * radial-gradient art is the ONE place in the app where multi-stop
+ * gradients survive the DS "no gradients" rule — the meditation
+ * orb IS the atmospheric visual, not brand chrome.
  */
 export default function LivingOrb({
   size = 260,
   phaseLabel,
   subLabel,
   paused = false,
-  accent = "teal",
+  accent = "mental",
   breatheIn = 4,
   breatheHold = 7,
   breatheOut = 8,
 }) {
-  const palette = ACCENT_PALETTES[accent] || ACCENT_PALETTES.teal;
+  // Legacy alias — activities authored before the DS sweep stored
+  // accents by visual name (teal/violet/emerald/amber). Map those to
+  // the current signal-name palettes so existing rows keep working
+  // without a data migration. New rows use the signal names direct.
+  const resolvedAccent = LEGACY_ACCENT_ALIAS[accent] || accent;
+  const palette = ACCENT_PALETTES[resolvedAccent] || ACCENT_PALETTES.mental;
 
   // Total cycle + the two milestone percentages. The keyframe below
   // holds `scale(1.18)` between inhale-end and hold-end, then eases
@@ -61,12 +75,18 @@ export default function LivingOrb({
     100
   ).toFixed(2);
 
+  // Wrapper size — sits at 1.5× the orb diameter. The orb scales to
+  // 1.18× at inhale peak (~330px for a 280 orb) and the orbit
+  // particles ride at `size * 0.72` radius (~404px diameter), so
+  // 1.5× is the tightest wrapper that still contains both without
+  // clipping. Previously 2× — worth the change because MeditationPlayer
+  // then fits controls above the viewport bottom on laptop screens.
   return (
     <div
       className="relative flex items-center justify-center"
       style={{
-        width: size * 2,
-        height: size * 2,
+        width: size * 1.5,
+        height: size * 1.5,
       }}
       aria-hidden="true"
     >
@@ -247,21 +267,32 @@ export default function LivingOrb({
 }
 
 /**
- * Per-accent gradients + glow colours. Each palette shifts the orb
- * from cool → warm subtly so the meditation player, silent timer,
- * and match-prep ritual don't all feel like the same screen.
+ * Per-signal orb palettes. Each shifts the visual from cool → warm
+ * so the meditation player, silent timer, and match-prep ritual
+ * don't all feel like the same screen.
+ *
+ * Keys align with the DS signal names — `mental` (violet, the
+ * default), `english` (teal, for match-prep activation), `performance`
+ * (warm amber, for scenarios), and `slate` (neutral, for silent
+ * timer). Voice-of-champion uses `mental` alongside meditation
+ * because they're both quiet-mind practices.
  */
+// Legacy accent → new signal-name palette map. Preserves visual
+// intent for rows authored before the DS rename (2026-09-15):
+//   teal → english (both were the cool cyan/blue meditation palette)
+//   violet → mental (both were the same violet palette)
+//   emerald → mental (was the green meditation palette; closest new
+//     equivalent is mental since we only have 3 signal palettes)
+//   amber → performance (both were the same warm palette)
+const LEGACY_ACCENT_ALIAS = {
+  teal: "english",
+  violet: "mental",
+  emerald: "mental",
+  amber: "performance",
+};
+
 const ACCENT_PALETTES = {
-  teal: {
-    outer:
-      "radial-gradient(circle at 30% 30%, #67e8f9, #0e7490 55%, #1e3a8a 90%)",
-    inner:
-      "radial-gradient(circle at 60% 60%, #a5f3fc, transparent 65%)",
-    glow1: "rgba(103, 232, 249, 0.35)",
-    glow2: "rgba(30, 58, 138, 0.35)",
-    particle: "rgba(165, 243, 252, 0.9)",
-  },
-  violet: {
+  mental: {
     outer:
       "radial-gradient(circle at 30% 30%, #c4b5fd, #7c3aed 55%, #4c1d95 90%)",
     inner:
@@ -270,16 +301,16 @@ const ACCENT_PALETTES = {
     glow2: "rgba(76, 29, 149, 0.35)",
     particle: "rgba(221, 214, 254, 0.9)",
   },
-  emerald: {
+  english: {
     outer:
-      "radial-gradient(circle at 30% 30%, #6ee7b7, #059669 55%, #064e3b 90%)",
+      "radial-gradient(circle at 30% 30%, #67e8f9, #0e7490 55%, #1e3a8a 90%)",
     inner:
-      "radial-gradient(circle at 60% 60%, #a7f3d0, transparent 65%)",
-    glow1: "rgba(110, 231, 183, 0.35)",
-    glow2: "rgba(6, 78, 59, 0.35)",
-    particle: "rgba(167, 243, 208, 0.9)",
+      "radial-gradient(circle at 60% 60%, #a5f3fc, transparent 65%)",
+    glow1: "rgba(103, 232, 249, 0.35)",
+    glow2: "rgba(30, 58, 138, 0.35)",
+    particle: "rgba(165, 243, 252, 0.9)",
   },
-  amber: {
+  performance: {
     outer:
       "radial-gradient(circle at 30% 30%, #fcd34d, #d97706 55%, #7c2d12 90%)",
     inner:
