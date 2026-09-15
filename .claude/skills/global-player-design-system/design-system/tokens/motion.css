@@ -1,0 +1,18 @@
+:root{
+--gp-dur-micro:120ms; /* @kind other */
+--gp-dur-ui:220ms; /* @kind other */
+--gp-dur-entrance:620ms; /* @kind other */
+--gp-dur-sting:1200ms; /* @kind other */
+--gp-ease-out:ease-out; /* @kind other */
+--gp-ease-ui:cubic-bezier(.22,1,.36,1); /* @kind other */
+--gp-ease-sweep:cubic-bezier(.16,1,.3,1); /* @kind other */
+--gp-stagger:110ms; /* @kind other */
+}
+@keyframes gp-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gp-sweep{from{opacity:0;transform:translateX(-30px) scaleX(.86)}70%{transform:translateX(3px) scaleX(1.02)}to{opacity:1;transform:translateX(0) scaleX(1)}}
+@keyframes gp-draw{from{stroke-dashoffset:120}to{stroke-dashoffset:0}}
+@keyframes gp-crest{from{stroke-dashoffset:340;opacity:.2}to{stroke-dashoffset:0;opacity:1}}
+@keyframes gp-flash{0%{filter:none}45%{filter:drop-shadow(0 0 10px rgba(163,230,53,.85))}100%{filter:none}}
+@keyframes gp-word{from{opacity:0;letter-spacing:.44em}to{opacity:1;letter-spacing:.2em}}
+@keyframes gp-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:200ms!important;animation-name:gp-fade!important;animation-delay:0ms!important;transition-duration:200ms!important}}

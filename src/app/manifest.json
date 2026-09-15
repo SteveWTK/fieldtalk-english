@@ -1,6 +1,6 @@
 {
-  "name": "FieldTalk English",
-  "short_name": "Fieldtalk",
+  "name": "Global Player",
+  "short_name": "Global Player",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#588137",
-  "background_color": "#a3e635",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
   "display": "standalone"
 }

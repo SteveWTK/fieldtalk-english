@@ -14,9 +14,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Loader2,
   Upload,
-  ChevronRight,
   AlertCircle,
   CheckCircle2,
   FileText,
@@ -24,6 +22,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Panel from "@/components/ui/panel";
+import Button from "@/components/ui/button";
 
 export default function LeadsImportPage() {
   const { lang } = useLanguage();
@@ -103,7 +103,7 @@ export default function LeadsImportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="new"
@@ -116,12 +116,12 @@ export default function LeadsImportPage() {
           <h2 className="text-xl font-black tracking-tight">
             {isPt ? "Importar leads (CSV)" : "Import leads (CSV)"}
           </h2>
-          <p className="text-xs text-white/50 mt-1">
+          <p className="text-xs text-primary-400 mt-1">
             {isPt
               ? "Suba uma planilha com headers na primeira linha. Colunas comuns são reconhecidas automaticamente. Até 2.000 linhas por importação."
               : "Upload a spreadsheet with headers on the first row. Common columns are auto-detected. Up to 2,000 rows per import."}
           </p>
-          <p className="text-[11px] text-white/40 mt-1">
+          <p className="text-[11px] text-primary-500 mt-1">
             {isPt
               ? "Colunas reconhecidas: name, email, phone, type, source, organization, role, city, state, country, tags, positions, age, english_level, summary."
               : "Recognised columns: name, email, phone, type, source, organization, role, city, state, country, tags, positions, age, english_level, summary."}
@@ -131,13 +131,13 @@ export default function LeadsImportPage() {
         {!preview && (
           <form onSubmit={handleUpload} className="space-y-3">
             <label className="block">
-              <span className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-2 block">
+              <span className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-2 block">
                 {isPt ? "Arquivo CSV" : "CSV file"}
               </span>
               <div className="flex items-center gap-2">
-                <label className="flex-1 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 cursor-pointer hover:bg-white/[0.06] transition-colors">
-                  <FileText className="w-4 h-4 text-white/50" />
-                  <span className="text-sm text-white/80 truncate">
+                <label className="flex-1 inline-flex items-center gap-2 px-3 py-2 rounded-control bg-primary-900 border border-primary-700 cursor-pointer hover:bg-primary-800 transition-colors">
+                  <FileText className="w-4 h-4 text-primary-400" />
+                  <span className="text-sm text-primary-100 truncate">
                     {file
                       ? file.name
                       : isPt
@@ -153,23 +153,21 @@ export default function LeadsImportPage() {
                 </label>
               </div>
             </label>
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="md"
+              Icon={Upload}
+              loading={loading}
               disabled={!file || loading}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
               {isPt ? "Pré-visualizar" : "Preview"}
-            </button>
+            </Button>
           </form>
         )}
 
         {error && (
-          <div className="mt-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200 inline-flex items-start gap-2">
+          <div className="mt-4 rounded-card border border-signal-alert/40 bg-signal-alert/10 p-3 text-sm text-signal-alert inline-flex items-start gap-2">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -236,10 +234,11 @@ function PreviewPane({
 
       {/* Duplicate strategy */}
       {summary.duplicates > 0 && (
-        <div className="rounded-2xl border border-amber-400/30 bg-amber-500/[0.04] p-4">
-          <p className="text-xs uppercase tracking-wider text-amber-200 font-semibold mb-2">
-            {isPt ? "Estratégia para duplicados" : "Duplicate strategy"}
-          </p>
+        <Panel
+          title={isPt ? "Estratégia para duplicados" : "Duplicate strategy"}
+          padding="p-4"
+          gap="space-y-3"
+        >
           <div className="space-y-2 text-sm">
             <StrategyOption
               value="skip"
@@ -275,17 +274,17 @@ function PreviewPane({
               }
             />
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* Preview table */}
-      <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-        <div className="border-b border-white/10 px-3 py-2 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-wider text-white/50 font-semibold">
+      <div className="rounded-card border border-primary-700 bg-primary-panel overflow-hidden">
+        <div className="border-b border-primary-700 px-3 py-2 flex items-center justify-between">
+          <p className="text-xs uppercase tracking-wider text-primary-400 font-semibold">
             {isPt ? "Pré-visualização das linhas" : "Row preview"}
           </p>
           {hasMore && (
-            <p className="text-[11px] text-white/40">
+            <p className="text-[11px] text-primary-500">
               {isPt
                 ? `Mostrando 100 de ${rows.length}`
                 : `Showing 100 of ${rows.length}`}
@@ -294,73 +293,73 @@ function PreviewPane({
         </div>
         <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-white/10 sticky top-0 bg-[#0e0e0e]/95 backdrop-blur">
+            <thead className="border-b border-primary-700 sticky top-0 bg-primary-800/95 backdrop-blur">
               <tr>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   #
                 </th>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   {isPt ? "Nome" : "Name"}
                 </th>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   {isPt ? "Contato" : "Contact"}
                 </th>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   {isPt ? "Tipo" : "Type"}
                 </th>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   {isPt ? "Organização" : "Organization"}
                 </th>
-                <th className="text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2">
+                <th className="text-left text-[10px] uppercase tracking-wider text-primary-400 font-semibold px-3 py-2">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-primary-700">
               {displayRows.map((row, i) => (
                 <tr
                   key={i}
                   className={
                     row._errors?.length > 0
-                      ? "bg-red-500/[0.04]"
+                      ? "bg-signal-alert/[0.04]"
                       : row._duplicate
-                        ? "bg-amber-500/[0.03]"
+                        ? "bg-signal-performance/[0.03]"
                         : ""
                   }
                 >
-                  <td className="px-3 py-1.5 text-white/40 tabular-nums text-xs">
+                  <td className="px-3 py-1.5 text-primary-500 tabular-nums text-xs">
                     {row.line}
                   </td>
-                  <td className="px-3 py-1.5 text-white/85 truncate max-w-[200px]">
+                  <td className="px-3 py-1.5 text-primary-100 truncate max-w-[200px]">
                     {row.full_name || (
-                      <span className="text-red-400 italic">—</span>
+                      <span className="text-signal-alert italic">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-1.5 text-xs text-white/60">
+                  <td className="px-3 py-1.5 text-xs text-primary-300">
                     {row.phone_e164 && <div>{row.phone_e164}</div>}
                     {row.email && <div className="truncate">{row.email}</div>}
                   </td>
-                  <td className="px-3 py-1.5 text-xs text-white/60">
+                  <td className="px-3 py-1.5 text-xs text-primary-300">
                     {row.lead_type}
                   </td>
-                  <td className="px-3 py-1.5 text-xs text-white/60 truncate max-w-[180px]">
+                  <td className="px-3 py-1.5 text-xs text-primary-300 truncate max-w-[180px]">
                     {row.organization_name || "—"}
                   </td>
                   <td className="px-3 py-1.5 text-xs">
                     {row._errors?.length > 0 ? (
                       <span
-                        className="inline-flex items-center gap-1 text-red-300"
+                        className="inline-flex items-center gap-1 text-signal-alert"
                         title={row._errors.join(" · ")}
                       >
                         <AlertCircle className="w-3 h-3" />
                         {isPt ? "Erro" : "Error"}
                       </span>
                     ) : row._duplicate ? (
-                      <span className="inline-flex items-center gap-1 text-amber-300">
+                      <span className="inline-flex items-center gap-1 text-signal-performance">
                         {isPt ? "Duplicado" : "Duplicate"}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-emerald-300">
+                      <span className="inline-flex items-center gap-1 text-accent-400">
                         <CheckCircle2 className="w-3 h-3" />
                         {isPt ? "Novo" : "New"}
                       </span>
@@ -375,31 +374,31 @@ function PreviewPane({
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
+          Icon={CheckCircle2}
+          loading={committing}
           onClick={onCommit}
-          disabled={committing || summary.new + (strategy === "skip" ? 0 : summary.duplicates) === 0}
-          className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
+          disabled={
+            committing ||
+            summary.new + (strategy === "skip" ? 0 : summary.duplicates) === 0
+          }
         >
-          {committing ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
           {isPt ? "Confirmar importação" : "Confirm import"}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          Icon={X}
           onClick={onReset}
           disabled={committing}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm disabled:opacity-50"
         >
-          <X className="w-4 h-4" />
           {isPt ? "Recomeçar" : "Start over"}
-        </button>
+        </Button>
         <Link
           href="/admin/leads"
-          className="px-3 py-2 text-white/60 hover:text-white text-sm"
+          className="px-3 py-2 text-primary-300 hover:text-primary-50 text-sm"
         >
           {isPt ? "Cancelar" : "Cancel"}
         </Link>
@@ -411,14 +410,14 @@ function PreviewPane({
 function SummaryChip({ label, value, tone }) {
   const toneClass =
     tone === "emerald"
-      ? "border-emerald-400/30 bg-emerald-500/[0.05] text-emerald-200"
+      ? "border-accent-400/30 bg-accent-400/[0.05] text-accent-300"
       : tone === "amber"
-        ? "border-amber-400/30 bg-amber-500/[0.05] text-amber-200"
+        ? "border-signal-performance/30 bg-signal-performance/[0.05] text-signal-performance"
         : tone === "red"
-          ? "border-red-400/30 bg-red-500/[0.05] text-red-200"
-          : "border-white/10 bg-white/[0.02] text-white/70";
+          ? "border-signal-alert/40 bg-signal-alert/[0.05] text-signal-alert"
+          : "border-primary-700 bg-primary-panel text-primary-300";
   return (
-    <div className={`rounded-2xl border p-3 ${toneClass}`}>
+    <div className={`rounded-card border p-3 ${toneClass}`}>
       <p className="text-[10px] uppercase tracking-wider opacity-70 font-semibold">
         {label}
       </p>
@@ -436,11 +435,11 @@ function StrategyOption({ value, current, onChange, title, body }) {
         value={value}
         checked={current === value}
         onChange={() => onChange(value)}
-        className="accent-emerald-400 mt-0.5"
+        className="accent-accent-400 mt-0.5"
       />
       <div>
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="text-[11px] text-white/50">{body}</p>
+        <p className="text-sm font-semibold text-primary-50">{title}</p>
+        <p className="text-[11px] text-primary-400">{body}</p>
       </div>
     </label>
   );

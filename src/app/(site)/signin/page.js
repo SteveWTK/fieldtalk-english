@@ -65,7 +65,7 @@ export default function SignInPage() {
               <Globe className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold text-gradient-to-r from-primary-500 to-accent-500 dark:text-white">
-              FieldTalk English
+              Global Player
             </span>
           </div> */}
           {/* <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">

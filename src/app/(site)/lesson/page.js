@@ -372,7 +372,7 @@ function PlayerLessonsMenu() {
       (isGuest ? null : user.email?.split("@")[0]) ||
       "Player",
     position: profile?.position || user.user_metadata?.position || "Player",
-    club: profile?.club?.name || "FieldTalk English",
+    club: profile?.club?.name || "Global Player",
     current_level: progress?.current_level || 1,
     total_xp: progress?.total_xp || 0,
     completedLessons: completions?.length || 0,
@@ -434,7 +434,7 @@ function PlayerLessonsMenu() {
   const recentAchievements = achievements?.slice(0, 3) || [
     {
       achievement: {
-        name: "Welcome to FieldTalk",
+        name: "Welcome to Global Player",
         description: "Started your English learning journey",
         icon: "Star",
       },

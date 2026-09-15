@@ -62,7 +62,7 @@ const COPY = {
       "You're using an access code granted by your coordinator. If you need billing help, contact them directly.",
     adminGrantTitle: "Manually granted access",
     adminGrantBody:
-      "Your access was manually granted by the FieldTalk team. Contact support@fieldtalkenglish.com for changes.",
+      "Your access was manually granted by the Global Player team. Contact support@fieldtalkenglish.com for changes.",
   },
   pt: {
     back: "Painel",
@@ -94,7 +94,7 @@ const COPY = {
       "Você está usando um código de acesso liberado pelo seu coordenador. Para questões de cobrança, fale diretamente com ele.",
     adminGrantTitle: "Acesso liberado manualmente",
     adminGrantBody:
-      "Seu acesso foi liberado manualmente pela equipe FieldTalk. Fale com support@fieldtalkenglish.com para alterações.",
+      "Seu acesso foi liberado manualmente pela equipe Global Player. Fale com support@fieldtalkenglish.com para alterações.",
   },
 };
 

@@ -82,7 +82,7 @@ function AdminMatchesContent() {
             Back to admin
           </Link>
           <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
-            FieldTalk · admin
+            Global Player · admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Matches

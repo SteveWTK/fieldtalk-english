@@ -25,6 +25,9 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t } from "@/lib/leads/constants";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Input from "@/components/ui/input";
+import Button from "@/components/ui/button";
+import Chip from "@/components/ui/chip";
 
 export default function LeadBroadcastComposePage() {
   const { lang } = useLanguage();
@@ -152,7 +155,7 @@ export default function LeadBroadcastComposePage() {
   const filterEntries = describeFilter(filter, lang);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="detail"
@@ -167,7 +170,7 @@ export default function LeadBroadcastComposePage() {
               ? "Broadcast para leads filtrados"
               : "Broadcast to filtered leads"}
           </h2>
-          <p className="text-xs text-white/50 mt-1">
+          <p className="text-xs text-primary-400 mt-1">
             {isPt
               ? "Compõe + envia agora. O dispatcher trabalha os envios com intervalo de 8s dentro da janela 8h–21h BRT."
               : "Composes + sends now. Dispatcher works through recipients at 8s intervals inside the 8am–9pm BRT window."}
@@ -175,18 +178,18 @@ export default function LeadBroadcastComposePage() {
         </div>
 
         {/* Recipient preview */}
-        <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.04] p-4">
+        <div className="mb-4 rounded-card border border-accent-400/30 bg-accent-400/[0.04] p-4">
           <div className="flex items-baseline justify-between gap-3 flex-wrap">
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-primary-300">
               {isPt ? "Filtros aplicados:" : "Filter applied:"}
             </p>
-            <p className="text-2xl font-black text-emerald-300 tabular-nums">
+            <p className="text-2xl font-black text-accent-400 tabular-nums">
               {countLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin inline-block" />
               ) : (
                 <>
                   {count}{" "}
-                  <span className="text-xs text-white/50 font-normal">
+                  <span className="text-xs text-primary-400 font-normal">
                     {isPt ? "lead(s)" : "lead(s)"}
                   </span>
                 </>
@@ -198,14 +201,14 @@ export default function LeadBroadcastComposePage() {
               {filterEntries.map((e, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-white/[0.06] text-white/70 border border-white/10"
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-primary-800 text-primary-300 border border-primary-700"
                 >
                   {e}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-[11px] text-white/40 mt-2">
+            <p className="text-[11px] text-primary-500 mt-2">
               {isPt
                 ? "Nenhum filtro — todos os leads com telefone e sem opt-out."
                 : "No filter — every lead with a phone and no opt-out."}
@@ -215,34 +218,29 @@ export default function LeadBroadcastComposePage() {
 
         {/* Compose */}
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/60 font-semibold mb-1">
-              {isPt ? "Nome interno" : "Internal name"}
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={
-                isPt
-                  ? "Ex: Convite academias — setembro"
-                  : "e.g. Academies invite — September"
-              }
-              maxLength={120}
-              className={inputClass}
-            />
-          </div>
+          <Input
+            label={isPt ? "Nome interno" : "Internal name"}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={
+              isPt
+                ? "Ex: Convite academias — setembro"
+                : "e.g. Academies invite — September"
+            }
+            maxLength={120}
+          />
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+              <label className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
                 {isPt ? "Idioma de envio" : "Send language"}
               </label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setTemplatesOpen((v) => !v)}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-100 border border-primary-700 text-xs font-semibold"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {isPt ? "Aplicar modelo" : "Apply template"}
@@ -258,23 +256,21 @@ export default function LeadBroadcastComposePage() {
                 )}
               </div>
             </div>
-            <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5 mb-2">
+            <div className="inline-flex gap-1 mb-2">
               {["pt", "en"].map((code) => (
-                <button
+                <Chip
                   key={code}
-                  type="button"
+                  as="button"
+                  size="sm"
+                  selected={language === code}
                   onClick={() => setLanguage(code)}
-                  className={`px-3 py-1 text-[11px] font-bold uppercase rounded-full transition-colors ${
-                    language === code
-                      ? "bg-emerald-400 text-black"
-                      : "text-white/60 hover:text-white"
-                  }`}
+                  className="uppercase"
                 >
                   {code}
-                </button>
+                </Chip>
               ))}
             </div>
-            <p className="text-[11px] text-white/45 mb-2">
+            <p className="text-[11px] text-primary-400 mb-2">
               {isPt
                 ? "Todos os leads recebem no idioma selecionado. (Leads não têm preferência de idioma.)"
                 : "All leads receive the selected language. (Leads have no language preference set.)"}
@@ -295,34 +291,33 @@ export default function LeadBroadcastComposePage() {
           />
 
           {error && (
-            <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200 inline-flex items-start gap-2">
+            <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-3 text-sm text-signal-alert inline-flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-            <button
-              type="button"
+          <div className="flex items-center gap-2 pt-2 border-t border-primary-700">
+            <Button
+              variant="primary"
+              size="md"
+              Icon={Send}
+              loading={sending}
+              disabled={countLoading || (count ?? 0) === 0}
               onClick={handleSend}
-              disabled={sending || countLoading || (count ?? 0) === 0}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
             >
-              {sending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
               {isPt
                 ? `Enviar para ${count ?? "…"} lead(s)`
                 : `Send to ${count ?? "…"} lead(s)`}
-            </button>
-            <Link
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              as="a"
               href="/admin/leads"
-              className="px-4 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm"
             >
               {t("form.cancel", lang)}
-            </Link>
+            </Button>
           </div>
         </div>
       </main>
@@ -330,28 +325,26 @@ export default function LeadBroadcastComposePage() {
   );
 }
 
-const inputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
-
 function BodyEditor({ label, value, onChange, active }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-1">
-        <label className="text-[10px] uppercase tracking-wider text-white/50 font-bold">
+        <span className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
           {label}
-        </label>
+        </span>
         {active && (
-          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold bg-emerald-400/20 text-emerald-200 uppercase tracking-wider">
+          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold bg-accent-400/20 text-accent-300 uppercase tracking-wider">
             Send
           </span>
         )}
       </div>
-      <textarea
+      <Input
+        multiline
+        rows={6}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        rows={6}
-        className={`${inputClass} resize-y ${active ? "" : "opacity-70"}`}
         placeholder="{name}, ..."
+        className={active ? "" : "opacity-70"}
       />
     </div>
   );
@@ -367,17 +360,17 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
         aria-hidden="true"
       />
       <div
-        className="absolute right-0 top-full mt-1 w-80 max-h-80 overflow-y-auto rounded-xl bg-[#0e0e0e] border border-white/15 shadow-2xl z-[41] p-1.5"
+        className="absolute right-0 top-full mt-1 w-80 max-h-80 overflow-y-auto rounded-xl bg-primary-800 border border-primary-600 shadow-2xl z-[41] p-1.5"
         role="menu"
       >
         {templates.length === 0 ? (
-          <div className="p-3 text-xs text-white/50">
+          <div className="p-3 text-xs text-primary-400">
             {isPt ? (
               <>
                 Nenhum modelo ativo.{" "}
                 <Link
                   href="/admin/leads/templates"
-                  className="underline hover:text-white"
+                  className="underline hover:text-primary-50"
                 >
                   Criar
                 </Link>
@@ -387,7 +380,7 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
                 No active templates.{" "}
                 <Link
                   href="/admin/leads/templates"
-                  className="underline hover:text-white"
+                  className="underline hover:text-primary-50"
                 >
                   Create
                 </Link>
@@ -400,12 +393,12 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
               key={tpl.id}
               type="button"
               onClick={() => onPick(tpl)}
-              className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+              className="w-full text-left px-3 py-2 rounded-control hover:bg-primary-700 transition-colors"
             >
-              <div className="font-semibold text-xs text-white truncate">
+              <div className="font-semibold text-xs text-primary-50 truncate">
                 {tpl.name}
               </div>
-              <div className="text-[10px] text-white/45 mt-0.5 line-clamp-2">
+              <div className="text-[10px] text-primary-500 mt-0.5 line-clamp-2">
                 {tpl.body?.[lang] || tpl.body?.pt || tpl.body?.en || ""}
               </div>
             </button>

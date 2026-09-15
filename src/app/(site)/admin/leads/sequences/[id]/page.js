@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Button from "@/components/ui/button";
 
 export default function SequenceEditorPage() {
   const { lang } = useLanguage();
@@ -172,21 +173,21 @@ export default function SequenceEditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707]">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-300" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
   if (!sequence) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white p-6">
-        <p className="text-red-300">Not found.</p>
+      <div className="min-h-screen bg-primary-900 text-primary-50 p-6">
+        <p className="text-signal-alert">Not found.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="detail"
@@ -206,20 +207,20 @@ export default function SequenceEditorPage() {
 
         <div className="mt-6">
           <div className="flex items-baseline justify-between mb-3">
-            <h3 className="text-sm font-black uppercase tracking-wider text-white/70">
+            <h3 className="text-sm font-black uppercase tracking-wider text-primary-300">
               {isPt ? "Passos" : "Steps"}
             </h3>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
+              Icon={Plus}
               onClick={addStep}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs"
             >
-              <Plus className="w-3.5 h-3.5" />
               {isPt ? "Adicionar passo" : "Add step"}
-            </button>
+            </Button>
           </div>
           {steps.length === 0 ? (
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-primary-500">
               {isPt
                 ? "Nenhum passo ainda. Adicione o primeiro acima."
                 : "No steps yet. Add the first one above."}
@@ -246,29 +247,29 @@ export default function SequenceEditorPage() {
         </div>
 
         <div className="mt-8">
-          <h3 className="text-sm font-black uppercase tracking-wider text-white/70 mb-3">
+          <h3 className="text-sm font-black uppercase tracking-wider text-primary-300 mb-3">
             {isPt ? "Enrollments recentes" : "Recent enrollments"} ({enrollments.length})
           </h3>
           {enrollments.length === 0 ? (
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-primary-500">
               {isPt
                 ? "Nenhum lead inscrito ainda."
                 : "No leads enrolled yet."}
             </p>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-              <ul className="divide-y divide-white/[0.06] max-h-80 overflow-y-auto">
+            <div className="rounded-card border border-primary-700 bg-primary-panel overflow-hidden">
+              <ul className="divide-y divide-primary-700 max-h-80 overflow-y-auto">
                 {enrollments.map((en) => (
                   <li key={en.id} className="p-3 flex items-center gap-3">
                     <StatusDot status={en.status} />
                     <div className="flex-1 min-w-0">
                       <Link
                         href={`/admin/leads/${en.lead?.id}`}
-                        className="text-sm font-semibold hover:text-emerald-300 truncate block"
+                        className="text-sm font-semibold hover:text-accent-400 truncate block"
                       >
                         {en.lead?.full_name || "—"}
                       </Link>
-                      <p className="text-[11px] text-white/50">
+                      <p className="text-[11px] text-primary-400">
                         {isPt ? "Passo" : "Step"} {en.current_step} ·{" "}
                         {en.status}
                         {en.stop_reason ? ` (${en.stop_reason})` : ""}
@@ -293,15 +294,15 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
     name !== sequence.name || description !== (sequence.description || "");
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+    <div className="rounded-panel border border-primary-700 bg-primary-panel p-4 sm:p-5">
       <div className="flex items-start gap-3 mb-3">
         <button
           type="button"
           onClick={() => onSave({ active: !sequence.active })}
           className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${
             sequence.active
-              ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-              : "bg-white/[0.06] text-white/40 hover:bg-white/[0.1]"
+              ? "bg-accent-400/15 text-accent-400 hover:bg-accent-400/20"
+              : "bg-primary-800 text-primary-500 hover:bg-primary-700"
           } transition-colors`}
           title={
             sequence.active
@@ -316,7 +317,7 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-transparent border-b border-white/10 focus:border-emerald-400/50 text-xl font-black tracking-tight text-white focus:outline-none pb-1"
+            className="w-full bg-transparent border-b border-primary-700 focus:border-accent-400 text-xl font-black tracking-tight text-primary-50 focus:outline-none pb-1"
           />
           <input
             type="text"
@@ -327,23 +328,20 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
                 ? "Descrição curta (interna)…"
                 : "Short description (internal)…"
             }
-            className="w-full bg-transparent border-b border-white/[0.06] focus:border-white/25 text-sm text-white/70 focus:outline-none pb-1"
+            className="w-full bg-transparent border-b border-primary-800 focus:border-primary-600 text-sm text-primary-300 focus:outline-none pb-1"
           />
         </div>
         {dirty && (
-          <button
-            type="button"
-            onClick={() => onSave({ name, description })}
+          <Button
+            variant="primary"
+            size="sm"
+            Icon={Save}
+            loading={saving}
             disabled={saving}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs disabled:opacity-50"
+            onClick={() => onSave({ name, description })}
           >
-            {saving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
             {isPt ? "Salvar" : "Save"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -366,12 +364,12 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
         />
       </div>
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-primary-700">
         <div>
           {msg && (
             <span
               className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                msg.tone === "err" ? "text-red-300" : "text-emerald-300"
+                msg.tone === "err" ? "text-signal-alert" : "text-accent-400"
               }`}
             >
               {msg.tone === "err" ? (
@@ -386,7 +384,7 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
         <button
           type="button"
           onClick={onDelete}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-white/50 hover:text-red-300 hover:bg-red-500/15 text-xs"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-primary-400 hover:text-signal-alert hover:bg-signal-alert/15 text-xs"
         >
           <Trash2 className="w-3.5 h-3.5" />
           {isPt ? "Excluir" : "Delete"}
@@ -398,12 +396,12 @@ function SequenceHeader({ sequence, onSave, onDelete, saving, msg, lang }) {
 
 function StopToggle({ checked, onChange, label }) {
   return (
-    <label className="inline-flex items-center gap-1.5 cursor-pointer text-white/70">
+    <label className="inline-flex items-center gap-1.5 cursor-pointer text-primary-300">
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="accent-emerald-400"
+        className="accent-accent-400"
       />
       {label}
     </label>
@@ -427,13 +425,13 @@ function StepEditor({
     step.body && (step.body.pt || step.body.en);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+    <div className="rounded-card border border-primary-700 bg-primary-panel p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="shrink-0 w-7 h-7 rounded-full bg-emerald-400/20 text-emerald-200 text-xs font-black flex items-center justify-center">
+        <span className="shrink-0 w-7 h-7 rounded-full bg-accent-400/20 text-accent-300 text-xs font-black flex items-center justify-center">
           {index + 1}
         </span>
         <div className="flex-1 flex items-center flex-wrap gap-2 text-xs">
-          <label className="inline-flex items-center gap-1 text-white/60">
+          <label className="inline-flex items-center gap-1 text-primary-300">
             {isPt ? "Dia" : "Day"}
             <input
               type="number"
@@ -443,10 +441,10 @@ function StepEditor({
               onChange={(e) =>
                 onUpdate({ day_offset: Number(e.target.value) })
               }
-              className="w-14 bg-white/[0.05] border border-white/10 rounded-lg px-2 py-0.5 text-white text-center focus:outline-none focus:border-emerald-400/50"
+              className="w-14 bg-primary-800 border border-primary-700 rounded-control px-2 py-0.5 text-primary-50 text-center focus:outline-none focus:border-accent-400"
             />
           </label>
-          <label className="inline-flex items-center gap-1 text-white/60">
+          <label className="inline-flex items-center gap-1 text-primary-300">
             {isPt ? "às" : "at"}
             <input
               type="number"
@@ -456,9 +454,9 @@ function StepEditor({
               onChange={(e) =>
                 onUpdate({ time_of_day_brt: Number(e.target.value) })
               }
-              className="w-14 bg-white/[0.05] border border-white/10 rounded-lg px-2 py-0.5 text-white text-center focus:outline-none focus:border-emerald-400/50"
+              className="w-14 bg-primary-800 border border-primary-700 rounded-control px-2 py-0.5 text-primary-50 text-center focus:outline-none focus:border-accent-400"
             />
-            <span className="text-white/40">BRT</span>
+            <span className="text-primary-500">BRT</span>
           </label>
         </div>
         <div className="flex items-center gap-1">
@@ -466,7 +464,7 @@ function StepEditor({
             type="button"
             onClick={onMoveUp}
             disabled={isFirst}
-            className="p-1 rounded text-white/40 hover:text-white hover:bg-white/[0.06] disabled:opacity-20"
+            className="p-1 rounded text-primary-500 hover:text-primary-50 hover:bg-primary-800 disabled:opacity-20"
           >
             <ChevronUp className="w-4 h-4" />
           </button>
@@ -474,14 +472,14 @@ function StepEditor({
             type="button"
             onClick={onMoveDown}
             disabled={isLast}
-            className="p-1 rounded text-white/40 hover:text-white hover:bg-white/[0.06] disabled:opacity-20"
+            className="p-1 rounded text-primary-500 hover:text-primary-50 hover:bg-primary-800 disabled:opacity-20"
           >
             <ChevronDown className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={onDelete}
-            className="p-1 rounded text-white/40 hover:text-red-300 hover:bg-red-500/15"
+            className="p-1 rounded text-primary-500 hover:text-signal-alert hover:bg-signal-alert/15"
           >
             <X className="w-4 h-4" />
           </button>
@@ -490,19 +488,19 @@ function StepEditor({
 
       {/* Template picker */}
       <label className="block mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">
+        <span className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold">
           {isPt ? "Modelo (opcional)" : "Template (optional)"}
         </span>
         <select
           value={step.template_id || ""}
           onChange={(e) => onUpdate({ template_id: e.target.value || null })}
-          className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 mt-1 text-sm text-white focus:outline-none focus:border-emerald-400/50"
+          className="w-full bg-primary-900 border border-primary-700 rounded-control px-3 py-1.5 mt-1 text-sm text-primary-50 focus:outline-none focus:border-accent-400"
         >
           <option value="">
             {isPt ? "Sem modelo — usar corpo inline" : "No template — use inline body"}
           </option>
           {templates.map((t) => (
-            <option key={t.id} value={t.id} className="bg-[#0e0e0e]">
+            <option key={t.id} value={t.id} className="bg-primary-800">
               {t.name}
             </option>
           ))}
@@ -511,13 +509,13 @@ function StepEditor({
 
       {/* Inline body override */}
       <details open={inlineBodyPresent}>
-        <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-white/50 font-semibold py-1">
+        <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-primary-400 font-semibold py-1">
           {isPt ? "Corpo inline (sobrescreve modelo)" : "Inline body (overrides template)"}
         </summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           {["pt", "en"].map((l) => (
             <div key={l}>
-              <span className="text-[10px] uppercase tracking-wider text-white/45 font-bold">
+              <span className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
                 {l.toUpperCase()}
               </span>
               <textarea
@@ -530,7 +528,7 @@ function StepEditor({
                   onUpdate({ body: isAllEmpty ? null : next });
                 }}
                 rows={3}
-                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1.5 mt-1 text-sm text-white resize-y focus:outline-none focus:border-emerald-400/50"
+                className="w-full bg-primary-900 border border-primary-700 rounded-control px-2 py-1.5 mt-1 text-sm text-primary-50 resize-y focus:outline-none focus:border-accent-400"
               />
             </div>
           ))}
@@ -543,9 +541,9 @@ function StepEditor({
 function StatusDot({ status }) {
   const tone =
     status === "active"
-      ? "bg-emerald-400"
+      ? "bg-accent-400"
       : status === "completed"
-        ? "bg-lime-300"
-        : "bg-white/30";
+        ? "bg-accent-300"
+        : "bg-primary-500";
   return <span className={`shrink-0 w-2 h-2 rounded-full ${tone}`} />;
 }

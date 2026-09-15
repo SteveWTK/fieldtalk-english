@@ -1,7 +1,7 @@
 // src/app/(site)/admin/page.js
 //
 // Platform admin hub. Single dark-themed page that surfaces every
-// admin tool as a clearly-labelled card so the FieldTalk team can
+// admin tool as a clearly-labelled card so the Global Player team can
 // navigate without remembering URLs.
 //
 // Cards are grouped loosely by purpose:
@@ -103,7 +103,7 @@ function AdminHubContent() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
         <header>
           <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
-            FieldTalk
+            Global Player
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Platform admin

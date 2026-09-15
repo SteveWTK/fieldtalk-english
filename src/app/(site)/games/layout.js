@@ -35,7 +35,7 @@ function GamesGate({ children }) {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <header className="mb-6 text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/80 font-semibold mb-2">
-            FieldTalk Game Centre
+            Global Player Game Centre
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Games & activities

@@ -54,6 +54,8 @@ import { isOrgLeadType } from "@/lib/leads/normalize";
 import { renderTemplate } from "@/lib/leads/templates";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
 import { TagPill, RelativeTime } from "@/components/admin/leads/LeadBadges";
+import Button from "@/components/ui/button";
+import Switch from "@/components/ui/switch";
 
 export default function LeadDetailPage() {
   const { lang } = useLanguage();
@@ -272,14 +274,14 @@ export default function LeadDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707]">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-300" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
   if (error || !lead) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white">
+      <div className="min-h-screen bg-primary-900 text-primary-50">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
           <LeadsAdminHeader
             currentView="detail"
@@ -287,7 +289,7 @@ export default function LeadDetailPage() {
             showViewSwitcher={false}
             backHref="/admin/leads"
           />
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
             {t("errors.loadFailed", lang)}
           </div>
         </main>
@@ -296,7 +298,7 @@ export default function LeadDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white pb-32">
+    <div className="min-h-screen bg-primary-900 text-primary-50 pb-32">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="detail"
@@ -346,8 +348,8 @@ export default function LeadDetailPage() {
 
           {/* Right: tabbed panel */}
           <section className="lg:col-span-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-              <div className="border-b border-white/10 flex">
+            <div className="rounded-card border border-primary-700 bg-primary-panel overflow-hidden">
+              <div className="border-b border-primary-700 flex">
                 <TabButton
                   active={tab === "timeline"}
                   onClick={() => setTab("timeline")}
@@ -389,27 +391,27 @@ export default function LeadDetailPage() {
 
 function HeaderCard({ lead, lang, owners, onQuickPatch, onEdit, onDelete }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+    <div className="rounded-card border border-primary-700 bg-primary-800 p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight truncate">
+          <h2 className="font-display text-primary-50 text-xl sm:text-2xl font-black tracking-tight truncate">
             {lead.full_name}
           </h2>
           {lead.organization_name && (
-            <p className="text-sm text-white/60 truncate">
+            <p className="text-sm text-primary-300 truncate">
               {lead.organization_name}
               {lead.role_at_org ? ` · ${lead.role_at_org}` : ""}
             </p>
           )}
           {lead.summary && (
-            <p className="text-xs text-white/50 mt-1">{lead.summary}</p>
+            <p className="text-xs text-primary-400 mt-1">{lead.summary}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-100 border border-primary-700 text-xs font-semibold"
           >
             <Pencil className="w-3.5 h-3.5" />
             {t("detail.editFields", lang)}
@@ -417,7 +419,7 @@ function HeaderCard({ lead, lang, owners, onQuickPatch, onEdit, onDelete }) {
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 rounded-full text-white/40 hover:text-red-300 hover:bg-red-500/15 transition-colors"
+            className="p-1.5 rounded-full text-primary-500 hover:text-signal-alert hover:bg-signal-alert/15 transition-colors"
             title={t("detail.delete", lang)}
           >
             <Trash2 className="w-4 h-4" />
@@ -438,7 +440,7 @@ function HeaderCard({ lead, lang, owners, onQuickPatch, onEdit, onDelete }) {
           onChange={(v) => onQuickPatch({ assigned_to: v || null })}
         />
         {lead.do_not_contact && (
-          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-red-500/20 text-red-300 border border-red-500/40">
+          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-signal-alert/20 text-signal-alert border border-signal-alert/40">
             {lang === "pt" ? "Não contatar" : "Do not contact"}
           </span>
         )}
@@ -452,12 +454,12 @@ function HeaderCard({ lead, lang, owners, onQuickPatch, onEdit, onDelete }) {
       </div>
 
       {lead.converted_player_id && (
-        <div className="mt-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-2.5 text-xs text-emerald-200 inline-flex items-center gap-2">
+        <div className="mt-3 rounded-control bg-accent-400/10 border border-accent-400/30 p-2.5 text-xs text-accent-300 inline-flex items-center gap-2">
           <UserCheck className="w-4 h-4" />
           {t("detail.convertedTo", lang)}{" "}
           <Link
             href={`/admin/users?player=${lead.converted_player_id}`}
-            className="underline hover:text-emerald-100"
+            className="underline hover:text-accent-400"
           >
             {lead.converted?.full_name || lead.converted_player_id}
           </Link>
@@ -468,16 +470,16 @@ function HeaderCard({ lead, lang, owners, onQuickPatch, onEdit, onDelete }) {
 }
 
 function QuickStagePicker({ stage, lang, onChange }) {
-  const tone = STAGE_TONES[stage] || "bg-white/10 text-white/80";
+  const tone = STAGE_TONES[stage] || "bg-primary-700 text-primary-100";
   return (
     <div className="relative">
       <select
         value={stage}
         onChange={(e) => onChange(e.target.value)}
-        className={`appearance-none pr-6 pl-3 py-1 text-xs font-semibold rounded-full border border-white/10 focus:outline-none cursor-pointer ${tone}`}
+        className={`appearance-none pr-6 pl-3 py-1 text-xs font-semibold rounded-full border border-primary-700 focus:outline-none cursor-pointer ${tone}`}
       >
         {LEAD_STAGES.map((s) => (
-          <option key={s} value={s} className="bg-[#0e0e0e] text-white">
+          <option key={s} value={s} className="bg-primary-800 text-primary-50">
             {t(`stages.${s}`, lang)}
           </option>
         ))}
@@ -493,13 +495,13 @@ function QuickOwnerPicker({ value, owners, lang, onChange }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none pr-6 pl-3 py-1 text-xs font-semibold rounded-full border border-white/10 bg-white/[0.05] text-white/80 focus:outline-none cursor-pointer"
+        className="appearance-none pr-6 pl-3 py-1 text-xs font-semibold rounded-full border border-primary-700 bg-primary-800 text-primary-100 focus:outline-none cursor-pointer"
       >
-        <option value="" className="bg-[#0e0e0e]">
+        <option value="" className="bg-primary-800">
           {t("detail.notAssigned", lang)}
         </option>
         {owners.map((o) => (
-          <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
+          <option key={o.id} value={o.id} className="bg-primary-800">
             {o.full_name}
           </option>
         ))}
@@ -512,34 +514,34 @@ function QuickOwnerPicker({ value, owners, lang, onChange }) {
 function FieldsCard({ lead, lang }) {
   const isOrg = isOrgLeadType(lead.lead_type);
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3 text-sm">
+    <div className="rounded-card border border-primary-700 bg-primary-panel p-4 space-y-3 text-sm">
       <Row label={t("form.field.leadType", lang)}>
         {t(`types.${lead.lead_type}`, lang)}
       </Row>
       <Row label={t("form.field.phone", lang)}>
         {lead.phone_e164 ? (
           <span className="inline-flex items-center gap-1">
-            <Phone className="w-3.5 h-3.5 text-white/50" />
+            <Phone className="w-3.5 h-3.5 text-primary-400" />
             {lead.phone_e164}
           </span>
         ) : (
-          <span className="text-white/30">—</span>
+          <span className="text-primary-500">—</span>
         )}
       </Row>
       <Row label={t("form.field.email", lang)}>
         {lead.email ? (
           <span className="inline-flex items-center gap-1">
-            <Mail className="w-3.5 h-3.5 text-white/50" />
+            <Mail className="w-3.5 h-3.5 text-primary-400" />
             {lead.email}
           </span>
         ) : (
-          <span className="text-white/30">—</span>
+          <span className="text-primary-500">—</span>
         )}
       </Row>
       <Row label={t("form.field.source", lang)}>
         {t(`sources.${lead.source}`, lang)}
         {lead.source_detail && (
-          <span className="text-white/40 text-xs ml-1">
+          <span className="text-primary-500 text-xs ml-1">
             · {lead.source_detail}
           </span>
         )}
@@ -547,13 +549,13 @@ function FieldsCard({ lead, lang }) {
       {isOrg ? (
         <>
           <Row label={t("form.field.organizationName", lang)}>
-            {lead.organization_name || <span className="text-white/30">—</span>}
+            {lead.organization_name || <span className="text-primary-500">—</span>}
           </Row>
           <Row label={t("form.field.roleAtOrg", lang)}>
-            {lead.role_at_org || <span className="text-white/30">—</span>}
+            {lead.role_at_org || <span className="text-primary-500">—</span>}
           </Row>
           <Row label={t("form.field.staffCount", lang)}>
-            {lead.staff_count ?? <span className="text-white/30">—</span>}
+            {lead.staff_count ?? <span className="text-primary-500">—</span>}
           </Row>
         </>
       ) : (
@@ -562,37 +564,37 @@ function FieldsCard({ lead, lang }) {
             {lead.age_group ? (
               t(`ageGroups.${lead.age_group}`, lang)
             ) : (
-              <span className="text-white/30">—</span>
+              <span className="text-primary-500">—</span>
             )}
           </Row>
           <Row label={t("form.field.englishLevel", lang)}>
             {lead.english_level ? (
               t(`englishLevels.${lead.english_level}`, lang)
             ) : (
-              <span className="text-white/30">—</span>
+              <span className="text-primary-500">—</span>
             )}
           </Row>
           <Row label={t("form.field.positions", lang)}>
             {lead.positions && lead.positions.length > 0 ? (
               lead.positions.join(", ")
             ) : (
-              <span className="text-white/30">—</span>
+              <span className="text-primary-500">—</span>
             )}
           </Row>
         </>
       )}
       <Row label={t("form.field.country", lang)}>
         {[lead.city, lead.state, lead.country].filter(Boolean).join(", ") || (
-          <span className="text-white/30">—</span>
+          <span className="text-primary-500">—</span>
         )}
       </Row>
       {lead.next_action_at && (
         <Row label={t("form.field.nextActionAt", lang)}>
           <span className="inline-flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-white/50" />
+            <Clock className="w-3.5 h-3.5 text-primary-400" />
             <RelativeTime iso={lead.next_action_at} lang={lang} />
             {lead.next_action_note && (
-              <span className="text-white/50 text-xs">
+              <span className="text-primary-400 text-xs">
                 · {lead.next_action_note}
               </span>
             )}
@@ -606,10 +608,10 @@ function FieldsCard({ lead, lang }) {
 function Row({ label, children }) {
   return (
     <div className="flex items-start gap-3 text-sm">
-      <span className="text-[10px] uppercase tracking-wider text-white/45 font-semibold w-28 shrink-0 pt-0.5">
+      <span className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold w-28 shrink-0 pt-0.5">
         {label}
       </span>
-      <span className="text-white/80 flex-1 min-w-0">{children}</span>
+      <span className="text-primary-100 flex-1 min-w-0">{children}</span>
     </div>
   );
 }
@@ -619,7 +621,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
   const set = (k, v) => setDraft((prev) => ({ ...prev, [k]: v }));
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3 text-sm">
+    <div className="rounded-card border border-primary-700 bg-primary-panel p-4 space-y-3 text-sm">
       <EditField label={t("form.field.fullName", lang)}>
         <input
           type="text"
@@ -643,7 +645,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
           className={editInputClass}
         >
           {LEAD_TYPES.map((v) => (
-            <option key={v} value={v} className="bg-[#0e0e0e]">
+            <option key={v} value={v} className="bg-primary-800">
               {t(`types.${v}`, lang)}
             </option>
           ))}
@@ -702,7 +704,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
             >
               <option value="">—</option>
               {AGE_GROUPS.map((g) => (
-                <option key={g} value={g} className="bg-[#0e0e0e]">
+                <option key={g} value={g} className="bg-primary-800">
                   {t(`ageGroups.${g}`, lang)}
                 </option>
               ))}
@@ -716,7 +718,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
             >
               <option value="">—</option>
               {ENGLISH_LEVELS.map((v) => (
-                <option key={v} value={v} className="bg-[#0e0e0e]">
+                <option key={v} value={v} className="bg-primary-800">
                   {t(`englishLevels.${v}`, lang)}
                 </option>
               ))}
@@ -748,7 +750,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
           className={editInputClass}
         >
           {LEAD_SOURCES.map((v) => (
-            <option key={v} value={v} className="bg-[#0e0e0e]">
+            <option key={v} value={v} className="bg-primary-800">
               {t(`sources.${v}`, lang)}
             </option>
           ))}
@@ -780,7 +782,7 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
         >
           <option value="">{t("detail.notAssigned", lang)}</option>
           {owners.map((o) => (
-            <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
+            <option key={o.id} value={o.id} className="bg-primary-800">
               {o.full_name}
             </option>
           ))}
@@ -831,35 +833,28 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
           className={editInputClass}
         />
       </EditField>
-      <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={draft.do_not_contact === true}
-          onChange={(e) => set("do_not_contact", e.target.checked)}
-          className="accent-red-500"
-        />
-        {t("form.field.doNotContact", lang)}
-      </label>
+      <Switch
+        checked={draft.do_not_contact === true}
+        onChange={(v) => set("do_not_contact", v)}
+        label={t("form.field.doNotContact", lang)}
+      />
 
-      <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-        <button
-          type="button"
+      <div className="flex items-center gap-2 pt-2 border-t border-primary-700">
+        <Button
+          variant="primary"
+          size="sm"
+          Icon={Save}
+          loading={saving}
           onClick={onSave}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
         >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
           {t("detail.saveChanges", lang)}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-300 border border-primary-700 text-sm disabled:opacity-50"
         >
           <X className="w-4 h-4" />
           {t("detail.cancelEdit", lang)}
@@ -870,12 +865,12 @@ function EditForm({ draft, setDraft, owners, lang, onSave, onCancel, saving }) {
 }
 
 const editInputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
+  "w-full bg-primary-900 border border-primary-700 rounded-control px-2 py-1.5 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none";
 
 function EditField({ label, children }) {
   return (
     <div>
-      <label className="block text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
+      <label className="block text-[10px] uppercase tracking-wider text-primary-400 font-semibold mb-1">
         {label}
       </label>
       {children}
@@ -892,8 +887,8 @@ function TabButton({ active, onClick, label }) {
       onClick={onClick}
       className={`px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 ${
         active
-          ? "text-white border-emerald-400"
-          : "text-white/50 hover:text-white border-transparent"
+          ? "text-primary-50 border-accent-400"
+          : "text-primary-400 hover:text-primary-50 border-transparent"
       }`}
     >
       {label}
@@ -906,7 +901,7 @@ function Timeline({ activities, lang, onLogActivity }) {
     <div className="space-y-3">
       <QuickLogRow lang={lang} onLog={onLogActivity} />
       {activities.length === 0 ? (
-        <p className="text-sm text-white/40">{t("detail.empty.timeline", lang)}</p>
+        <p className="text-sm text-primary-500">{t("detail.empty.timeline", lang)}</p>
       ) : (
         <ol className="space-y-2">
           {activities.map((a) => (
@@ -932,16 +927,16 @@ function QuickLogRow({ lang, onLog }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/10 p-2">
+    <div className="flex items-center gap-2 rounded-xl bg-primary-800 border border-primary-700 p-2">
       <select
         value={type}
         onChange={(e) => setType(e.target.value)}
-        className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-2 py-1 focus:outline-none"
+        className="bg-primary-800 border border-primary-700 text-primary-50 text-xs rounded-full px-2 py-1 focus:outline-none"
       >
-        <option value="call_logged" className="bg-[#0e0e0e]">
+        <option value="call_logged" className="bg-primary-800">
           {t("detail.logCall", lang)}
         </option>
-        <option value="email_logged" className="bg-[#0e0e0e]">
+        <option value="email_logged" className="bg-primary-800">
           {t("detail.logEmail", lang)}
         </option>
       </select>
@@ -959,13 +954,13 @@ function QuickLogRow({ lang, onLog }) {
               : "Email summary…"
         }
         onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="flex-1 bg-transparent border-none text-sm text-white placeholder:text-white/30 focus:outline-none"
+        className="flex-1 bg-transparent border-none text-sm text-primary-50 placeholder:text-primary-500 focus:outline-none"
       />
       <button
         type="button"
         onClick={submit}
         disabled={busy || !input.trim()}
-        className="p-1.5 rounded-full text-emerald-300 hover:bg-emerald-500/15 disabled:opacity-40"
+        className="p-1.5 rounded-full text-accent-400 hover:bg-accent-400/15 disabled:opacity-40"
       >
         {busy ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -988,19 +983,19 @@ function ActivityRow({ activity, lang }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
-          <p className="text-xs font-semibold text-white">{label}</p>
-          <span className="text-[10px] text-white/40 tabular-nums shrink-0">
+          <p className="text-xs font-semibold text-primary-50">{label}</p>
+          <span className="text-[10px] text-primary-500 tabular-nums shrink-0">
             <RelativeTime iso={activity.created_at} lang={lang} />
           </span>
         </div>
         {activity.summary && (
-          <p className="text-xs text-white/60 mt-0.5 whitespace-pre-wrap">
+          <p className="text-xs text-primary-300 mt-0.5 whitespace-pre-wrap">
             {activity.summary}
           </p>
         )}
         {!activity.summary && renderActivityDefault(activity, lang)}
         {activity.actor?.full_name && (
-          <p className="text-[10px] text-white/35 mt-0.5">
+          <p className="text-[10px] text-primary-500 mt-0.5">
             {activity.actor.full_name}
           </p>
         )}
@@ -1021,20 +1016,20 @@ function activityIcon(type) {
 }
 function activityTone(type) {
   if (type === "whatsapp_outbound" || type === "whatsapp_inbound")
-    return "bg-emerald-500/15 text-emerald-300";
+    return "bg-accent-400/15 text-accent-400";
   if (type === "note_added") return "bg-amber-500/15 text-amber-300";
   if (type === "call_logged") return "bg-blue-500/15 text-blue-300";
   if (type === "email_logged") return "bg-cyan-500/15 text-cyan-300";
-  return "bg-white/10 text-white/60";
+  return "bg-primary-700 text-primary-300";
 }
 
 function renderActivityDefault(activity, lang) {
   const p = activity.payload || {};
   if (activity.activity_type === "stage_change") {
     return (
-      <p className="text-xs text-white/60 mt-0.5">
+      <p className="text-xs text-primary-300 mt-0.5">
         {t(`stages.${p.from}`, lang) || p.from || "—"} →{" "}
-        <span className="text-white/90 font-semibold">
+        <span className="text-primary-100 font-semibold">
           {t(`stages.${p.to}`, lang) || p.to}
         </span>
       </p>
@@ -1042,7 +1037,7 @@ function renderActivityDefault(activity, lang) {
   }
   if (activity.activity_type === "tag_change") {
     return (
-      <p className="text-xs text-white/60 mt-0.5">
+      <p className="text-xs text-primary-300 mt-0.5">
         {(p.to || []).map((tag) => `#${tag}`).join(" ")}
       </p>
     );
@@ -1070,14 +1065,14 @@ function NotesPanel({ notes, lang, onAddNote }) {
           onChange={(e) => setText(e.target.value)}
           rows={3}
           placeholder={t("detail.notePlaceholder", lang)}
-          className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none resize-y"
+          className="w-full bg-primary-900 border border-primary-700 rounded-control px-3 py-2 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none resize-y"
         />
         <div className="mt-2 flex justify-end">
           <button
             type="button"
             onClick={submit}
             disabled={busy || !text.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 font-bold text-xs disabled:opacity-50"
           >
             {busy ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1089,16 +1084,16 @@ function NotesPanel({ notes, lang, onAddNote }) {
         </div>
       </div>
       {notes.length === 0 ? (
-        <p className="text-sm text-white/40">{t("detail.empty.notes", lang)}</p>
+        <p className="text-sm text-primary-500">{t("detail.empty.notes", lang)}</p>
       ) : (
         <ul className="space-y-2">
           {notes.map((n) => (
             <li
               key={n.id}
-              className="rounded-xl bg-white/[0.03] border border-white/10 p-3"
+              className="rounded-xl bg-primary-800 border border-primary-700 p-3"
             >
-              <p className="text-sm text-white/85 whitespace-pre-wrap">{n.body}</p>
-              <p className="text-[10px] text-white/40 mt-2 tabular-nums">
+              <p className="text-sm text-primary-100 whitespace-pre-wrap">{n.body}</p>
+              <p className="text-[10px] text-primary-500 mt-2 tabular-nums">
                 {n.author?.full_name ? `${n.author.full_name} · ` : ""}
                 <RelativeTime iso={n.created_at} lang={lang} />
               </p>
@@ -1163,27 +1158,27 @@ function WhatsappSendBar({ lead, lang, onSend }) {
   }
 
   return (
-    <div id="send" className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0b0b0b]/95 backdrop-blur">
+    <div id="send" className="fixed inset-x-0 bottom-0 z-30 border-t border-primary-700 bg-primary-900/95 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
         {lead.do_not_contact ? (
-          <div className="inline-flex items-center gap-1.5 text-xs text-red-300">
+          <div className="inline-flex items-center gap-1.5 text-xs text-signal-alert">
             <AlertCircle className="w-4 h-4" />
             {t("detail.doNotContactWarning", lang)}
           </div>
         ) : !lead.phone_e164 ? (
-          <div className="inline-flex items-center gap-1.5 text-xs text-white/50">
+          <div className="inline-flex items-center gap-1.5 text-xs text-primary-400">
             <AlertCircle className="w-4 h-4" />
             {t("detail.noPhoneWarning", lang)}
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
+            <MessageCircle className="w-4 h-4 text-accent-400 shrink-0" />
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setTemplatesOpen((v) => !v)}
                 title={lang === "pt" ? "Modelos" : "Templates"}
-                className="inline-flex items-center gap-1 px-2.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white border border-white/10 text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-2 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-300 hover:text-primary-50 border border-primary-700 text-xs font-semibold transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <ChevronDown className="w-3 h-3" />
@@ -1203,13 +1198,13 @@ function WhatsappSendBar({ lead, lang, onSend }) {
               onChange={(e) => setMsg(e.target.value)}
               placeholder={t("detail.sendWhatsappPlaceholder", lang)}
               onKeyDown={(e) => e.key === "Enter" && !disabled && submit()}
-              className="flex-1 bg-white/[0.04] border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400/50 focus:outline-none"
+              className="flex-1 bg-primary-900 border border-primary-700 rounded-full px-4 py-2 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none"
             />
             <button
               type="button"
               onClick={submit}
               disabled={disabled}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-40 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 font-bold text-sm disabled:opacity-40 transition-colors"
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1223,7 +1218,7 @@ function WhatsappSendBar({ lead, lang, onSend }) {
         {toast && (
           <div
             className={`mt-2 text-xs ${
-              toast.tone === "ok" ? "text-emerald-300" : "text-red-300"
+              toast.tone === "ok" ? "text-accent-400" : "text-signal-alert"
             }`}
           >
             {toast.text}
@@ -1257,10 +1252,10 @@ function SequencesRow({
   const canEnroll = !leadDnc && leadHasPhone && available.length > 0;
 
   return (
-    <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+    <div className="mt-3 rounded-card border border-primary-700 bg-primary-panel p-3">
       <div className="flex items-center gap-2">
-        <Zap className="w-4 h-4 text-emerald-300" />
-        <span className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+        <Zap className="w-4 h-4 text-accent-400" />
+        <span className="text-xs uppercase tracking-label text-primary-300 font-semibold">
           {isPt ? "Sequências" : "Sequences"}
         </span>
         <div className="relative ml-auto">
@@ -1277,7 +1272,7 @@ function SequencesRow({
                     ? isPt ? "Nenhuma sequência disponível" : "No sequences available"
                     : undefined
             }
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs disabled:opacity-40"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 font-bold text-xs disabled:opacity-40"
           >
             <Play className="w-3 h-3" />
             {isPt ? "Inscrever" : "Enroll"}
@@ -1297,7 +1292,7 @@ function SequencesRow({
         </div>
       </div>
       {activeEnrollments.length === 0 ? (
-        <p className="mt-2 text-[11px] text-white/40">
+        <p className="mt-2 text-[11px] text-primary-500">
           {isPt
             ? "Nenhuma sequência ativa neste lead."
             : "No active sequences on this lead."}
@@ -1309,11 +1304,11 @@ function SequencesRow({
               key={en.id}
               className="flex items-center gap-2 text-xs"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-              <span className="font-semibold text-white truncate flex-1">
+              <span className="w-2 h-2 rounded-full bg-accent-400 animate-pulse shrink-0" />
+              <span className="font-semibold text-primary-50 truncate flex-1">
                 {en.sequence?.name || "—"}
               </span>
-              <span className="text-white/40">
+              <span className="text-primary-500">
                 {isPt ? "Passo" : "Step"} {en.current_step}
                 {en.next_step_due_at && (
                   <> · {new Date(en.next_step_due_at).toLocaleString(isPt ? "pt-BR" : "en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</>
@@ -1322,7 +1317,7 @@ function SequencesRow({
               <button
                 type="button"
                 onClick={() => onUnenroll(en.id)}
-                className="p-1 rounded text-white/40 hover:text-red-300 hover:bg-red-500/15"
+                className="p-1 rounded text-primary-500 hover:text-signal-alert hover:bg-signal-alert/15"
                 title={isPt ? "Parar" : "Stop"}
               >
                 <X className="w-3.5 h-3.5" />
@@ -1334,14 +1329,14 @@ function SequencesRow({
       {/* Non-active enrollments (stopped/completed) — compact list */}
       {enrollments.filter((e) => e.status !== "active").length > 0 && (
         <details className="mt-2">
-          <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-white/40 font-semibold">
+          <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-primary-500 font-semibold">
             {isPt ? "Histórico" : "History"}
           </summary>
           <ul className="mt-1 space-y-1">
             {enrollments
               .filter((e) => e.status !== "active")
               .map((en) => (
-                <li key={en.id} className="text-[11px] text-white/50">
+                <li key={en.id} className="text-[11px] text-primary-400">
                   {en.sequence?.name} · {en.status}
                   {en.stop_reason ? ` (${en.stop_reason})` : ""}
                 </li>
@@ -1362,9 +1357,9 @@ function SequencePickerPopover({ sequences, onPick, onClose, lang }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="absolute right-0 top-full mt-1 w-72 max-h-72 overflow-y-auto rounded-xl bg-[#0e0e0e] border border-white/15 shadow-2xl z-[41] p-1.5">
+      <div className="absolute right-0 top-full mt-1 w-72 max-h-72 overflow-y-auto rounded-xl bg-primary-800 border border-primary-600 shadow-2xl z-[41] p-1.5">
         {sequences.length === 0 ? (
-          <p className="p-3 text-xs text-white/50">
+          <p className="p-3 text-xs text-primary-400">
             {isPt ? "Nenhuma disponível." : "None available."}
           </p>
         ) : (
@@ -1373,12 +1368,12 @@ function SequencePickerPopover({ sequences, onPick, onClose, lang }) {
               key={s.id}
               type="button"
               onClick={() => onPick(s.id)}
-              className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+              className="w-full text-left px-3 py-2 rounded-control hover:bg-primary-700 transition-colors"
             >
-              <div className="font-semibold text-xs text-white truncate">
+              <div className="font-semibold text-xs text-primary-50 truncate">
                 {s.name}
               </div>
-              <div className="text-[10px] text-white/45 mt-0.5">
+              <div className="text-[10px] text-primary-400 mt-0.5">
                 {s.step_count} {isPt ? "passos" : "steps"} · {s.active_enrollments}{" "}
                 {isPt ? "ativos" : "active"}
               </div>
@@ -1407,17 +1402,17 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
         aria-hidden="true"
       />
       <div
-        className="absolute bottom-full left-0 mb-2 w-80 max-h-80 overflow-y-auto rounded-xl bg-[#0e0e0e] border border-white/15 shadow-2xl z-[41] p-1.5"
+        className="absolute bottom-full left-0 mb-2 w-80 max-h-80 overflow-y-auto rounded-xl bg-primary-800 border border-primary-600 shadow-2xl z-[41] p-1.5"
         role="menu"
       >
         {templates.length === 0 ? (
-          <div className="p-3 text-xs text-white/50">
+          <div className="p-3 text-xs text-primary-400">
             {isPt ? (
               <>
                 Nenhum modelo ativo para este tipo.{" "}
                 <Link
                   href="/admin/leads/templates"
-                  className="underline hover:text-white"
+                  className="underline hover:text-primary-50"
                 >
                   Criar
                 </Link>
@@ -1427,7 +1422,7 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
                 No active templates for this lead type.{" "}
                 <Link
                   href="/admin/leads/templates"
-                  className="underline hover:text-white"
+                  className="underline hover:text-primary-50"
                 >
                   Create
                 </Link>
@@ -1441,21 +1436,21 @@ function TemplatePickerPopover({ templates, lang, onPick, onClose }) {
                 key={tpl.id}
                 type="button"
                 onClick={() => onPick(tpl)}
-                className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors"
+                className="w-full text-left px-3 py-2 rounded-control hover:bg-primary-700 transition-colors"
               >
-                <div className="font-semibold text-xs text-white truncate">
+                <div className="font-semibold text-xs text-primary-50 truncate">
                   {tpl.name}
                 </div>
-                <div className="text-[10px] text-white/45 mt-0.5 line-clamp-2 whitespace-pre-wrap">
+                <div className="text-[10px] text-primary-400 mt-0.5 line-clamp-2 whitespace-pre-wrap">
                   {tpl.body?.[lang] || tpl.body?.pt || tpl.body?.en || ""}
                 </div>
               </button>
             ))}
-            <div className="mt-1 border-t border-white/10 pt-1">
+            <div className="mt-1 border-t border-primary-700 pt-1">
               <Link
                 href="/admin/leads/templates"
                 onClick={onClose}
-                className="block px-3 py-1.5 text-[11px] text-emerald-300 hover:bg-emerald-500/10 rounded-lg"
+                className="block px-3 py-1.5 text-[11px] text-accent-400 hover:bg-accent-400/10 rounded-control"
               >
                 {isPt ? "Gerenciar modelos →" : "Manage templates →"}
               </Link>

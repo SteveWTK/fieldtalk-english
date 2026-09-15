@@ -2,26 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
+/*
+  Font families are loaded via next/font/google in src/app/layout.js
+  (Global Player rebrand — Stage 1b, 2026-09-12). The previous CDN
+  @import url(...) for Inter / Poppins / Montserrat has been removed;
+  next/font is faster (self-hosted, no external DNS lookup) and
+  CLS-free.
 
-/* Basic body styles */
+  The utility class names below (.font-heading, .font-body,
+  .font-display) are preserved so existing className usages keep
+  working — they now resolve to the Global Player fonts:
+    .font-heading  → Archivo
+    .font-body     → Instrument Sans
+    .font-display  → Archivo
+*/
+
 body {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-instrument), system-ui, sans-serif;
 }
 
 /* Custom utilities */
 @layer utilities {
   .font-heading {
-    font-family: "Poppins", sans-serif;
+    font-family: var(--font-archivo), system-ui, sans-serif;
   }
 
   .font-body {
-    font-family: "Inter", sans-serif;
+    font-family: var(--font-instrument), system-ui, sans-serif;
   }
 
   .font-display {
-    font-family: "Montserrat", sans-serif;
+    font-family: var(--font-archivo), system-ui, sans-serif;
   }
 
   /* Memory Match 3D flip animations */

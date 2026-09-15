@@ -75,7 +75,7 @@ function AcademyAdminDashboardContent() {
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             Your account is not currently associated with an academy. Please
-            contact FieldTalk support to get assigned to your academy.
+            contact Global Player support to get assigned to your academy.
           </p>
           <button
             onClick={() => router.push("/")}

@@ -336,14 +336,23 @@ export function t(path, lang = "pt") {
  * Compact tone descriptors for each stage — used in badges + kanban
  * column headers. Keeping the tone here rather than in each component
  * so a global visual tweak is one file.
+ *
+ * Palette is now Global Player signals + slate. Semantic mapping:
+ *   new / dormant → slate (unstarted / cooled off)
+ *   contacted / engaged → sky (signal.english — active outreach)
+ *   qualified / proposal → orange (signal.performance — advancing)
+ *   won → lime accent (the composite success colour)
+ *   lost → red (signal.alert)
+ * Two intensities within the sky + orange pairs keep the eight
+ * stages distinguishable inside a kanban board.
  */
 export const STAGE_TONES = {
-  new: "bg-white/10 text-white/80",
-  contacted: "bg-blue-500/15 text-blue-300",
-  engaged: "bg-cyan-500/15 text-cyan-300",
-  qualified: "bg-emerald-500/15 text-emerald-300",
-  proposal: "bg-amber-500/15 text-amber-300",
-  won: "bg-accent-400/20 text-accent-200",
-  lost: "bg-red-500/15 text-red-300",
-  dormant: "bg-white/5 text-white/40",
+  new: "bg-primary-700 text-primary-200",
+  contacted: "bg-signal-english/10 text-signal-english",
+  engaged: "bg-signal-english/20 text-signal-english",
+  qualified: "bg-signal-performance/10 text-signal-performance",
+  proposal: "bg-signal-performance/20 text-signal-performance",
+  won: "bg-accent-400/20 text-accent-300",
+  lost: "bg-signal-alert/15 text-signal-alert",
+  dormant: "bg-primary-800 text-primary-500",
 };

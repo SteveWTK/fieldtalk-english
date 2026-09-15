@@ -25,6 +25,9 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t, LEAD_TYPES } from "@/lib/leads/constants";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
 
 const REQUIRED_LANGS = ["pt", "en"];
 
@@ -94,7 +97,7 @@ export default function TemplatesAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="detail"
@@ -108,7 +111,7 @@ export default function TemplatesAdminPage() {
             <h2 className="text-xl font-black tracking-tight">
               {isPt ? "Modelos de mensagem" : "Message templates"}
             </h2>
-            <p className="text-xs text-white/50 mt-1">
+            <p className="text-xs text-primary-400 mt-1">
               {isPt
                 ? "Openers reutilizáveis para WhatsApp. Use {name}, {org}, {city} como placeholders."
                 : "Reusable WhatsApp openers. Use {name}, {org}, {city} as placeholders."}
@@ -118,35 +121,35 @@ export default function TemplatesAdminPage() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-3 py-1.5 focus:outline-none"
+              className="bg-primary-800 border border-primary-700 text-primary-50 text-xs rounded-full px-3 py-1.5 focus:outline-none"
             >
-              <option value="" className="bg-[#0e0e0e]">
+              <option value="" className="bg-primary-800">
                 {t("filters.all", lang)}
               </option>
               {LEAD_TYPES.map((tCode) => (
-                <option key={tCode} value={tCode} className="bg-[#0e0e0e]">
+                <option key={tCode} value={tCode} className="bg-primary-800">
                   {t(`types.${tCode}`, lang)}
                 </option>
               ))}
             </select>
             {!creating && (
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="sm"
+                Icon={Plus}
                 onClick={() => {
                   setCreating(true);
                   setExpandedId(null);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs"
               >
-                <Plus className="w-3.5 h-3.5" />
                 {isPt ? "Novo modelo" : "New template"}
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         {creating && (
-          <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.03] p-4">
+          <div className="mb-4 rounded-card border border-accent-400/30 bg-accent-400/10 p-4">
             <TemplateEditor
               initial={EMPTY_TEMPLATE()}
               mode="create"
@@ -158,16 +161,16 @@ export default function TemplatesAdminPage() {
         )}
 
         {loading ? (
-          <div className="inline-flex items-center gap-2 text-sm text-white/60">
+          <div className="inline-flex items-center gap-2 text-sm text-primary-300">
             <Loader2 className="w-4 h-4 animate-spin" />
             {isPt ? "Carregando…" : "Loading…"}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-3 text-sm text-signal-alert">
             {t("errors.loadFailed", lang)}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-primary-500">
             {isPt ? "Nenhum modelo ainda." : "No templates yet."}
           </p>
         ) : (
@@ -195,28 +198,28 @@ export default function TemplatesAdminPage() {
 function TemplateRow({ template, lang, isExpanded, onToggle, onSaved, onDeleted }) {
   const isPt = lang === "pt";
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+    <div className="rounded-card border border-primary-700 bg-primary-800 overflow-hidden">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors text-left"
+        className="w-full flex items-center gap-3 p-3 hover:bg-primary-panel transition-colors text-left"
       >
         <div
           className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
             template.active
-              ? "bg-emerald-500/15 text-emerald-300"
-              : "bg-white/[0.04] text-white/40"
+              ? "bg-accent-400/15 text-accent-400"
+              : "bg-primary-900 text-primary-500"
           }`}
         >
           <Sparkles className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm truncate">{template.name}</h3>
-          <p className="text-[11px] text-white/50 mt-0.5">
+          <p className="text-[11px] text-primary-400 mt-0.5">
             {template.lead_type ? (
               t(`types.${template.lead_type}`, lang)
             ) : (
-              <span className="text-white/40">
+              <span className="text-primary-500">
                 {isPt ? "Todos os tipos" : "All types"}
               </span>
             )}
@@ -229,17 +232,17 @@ function TemplateRow({ template, lang, isExpanded, onToggle, onSaved, onDeleted 
             {!template.active && (
               <>
                 {" · "}
-                <span className="text-white/40">
+                <span className="text-primary-500">
                   {isPt ? "inativo" : "inactive"}
                 </span>
               </>
             )}
           </p>
         </div>
-        <Pencil className="w-4 h-4 text-white/40" />
+        <Pencil className="w-4 h-4 text-primary-500" />
       </button>
       {isExpanded && (
-        <div className="border-t border-white/10 p-4 bg-black/25">
+        <div className="border-t border-primary-700 p-4 bg-black/25">
           <TemplateEditor
             initial={{
               name: template.name,
@@ -353,40 +356,36 @@ function TemplateEditor({
 
   return (
     <div className="space-y-3">
-      <EditorField label={isPt ? "Nome interno" : "Internal name"}>
-        <input
-          type="text"
-          value={form.name}
-          onChange={(e) => set("name", e.target.value)}
-          className={inputClass}
-          placeholder={
-            isPt
-              ? "Ex: Diretor de academia — intro morna"
-              : "e.g. Academy director — warm intro"
-          }
-        />
-      </EditorField>
-      <EditorField
+      <Input
+        label={isPt ? "Nome interno" : "Internal name"}
+        type="text"
+        value={form.name}
+        onChange={(e) => set("name", e.target.value)}
+        placeholder={
+          isPt
+            ? "Ex: Diretor de academia — intro morna"
+            : "e.g. Academy director — warm intro"
+        }
+      />
+      <Select
         label={isPt ? "Tipo de lead (opcional)" : "Lead type (optional)"}
         hint={
           isPt
             ? "Deixe vazio para aplicar a todos os tipos."
             : "Leave empty to apply to all lead types."
         }
+        value={form.lead_type}
+        onChange={(e) => set("lead_type", e.target.value)}
       >
-        <select
-          value={form.lead_type}
-          onChange={(e) => set("lead_type", e.target.value)}
-          className={inputClass}
-        >
-          <option value="">{isPt ? "Todos" : "All types"}</option>
-          {LEAD_TYPES.map((tCode) => (
-            <option key={tCode} value={tCode} className="bg-[#0e0e0e]">
-              {t(`types.${tCode}`, lang)}
-            </option>
-          ))}
-        </select>
-      </EditorField>
+        <option value="" className="bg-primary-800">
+          {isPt ? "Todos" : "All types"}
+        </option>
+        {LEAD_TYPES.map((tCode) => (
+          <option key={tCode} value={tCode} className="bg-primary-800">
+            {t(`types.${tCode}`, lang)}
+          </option>
+        ))}
+      </Select>
 
       <EditorField
         label={isPt ? "Corpo (bilíngue)" : "Body (bilingual)"}
@@ -408,68 +407,62 @@ function TemplateEditor({
         ))}
       </EditorField>
 
-      <EditorField label="Tags">
-        <input
-          type="text"
-          value={form.tags}
-          onChange={(e) => set("tags", e.target.value)}
-          className={inputClass}
-          placeholder="warm, event-carioca, hot"
-        />
-      </EditorField>
+      <Input
+        label="Tags"
+        type="text"
+        value={form.tags}
+        onChange={(e) => set("tags", e.target.value)}
+        placeholder="warm, event-carioca, hot"
+      />
 
-      <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+      <label className="inline-flex items-center gap-2 text-sm text-primary-300 cursor-pointer">
         <input
           type="checkbox"
           checked={form.active !== false}
           onChange={(e) => set("active", e.target.checked)}
-          className="accent-emerald-400"
+          className="accent-accent-400"
         />
         {isPt ? "Ativo (visível nos seletores)" : "Active (shown in pickers)"}
       </label>
 
-      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-white/10">
-        <button
-          type="button"
+      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-primary-700">
+        <Button
+          variant="primary"
+          size="md"
+          Icon={Save}
+          loading={saving}
+          disabled={saving || deleting}
           onClick={save}
-          disabled={saving || deleting}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
         >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
           {isPt ? "Salvar" : "Save"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          Icon={X}
           disabled={saving || deleting}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm disabled:opacity-50"
+          onClick={onCancel}
         >
-          <X className="w-4 h-4" />
           {isPt ? "Cancelar" : "Cancel"}
-        </button>
+        </Button>
         {mode === "edit" && (
-          <button
-            type="button"
-            onClick={del}
-            disabled={saving || deleting}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-red-500/15 text-white/50 hover:text-red-300 border border-white/10 hover:border-red-500/40 text-sm ml-auto"
-          >
-            {deleting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
-            {isPt ? "Excluir" : "Delete"}
-          </button>
+          <div className="ml-auto">
+            <Button
+              variant="danger"
+              size="sm"
+              Icon={Trash2}
+              loading={deleting}
+              disabled={saving || deleting}
+              onClick={del}
+            >
+              {isPt ? "Excluir" : "Delete"}
+            </Button>
+          </div>
         )}
         {msg && (
           <div
             className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-              msg.tone === "error" ? "text-red-300" : "text-emerald-300"
+              msg.tone === "error" ? "text-signal-alert" : "text-accent-400"
             }`}
           >
             {msg.tone === "error" ? (
@@ -485,16 +478,13 @@ function TemplateEditor({
   );
 }
 
-const inputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
-
 function EditorField({ label, hint, children }) {
   return (
     <div>
-      <label className="block text-xs uppercase tracking-wider text-white/60 font-semibold mb-1">
+      <label className="block text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">
         {label}
       </label>
-      {hint && <p className="text-[11px] text-white/40 mb-1.5">{hint}</p>}
+      {hint && <p className="text-[11px] text-primary-500 mb-1.5">{hint}</p>}
       <div className="space-y-1.5">{children}</div>
     </div>
   );
@@ -503,14 +493,14 @@ function EditorField({ label, hint, children }) {
 function BodyArea({ langLabel, value, onChange }) {
   return (
     <div>
-      <span className="text-[10px] uppercase tracking-wider text-white/45 font-bold">
+      <span className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
         {langLabel}
       </span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
-        className={`${inputClass} resize-y mt-1`}
+        className="w-full bg-primary-900 border border-primary-700 rounded-control px-3 py-2 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none resize-y mt-1"
       />
     </div>
   );

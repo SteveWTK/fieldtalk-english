@@ -41,6 +41,9 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t, STAGE_TONES } from "@/lib/leads/constants";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Panel from "@/components/ui/panel";
+import StatTile from "@/components/ui/stat-tile";
+import Button from "@/components/ui/button";
 
 const REFRESH_MS = 60_000;
 
@@ -120,24 +123,24 @@ export default function LeadsDashboardPage() {
   }, [range, owner]);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader currentView="dashboard" />
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60 py-12">
+          <div className="flex items-center gap-2 text-primary-300 py-12">
             <Loader2 className="w-5 h-5 animate-spin" />
             {isPt ? "Carregando…" : "Loading…"}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
             {t("errors.loadFailed", lang)}
           </div>
         ) : (
           <>
             {/* Filter bar — range picker + owner picker + refresh */}
             <div className="flex items-center flex-wrap gap-2 mb-4">
-              <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+              <div className="inline-flex rounded-full bg-primary-800 border border-primary-700 p-0.5">
                 {RANGE_OPTIONS.map((r) => (
                   <button
                     key={r.key}
@@ -145,8 +148,8 @@ export default function LeadsDashboardPage() {
                     onClick={() => setRange(r.key)}
                     className={`px-3 py-1 text-xs font-bold uppercase rounded-full transition-colors ${
                       range === r.key
-                        ? "bg-emerald-400 text-black"
-                        : "text-white/60 hover:text-white"
+                        ? "bg-accent-400 text-primary-900"
+                        : "text-primary-300 hover:text-primary-50"
                     }`}
                   >
                     {isPt ? r.labelPt : r.labelEn}
@@ -156,22 +159,22 @@ export default function LeadsDashboardPage() {
               <select
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
-                className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-emerald-400/40"
+                className="bg-primary-800 border border-primary-700 text-primary-50 text-xs rounded-full px-3 py-1.5 focus:outline-none focus:border-accent-400"
               >
-                <option value="" className="bg-[#0e0e0e]">
+                <option value="" className="bg-primary-800">
                   {isPt ? "Todo o time" : "Whole team"}
                 </option>
-                <option value="unassigned" className="bg-[#0e0e0e]">
+                <option value="unassigned" className="bg-primary-800">
                   {t("detail.notAssigned", lang)}
                 </option>
                 {owners.map((o) => (
-                  <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
+                  <option key={o.id} value={o.id} className="bg-primary-800">
                     {o.full_name}
                   </option>
                 ))}
               </select>
               <div className="ml-auto flex items-center gap-2">
-                <div className="text-[11px] text-white/40 flex items-center gap-2">
+                <div className="text-[11px] text-primary-500 flex items-center gap-2">
                   {refreshing && <Loader2 className="w-3 h-3 animate-spin" />}
                   {isPt ? "Atualizado" : "Updated"}{" "}
                   {lastFetched
@@ -185,7 +188,7 @@ export default function LeadsDashboardPage() {
                   type="button"
                   onClick={() => load(false)}
                   disabled={refreshing}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white text-xs disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-300 hover:text-primary-50 text-xs disabled:opacity-50"
                 >
                   <RefreshCcw
                     className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -237,7 +240,7 @@ function Scoreboard({ data, lang }) {
       <BigStat
         label={isPt ? "Total de leads" : "Total leads"}
         value={totals.total}
-        accent="emerald"
+        tone="default"
         delta={{
           current: thisRangeNew,
           previous: prevRangeNew,
@@ -248,14 +251,14 @@ function Scoreboard({ data, lang }) {
       <BigStat
         label={isPt ? "Pipeline ativo" : "Active pipeline"}
         value={totals.active_pipeline}
-        accent="cyan"
+        tone="default"
         href="/admin/leads?stage=new,contacted,engaged,qualified,proposal"
       />
       <BigStat
         label={isPt ? "Taxa de conversão" : "Conversion rate"}
         value={formatPct(totals.conversion_rate)}
         rawValue={Math.round(totals.conversion_rate * 100)}
-        accent="amber"
+        tone="default"
         suffix="%"
         href="/admin/leads?stage=won"
       />
@@ -271,7 +274,7 @@ function Scoreboard({ data, lang }) {
             ? null
             : Math.round(totals.avg_cycle_days * 10)
         }
-        accent="cyan"
+        tone="default"
         hint={
           totals.cycle_samples > 0
             ? isPt
@@ -283,7 +286,7 @@ function Scoreboard({ data, lang }) {
       <BigStat
         label={isPt ? "Valor do pipeline" : "Pipeline value"}
         value={formatBrl(totals.pipeline_value_cents)}
-        accent="lime"
+        tone="accent"
         href="/admin/leads?stage=new,contacted,engaged,qualified,proposal"
       />
     </div>
@@ -299,10 +302,13 @@ function rangeShortLabel(range, lang) {
 
 /**
  * Big number card with optional count-up animation, trend delta,
- * and colour tone. Clickable when href is set — every number should
+ * and DS tone. Clickable when href is set — every number should
  * lead somewhere so the dashboard becomes a work-launcher.
+ *
+ * Wraps <StatTile> so the visual matches the DS primitive; the
+ * count-up + delta + href are extras layered on top.
  */
-function BigStat({ label, value, rawValue, accent = "emerald", delta, href, suffix, hint }) {
+function BigStat({ label, value, rawValue, tone = "default", delta, href, suffix, hint }) {
   const numericTarget =
     typeof rawValue === "number"
       ? rawValue
@@ -322,20 +328,21 @@ function BigStat({ label, value, rawValue, accent = "emerald", delta, href, suff
         : formatNumber(animated) + (suffix || "")
       : String(value);
 
-  const tone = accentTones(accent);
+  const caption = (
+    <>
+      {delta && <DeltaRow delta={delta} />}
+      {hint && <span className="block text-[10px] text-primary-500">{hint}</span>}
+    </>
+  );
 
   const inner = (
-    <div className={`relative rounded-2xl border p-4 sm:p-5 h-full transition-transform group-hover:-translate-y-0.5 ${tone.card}`}>
-      <p className="text-[10px] uppercase tracking-[0.25em] font-semibold text-white/50">
-        {label}
-      </p>
-      <p className={`mt-2 font-black tracking-tight tabular-nums text-3xl sm:text-4xl ${tone.number}`}>
-        {display}
-      </p>
-      {delta && <DeltaRow delta={delta} />}
-      {hint && <p className="mt-1 text-[10px] text-white/40">{hint}</p>}
-      <div className={`absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity ${tone.glow}`} />
-    </div>
+    <StatTile
+      label={label}
+      value={display}
+      tone={tone}
+      caption={delta || hint ? caption : undefined}
+      className="h-full transition-transform group-hover:-translate-y-0.5"
+    />
   );
 
   return href ? (
@@ -354,19 +361,19 @@ function DeltaRow({ delta }) {
   const Icon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
   const tone =
     diff > 0
-      ? "text-emerald-300"
+      ? "text-accent-400"
       : diff < 0
-        ? "text-red-300"
-        : "text-white/40";
+        ? "text-signal-alert"
+        : "text-primary-500";
   return (
-    <div className={`mt-2 inline-flex items-center gap-1 text-[11px] font-semibold ${tone}`}>
+    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${tone}`}>
       <Icon className="w-3 h-3" />
       <span className="tabular-nums">
         {diff > 0 ? "+" : ""}
         {diff} · {previous > 0 ? `${Math.abs(pct).toFixed(0)}%` : "—"}
       </span>
-      <span className="text-white/40 font-normal ml-1">{label}</span>
-    </div>
+      <span className="text-primary-500 font-normal ml-1">{label}</span>
+    </span>
   );
 }
 
@@ -388,23 +395,23 @@ function Funnel({ data, lang }) {
       <div className="space-y-1.5">
         {rows.map((r) => {
           const width = Math.max(6, (r.count / max) * 100);
-          const tone = STAGE_TONES[r.stage] || "bg-white/10 text-white/80";
+          const tone = STAGE_TONES[r.stage] || "bg-primary-700 text-primary-100";
           return (
             <Link
               key={r.stage}
               href={`/admin/leads?stage=${r.stage}`}
-              className="group grid grid-cols-[7.5rem_1fr_auto] items-center gap-2 hover:bg-white/[0.02] transition-colors rounded-lg px-2 py-1"
+              className="group grid grid-cols-[7.5rem_1fr_auto] items-center gap-2 hover:bg-primary-800 transition-colors rounded-control px-2 py-1"
             >
               <span className={`inline-flex justify-center items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
                 {t(`stages.${r.stage}`, lang)}
               </span>
-              <div className="h-6 rounded-lg bg-white/[0.03] border border-white/5 overflow-hidden relative">
+              <div className="h-6 rounded-control bg-primary-800 border border-primary-700 overflow-hidden relative">
                 <div
-                  className={`absolute inset-y-0 left-0 rounded-lg opacity-70 group-hover:opacity-90 transition-all ${funnelBarClass(r.stage)}`}
+                  className={`absolute inset-y-0 left-0 rounded-control opacity-70 group-hover:opacity-90 transition-all ${funnelBarClass(r.stage)}`}
                   style={{ width: `${width}%` }}
                 />
               </div>
-              <span className="text-sm font-black tabular-nums text-white/85 min-w-[3rem] text-right">
+              <span className="text-sm font-black tabular-nums text-primary-100 min-w-[3rem] text-right">
                 {r.count}
               </span>
             </Link>
@@ -416,26 +423,29 @@ function Funnel({ data, lang }) {
 }
 
 function funnelBarClass(stage) {
-  // Gradient bars matching stage tone — extra "juice" for the visual.
+  // Per-stage fills tokenised to DS signals — the funnel keeps its
+  // hand-rolled bar geometry (six colour tiers is more than MetricBar
+  // exposes) but colours now come from the signal palette, not raw
+  // emerald/blue literals.
   switch (stage) {
     case "new":
-      return "bg-gradient-to-r from-white/20 to-white/10";
+      return "bg-primary-700";
     case "contacted":
-      return "bg-gradient-to-r from-blue-500 to-blue-400";
+      return "bg-signal-english/60";
     case "engaged":
-      return "bg-gradient-to-r from-cyan-500 to-cyan-400";
+      return "bg-signal-english";
     case "qualified":
-      return "bg-gradient-to-r from-emerald-500 to-emerald-400";
+      return "bg-signal-performance/60";
     case "proposal":
-      return "bg-gradient-to-r from-amber-500 to-amber-400";
+      return "bg-signal-performance";
     case "won":
-      return "bg-gradient-to-r from-emerald-300 to-lime-300";
+      return "bg-accent-400";
     case "lost":
-      return "bg-gradient-to-r from-red-600 to-red-500";
+      return "bg-signal-alert";
     case "dormant":
-      return "bg-gradient-to-r from-white/10 to-white/5";
+      return "bg-primary-700/60";
     default:
-      return "bg-white/10";
+      return "bg-primary-700";
   }
 }
 
@@ -515,14 +525,14 @@ function RangeRow({ row }) {
   const tone = accentTones(row.accent);
   const DeltaIcon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
   const deltaTone =
-    diff > 0 ? "text-emerald-300" : diff < 0 ? "text-red-300" : "text-white/40";
+    diff > 0 ? "text-accent-400" : diff < 0 ? "text-signal-alert" : "text-primary-500";
   return (
     <li className="flex items-center gap-3">
-      <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${tone.chip}`}>
+      <div className={`shrink-0 w-9 h-9 rounded-control flex items-center justify-center ${tone.chip}`}>
         <row.Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-white/50 truncate">{row.label}</p>
+        <p className="text-[11px] text-primary-400 truncate">{row.label}</p>
         <div className="flex items-baseline gap-2">
           <span className={`text-xl font-black tabular-nums ${tone.number}`}>
             {row.cur}
@@ -554,7 +564,7 @@ function Leaderboard({ data, lang }) {
       }
     >
       {rows.length === 0 ? (
-        <p className="text-sm text-white/40">
+        <p className="text-sm text-primary-500">
           {isPt
             ? "Ninguém trabalhou leads ainda."
             : "No one has worked leads yet."}
@@ -566,8 +576,8 @@ function Leaderboard({ data, lang }) {
               <span
                 className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black tabular-nums ${
                   i === 0
-                    ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/40"
-                    : "bg-white/[0.06] text-white/60"
+                    ? "bg-accent-400/20 text-accent-300 ring-1 ring-accent-400/40"
+                    : "bg-primary-800 text-primary-300"
                 }`}
               >
                 {i + 1}
@@ -577,22 +587,22 @@ function Leaderboard({ data, lang }) {
                   <span className="text-sm font-semibold truncate">
                     {r.full_name}
                   </span>
-                  <span className="text-xs font-bold text-emerald-300 tabular-nums">
+                  <span className="text-xs font-bold text-accent-400 tabular-nums">
                     {r.conversions_this_range}{" "}
-                    <span className="text-white/40 font-normal">
+                    <span className="text-primary-500 font-normal">
                       {isPt ? "ganhos" : "wins"}
                     </span>
                   </span>
                 </div>
-                <div className="mt-1 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+                <div className="mt-1 h-1.5 rounded-full bg-primary-700 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+                    className="h-full bg-signal-english"
                     style={{
                       width: `${(r.sends_this_range / maxSends) * 100}%`,
                     }}
                   />
                 </div>
-                <p className="mt-1 text-[10px] text-white/40 tabular-nums">
+                <p className="mt-1 text-[10px] text-primary-500 tabular-nums">
                   {r.sends_this_range}{" "}
                   {isPt ? "envios" : "sends"} · {r.replies_this_range}{" "}
                   {isPt ? "respostas" : "replies"} · {r.leads_worked}{" "}
@@ -623,7 +633,7 @@ function SourceRoi({ data, lang }) {
       }
     >
       {rows.length === 0 ? (
-        <p className="text-sm text-white/40">
+        <p className="text-sm text-primary-500">
           {isPt ? "Sem dados ainda." : "No data yet."}
         </p>
       ) : (
@@ -633,32 +643,32 @@ function SourceRoi({ data, lang }) {
               <div className="flex items-baseline justify-between gap-2 text-xs">
                 <Link
                   href={`/admin/leads?source=${r.source}`}
-                  className="font-semibold text-white/85 hover:text-white truncate"
+                  className="font-semibold text-primary-100 hover:text-primary-50 truncate"
                 >
                   {t(`sources.${r.source}`, lang)}
                 </Link>
-                <span className="tabular-nums text-white/60">
+                <span className="tabular-nums text-primary-300">
                   {r.conversions}/{r.leads_in}
                   <span
                     className={`ml-2 font-bold ${
                       r.rate >= 0.15
-                        ? "text-emerald-300"
+                        ? "text-accent-400"
                         : r.rate >= 0.05
-                          ? "text-amber-300"
-                          : "text-white/50"
+                          ? "text-signal-performance"
+                          : "text-primary-400"
                     }`}
                   >
                     {formatPct(r.rate)}
                   </span>
                 </span>
               </div>
-              <div className="mt-1 h-2 rounded-full bg-white/[0.05] overflow-hidden relative">
+              <div className="mt-1 h-2 rounded-full bg-primary-800 overflow-hidden relative">
                 <div
-                  className="absolute inset-y-0 left-0 bg-white/15"
+                  className="absolute inset-y-0 left-0 bg-primary-600"
                   style={{ width: `${(r.leads_in / maxLeads) * 100}%` }}
                 />
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 to-lime-300"
+                  className="absolute inset-y-0 left-0 bg-accent-400"
                   style={{
                     width: `${(r.conversions / maxLeads) * 100}%`,
                   }}
@@ -686,8 +696,8 @@ function AttentionCallouts({ data, lang }) {
       Icon: Radio,
       tone:
         a.untouched_new > 0
-          ? "border-amber-400/40 bg-amber-500/[0.06] text-amber-200"
-          : "border-white/10 bg-white/[0.02] text-white/50",
+          ? "border-signal-performance/40 bg-signal-performance/10 text-signal-performance"
+          : "border-primary-700 bg-primary-800 text-primary-400",
     },
     {
       key: "stuck",
@@ -697,8 +707,8 @@ function AttentionCallouts({ data, lang }) {
       Icon: Clock,
       tone:
         a.stuck_contacted > 0
-          ? "border-red-400/40 bg-red-500/[0.06] text-red-200"
-          : "border-white/10 bg-white/[0.02] text-white/50",
+          ? "border-signal-alert/40 bg-signal-alert/10 text-signal-alert"
+          : "border-primary-700 bg-primary-800 text-primary-400",
     },
     {
       key: "overdue",
@@ -708,8 +718,8 @@ function AttentionCallouts({ data, lang }) {
       Icon: AlertTriangle,
       tone:
         a.overdue_next_action > 0
-          ? "border-red-400/40 bg-red-500/[0.06] text-red-200"
-          : "border-white/10 bg-white/[0.02] text-white/50",
+          ? "border-signal-alert/40 bg-signal-alert/10 text-signal-alert"
+          : "border-primary-700 bg-primary-800 text-primary-400",
     },
   ];
   return (
@@ -726,9 +736,9 @@ function AttentionCallouts({ data, lang }) {
           <Link
             key={it.key}
             href={it.href}
-            className={`flex items-center gap-3 p-3 rounded-xl border transition-colors hover:brightness-125 ${it.tone}`}
+            className={`flex items-center gap-3 p-3 rounded-card border transition-colors hover:brightness-125 ${it.tone}`}
           >
-            <div className="shrink-0 w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+            <div className="shrink-0 w-9 h-9 rounded-control bg-primary-700 flex items-center justify-center">
               <it.Icon className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
@@ -775,11 +785,11 @@ function TrendCharts({ data, lang }) {
         {/* Daily new — 30 tiny bars */}
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <p className="text-[11px] uppercase tracking-wider text-white/50 font-semibold">
+            <p className="text-[11px] uppercase tracking-wider text-primary-400 font-semibold">
               {dailyLabel}
             </p>
-            <p className="text-xs tabular-nums text-white/60">
-              <span className="text-emerald-300 font-bold">{dailyTotal}</span>{" "}
+            <p className="text-xs tabular-nums text-primary-300">
+              <span className="text-accent-400 font-bold">{dailyTotal}</span>{" "}
               {isPt ? "no total" : "total"}
             </p>
           </div>
@@ -790,17 +800,17 @@ function TrendCharts({ data, lang }) {
                 <div
                   key={d.date}
                   title={`${d.date} · ${d.count}`}
-                  className="flex-1 rounded-t bg-gradient-to-t from-emerald-500/60 to-emerald-300 hover:from-emerald-400 hover:to-lime-200 transition-colors relative group"
+                  className="flex-1 rounded-t bg-signal-english hover:bg-signal-english/80 transition-colors relative group"
                   style={{ height: `${Math.max(2, h)}%` }}
                 >
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary-50 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                     {d.count}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="mt-1 flex justify-between text-[9px] text-white/35 tabular-nums">
+          <div className="mt-1 flex justify-between text-[9px] text-primary-500 tabular-nums">
             <span>-{daily.length}d</span>
             <span>{isPt ? "hoje" : "today"}</span>
           </div>
@@ -809,11 +819,11 @@ function TrendCharts({ data, lang }) {
         {/* Weekly won — 12 chunky bars */}
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <p className="text-[11px] uppercase tracking-wider text-white/50 font-semibold">
+            <p className="text-[11px] uppercase tracking-wider text-primary-400 font-semibold">
               {isPt ? "Ganhos / semana" : "Wins / week"}
             </p>
-            <p className="text-xs tabular-nums text-white/60">
-              <span className="text-lime-300 font-bold">{weeklyTotal}</span>{" "}
+            <p className="text-xs tabular-nums text-primary-300">
+              <span className="text-accent-400 font-bold">{weeklyTotal}</span>{" "}
               {isPt ? "no total" : "total"}
             </p>
           </div>
@@ -824,17 +834,17 @@ function TrendCharts({ data, lang }) {
                 <div
                   key={w.week}
                   title={`${w.week} · ${w.count}`}
-                  className="flex-1 rounded-t bg-gradient-to-t from-amber-500/40 to-lime-300 hover:brightness-125 transition-all relative group"
+                  className="flex-1 rounded-t bg-accent-400 hover:brightness-125 transition-all relative group"
                   style={{ height: `${Math.max(2, h)}%` }}
                 >
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary-50 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                     {w.count}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="mt-1 flex justify-between text-[9px] text-white/35 tabular-nums">
+          <div className="mt-1 flex justify-between text-[9px] text-primary-500 tabular-nums">
             <span>-12w</span>
             <span>{isPt ? "esta" : "this"}</span>
           </div>
@@ -850,41 +860,43 @@ function TargetsSection({ targets, lang }) {
   const isPt = lang === "pt";
   if (!targets || targets.length === 0) {
     return (
-      <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.01] p-5 flex items-center justify-between gap-4">
+      <div className="mt-4 rounded-card border border-dashed border-primary-600 bg-primary-panel p-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="shrink-0 w-10 h-10 rounded-xl bg-white/[0.06] text-white/50 flex items-center justify-center">
+          <div className="shrink-0 w-10 h-10 rounded-control bg-primary-800 text-primary-400 flex items-center justify-center">
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white/80">
+            <p className="text-sm font-semibold text-primary-100">
               {isPt ? "Defina metas para o time" : "Set targets for the team"}
             </p>
-            <p className="text-[11px] text-white/45">
+            <p className="text-[11px] text-primary-400">
               {isPt
                 ? "Metas claras para ganhos, novos leads, taxa de conversão ou valor de pipeline."
                 : "Clear goals for wins, new leads, conversion rate, or pipeline value."}
             </p>
           </div>
         </div>
-        <Link
+        <Button
+          as="a"
           href="/admin/leads/targets"
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs whitespace-nowrap"
+          variant="primary"
+          size="sm"
+          Icon={Target}
         >
-          <Target className="w-3.5 h-3.5" />
           {isPt ? "Definir meta" : "Set target"}
-        </Link>
+        </Button>
       </div>
     );
   }
   return (
     <div className="mt-4">
       <div className="flex items-baseline justify-between mb-2">
-        <h2 className="text-sm font-black tracking-tight text-white">
+        <h2 className="text-sm font-black tracking-tight text-primary-50">
           {isPt ? "Metas" : "Targets"}
         </h2>
         <Link
           href="/admin/leads/targets"
-          className="text-[11px] text-white/50 hover:text-white"
+          className="text-[11px] text-primary-400 hover:text-primary-50"
         >
           {isPt ? "Gerenciar →" : "Manage →"}
         </Link>
@@ -918,14 +930,10 @@ function TargetCard({ target, lang }) {
   const pctFilled = Math.min(100, p.ratio * 100);
 
   return (
-    <div className={`relative rounded-2xl border p-4 ${statusToneClass.card} overflow-hidden`}>
-      {/* Achieved glow */}
-      {p.status === "achieved" && (
-        <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-40 shadow-[inset_0_0_50px_-10px_rgba(190,242,100,0.6)]" />
-      )}
+    <div className={`relative rounded-card border p-4 ${statusToneClass.card} overflow-hidden`}>
       <div className="relative">
         <div className="flex items-start gap-2 mb-2">
-          <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${statusToneClass.chip}`}>
+          <div className={`shrink-0 w-8 h-8 rounded-control flex items-center justify-center ${statusToneClass.chip}`}>
             {p.status === "achieved" ? (
               <Sparkles className="w-4 h-4" />
             ) : (
@@ -934,9 +942,9 @@ function TargetCard({ target, lang }) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm truncate">{target.title}</h3>
-            <p className="text-[10px] text-white/45 truncate">
+            <p className="text-[10px] text-primary-400 truncate">
               {target.owner?.full_name ? (
-                <span className="text-cyan-300">{target.owner.full_name}</span>
+                <span className="text-signal-english">{target.owner.full_name}</span>
               ) : (
                 <span>{isPt ? "Time" : "Team"}</span>
               )}
@@ -954,13 +962,13 @@ function TargetCard({ target, lang }) {
           <span className={`text-3xl font-black tabular-nums ${statusToneClass.number}`}>
             {formatValue(p.current)}
           </span>
-          <span className="text-sm text-white/40 tabular-nums">
+          <span className="text-sm text-primary-500 tabular-nums">
             / {formatValue(p.target)}
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-2 h-2 rounded-full bg-white/[0.05] overflow-hidden relative">
+        <div className="mt-2 h-2 rounded-full bg-primary-800 overflow-hidden relative">
           <div
             className={`absolute inset-y-0 left-0 rounded-full transition-all ${barGradient}`}
             style={{ width: `${pctFilled}%` }}
@@ -969,13 +977,13 @@ function TargetCard({ target, lang }) {
 
         {/* Footer row */}
         <div className="mt-2 flex items-center justify-between text-[10px] tabular-nums">
-          <span className="text-white/50">
+          <span className="text-primary-400">
             {(p.ratio * 100).toFixed(0)}%
           </span>
           <span className={statusToneClass.pill}>
             {statusLabel(p.status, lang)}
           </span>
-          <span className="text-white/40">
+          <span className="text-primary-500">
             {p.days_remaining > 0 ? (
               <>
                 {p.days_remaining}
@@ -995,34 +1003,34 @@ function statusTone(status) {
   switch (status) {
     case "achieved":
       return {
-        card: "border-lime-300/50 bg-lime-400/[0.06]",
-        chip: "bg-lime-400/25 text-lime-200",
-        number: "text-lime-100",
+        card: "border-accent-400/50 bg-accent-400/10",
+        chip: "bg-accent-400/25 text-accent-300",
+        number: "text-accent-300",
         pill:
-          "text-lime-200 font-bold uppercase tracking-wider",
+          "text-accent-300 font-bold uppercase tracking-wider",
       };
     case "on_track":
       return {
-        card: "border-emerald-400/40 bg-emerald-500/[0.05]",
-        chip: "bg-emerald-500/20 text-emerald-200",
-        number: "text-emerald-100",
+        card: "border-accent-400/40 bg-accent-400/5",
+        chip: "bg-accent-400/20 text-accent-300",
+        number: "text-accent-400",
         pill:
-          "text-emerald-300 font-bold uppercase tracking-wider",
+          "text-accent-400 font-bold uppercase tracking-wider",
       };
     case "behind":
       return {
-        card: "border-amber-400/40 bg-amber-500/[0.05]",
-        chip: "bg-amber-500/20 text-amber-200",
-        number: "text-amber-100",
-        pill: "text-amber-300 font-bold uppercase tracking-wider",
+        card: "border-signal-performance/40 bg-signal-performance/5",
+        chip: "bg-signal-performance/20 text-signal-performance",
+        number: "text-signal-performance",
+        pill: "text-signal-performance font-bold uppercase tracking-wider",
       };
     case "at_risk":
     default:
       return {
-        card: "border-red-400/40 bg-red-500/[0.05]",
-        chip: "bg-red-500/20 text-red-200",
-        number: "text-red-100",
-        pill: "text-red-300 font-bold uppercase tracking-wider",
+        card: "border-signal-alert/40 bg-signal-alert/5",
+        chip: "bg-signal-alert/20 text-signal-alert",
+        number: "text-signal-alert",
+        pill: "text-signal-alert font-bold uppercase tracking-wider",
       };
   }
 }
@@ -1030,14 +1038,13 @@ function statusTone(status) {
 function statusBarGradient(status) {
   switch (status) {
     case "achieved":
-      return "bg-gradient-to-r from-lime-300 to-emerald-300";
     case "on_track":
-      return "bg-gradient-to-r from-emerald-400 to-lime-300";
+      return "bg-accent-400";
     case "behind":
-      return "bg-gradient-to-r from-amber-500 to-amber-300";
+      return "bg-signal-performance";
     case "at_risk":
     default:
-      return "bg-gradient-to-r from-red-500 to-red-400";
+      return "bg-signal-alert";
   }
 }
 
@@ -1059,55 +1066,57 @@ function statusLabel(status, lang) {
 /* ─── shared ──────────────────────────────────────────────────── */
 
 function SectionCard({ title, subtitle, children }) {
+  // Thin wrapper over the DS <Panel> primitive so every section on
+  // this dashboard shares one rounded-panel + hairline surface. The
+  // subtitle is rendered as an eyebrow-style caption under the title
+  // to preserve the existing layout without breaking Panel's slots.
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 h-full">
-      <div className="mb-3">
-        <h2 className="text-sm font-black tracking-tight text-white">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-[11px] text-white/45 mt-0.5">{subtitle}</p>
-        )}
-      </div>
+    <Panel
+      title={title}
+      className="h-full"
+      padding="p-4 sm:p-5"
+      gap="space-y-3"
+    >
+      {subtitle && (
+        <p className="text-[11px] text-primary-400 -mt-1">{subtitle}</p>
+      )}
       {children}
-    </div>
+    </Panel>
   );
 }
 
 /**
- * Return colour tones per accent name. Kept as a helper so we don't
- * scatter Tailwind literals across the dashboard.
+ * Return colour tones per accent name — used by RangeRow icon chips
+ * and the (retained) row-level accent surfaces. Mapped to DS signal
+ * tokens: cyan → signal-english (data/reach), amber → signal-
+ * performance (targets), lime/emerald → accent-400 (composite wins).
  */
 function accentTones(accent) {
   switch (accent) {
     case "cyan":
       return {
-        card: "border-cyan-400/30 bg-cyan-500/[0.04]",
-        number: "text-cyan-100",
-        chip: "bg-cyan-500/15 text-cyan-300",
-        glow: "shadow-[inset_0_0_60px_-15px_rgba(34,211,238,0.35)]",
+        card: "border-signal-english/30 bg-signal-english/5",
+        number: "text-primary-50",
+        chip: "bg-signal-english/15 text-signal-english",
       };
     case "amber":
       return {
-        card: "border-amber-400/30 bg-amber-500/[0.04]",
-        number: "text-amber-100",
-        chip: "bg-amber-500/15 text-amber-300",
-        glow: "shadow-[inset_0_0_60px_-15px_rgba(251,191,36,0.35)]",
+        card: "border-signal-performance/30 bg-signal-performance/5",
+        number: "text-primary-50",
+        chip: "bg-signal-performance/15 text-signal-performance",
       };
     case "lime":
       return {
-        card: "border-lime-300/30 bg-lime-400/[0.04]",
-        number: "text-lime-100",
-        chip: "bg-lime-500/15 text-lime-300",
-        glow: "shadow-[inset_0_0_60px_-15px_rgba(190,242,100,0.35)]",
+        card: "border-accent-400/30 bg-accent-400/5",
+        number: "text-accent-400",
+        chip: "bg-accent-400/15 text-accent-400",
       };
     case "emerald":
     default:
       return {
-        card: "border-emerald-400/30 bg-emerald-500/[0.04]",
-        number: "text-emerald-100",
-        chip: "bg-emerald-500/15 text-emerald-300",
-        glow: "shadow-[inset_0_0_60px_-15px_rgba(52,211,153,0.35)]",
+        card: "border-accent-400/30 bg-accent-400/5",
+        number: "text-primary-50",
+        chip: "bg-accent-400/15 text-accent-400",
       };
   }
 }

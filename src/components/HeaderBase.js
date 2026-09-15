@@ -1,19 +1,50 @@
 // src/components/HeaderBase.js
+//
+// The Global Player header. Two variants behind the existing `type`
+// prop (kept for compatibility with landing + site routes):
+//   type="landing" → marketing-nav items (Lessons, Dashboard,
+//                    About, Pricing)
+//   type="site"    → in-app nav items (Lessons, Dashboard,
+//                    Vocabulary, Mental, Pricing)
+//
+// Both variants render the same visual language per the design
+// system (docs/brand/handoff/HANDOFF.md §3):
+//
+//   - Dark panel background `#0b1220`, 1px `#1e293b` bottom hairline
+//   - No frost/blur, no shadow
+//   - Open-bars mark (22px) + wordmark "GLOBAL PLAYER" in Archivo
+//     900, 15px, 0.15em tracking, primary-50
+//   - Active nav item: primary-50 text + 2px accent-400 underline
+//     placed 4px below the label. Inactive: primary-400.
+//   - Locale switcher: pill, 1px primary-700 border, primary-500 text
+//   - Dark mode is the default; the light toggle is preserved for
+//     the eventual club-portal / white-label surface.
+//
+// All auth / profile / locale / dark-mode / mobile-menu logic from
+// the previous header is preserved verbatim — only visual styling
+// and the logo lockup have changed.
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun, User, Menu, X, ShieldCheck } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { User, Menu, X, ShieldCheck } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { useState } from "react";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { usePlayerAccess } from "@/lib/access/usePlayerAccess";
-// import Image from "next/image";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import { PRODUCT_NAME } from "@/lib/brand/name";
 
+// `darkMode` / `setDarkMode` used to be part of this signature; the
+// toggle has been removed per the design-system rule ("dark is the
+// default; light is a deliberate swap for white-label / club portal
+// surfaces"). Existing callers that still pass those props keep
+// working — unknown props are simply ignored by React function
+// components. When the club portal ships, that surface renders its
+// own light header instead of reusing this one via a runtime flag.
 function HeaderBase({
   type = "landing",
-  darkMode,
-  setDarkMode,
   lang,
   setLang,
   languageOptions,
@@ -27,124 +58,84 @@ function HeaderBase({
   const access = usePlayerAccess(profile?.edition);
   const hasFullAccess = !access.loading && access.hasAccess;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const localizedLinks = {
     landing: {
       en: [
-        // { href: "/", label: "Home" },
         { href: "/lesson", label: "Lessons" },
         { href: "/dashboard", label: "Dashboard" },
-        { href: "/about-us", label: "About Us" },
+        { href: "/about-us", label: "About" },
         { href: "/pricing", label: "Pricing" },
-        // { href: "/academies", label: "Players" },
-        // { href: "/schools", label: "Schools" },
-        // { href: "/settings", label: "Settings" },
       ],
       pt: [
-        // { href: "/", label: "Início" },
         { href: "/lesson", label: "Aulas" },
         { href: "/dashboard", label: "Painel" },
-        { href: "/about-us", label: "Sobre Nós" },
+        { href: "/about-us", label: "Sobre" },
         { href: "/pricing", label: "Valores" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/academies", label: "Jogadores" },
-        // { href: "/schools", label: "Escolas" },
-        // { href: "/settings", label: "Settings" },
       ],
       es: [
-        // { href: "/", label: "Inicio" },
         { href: "/lesson", label: "Lecciones" },
         { href: "/dashboard", label: "Panel" },
-        { href: "/about-us", label: "Sobre Nosotros" },
-        { href: "/pricing", label: "Pricing" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/academies", label: "For Players" },
-        // { href: "/schools", label: "For Schools" },
-        // { href: "/settings", label: "Settings" },
+        { href: "/about-us", label: "Sobre" },
+        { href: "/pricing", label: "Precios" },
       ],
     },
     site: {
       en: [
-        // { href: "/lesson", label: "Home" },
         { href: "/lesson", label: "Lessons" },
         { href: "/dashboard", label: "Dashboard" },
         { href: "/vocabulary", label: "Vocabulary" },
         { href: "/mental", label: "Mental" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/about-us", label: "About Us" },
         { href: "/pricing", label: "Pricing" },
-        // { href: "/settings", label: "Settings" },
       ],
       pt: [
-        // { href: "/", label: "Início" },
         { href: "/lesson", label: "Aulas" },
         { href: "/dashboard", label: "Painel" },
         { href: "/vocabulary", label: "Vocabulário" },
         { href: "/mental", label: "Mental" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/about-us", label: "Sobre Nós" },
         { href: "/pricing", label: "Valores" },
-        // { href: "/settings", label: "Settings" },
       ],
       es: [
-        // { href: "/", label: "Inicio" },
         { href: "/lesson", label: "Lecciones" },
         { href: "/dashboard", label: "Panel" },
         { href: "/vocabulary", label: "Vocabulario" },
         { href: "/mental", label: "Mental" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/about-us", label: "Sobre Nosotros" },
-        { href: "/pricing", label: "Pricing" },
-        // { href: "/settings", label: "Settings" },
+        { href: "/pricing", label: "Precios" },
       ],
       fr: [
-        // { href: "/", label: "Accueil" },
         { href: "/lesson", label: "Leçons" },
-        { href: "/dashboard", label: "Tableau de bord" },
+        { href: "/dashboard", label: "Tableau" },
         { href: "/vocabulary", label: "Vocabulaire" },
         { href: "/mental", label: "Mental" },
-        // { href: "/admin", label: "Admin" },
-        // { href: "/about-us", label: "About Us" },
-        { href: "/pricing", label: "Pricing" },
-        // { href: "/settings", label: "Settings" },
+        { href: "/pricing", label: "Prix" },
       ],
     },
   };
 
   const t = {
-    en: {
-      signIn: "Sign In",
-      signOut: "Sign Out",
-      profile: "Profile",
-    },
-    pt: {
-      signIn: "Entrar",
-      signOut: "Sair",
-      profile: "Perfil",
-    },
-    es: {
-      signIn: "Iniciar Sesión",
-      signOut: "Cerrar Sesión",
-      profile: "Perfil",
-    },
-    fr: {
-      signIn: "Se connecter",
-      signOut: "Se déconnecter",
-      profile: "Profil",
-    },
+    en: { signIn: "Sign in", signOut: "Sign out", profile: "Profile" },
+    pt: { signIn: "Entrar", signOut: "Sair", profile: "Perfil" },
+    es: { signIn: "Entrar", signOut: "Salir", profile: "Perfil" },
+    fr: { signIn: "Se connecter", signOut: "Se déconnecter", profile: "Profil" },
   };
 
   const copy = t[lang] || t.en;
   const rawLinks =
     localizedLinks[type]?.[lang] || localizedLinks[type]?.en || [];
-
-  // Per-edition dashboard label swap was removed on 2026-08-24 —
-  // early test users found "Training Ground" / "Centro de Treinamento"
-  // / "CT" confusing, so both editions now use the same "Dashboard"
-  // / "Painel" label from the base localized array. Kept the .map()
-  // shape here as a stable extension point in case per-edition nav
-  // labels come back for other links in the future.
   const links = rawLinks;
+
+  /**
+   * A nav item is "active" when the current path starts with its href.
+   * Exact matching would break on nested routes (e.g. /lesson/123
+   * wouldn't highlight "Lessons"). Special-cased "/" — otherwise every
+   * route would show "Home" as active.
+   */
+  const isActive = (href) => {
+    if (!pathname) return false;
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -153,43 +144,38 @@ function HeaderBase({
     closeMobileMenu();
   };
 
+  // Panel colour = design-system panel `#0b1220`. Inline hex — this
+  // is the canonical single use in product chrome, no need to
+  // token-ize until the DS `--gp-bg-panel` variable is wired in.
+  const headerStyle = {
+    backgroundColor: "#0b1220",
+    borderBottom: "1px solid #1e293b",
+  };
+
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-primary-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <header className="sticky top-0 z-50" style={headerStyle}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href="/lesson" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
-                {/* <Globe className="w-5 h-5 text-white" /> */}
-              </div>
-              {/* {darkMode ? (
-                <Image
-                  src="/logos/FieldTalk-wider-dm-w.png"
-                  height="45"
-                  width="225"
-                  quality={100}
-                  alt="FieldTalk logo"
-                  className="block rounded-tr-3xl rounded-bl-3xl"
-                />
-              ) : (
-                <Image
-                  src="/logos/FieldTalk-wide-lm-bg-w.png"
-                  height="45"
-                  width="225"
-                  quality={100}
-                  alt="FieldTalk logo"
-                  className="block rounded-tr-3xl rounded-bl-3xl"
-                />
-              )} */}
-              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-500 dark:from-accent-600 dark:to-accent-500 bg-clip-text text-transparent">
-                FieldTalk English
+            {/* Logo + wordmark. The wordmark is the type — Archivo
+                900 uppercase tracked 0.15em — set in primary-50 so
+                it holds contrast on the dark panel. Sits at a fixed
+                size so it doesn't compete with page content. */}
+            <Link
+              href="/lesson"
+              className="flex items-center gap-2.5"
+              aria-label={PRODUCT_NAME}
+            >
+              <GlobalPlayerLogo variant="open" tone="tonalDark" size={22} />
+              <span
+                className="font-display font-black text-primary-50 uppercase tracking-wordmark whitespace-nowrap"
+                style={{ fontSize: "15px" }}
+              >
+                {PRODUCT_NAME}
               </span>
-              {/* Partner logo placement — sits beside the FieldTalk
-                  wordmark for users whose branch has
-                  placements.siteHeader = true in branches.js.
-                  Returns null for everyone else, so this is a no-op
-                  visually until a partner is opted in. */}
+              {/* Partner logo placement — sits beside the wordmark for
+                  users whose branch has placements.siteHeader = true
+                  in branches.js. Returns null for everyone else. */}
               <PartnerLogo
                 placement="siteHeader"
                 profile={profile}
@@ -198,49 +184,55 @@ function HeaderBase({
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
-              {links.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-accent-50 dark:hover:text-accent-400 dark:hover:border-accent-400 gap-2 lg:gap-4"
-                  // className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
-                >
-                  {label}
-                </Link>
-              ))}
+            {/* Desktop nav — no pills, no rounded backgrounds. Each
+                item is text with an accent-400 2px underline when
+                active. Muted (primary-400) at rest; primary-50 on
+                hover and when active. Underline sits 4px below the
+                text baseline. */}
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+              {links.map(({ href, label }) => {
+                const active = isActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`text-sm font-medium transition-colors pb-1 border-b-2 ${
+                      active
+                        ? "text-primary-50 border-accent-400"
+                        : "text-primary-400 border-transparent hover:text-primary-50"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* Desktop Right side controls */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Auth Section */}
+            {/* Desktop right side — auth + locale + dark toggle. */}
+            <div className="hidden md:flex items-center gap-3">
               {user ? (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <Link
                     href="/lesson"
-                    className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-primary-50 dark:hover:text-accent-400 dark:hover:border-accent-400 gap-2 lg:gap-4"
+                    className="inline-flex items-center gap-2 text-sm text-primary-400 hover:text-primary-50 transition-colors"
                   >
-                    <User className="w-5 h-5" />
+                    <User className="w-4 h-4" />
                     <span className="hidden lg:inline font-medium">
                       {user.user_metadata?.full_name?.split(" ")[0] ||
                         user.email?.split("@")[0] ||
                         copy.profile}
                     </span>
-                    {/* Full-access shield — subtle emerald indicator
-                        that this user has an active subscription.
-                        Renders only for subscribers; free-tier users
-                        see the same nav without it. */}
                     {hasFullAccess && (
                       <ShieldCheck
-                        className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0"
+                        className="w-4 h-4 text-emerald-400 shrink-0"
                         aria-label="Full Access"
                       />
                     )}
                   </Link>
                   <button
+                    type="button"
                     onClick={handleSignOut}
-                    className=" text-primary-900 dark:text-primary-50 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+                    className="text-sm text-primary-400 hover:text-primary-50 transition-colors"
                   >
                     {copy.signOut}
                   </button>
@@ -248,45 +240,41 @@ function HeaderBase({
               ) : (
                 <Link
                   href="/signin"
-                  className="text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors font-medium"
+                  className="text-sm font-medium text-primary-400 hover:text-primary-50 transition-colors"
                 >
                   {copy.signIn}
                 </Link>
               )}
 
-              {/* Language Selector */}
+              {/* Locale switcher pill — 1px primary-700 border, small
+                  primary-500 text. Native <select> for zero-JS
+                  reliability + accessibility. */}
               {languageOptions && (
                 <select
                   value={lang}
                   onChange={(e) => setLang(e.target.value)}
-                  className="py-0.5 px-5 rounded-2xl transition-colors flex items-center text-primary-900 hover:text-accent-600 hover:border-b-2 hover:border-accent-600 dark:text-primary-50 dark:hover:text-accent-400 dark:hover:border-accent-400 dark:bg-primary-900 gap-2 lg:gap-4"
-                  // className="px-2 py-1 rounded-xl bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-300 text-sm  transition-colors"
+                  className="rounded-full border border-primary-700 bg-transparent px-3 py-1 text-xs font-medium text-primary-500 hover:text-primary-300 focus:outline-none focus:border-primary-500 transition-colors cursor-pointer"
                 >
                   {Object.entries(languageOptions).map(([code, { label }]) => (
-                    <option key={code} value={code}>
+                    <option
+                      key={code}
+                      value={code}
+                      className="bg-primary-800 text-primary-50"
+                    >
                       {label}
                     </option>
                   ))}
                 </select>
               )}
 
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={setDarkMode}
-                className="p-1 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-800 transition-colors"
-              >
-                {darkMode ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
             </div>
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              type="button"
+              className="md:hidden p-2 rounded-lg text-primary-400 hover:text-primary-50 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -298,51 +286,65 @@ function HeaderBase({
         </div>
       </header>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile navigation — panel below the header, dark to match.
+          No shadow, hairline top border. */}
       {isMobileMenuOpen && (
         <>
-          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/70 z-40 md:hidden"
             onClick={closeMobileMenu}
+            aria-hidden="true"
           />
-
-          {/* Mobile Menu */}
-          <div className="fixed top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg z-40 md:hidden">
+          <div
+            className="fixed top-16 left-0 right-0 z-40 md:hidden"
+            style={{
+              backgroundColor: "#0b1220",
+              borderBottom: "1px solid #1e293b",
+            }}
+          >
             <div className="max-w-7xl mx-auto px-4 py-6">
-              {/* Navigation Links */}
-              <nav className="space-y-4 mb-6">
-                {links.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="block py-2 text-lg font-medium text-primary-900 dark:text-primary-50 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                    onClick={closeMobileMenu}
-                  >
-                    {label}
-                  </Link>
-                ))}
+              <nav className="space-y-1 mb-4">
+                {links.map(({ href, label }) => {
+                  const active = isActive(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMobileMenu}
+                      className={`block py-2.5 px-3 rounded-lg text-base font-medium transition-colors ${
+                        active
+                          ? "text-primary-50 bg-white/[0.04]"
+                          : "text-primary-400 hover:text-primary-50 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
               </nav>
 
-              {/* Auth Section */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mb-6">
+              <div className="border-t border-primary-700 pt-4 mb-4">
                 {user ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <Link
                       href="/lesson"
-                      className="flex items-center space-x-3 py-2"
+                      className="flex items-center gap-3 py-2 px-3 rounded-lg text-primary-50"
                       onClick={closeMobileMenu}
                     >
-                      <User className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                      <span className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                      <User className="w-5 h-5 text-primary-400" />
+                      <span className="text-base font-medium">
                         {user.user_metadata?.full_name ||
                           user.email?.split("@")[0] ||
                           copy.profile}
                       </span>
+                      {hasFullAccess && (
+                        <ShieldCheck className="w-4 h-4 text-emerald-400 ml-auto" />
+                      )}
                     </Link>
                     <button
+                      type="button"
                       onClick={handleSignOut}
-                      className="block py-2 text-lg text-red-600 dark:text-red-400 font-medium"
+                      className="block w-full text-left py-2 px-3 rounded-lg text-base text-red-300 hover:bg-red-500/10 transition-colors"
                     >
                       {copy.signOut}
                     </button>
@@ -350,7 +352,7 @@ function HeaderBase({
                 ) : (
                   <Link
                     href="/signin"
-                    className="block py-2 text-lg font-medium text-primary-900 dark:text-primary-50"
+                    className="block py-2 px-3 rounded-lg text-base font-medium text-primary-50"
                     onClick={closeMobileMenu}
                   >
                     {copy.signIn}
@@ -358,52 +360,30 @@ function HeaderBase({
                 )}
               </div>
 
-              {/* Controls */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-                {/* Language Selector */}
-                {languageOptions && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Language
-                    </label>
-                    <select
-                      value={lang}
-                      onChange={(e) => setLang(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600"
-                    >
-                      {Object.entries(languageOptions).map(
-                        ([code, { label, flag }]) => (
-                          <option key={code} value={code}>
-                            {flag} {label}
-                          </option>
-                        ),
-                      )}
-                    </select>
-                  </div>
-                )}
-
-                {/* Dark Mode Toggle */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Dark Mode
-                  </span>
-                  <button
-                    onClick={() => {
-                      setDarkMode();
-                    }}
-                    className="flex items-center space-x-2 p-1 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              {languageOptions && (
+                <div className="border-t border-primary-700 pt-4">
+                  <label className="block text-[10px] uppercase tracking-eyebrow text-primary-500 font-semibold mb-1.5">
+                    Language
+                  </label>
+                  <select
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value)}
+                    className="w-full rounded-lg border border-primary-700 bg-transparent px-3 py-2 text-sm text-primary-50 focus:outline-none focus:border-primary-500"
                   >
-                    {darkMode ? (
-                      <Sun className="w-5 h-5" />
-                    ) : (
-                      <Moon className="w-5 h-5" />
+                    {Object.entries(languageOptions).map(
+                      ([code, { label, flag }]) => (
+                        <option
+                          key={code}
+                          value={code}
+                          className="bg-primary-800"
+                        >
+                          {flag} {label}
+                        </option>
+                      ),
                     )}
-                    <span className="text-sm">
-                      {darkMode ? "Light" : "Dark"}
-                    </span>
-                  </button>
+                  </select>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </>

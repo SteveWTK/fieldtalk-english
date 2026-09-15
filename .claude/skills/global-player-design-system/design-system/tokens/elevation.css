@@ -1,0 +1,21 @@
+:root{
+/* Dark surfaces carry no drop shadow — depth comes from the slate ramp + 1px borders. */
+--gp-border-dark:1px solid var(--gp-slate-700);
+--gp-border-dark-subtle:1px solid #131d2e; /* @kind other */
+--gp-border-light:1px solid var(--gp-slate-200);
+/* Light mode is the only place a shadow is allowed. */
+--gp-shadow-light-card:0 1px 2px rgba(2,6,23,0.06),0 8px 24px -12px rgba(2,6,23,0.12);
+--gp-shadow-light-raised:0 2px 4px rgba(2,6,23,0.08),0 18px 40px -18px rgba(2,6,23,0.18);
+/* Lime glow — social/marketing only, never product chrome. */
+--gp-glow-lime:0 0 22px rgba(163,230,53,0.45);
+--gp-glow-lime-strong:0 0 30px rgba(163,230,53,1);
+/* Focus ring: 2px lime 400 at 2px offset. */
+--gp-focus-ring:0 0 0 2px var(--gp-slate-900),0 0 0 4px var(--gp-lime-400);
+/* Backgrounds */
+--gp-grad-hero:radial-gradient(80% 130% at 85% 0%,var(--gp-lime-900) 0%,var(--gp-slate-900) 55%);
+--gp-grad-slide:radial-gradient(90% 140% at 100% 0%,var(--gp-lime-900) 0%,var(--gp-slate-900) 58%);
+--gp-grad-wash-blue:radial-gradient(80% 80% at 12% 8%,#101c34 0%,var(--gp-slate-900) 62%);
+--gp-grad-wash-centre:radial-gradient(70% 70% at 50% 50%,#0f1c33 0%,var(--gp-slate-900) 68%);
+--gp-grad-panel:linear-gradient(180deg,var(--gp-slate-800) 0%,var(--gp-slate-900) 100%);
+--gp-lattice:linear-gradient(90deg,rgba(148,163,184,0.10) 1px,transparent 1px) 0 0/540px 100%,linear-gradient(0deg,rgba(148,163,184,0.10) 1px,transparent 1px) 0 0/100% 540px; /* @kind other */
+}

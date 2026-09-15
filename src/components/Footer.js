@@ -27,7 +27,7 @@ export default function Footer() {
       <div className="px-6 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
         <div className="flex items-center gap-3">
           <p className="text-gray-400 text-sm">
-            © 2026 FieldTalk English. All rights reserved.
+            © 2026 Global Player. All rights reserved.
           </p>
           {/* Partner logo placement — renders only when the user's
               partner_referrer matches a branch with

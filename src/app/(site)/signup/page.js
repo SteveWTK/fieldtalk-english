@@ -160,11 +160,11 @@ function SignUpPageContent() {
                 <Globe className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                FieldTalk English
+                Global Player
               </span>
             </div> */}
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Junte-se a FieldTalk English
+              Junte-se ao Global Player
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
               Escolha o tipo de conta para começar

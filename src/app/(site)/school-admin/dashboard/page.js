@@ -91,7 +91,7 @@ function SchoolAdminDashboardContent() {
             No School Assigned
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Your account is not currently associated with a school. Please contact FieldTalk support to get assigned to your school.
+            Your account is not currently associated with a school. Please contact Global Player support to get assigned to your school.
           </p>
           <button
             onClick={() => router.push("/")}

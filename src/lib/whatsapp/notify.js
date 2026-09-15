@@ -67,10 +67,13 @@ export async function notifyEscalation(escalation) {
 
   const from =
     process.env.WHATSAPP_ESCALATION_FROM ||
-    "FieldTalk Alerts <alerts@fieldtalkenglish.com>";
+    // Sender-address hostname stays fieldtalkenglish.com until the
+    // new domain is purchased + DNS/SES verified. Display name
+    // updated to reflect the Global Player rebrand.
+    "Global Player Alerts <alerts@fieldtalkenglish.com>";
 
   const who = escalation.playerName || "Unmatched user";
-  const subject = `[FieldTalk] WhatsApp escalation — ${who} (${escalation.intent})`;
+  const subject = `[Global Player] WhatsApp escalation — ${who} (${escalation.intent})`;
 
   const bodyText = [
     `A user needs a human on WhatsApp.`,

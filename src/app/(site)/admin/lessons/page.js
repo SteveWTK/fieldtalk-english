@@ -171,7 +171,7 @@ function LessonsListContent() {
               Lesson Management
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Create and manage lesson content for FieldTalk
+              Create and manage lesson content for Global Player
             </p>
           </div>
           <div className="flex items-center gap-2">

@@ -3,11 +3,14 @@
 // Tiny badge components shared between list + kanban + detail so the
 // visual language stays consistent. Kept in one file (not one per
 // badge) because they're all small + composed similarly.
+//
+// Stage / type / tag are all *status* markers — never brand — so
+// they hang off the signal palette + slate ramp defined in the DS.
 
 import { STAGE_TONES, t } from "@/lib/leads/constants";
 
 export function StageBadge({ stage, lang }) {
-  const tone = STAGE_TONES[stage] || "bg-white/10 text-white/70";
+  const tone = STAGE_TONES[stage] || "bg-primary-700 text-primary-200";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}
@@ -17,9 +20,14 @@ export function StageBadge({ stage, lang }) {
   );
 }
 
+// TypeBadge + TagPill share the DS "muted chip" recipe — the same
+// slate panel fill + hairline border used everywhere else for
+// neutral metadata (owner names, sources, etc.). Deliberately not
+// using <Chip> as a wrapper because Chip is an interactive primitive
+// (button/link semantics); these are display-only spans.
 export function TypeBadge({ type, lang }) {
   return (
-    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-white/[0.06] text-white/60 border border-white/10">
+    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-primary-800 text-primary-300 border border-primary-700">
       {t(`types.${type}`, lang)}
     </span>
   );
@@ -27,7 +35,7 @@ export function TypeBadge({ type, lang }) {
 
 export function TagPill({ tag }) {
   return (
-    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-white/[0.04] text-white/60 border border-white/10">
+    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-primary-panel text-primary-400 border border-primary-700">
       #{tag}
     </span>
   );
@@ -39,7 +47,7 @@ export function TagPill({ tag }) {
  * back to a short date once we're past a week.
  */
 export function RelativeTime({ iso, lang }) {
-  if (!iso) return <span className="text-white/40">—</span>;
+  if (!iso) return <span className="text-primary-500">—</span>;
   const now = Date.now();
   const t0 = new Date(iso).getTime();
   const diffSec = Math.floor((now - t0) / 1000);

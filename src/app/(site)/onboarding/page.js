@@ -22,7 +22,7 @@ const translations = {
   en: {
     steps: {
       welcome: {
-        title: "Welcome to FieldTalk!",
+        title: "Welcome to Global Player.",
         subtitle: "Let's personalize your training experience",
         description:
           "Answer a few quick questions so we can recommend the best content for you.",
@@ -129,7 +129,7 @@ const translations = {
   pt: {
     steps: {
       welcome: {
-        title: "Bem-vindo ao FieldTalk!",
+        title: "Bem-vindo ao Global Player.",
         subtitle: "Vamos personalizar sua experiência de treino",
         description:
           "Responda algumas perguntas rápidas para recomendarmos o melhor conteúdo para você.",

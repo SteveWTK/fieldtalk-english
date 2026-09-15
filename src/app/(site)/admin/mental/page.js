@@ -86,7 +86,7 @@ function MentalAdminContent() {
 
         <header className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-teal-300/80 font-semibold mb-1">
-            FieldTalk · CMS
+            Global Player · CMS
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             {isPt ? "Treino Mental" : "Mental Training"}

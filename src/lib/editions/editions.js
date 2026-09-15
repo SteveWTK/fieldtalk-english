@@ -42,7 +42,7 @@ const EDITIONS = {
   },
   propath_26_27: {
     id: "propath_26_27",
-    name: "FieldTalk Pro Path",
+    name: "Global Player",
     tagline:
       "The English you'll actually use - dressing room, coach, agent, media.",
     // Season pass runs Aug 2026 → Aug 2027 to match the football
@@ -103,9 +103,9 @@ const OFFERINGS = [
   },
   {
     id: "editions_monthly_brl",
-    label: "FieldTalk Monthly",
+    label: "Global Player · Monthly",
     description:
-      "Recurring access to every FieldTalk edition while subscribed.",
+      "Recurring access to every Global Player edition while subscribed.",
     mode: "subscription",
     interval: "monthly",
     currency: "BRL",
@@ -119,9 +119,9 @@ const OFFERINGS = [
   },
   {
     id: "editions_yearly_brl",
-    label: "FieldTalk Yearly",
+    label: "Global Player · Yearly",
     description:
-      "Recurring access to every FieldTalk edition while subscribed. Best value.",
+      "Recurring access to every Global Player edition while subscribed. Best value.",
     mode: "subscription",
     interval: "yearly",
     currency: "BRL",

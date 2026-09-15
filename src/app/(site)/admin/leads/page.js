@@ -38,6 +38,7 @@ import {
   TagPill,
   RelativeTime,
 } from "@/components/admin/leads/LeadBadges";
+import StatTile from "@/components/ui/stat-tile";
 
 export default function LeadsListPage() {
   const { lang } = useLanguage();
@@ -197,7 +198,7 @@ export default function LeadsListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader currentView="list" />
 
@@ -219,7 +220,7 @@ export default function LeadsListPage() {
                   }).filter(([, v]) => v),
                 ),
               ).toString()}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-400/10 hover:bg-accent-400/20 text-accent-300 border border-accent-400/30 text-xs font-semibold transition-colors"
             >
               <Radio className="w-3.5 h-3.5" />
               {lang === "pt"
@@ -230,24 +231,24 @@ export default function LeadsListPage() {
         )}
 
         {/* Filters */}
-        <div className="mt-6 mb-4 rounded-2xl border border-white/10 bg-white/[0.02] p-3 space-y-3">
+        <div className="mt-6 mb-4 rounded-card border border-primary-700 bg-primary-panel p-3 space-y-3">
           {/* Search + clear */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-primary-500 pointer-events-none" />
               <input
                 type="text"
                 placeholder={t("filters.search", lang)}
                 value={filters.q}
                 onChange={(e) => setFilter("q", e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-white/30 focus:border-emerald-400/50 focus:outline-none"
+                className="w-full pl-9 pr-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/30 transition-colors"
               />
             </div>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center gap-1 px-3 py-2 text-xs text-white/60 hover:text-white rounded-lg hover:bg-white/[0.05] transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs text-primary-400 hover:text-primary-100 rounded-control hover:bg-primary-800 transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
                 {t("filters.clearFilters", lang)}
@@ -332,24 +333,24 @@ export default function LeadsListPage() {
               placeholder={t("filters.tag", lang)}
               value={filters.tag}
               onChange={(e) => setFilter("tag", e.target.value.trim())}
-              className="w-24 px-2 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs text-white placeholder:text-white/30 focus:border-emerald-400/40 focus:outline-none"
+              className="w-24 px-2 py-1 rounded-full bg-primary-900 border border-primary-600 text-xs text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none transition-colors"
             />
           </div>
         </div>
 
         {/* Results */}
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60 py-8">
+          <div className="flex items-center gap-2 text-primary-400 py-8">
             <Loader2 className="w-4 h-4 animate-spin" />
             {lang === "pt" ? "Carregando…" : "Loading…"}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
             {t(`errors.loadFailed`, lang)}
           </div>
         ) : leads.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 text-center">
-            <p className="text-sm text-white/50">
+          <div className="rounded-card border border-primary-700 bg-primary-panel p-8 text-center">
+            <p className="text-sm text-primary-400">
               {lang === "pt"
                 ? "Nenhum lead encontrado com esses filtros."
                 : "No leads match those filters."}
@@ -372,49 +373,45 @@ export default function LeadsListPage() {
 /* ─── UI subcomponents ───────────────────────────────────────── */
 
 function MetricsStrip({ metrics, lang }) {
+  // First StatTile call site — swaps a hand-rolled MetricCard local
+  // component for the DS primitive. The "won this week" tile carries
+  // tone="accent" so it lands as the single lime-highlighted stat in
+  // the row (the DS "one hero metric per strip" convention).
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <MetricCard label={t("metrics.total", lang)} value={metrics.total} />
-      <MetricCard
+      <StatTile label={t("metrics.total", lang)} value={metrics.total} />
+      <StatTile
         label={t("metrics.newLeads", lang) + " · " + t("metrics.thisWeek", lang)}
         value={metrics.newThisWeek}
       />
-      <MetricCard
+      <StatTile
         label={t("stages.contacted", lang) + " · " + t("metrics.thisWeek", lang)}
         value={metrics.contactedThisWeek}
       />
-      <MetricCard
+      <StatTile
         label={t("stages.won", lang) + " · " + t("metrics.thisWeek", lang)}
         value={metrics.wonThisWeek}
+        tone="accent"
       />
-    </div>
-  );
-}
-
-function MetricCard({ label, value }) {
-  return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
-      <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold">
-        {label}
-      </p>
-      <p className="text-2xl font-black tracking-tight mt-1 tabular-nums">
-        {value}
-      </p>
     </div>
   );
 }
 
 function FilterSelect({ label, value, onChange, options }) {
+  // Compact inline filter select — smaller than the DS Select
+  // primitive (which is a full-height form field). Kept hand-rolled
+  // here because this variant is the standard filter-row treatment
+  // across the app (list + kanban + dashboard).
   return (
-    <label className="inline-flex items-center gap-1.5 text-xs text-white/50">
+    <label className="inline-flex items-center gap-1.5 text-xs text-primary-400">
       <span>{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-2 py-1.5 focus:border-emerald-400/40 focus:outline-none"
+        className="bg-primary-900 border border-primary-600 text-primary-50 text-xs rounded-full px-2 py-1.5 focus:border-accent-400 focus:outline-none transition-colors"
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="bg-[#0e0e0e]">
+          <option key={o.value} value={o.value} className="bg-primary-800 text-primary-50">
             {o.label}
           </option>
         ))}
@@ -425,9 +422,9 @@ function FilterSelect({ label, value, onChange, options }) {
 
 function LeadTable({ leads, lang, onStageChange, onDelete }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+    <div className="rounded-card border border-primary-700 bg-primary-panel overflow-hidden">
       <table className="w-full text-sm">
-        <thead className="border-b border-white/10 bg-white/[0.03]">
+        <thead className="border-b border-primary-700 bg-primary-800">
           <tr>
             <Th>{t("columns.name", lang)}</Th>
             <Th>{t("columns.type", lang)}</Th>
@@ -443,7 +440,7 @@ function LeadTable({ leads, lang, onStageChange, onDelete }) {
             <Th className="text-right">{t("columns.actions", lang)}</Th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.06]">
+        <tbody className="divide-y divide-primary-700">
           {leads.map((lead) => (
             <LeadRow
               key={lead.id}
@@ -462,7 +459,7 @@ function LeadTable({ leads, lang, onStageChange, onDelete }) {
 function Th({ children, className = "" }) {
   return (
     <th
-      className={`text-left text-[10px] uppercase tracking-wider text-white/45 font-semibold px-3 py-2.5 ${className}`}
+      className={`text-left text-[10px] uppercase tracking-label text-primary-400 font-semibold px-3 py-2.5 ${className}`}
     >
       {children}
     </th>
@@ -474,13 +471,13 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
   const ownerName = lead.assigned?.full_name;
 
   return (
-    <tr className="hover:bg-white/[0.02] transition-colors">
+    <tr className="hover:bg-primary-800 transition-colors">
       <td className="px-3 py-3">
         <Link href={`/admin/leads/${lead.id}`} className="block group">
-          <div className="font-semibold text-white group-hover:text-emerald-300 transition-colors truncate max-w-[220px]">
+          <div className="font-semibold text-primary-50 group-hover:text-accent-400 transition-colors truncate max-w-[220px]">
             {lead.full_name}
           </div>
-          <div className="text-[11px] text-white/45 mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <div className="text-[11px] text-primary-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
             {orgOrEmpty && <span className="truncate">{orgOrEmpty}</span>}
             {lead.phone_e164 && (
               <span className="inline-flex items-center gap-0.5">
@@ -501,7 +498,7 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
                 <TagPill key={tag} tag={tag} />
               ))}
               {lead.tags.length > 3 && (
-                <span className="text-[10px] text-white/40">
+                <span className="text-[10px] text-primary-500">
                   +{lead.tags.length - 3}
                 </span>
               )}
@@ -519,29 +516,29 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
           onChange={(v) => onStageChange(lead.id, v)}
         />
       </td>
-      <td className="px-3 py-3 hidden md:table-cell text-white/60 text-xs">
+      <td className="px-3 py-3 hidden md:table-cell text-primary-300 text-xs">
         {t(`sources.${lead.source}`, lang)}
       </td>
-      <td className="px-3 py-3 hidden md:table-cell text-white/60 text-xs">
+      <td className="px-3 py-3 hidden md:table-cell text-primary-300 text-xs">
         {ownerName || (
-          <span className="text-white/30">{t("detail.notAssigned", lang)}</span>
+          <span className="text-primary-500">{t("detail.notAssigned", lang)}</span>
         )}
       </td>
-      <td className="px-3 py-3 hidden lg:table-cell text-white/60 text-xs">
+      <td className="px-3 py-3 hidden lg:table-cell text-primary-300 text-xs">
         <RelativeTime iso={lead.updated_at} lang={lang} />
       </td>
-      <td className="px-3 py-3 hidden lg:table-cell text-white/60 text-xs">
+      <td className="px-3 py-3 hidden lg:table-cell text-primary-300 text-xs">
         {lead.next_action_at ? (
           <div>
             <RelativeTime iso={lead.next_action_at} lang={lang} />
             {lead.next_action_note && (
-              <div className="text-[10px] text-white/40 truncate max-w-[160px]">
+              <div className="text-[10px] text-primary-500 truncate max-w-[160px]">
                 {lead.next_action_note}
               </div>
             )}
           </div>
         ) : (
-          <span className="text-white/30">—</span>
+          <span className="text-primary-500">—</span>
         )}
       </td>
       <td className="px-3 py-3 text-right">
@@ -550,7 +547,7 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
             <Link
               href={`/admin/leads/${lead.id}#send`}
               title={t("detail.sendWhatsapp", lang)}
-              className="p-1.5 rounded-full text-emerald-300 hover:bg-emerald-500/15 transition-colors"
+              className="p-1.5 rounded-full text-accent-400 hover:bg-accent-400/15 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
             </Link>
@@ -559,7 +556,7 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
             type="button"
             onClick={() => onDelete(lead.id)}
             title={t("detail.delete", lang)}
-            className="p-1.5 rounded-full text-white/40 hover:text-red-300 hover:bg-red-500/15 transition-colors"
+            className="p-1.5 rounded-full text-primary-500 hover:text-signal-alert hover:bg-signal-alert/15 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -570,16 +567,16 @@ function LeadRow({ lead, lang, onStageChange, onDelete }) {
 }
 
 function StageDropdown({ stage, lang, onChange }) {
-  const tone = STAGE_TONES[stage] || "bg-white/10 text-white/80";
+  const tone = STAGE_TONES[stage] || "bg-primary-700 text-primary-200";
   return (
     <div className="relative inline-block">
       <select
         value={stage}
         onChange={(e) => onChange(e.target.value)}
-        className={`appearance-none pr-6 pl-2.5 py-0.5 text-[11px] font-semibold rounded-full border border-white/10 focus:outline-none focus:border-emerald-400/40 cursor-pointer ${tone}`}
+        className={`appearance-none pr-6 pl-2.5 py-0.5 text-[11px] font-semibold rounded-full border border-primary-700 focus:outline-none focus:border-accent-400 cursor-pointer transition-colors ${tone}`}
       >
         {LEAD_STAGES.map((s) => (
-          <option key={s} value={s} className="bg-[#0e0e0e] text-white">
+          <option key={s} value={s} className="bg-primary-800 text-primary-50">
             {t(`stages.${s}`, lang)}
           </option>
         ))}

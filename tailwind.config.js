@@ -72,6 +72,12 @@ module.exports = {
           700: "#1e293b",
           800: "#0f172a",
           900: "#020617",
+          // Extra Global Player surface — sits between 800 and 900,
+          // used for the DS "panel" role (header background, Card
+          // default fill, Panel fill). Reference as `bg-primary-panel`.
+          // Kept outside the numeric ramp so components can call it
+          // out semantically rather than by shade number.
+          panel: "#0b1220",
         },
         accent: {
           50: "#f7fee7",
@@ -160,6 +166,18 @@ module.exports = {
         //   800: "#991b1b",
         //   900: "#7f1d1d",
         // },
+        // Signal colours — feature identity + status only. Never
+        // brand colours, never appear in the logo. Sourced from
+        // docs/brand/handoff/tailwind.tokens.js (Global Player DS).
+        // Use `signal.english` etc. — plain hex here duplicates
+        // Tailwind's own sky-400 / violet-400 / orange-400 / red-400
+        // deliberately, so a future palette tweak stays in one place.
+        signal: {
+          english: "#38bdf8",     // Inglês de campo
+          mental: "#c084fc",      // Blindagem mental
+          performance: "#fb923c", // Desempenho
+          alert: "#f87171",       // Errors, expiring items
+        },
         fieldtalk: {
           50: "#f0f9ff",
           100: "#e0f2fe",
@@ -197,10 +215,57 @@ module.exports = {
           900: "#78350f",
         },
       },
+      // Font families point at the CSS variables set by next/font/google
+      // in src/app/layout.js. Legacy class names (font-heading /
+      // font-body / font-display) keep working — they now resolve to
+      // the Global Player families (Archivo + Instrument Sans).
       fontFamily: {
-        heading: ["Poppins", "sans-serif"],
-        body: ["Inter", "sans-serif"],
-        display: ["Montserrat", "sans-serif"],
+        sans: ["var(--font-instrument)", "system-ui", "sans-serif"],
+        heading: ["var(--font-archivo)", "system-ui", "sans-serif"],
+        body: ["var(--font-instrument)", "system-ui", "sans-serif"],
+        display: ["var(--font-archivo)", "system-ui", "sans-serif"],
+        mono: [
+          "var(--font-jetbrains-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace",
+        ],
+      },
+      // Global Player design tokens — additive so nothing existing
+      // regresses. Full spec: docs/brand/handoff/HANDOFF.md.
+      letterSpacing: {
+        wordmark: "0.15em", // "GLOBAL PLAYER" wordmark
+        eyebrow: "0.30em",  // Small uppercase eyebrows / labels
+        label: "0.26em",    // Section labels
+        button: "0.12em",   // Button labels (Archivo 800 uppercase)
+      },
+      borderRadius: {
+        control: "8px",  // Inputs, selects, small tiles
+        card: "12px",    // Cards
+        panel: "16px",   // Larger panels
+      },
+      transitionTimingFunction: {
+        brand: "cubic-bezier(.22,1,.36,1)",
+      },
+      transitionDuration: {
+        micro: "120ms",    // Hovers, chip toggles
+        ui: "220ms",       // Panels, drawers, tab changes
+        entrance: "620ms", // Page + card entrances
+      },
+      keyframes: {
+        // "Sweep" — the landing-page logo sting. Each bar slides
+        // in from the left with a slight overshoot; wire up with
+        // 90ms stagger between the three bars. See HANDOFF.md §2
+        // and the reference SVG at docs/brand/handoff/GlobalPlayerLogo.tsx.
+        "gp-sweep": {
+          from: { opacity: "0", transform: "translateX(-30px) scaleX(.86)" },
+          "70%": { transform: "translateX(3px) scaleX(1.02)" },
+          to: { opacity: "1", transform: "translateX(0) scaleX(1)" },
+        },
+      },
+      animation: {
+        "gp-sweep": "gp-sweep 780ms cubic-bezier(.16,1,.3,1) both",
       },
     },
   },

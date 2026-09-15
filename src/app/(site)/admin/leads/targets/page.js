@@ -20,6 +20,9 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
 import { TARGET_KINDS } from "@/lib/leads/targets";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const KIND_LABELS = {
   wins_in_range: { pt: "Ganhos no período", en: "Wins in range" },
@@ -117,7 +120,7 @@ export default function TargetsAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="detail"
@@ -131,29 +134,29 @@ export default function TargetsAdminPage() {
             <h2 className="text-xl font-black tracking-tight">
               {isPt ? "Metas" : "Targets"}
             </h2>
-            <p className="text-xs text-white/50 mt-1">
+            <p className="text-xs text-primary-400 mt-1">
               {isPt
                 ? "Objetivos de time e individuais. Aparecem no painel para acompanhamento contínuo."
                 : "Team and individual goals. Show in the dashboard for continuous tracking."}
             </p>
           </div>
           {!creating && (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
+              Icon={Plus}
               onClick={() => {
                 setCreating(true);
                 setEditingId(null);
               }}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-xs"
             >
-              <Plus className="w-3.5 h-3.5" />
               {isPt ? "Nova meta" : "New target"}
-            </button>
+            </Button>
           )}
         </div>
 
         {creating && (
-          <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.03] p-4">
+          <div className="mb-4 rounded-card border border-accent-400/30 bg-accent-400/[0.03] p-4">
             <TargetForm
               initial={EMPTY()}
               mode="create"
@@ -166,7 +169,7 @@ export default function TargetsAdminPage() {
         )}
 
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-white/60" />
+          <Loader2 className="w-4 h-4 animate-spin text-primary-300" />
         ) : (
           <>
             <div className="space-y-2">
@@ -185,7 +188,7 @@ export default function TargetsAdminPage() {
                 />
               ))}
               {active.length === 0 && !creating && (
-                <p className="text-sm text-white/40">
+                <p className="text-sm text-primary-500">
                   {isPt
                     ? "Nenhuma meta ativa. Crie uma acima para começar."
                     : "No active targets. Create one above to get started."}
@@ -195,7 +198,7 @@ export default function TargetsAdminPage() {
 
             {archived.length > 0 && (
               <details className="mt-6">
-                <summary className="cursor-pointer text-xs uppercase tracking-wider text-white/40 font-semibold">
+                <summary className="cursor-pointer text-xs uppercase tracking-wider text-primary-500 font-semibold">
                   {isPt ? "Arquivadas" : "Archived"} ({archived.length})
                 </summary>
                 <div className="mt-2 space-y-2">
@@ -229,34 +232,34 @@ function TargetRow({ target, owners, lang, isEditing, onEdit, onSaved, onDeleted
   const ownerName = target.owner?.full_name;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+    <div className="rounded-card border border-primary-700 bg-primary-800 overflow-hidden">
       <button
         type="button"
         onClick={onEdit}
-        className="w-full text-left flex items-center gap-3 p-3 hover:bg-white/[0.02]"
+        className="w-full text-left flex items-center gap-3 p-3 hover:bg-primary-panel"
       >
-        <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center">
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-accent-400/15 text-accent-300 flex items-center justify-center">
           <Trophy className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm truncate">{target.title}</h3>
-          <p className="text-[11px] text-white/50">
+          <p className="text-[11px] text-primary-400">
             {kindLabel} · {target.target_value} · {target.target_date}
             {ownerName && (
-              <span className="text-cyan-300"> · {ownerName}</span>
+              <span className="text-signal-english"> · {ownerName}</span>
             )}
             {!ownerName && (
-              <span className="text-white/40">
+              <span className="text-primary-500">
                 {" "}
                 · {isPt ? "Time" : "Team"}
               </span>
             )}
           </p>
         </div>
-        <Pencil className="w-4 h-4 text-white/40" />
+        <Pencil className="w-4 h-4 text-primary-500" />
       </button>
       {isEditing && (
-        <div className="border-t border-white/10 p-4 bg-black/25">
+        <div className="border-t border-primary-700 p-4 bg-primary-900">
           <TargetForm
             initial={{
               kind: target.kind,
@@ -353,131 +356,106 @@ function TargetForm({
     if (res.ok) onDeleted();
   }
 
+  const kindOptions = TARGET_KINDS.map((k) => ({
+    value: k,
+    label: KIND_LABELS[k]?.[lang] || k,
+  }));
+
+  const ownerOptions = [
+    { value: "", label: isPt ? "Meta do time" : "Team target" },
+    ...owners.map((o) => ({ value: o.id, label: o.full_name })),
+  ];
+
   return (
     <div className="space-y-3">
-      <Field label={isPt ? "Tipo de meta" : "Target kind"}>
-        <select
-          value={form.kind}
-          onChange={(e) => set("kind", e.target.value)}
-          className={inputClass}
-        >
-          {TARGET_KINDS.map((k) => (
-            <option key={k} value={k} className="bg-[#0e0e0e]">
-              {KIND_LABELS[k]?.[lang] || k}
-            </option>
-          ))}
-        </select>
-        <p className="text-[11px] text-white/40 mt-1">
-          {KIND_HINTS[form.kind]?.[lang]}
-        </p>
-      </Field>
+      <Select
+        label={isPt ? "Tipo de meta" : "Target kind"}
+        value={form.kind}
+        onChange={(e) => set("kind", e.target.value)}
+        options={kindOptions}
+        hint={KIND_HINTS[form.kind]?.[lang]}
+      />
 
-      <Field label={isPt ? "Título" : "Title"}>
-        <input
-          type="text"
-          value={form.title}
-          onChange={(e) => set("title", e.target.value)}
-          placeholder={
-            isPt
-              ? "Ex: 10 ganhos até 31 de outubro"
-              : "e.g. 10 wins by Oct 31"
-          }
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={isPt ? "Título" : "Title"}
+        type="text"
+        value={form.title}
+        onChange={(e) => set("title", e.target.value)}
+        placeholder={
+          isPt
+            ? "Ex: 10 ganhos até 31 de outubro"
+            : "e.g. 10 wins by Oct 31"
+        }
+      />
 
       <div className="grid grid-cols-2 gap-2">
-        <Field label={isPt ? "Valor alvo" : "Target value"}>
-          <input
-            type="number"
-            step="0.01"
-            value={form.target_value}
-            onChange={(e) => set("target_value", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Data alvo" : "Target date"}>
-          <input
-            type="date"
-            value={form.target_date}
-            onChange={(e) => set("target_date", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={isPt ? "Valor alvo" : "Target value"}
+          type="number"
+          step="0.01"
+          value={form.target_value}
+          onChange={(e) => set("target_value", e.target.value)}
+        />
+        <Input
+          label={isPt ? "Data alvo" : "Target date"}
+          type="date"
+          value={form.target_date}
+          onChange={(e) => set("target_date", e.target.value)}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <Field
+        <Input
           label={isPt ? "Início do período (opcional)" : "Range start (optional)"}
+          type="date"
+          value={form.range_start}
+          onChange={(e) => set("range_start", e.target.value)}
           hint={
             isPt
               ? "Se vazio, usa a data de criação da meta."
               : "If empty, uses the target's creation date."
           }
-        >
-          <input
-            type="date"
-            value={form.range_start}
-            onChange={(e) => set("range_start", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={isPt ? "Responsável (opcional)" : "Owner (optional)"}>
-          <select
-            value={form.owner_id}
-            onChange={(e) => set("owner_id", e.target.value)}
-            className={inputClass}
-          >
-            <option value="">
-              {isPt ? "Meta do time" : "Team target"}
-            </option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
-                {o.full_name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        />
+        <Select
+          label={isPt ? "Responsável (opcional)" : "Owner (optional)"}
+          value={form.owner_id}
+          onChange={(e) => set("owner_id", e.target.value)}
+          options={ownerOptions}
+        />
       </div>
 
-      <Field label={isPt ? "Descrição (opcional)" : "Description (optional)"}>
-        <input
-          type="text"
-          value={form.description}
-          onChange={(e) => set("description", e.target.value)}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={isPt ? "Descrição (opcional)" : "Description (optional)"}
+        type="text"
+        value={form.description}
+        onChange={(e) => set("description", e.target.value)}
+      />
 
-      <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+      <label className="inline-flex items-center gap-2 text-sm text-primary-300 cursor-pointer">
         <input
           type="checkbox"
           checked={form.active}
           onChange={(e) => set("active", e.target.checked)}
-          className="accent-emerald-400"
+          className="accent-accent-400"
         />
         {isPt ? "Ativa (visível no painel)" : "Active (shown on dashboard)"}
       </label>
 
-      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-white/10">
-        <button
-          type="button"
+      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-primary-700">
+        <Button
+          variant="primary"
+          size="md"
+          Icon={Save}
+          loading={saving}
           onClick={save}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50"
         >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
           {isPt ? "Salvar" : "Save"}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 border border-white/10 text-sm disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-300 border border-primary-700 text-sm disabled:opacity-50"
         >
           <X className="w-4 h-4" />
           {isPt ? "Cancelar" : "Cancel"}
@@ -486,7 +464,7 @@ function TargetForm({
           <button
             type="button"
             onClick={del}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-red-500/15 text-white/50 hover:text-red-300 border border-white/10 hover:border-red-500/40 text-sm ml-auto"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary-800 hover:bg-signal-alert/15 text-primary-400 hover:text-signal-alert border border-primary-700 hover:border-signal-alert/40 text-sm ml-auto"
           >
             <Trash2 className="w-4 h-4" />
             {isPt ? "Excluir" : "Delete"}
@@ -495,7 +473,7 @@ function TargetForm({
         {msg && (
           <div
             className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-              msg.tone === "err" ? "text-red-300" : "text-emerald-300"
+              msg.tone === "err" ? "text-signal-alert" : "text-accent-300"
             }`}
           >
             {msg.tone === "err" ? (
@@ -507,21 +485,6 @@ function TargetForm({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-const inputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
-
-function Field({ label, hint, children }) {
-  return (
-    <div>
-      <label className="block text-xs uppercase tracking-wider text-white/60 font-semibold mb-1">
-        {label}
-      </label>
-      {children}
-      {hint && <p className="text-[11px] text-white/40 mt-1">{hint}</p>}
     </div>
   );
 }

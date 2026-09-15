@@ -9,11 +9,18 @@
 //   - Owner assignment is always visible.
 //
 // On save → POST /api/admin/leads → redirect to the new lead's detail.
+//
+// DS migration — this is the flagship consumer of the round-3 form
+// primitives. Every field is <Input>/<Select>/<Switch>, sections use
+// <Panel>, the primary CTA is <Button variant="primary">. The local
+// Section/Field/inputClass helpers were retired; only the type-picker
+// stays hand-rolled because it's a bespoke 5-tile grid, not a chip
+// row.
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, AlertCircle, Users2, Building2 } from "lucide-react";
+import { Save, AlertCircle, Users2, Building2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
   t,
@@ -25,6 +32,11 @@ import {
 } from "@/lib/leads/constants";
 import { isOrgLeadType } from "@/lib/leads/normalize";
 import LeadsAdminHeader from "@/components/admin/leads/LeadsAdminHeader";
+import Button from "@/components/ui/button";
+import Panel from "@/components/ui/panel";
+import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
+import Switch from "@/components/ui/switch";
 
 const INITIAL = {
   full_name: "",
@@ -166,8 +178,35 @@ export default function NewLeadPage() {
 
   const isOrg = isOrgLeadType(form.lead_type);
 
+  // Options for the Select primitives — each option is
+  // `{value, label}` so labels can be bilingual + reordered without
+  // touching the codepoints stored in state.
+  const ageGroupOptions = [
+    { value: "", label: "—" },
+    ...AGE_GROUPS.map((g) => ({ value: g, label: t(`ageGroups.${g}`, lang) })),
+  ];
+  const englishLevelOptions = [
+    { value: "", label: "—" },
+    ...ENGLISH_LEVELS.map((l) => ({
+      value: l,
+      label: t(`englishLevels.${l}`, lang),
+    })),
+  ];
+  const stageOptions = LEAD_STAGES.map((s) => ({
+    value: s,
+    label: t(`stages.${s}`, lang),
+  }));
+  const sourceOptions = LEAD_SOURCES.map((s) => ({
+    value: s,
+    label: t(`sources.${s}`, lang),
+  }));
+  const ownerOptions = [
+    { value: "", label: t("detail.notAssigned", lang) },
+    ...owners.map((o) => ({ value: o.id, label: o.full_name })),
+  ];
+
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader
           currentView="new"
@@ -179,303 +218,224 @@ export default function NewLeadPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Lead type picker — first + most prominent, drives which
               type-specific section renders below. */}
-          <Section title={t("form.section.basics", lang)}>
-            <TypePicker
-              value={form.lead_type}
-              onChange={(v) => set("lead_type", v)}
-              lang={lang}
-            />
-            <Field label={t("form.field.fullName", lang)} required>
-              <input
-                type="text"
+          <Panel title={t("form.section.basics", lang)}>
+            <div className="space-y-3">
+              <TypePicker
+                value={form.lead_type}
+                onChange={(v) => set("lead_type", v)}
+                lang={lang}
+              />
+              <Input
+                label={t("form.field.fullName", lang)}
+                required
                 value={form.full_name}
                 onChange={(e) => set("full_name", e.target.value)}
                 maxLength={120}
-                className={inputClass}
               />
-            </Field>
-            <Field label={t("form.field.summary", lang)}
-              hint={t("form.field.summaryHint", lang)}
-            >
-              <input
-                type="text"
+              <Input
+                label={t("form.field.summary", lang)}
+                hint={t("form.field.summaryHint", lang)}
                 value={form.summary}
                 onChange={(e) => set("summary", e.target.value)}
                 maxLength={500}
-                className={inputClass}
               />
-            </Field>
-          </Section>
+            </div>
+          </Panel>
 
-          <Section title={t("form.section.contact", lang)}>
-            <Field label={t("form.field.phone", lang)}
-              hint={t("form.field.phoneHint", lang)}
-            >
-              <input
+          <Panel title={t("form.section.contact", lang)}>
+            <div className="space-y-3">
+              <Input
                 type="tel"
+                label={t("form.field.phone", lang)}
+                hint={t("form.field.phoneHint", lang)}
+                placeholder="+55 11 91234-5678"
                 value={form.phone_e164}
                 onChange={(e) => set("phone_e164", e.target.value)}
-                placeholder="+55 11 91234-5678"
-                className={inputClass}
               />
-            </Field>
-            <Field label={t("form.field.email", lang)}>
-              <input
+              <Input
                 type="email"
+                label={t("form.field.email", lang)}
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
-                className={inputClass}
               />
-            </Field>
-          </Section>
+            </div>
+          </Panel>
 
           {/* Type-specific — progressive disclosure. */}
           {isOrg ? (
-            <Section title={t("form.section.orgDetails", lang)}>
-              <Field label={t("form.field.organizationName", lang)}>
-                <input
-                  type="text"
+            <Panel title={t("form.section.orgDetails", lang)}>
+              <div className="space-y-3">
+                <Input
+                  label={t("form.field.organizationName", lang)}
                   value={form.organization_name}
                   onChange={(e) => set("organization_name", e.target.value)}
                   maxLength={160}
-                  className={inputClass}
                 />
-              </Field>
-              <Field label={t("form.field.roleAtOrg", lang)}
-                hint={t("form.field.roleAtOrgHint", lang)}
-              >
-                <input
-                  type="text"
+                <Input
+                  label={t("form.field.roleAtOrg", lang)}
+                  hint={t("form.field.roleAtOrgHint", lang)}
                   value={form.role_at_org}
                   onChange={(e) => set("role_at_org", e.target.value)}
                   maxLength={80}
-                  className={inputClass}
                 />
-              </Field>
-              <Field label={t("form.field.staffCount", lang)}>
-                <input
+                <Input
                   type="number"
+                  label={t("form.field.staffCount", lang)}
                   min={0}
                   value={form.staff_count}
                   onChange={(e) => set("staff_count", e.target.value)}
-                  className={inputClass}
                 />
-              </Field>
-            </Section>
+              </div>
+            </Panel>
           ) : (
-            <Section title={t("form.section.playerDetails", lang)}>
-              <Field label={t("form.field.ageGroup", lang)}>
-                <select
+            <Panel title={t("form.section.playerDetails", lang)}>
+              <div className="space-y-3">
+                <Select
+                  label={t("form.field.ageGroup", lang)}
+                  options={ageGroupOptions}
                   value={form.age_group}
                   onChange={(e) => set("age_group", e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">—</option>
-                  {AGE_GROUPS.map((g) => (
-                    <option key={g} value={g} className="bg-[#0e0e0e]">
-                      {t(`ageGroups.${g}`, lang)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={t("form.field.englishLevel", lang)}>
-                <select
+                />
+                <Select
+                  label={t("form.field.englishLevel", lang)}
+                  options={englishLevelOptions}
                   value={form.english_level}
                   onChange={(e) => set("english_level", e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">—</option>
-                  {ENGLISH_LEVELS.map((l) => (
-                    <option key={l} value={l} className="bg-[#0e0e0e]">
-                      {t(`englishLevels.${l}`, lang)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={t("form.field.positions", lang)}
-                hint="GK, RB, CB, DM, CAM, LW…"
-              >
-                <input
-                  type="text"
+                />
+                <Input
+                  label={t("form.field.positions", lang)}
+                  hint="GK, RB, CB, DM, CAM, LW…"
+                  placeholder="GK, CB"
                   value={form.positions}
                   onChange={(e) => set("positions", e.target.value)}
-                  placeholder="GK, CB"
-                  className={inputClass}
                 />
-              </Field>
-            </Section>
+              </div>
+            </Panel>
           )}
 
-          <Section title={t("form.section.classification", lang)}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label={t("form.field.stage", lang)}>
-                <select
+          <Panel title={t("form.section.classification", lang)}>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select
+                  label={t("form.field.stage", lang)}
+                  options={stageOptions}
                   value={form.stage}
                   onChange={(e) => set("stage", e.target.value)}
-                  className={inputClass}
-                >
-                  {LEAD_STAGES.map((s) => (
-                    <option key={s} value={s} className="bg-[#0e0e0e]">
-                      {t(`stages.${s}`, lang)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={t("form.field.source", lang)}>
-                <select
+                />
+                <Select
+                  label={t("form.field.source", lang)}
+                  options={sourceOptions}
                   value={form.source}
                   onChange={(e) => set("source", e.target.value)}
-                  className={inputClass}
-                >
-                  {LEAD_SOURCES.map((s) => (
-                    <option key={s} value={s} className="bg-[#0e0e0e]">
-                      {t(`sources.${s}`, lang)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-            <Field label={t("form.field.sourceDetail", lang)}
-              hint={t("form.field.sourceDetailHint", lang)}
-            >
-              <input
-                type="text"
+                />
+              </div>
+              <Input
+                label={t("form.field.sourceDetail", lang)}
+                hint={t("form.field.sourceDetailHint", lang)}
                 value={form.source_detail}
                 onChange={(e) => set("source_detail", e.target.value)}
                 maxLength={200}
-                className={inputClass}
               />
-            </Field>
-            <Field label={t("form.field.tags", lang)}
-              hint={t("form.field.tagsHint", lang)}
-            >
-              <input
-                type="text"
+              <Input
+                label={t("form.field.tags", lang)}
+                hint={t("form.field.tagsHint", lang)}
+                placeholder="warm, event-carioca"
                 value={form.tags}
                 onChange={(e) => set("tags", e.target.value)}
-                placeholder="warm, event-carioca"
-                className={inputClass}
               />
-            </Field>
-          </Section>
-
-          <Section title={t("form.section.location", lang)}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Field label={t("form.field.country", lang)}>
-                <input
-                  type="text"
-                  value={form.country}
-                  onChange={(e) => set("country", e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label={t("form.field.state", lang)}>
-                <input
-                  type="text"
-                  value={form.state}
-                  onChange={(e) => set("state", e.target.value)}
-                  placeholder="SP"
-                  className={inputClass}
-                />
-              </Field>
-              <Field label={t("form.field.city", lang)}>
-                <input
-                  type="text"
-                  value={form.city}
-                  onChange={(e) => set("city", e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
             </div>
-          </Section>
+          </Panel>
 
-          <Section title={t("form.section.assignment", lang)}>
-            <Field label={t("form.field.owner", lang)}>
-              <select
+          <Panel title={t("form.section.location", lang)}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input
+                label={t("form.field.country", lang)}
+                value={form.country}
+                onChange={(e) => set("country", e.target.value)}
+              />
+              <Input
+                label={t("form.field.state", lang)}
+                placeholder="SP"
+                value={form.state}
+                onChange={(e) => set("state", e.target.value)}
+              />
+              <Input
+                label={t("form.field.city", lang)}
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+              />
+            </div>
+          </Panel>
+
+          <Panel title={t("form.section.assignment", lang)}>
+            <div className="space-y-3">
+              <Select
+                label={t("form.field.owner", lang)}
+                options={ownerOptions}
                 value={form.assigned_to}
                 onChange={(e) => set("assigned_to", e.target.value)}
-                className={inputClass}
-              >
-                <option value="">
-                  {t("detail.notAssigned", lang)}
-                </option>
-                {owners.map((o) => (
-                  <option key={o.id} value={o.id} className="bg-[#0e0e0e]">
-                    {o.full_name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label={t("form.field.nextActionAt", lang)}>
-                <input
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
                   type="datetime-local"
+                  label={t("form.field.nextActionAt", lang)}
                   value={form.next_action_at}
                   onChange={(e) => set("next_action_at", e.target.value)}
-                  className={inputClass}
                 />
-              </Field>
-              <Field label={t("form.field.nextActionNote", lang)}>
-                <input
-                  type="text"
+                <Input
+                  label={t("form.field.nextActionNote", lang)}
                   value={form.next_action_note}
                   onChange={(e) => set("next_action_note", e.target.value)}
-                  className={inputClass}
                 />
-              </Field>
-            </div>
-            <label className="inline-flex items-center gap-2 text-sm text-white/70 cursor-pointer">
-              <input
-                type="checkbox"
+              </div>
+              <Switch
                 checked={form.do_not_contact}
-                onChange={(e) => set("do_not_contact", e.target.checked)}
-                className="accent-red-500"
+                onChange={(v) => set("do_not_contact", v)}
+                label={t("form.field.doNotContact", lang)}
               />
-              {t("form.field.doNotContact", lang)}
-            </label>
-          </Section>
+            </div>
+          </Panel>
 
-          <Section title={t("form.section.notes", lang)}>
-            <Field label={t("form.field.notes", lang)}>
-              <textarea
-                value={form.initial_note}
-                onChange={(e) => set("initial_note", e.target.value)}
-                rows={4}
-                maxLength={5000}
-                className={`${inputClass} resize-y`}
-                placeholder={t("detail.notePlaceholder", lang)}
-              />
-            </Field>
-          </Section>
+          <Panel title={t("form.section.notes", lang)}>
+            <Input
+              multiline
+              rows={4}
+              maxLength={5000}
+              label={t("form.field.notes", lang)}
+              placeholder={t("detail.notePlaceholder", lang)}
+              value={form.initial_note}
+              onChange={(e) => set("initial_note", e.target.value)}
+              className="resize-y"
+            />
+          </Panel>
 
           {error && (
-            <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200 inline-flex items-start gap-2">
+            <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-3 text-sm text-signal-alert inline-flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="flex items-center gap-2 pt-2">
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="md"
+              Icon={Save}
+              loading={saving}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50 transition-colors"
             >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
               {saving ? t("form.saving", lang) : t("form.save", lang)}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="md"
               onClick={() => router.push("/admin/leads")}
               disabled={saving}
-              className="px-4 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white border border-white/10 text-sm disabled:opacity-50 transition-colors"
             >
               {t("form.cancel", lang)}
-            </button>
+            </Button>
           </div>
         </form>
       </main>
@@ -485,39 +445,17 @@ export default function NewLeadPage() {
 
 /* ─── UI subcomponents ───────────────────────────────────────── */
 
-const inputClass =
-  "w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none";
-
-function Section({ title, children }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
-      <h2 className="text-xs uppercase tracking-wider text-white/50 font-semibold mb-3">
-        {title}
-      </h2>
-      <div className="space-y-3">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, hint, required, children }) {
-  return (
-    <div>
-      <label className="block text-xs uppercase tracking-wider text-white/60 font-semibold mb-1">
-        {label}
-        {required && <span className="text-red-400 ml-1">*</span>}
-      </label>
-      {children}
-      {hint && <p className="text-[11px] text-white/40 mt-1">{hint}</p>}
-    </div>
-  );
-}
-
 function TypePicker({ value, onChange, lang }) {
+  // The type picker is a bespoke 5-tile grid, not a horizontal chip
+  // row — icons + centred labels + a two-line label at small widths.
+  // Kept hand-rolled but re-tokenized: selected state uses accent
+  // (the lime "one selected item" convention) and unselected uses
+  // the slate ramp with a hover-lightens transition.
   return (
     <div>
-      <label className="block text-xs uppercase tracking-wider text-white/60 font-semibold mb-2">
+      <label className="block text-[11px] font-sans font-normal uppercase tracking-label text-primary-400 mb-2">
         {t("form.field.leadType", lang)}
-        <span className="text-red-400 ml-1">*</span>
+        <span className="text-signal-alert ml-1">*</span>
       </label>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
         {LEAD_TYPES.map((typeCode) => {
@@ -529,10 +467,10 @@ function TypePicker({ value, onChange, lang }) {
               key={typeCode}
               type="button"
               onClick={() => onChange(typeCode)}
-              className={`inline-flex flex-col items-center gap-1 px-2 py-3 rounded-xl border text-xs font-semibold transition-colors ${
+              className={`inline-flex flex-col items-center gap-1 px-2 py-3 rounded-control border text-xs font-semibold transition-colors ${
                 active
-                  ? "border-emerald-400/60 bg-emerald-500/10 text-emerald-200"
-                  : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25 hover:text-white"
+                  ? "border-accent-400/60 bg-accent-400/10 text-accent-300"
+                  : "border-primary-700 bg-primary-panel text-primary-400 hover:border-primary-500 hover:text-primary-100"
               }`}
             >
               <Icon className="w-4 h-4" />

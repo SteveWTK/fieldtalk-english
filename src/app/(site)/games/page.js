@@ -104,7 +104,7 @@ export default function GamesHubPage() {
 
         <header className="mb-8">
           <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/80 font-semibold mb-2">
-            FieldTalk
+            Global Player
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Game Centre
@@ -121,7 +121,7 @@ export default function GamesHubPage() {
         </div>
 
         <p className="text-xs text-white/40 mt-8 text-center">
-          More games coming soon. Got an idea? Let the FieldTalk team know.
+          More games coming soon. Got an idea? Let the Global Player team know.
         </p>
       </main>
     </div>

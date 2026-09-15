@@ -1,6 +1,6 @@
 // src/lib/whatsapp/product-knowledge.js
 //
-// Single canonical FieldTalk product-facts document. Two consumers:
+// Single canonical Global Player product-facts document. Two consumers:
 //
 //   1. Injected into the Practice Coach + Support Coach system prompts
 //      so the WhatsApp agent can answer factual questions correctly
@@ -27,10 +27,10 @@
 //     helps the agent's fluency; internal facts can stay EN-only.
 
 export const PRODUCT_FACTS = `
-# FieldTalk product knowledge (source of truth)
+# Global Player product knowledge (source of truth)
 
-## What FieldTalk is
-FieldTalk is a mobile-first English learning app for football players and fans.
+## What Global Player is
+Global Player is a mobile-first English learning app for football players and fans.
 Two editions the user can be on (their edition is provided in per-turn context):
 
 - **Pro Path 26/27** (\`propath_26_27\`): for footballers training for trials,
@@ -41,7 +41,7 @@ Two editions the user can be on (their edition is provided in per-turn context):
 
 Users cannot be on both at once. Edition is set at signup.
 
-## FieldTalk English link:
+## Global Player English link:
 
 - Dashboard: www.fieldtalkenglish.com/dashboard
 

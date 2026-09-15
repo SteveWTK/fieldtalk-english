@@ -1,0 +1,19 @@
+:root{
+/* ---- Slate: the ground. ~80% of every surface. ---- */
+--gp-slate-50:#f8fafc;--gp-slate-100:#f1f5f9;--gp-slate-200:#e2e8f0;--gp-slate-300:#cbd5e1;
+--gp-slate-400:#94a3b8;--gp-slate-500:#475569;--gp-slate-600:#334155;--gp-slate-700:#1e293b;
+--gp-slate-800:#0f172a;--gp-slate-850:#0b1220;--gp-slate-900:#020617;--gp-slate-950:#060a12;
+/* ---- Lime: the accent. One job per screen — the single next action. ---- */
+--gp-lime-50:#f7fee7;--gp-lime-100:#ecfccb;--gp-lime-200:#d9f99d;--gp-lime-300:#bef264;
+--gp-lime-400:#a3e635;--gp-lime-500:#84cc16;--gp-lime-600:#65a30d;--gp-lime-700:#4d7c0f;
+--gp-lime-800:#365314;--gp-lime-900:#1a2e05;
+/* ---- Signal: feature differentiation and status only. Never brand. ---- */
+--gp-signal-english:#38bdf8;   /* sky 400   — Inglês de campo */
+--gp-signal-mental:#c084fc;    /* violet 400 — Blindagem mental */
+--gp-signal-performance:#fb923c;/* orange 400 — Desempenho */
+--gp-signal-alert:#f87171;     /* red 400    — Alerta */
+--gp-signal-alert-solid:#b91c1c;
+/* ---- Brand shorthands ---- */
+--gp-ink:#020617;--gp-paper:#f8fafc;--gp-accent:var(--gp-lime-400);
+--gp-accent-on-light:var(--gp-lime-700); /* lime 400 fails contrast on white for type */
+}

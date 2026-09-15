@@ -1,0 +1,10 @@
+:root{
+--gp-radius-control:8px;  /* inputs, buttons that aren't pills, small tiles */
+--gp-radius-card:12px;
+--gp-radius-panel:16px;
+--gp-radius-app-icon:18px;
+--gp-radius-device:26px;
+--gp-radius-pill:999px;
+--gp-border-hairline:1px;
+--gp-border-crest:3.2px; /* shield stroke at 100x108 */
+}

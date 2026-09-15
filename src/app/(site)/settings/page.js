@@ -116,7 +116,7 @@ function SettingsContent() {
           </h1>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Customise your FieldTalk English learning experience
+          Customise your Global Player learning experience
         </p>
       </div>
 
@@ -526,7 +526,7 @@ function formatDisplayPhone(e164) {
 
 function mapPhoneError(reason) {
   if (reason === "in_use") {
-    return "This number is already linked to another FieldTalk account.";
+    return "This number is already linked to another Global Player account.";
   }
   if (reason === "invalid_format") {
     return "Invalid number. Check the country code and area code.";

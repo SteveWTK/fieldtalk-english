@@ -5,7 +5,7 @@
 
 export const COPY = {
   en: {
-    pageEyebrow: "FieldTalk WC2026",
+    pageEyebrow: "Global Player · WC2026",
     pageTitle: "Match Predictions",
     pageSubtitle:
       "Predict each match three ways. Pick the winner, call the exact score, and choose who scores first.",
@@ -62,7 +62,7 @@ export const COPY = {
     },
   },
   pt: {
-    pageEyebrow: "FieldTalk WC2026",
+    pageEyebrow: "Global Player · WC2026",
     pageTitle: "Palpites dos Jogos",
     pageSubtitle:
       "Faça três palpites por jogo: vencedor, placar exato e quem abre o placar.",

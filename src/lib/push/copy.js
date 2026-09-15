@@ -26,7 +26,7 @@ const TEMPLATES = {
     // notification would arrive after the pack's already been
     // opened. Generic copy works in either case.
     welcome_pack: () => ({
-      title: "Notifications on — welcome to FieldTalk!",
+      title: "Notifications on — welcome to Global Player.",
       body: "We'll let you know when packs drop and matches are about to kick off.",
       url: "/dashboard",
       tag: "welcome_pack",
@@ -104,7 +104,7 @@ const TEMPLATES = {
   },
   pt: {
     welcome_pack: () => ({
-      title: "Notificações ativadas — bem-vindo ao FieldTalk!",
+      title: "Notificações ativadas — bem-vindo ao Global Player.",
       body: "Vamos te avisar quando os pacotes saírem e os jogos forem começar.",
       url: "/dashboard",
       tag: "welcome_pack",

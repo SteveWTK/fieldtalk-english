@@ -14,7 +14,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Loader2,
   Users2,
@@ -29,6 +28,7 @@ import {
   RefreshCcw,
 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Avatar from "@/components/ui/avatar";
 
 export default function CoachDashboardPage() {
   return (
@@ -121,7 +121,7 @@ function CoachDashboardContent() {
         <header className="mb-6 flex items-end justify-between flex-wrap gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/80 font-semibold mb-1">
-              FieldTalk · Coach view
+              Global Player · Squad platform
             </p>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               Player roster
@@ -367,7 +367,6 @@ function StatusChip({ value, current, onChange, label, count, tone }) {
 
 function PlayerCard({ player }) {
   const statusTone = STATUS_STYLES[player.status] || STATUS_STYLES.never;
-  const initial = (player.full_name || "?").charAt(0).toUpperCase();
   const daysSince = player.days_since_last;
 
   return (
@@ -384,20 +383,18 @@ function PlayerCard({ player }) {
       />
 
       <div className="flex items-center gap-3 mb-3">
-        {player.avatar_url ? (
-          <Image
-            src={player.avatar_url}
-            alt={player.full_name || ""}
-            width={40}
-            height={40}
-            unoptimized
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-white/15"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black">
-            {initial}
-          </div>
-        )}
+        {/* First Avatar call site — replaces the inline gradient/
+            initials block. The DS Avatar renders a slate-700 pill
+            with primary-300 Archivo initials when there's no photo,
+            and an object-cover <img> when there is. Photo path uses
+            a plain <img> (not next/image) since the DS treats an
+            avatar as a fixed-size tile; next/image previously forced
+            unoptimized=true anyway to sidestep remote-loader config. */}
+        <Avatar
+          src={player.avatar_url || undefined}
+          name={player.full_name || ""}
+          size="md"
+        />
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-white text-sm truncate">
             {player.full_name || "—"}

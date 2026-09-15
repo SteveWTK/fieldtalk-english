@@ -29,7 +29,7 @@ const DASHBOARD_URL = "www.fieldtalkenglish.com/dashboard";
 
 const DEFAULTS = {
   welcome: {
-    pt: `Oi {name}! ⚽ Bem-vindo ao FieldTalk pelo WhatsApp 👋
+    pt: `Oi {name}! ⚽ Bem-vindo ao Global Player pelo WhatsApp 👋
 
 Sou seu Técnico Virtual — sua linha direta com a gente. Pode ficar tranquilo: nada de spam por aqui, só o essencial pra você evoluir.
 
@@ -42,7 +42,7 @@ Manda mensagem quando quiser praticar, tirar uma dúvida sobre inglês ou sobre 
 
 Bora começar: ${DASHBOARD_URL}`,
 
-    en: `Hey {name}! ⚽ Welcome to FieldTalk on WhatsApp 👋
+    en: `Hey {name}! ⚽ Welcome to Global Player on WhatsApp 👋
 
 I'm your virtual coach — your direct line to the team. Don't worry: no spam here, only what actually helps you improve.
 

@@ -3,7 +3,9 @@
 // Shared header for every /admin/leads/* page. Renders:
 //   - Back-to-admin link
 //   - Bilingual title + subtitle
-//   - View switcher (list ↔ kanban) — highlighted per current path
+//   - View switcher (list ↔ kanban ↔ dashboard) — highlighted per
+//     current path
+//   - Quick-action row (import, templates, sequences, targets)
 //   - "New lead" primary CTA (hidden on the new-lead form itself
 //     since the user is already there)
 //   - PT/EN language toggle
@@ -11,6 +13,11 @@
 // A shared component rather than a Next layout so each page can
 // omit / rearrange bits (the detail page hides the view switcher
 // because it doesn't apply to the detail context).
+//
+// Migrated to DS: view tabs + lang toggle now sit on the primary
+// slate ramp instead of the neutral white/opacity mix, and the
+// active state uses accent-400 with a primary-900 label for the
+// mandated DS treatment of "one selected pill per group".
 "use client";
 
 import Link from "next/link";
@@ -25,12 +32,14 @@ import {
   Zap,
   Target,
 } from "lucide-react";
+import Button from "@/components/ui/button";
+import Eyebrow from "@/components/ui/eyebrow";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { t } from "@/lib/leads/constants";
 
 /**
  * @param {{
- *   currentView?: 'list' | 'kanban' | 'detail' | 'new',
+ *   currentView?: 'list' | 'kanban' | 'detail' | 'new' | 'dashboard',
  *   showNewLeadCta?: boolean,
  *   showViewSwitcher?: boolean,
  *   backHref?: string,
@@ -50,7 +59,7 @@ export default function LeadsAdminHeader({
       <div className="mb-4 flex items-center justify-between gap-3">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white"
+          className="inline-flex items-center gap-1 text-sm text-primary-400 hover:text-primary-100 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           {backHref === "/admin"
@@ -62,20 +71,18 @@ export default function LeadsAdminHeader({
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/80 font-semibold mb-1">
-            FieldTalk · CRM
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          <Eyebrow className="mb-1">Global Player · CRM</Eyebrow>
+          <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight text-primary-50">
             {t("page.title", lang)}
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-400 mt-2 max-w-2xl leading-relaxed">
             {t("page.subtitle", lang)}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {showViewSwitcher && (
-            <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+            <div className="inline-flex rounded-full bg-primary-panel border border-primary-700 p-0.5">
               <ViewTab
                 href="/admin/leads"
                 active={currentView === "list"}
@@ -98,66 +105,77 @@ export default function LeadsAdminHeader({
           )}
           {showNewLeadCta && (
             <>
-              <Link
+              <QuickAction
                 href="/admin/leads/import"
                 title={isPt ? "Importar CSV" : "Import CSV"}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                {isPt ? "Importar" : "Import"}
-              </Link>
-              <Link
+                Icon={Upload}
+                label={isPt ? "Importar" : "Import"}
+              />
+              <QuickAction
                 href="/admin/leads/templates"
                 title={isPt ? "Modelos de mensagem" : "Message templates"}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                {isPt ? "Modelos" : "Templates"}
-              </Link>
-              <Link
+                Icon={Sparkles}
+                label={isPt ? "Modelos" : "Templates"}
+              />
+              <QuickAction
                 href="/admin/leads/sequences"
                 title={isPt ? "Sequências" : "Sequences"}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                {isPt ? "Sequências" : "Sequences"}
-              </Link>
-              <Link
+                Icon={Zap}
+                label={isPt ? "Sequências" : "Sequences"}
+              />
+              <QuickAction
                 href="/admin/leads/targets"
                 title={isPt ? "Metas" : "Targets"}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 border border-white/10 text-xs font-semibold transition-colors"
-              >
-                <Target className="w-3.5 h-3.5" />
-                {isPt ? "Metas" : "Targets"}
-              </Link>
-              <Link
+                Icon={Target}
+                label={isPt ? "Metas" : "Targets"}
+              />
+              {/* The "New lead" CTA — the single lime action per this
+                  screen (see DS: one accent button per view). */}
+              <Button
+                as="a"
                 href="/admin/leads/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm transition-colors"
+                variant="primary"
+                size="sm"
+                Icon={Plus}
               >
-                <Plus className="w-4 h-4" />
                 {t("page.newLead", lang)}
-              </Link>
+              </Button>
             </>
           )}
         </div>
       </div>
-      {/* Currency + short "isPt" hint stays out of layout — screen
-          readers etc. shouldn't get an unused element. Suppress
-          lint on unused vars. */}
-      {isPt ? null : null}
     </div>
   );
 }
 
 function ViewTab({ href, active, Icon, label }) {
+  // Active pill: accent-400 lime + primary-900 label (DS "one
+  // selected chip per group" rule). Inactive: transparent + muted
+  // text, lightens on hover per DS "hover lightens, never darkens".
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-semibold rounded-full transition-colors ${
         active
-          ? "bg-emerald-400 text-black"
-          : "text-white/60 hover:text-white"
+          ? "bg-accent-400 text-primary-900"
+          : "text-primary-400 hover:text-primary-100"
       }`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </Link>
+  );
+}
+
+function QuickAction({ href, title, Icon, label }) {
+  // Quick-action pills — neutral slate chips, not brand-lime.
+  // The single accent CTA per screen is the "New lead" button; these
+  // are frequently used utilities that shouldn't compete for the eye.
+  return (
+    <Link
+      href={href}
+      title={title}
+      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary-panel hover:bg-primary-800 text-primary-200 border border-primary-700 text-xs font-semibold transition-colors"
     >
       <Icon className="w-3.5 h-3.5" />
       {label}
@@ -167,7 +185,7 @@ function ViewTab({ href, active, Icon, label }) {
 
 function LangToggle({ lang, setLang }) {
   return (
-    <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+    <div className="inline-flex rounded-full bg-primary-panel border border-primary-700 p-0.5">
       {["pt", "en"].map((code) => (
         <button
           key={code}
@@ -175,8 +193,8 @@ function LangToggle({ lang, setLang }) {
           onClick={() => setLang(code)}
           className={`px-2.5 py-1 text-[11px] font-bold uppercase rounded-full transition-colors ${
             lang === code
-              ? "bg-white/15 text-white"
-              : "text-white/50 hover:text-white"
+              ? "bg-primary-800 text-primary-50"
+              : "text-primary-500 hover:text-primary-100"
           }`}
         >
           {code}

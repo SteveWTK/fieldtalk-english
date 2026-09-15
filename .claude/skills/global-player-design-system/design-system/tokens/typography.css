@@ -1,0 +1,22 @@
+:root{
+--gp-font-display:"Archivo","Archivo Static",system-ui,sans-serif;
+--gp-font-text:"Instrument Sans","Instrument Sans Static",system-ui,sans-serif;
+--gp-font-mono:"JetBrains Mono","JetBrains Mono Static",ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+--gp-weight-light:300;--gp-weight-regular:400;--gp-weight-medium:500;--gp-weight-semibold:600;
+--gp-weight-bold:700;--gp-weight-extrabold:800;--gp-weight-black:900;
+
+/* Sizes — product scale */
+--gp-text-display:44px;--gp-text-h1:32px;--gp-text-h2:22px;--gp-text-h3:17px;
+--gp-text-body-lg:17px;--gp-text-body:16px;--gp-text-body-sm:15px;
+--gp-text-caption:13px;--gp-text-label:11px;--gp-text-micro:10px;
+
+/* Line heights */
+--gp-leading-display:0.94;--gp-leading-tight:1.02;--gp-leading-heading:1.1;
+--gp-leading-body:1.6;--gp-leading-relaxed:1.65;
+
+/* Tracking */
+--gp-track-display:-0.035em;--gp-track-h1:-0.02em;--gp-track-normal:0; /* @kind other */
+--gp-track-eyebrow:0.3em;--gp-track-label:0.26em;--gp-track-button:0.12em;
+--gp-track-wordmark:0.2em;  /* 0.15–0.2em — the wordmark never goes tighter */
+}

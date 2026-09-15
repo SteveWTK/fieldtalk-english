@@ -123,7 +123,7 @@ function MentalHubContent() {
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <header className="mb-8">
           <p className="text-[10px] uppercase tracking-[0.35em] text-teal-300/80 font-semibold mb-2">
-            FieldTalk
+            Global Player
           </p>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
             {t("hub.title", lang)}

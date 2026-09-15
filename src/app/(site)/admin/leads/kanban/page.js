@@ -110,17 +110,17 @@ export default function LeadsKanbanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <LeadsAdminHeader currentView="kanban" />
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60 py-8">
+          <div className="flex items-center gap-2 text-primary-300 py-8">
             <Loader2 className="w-4 h-4 animate-spin" />
             {lang === "pt" ? "Carregando…" : "Loading…"}
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
             {t("errors.loadFailed", lang)}
           </div>
         ) : (
@@ -159,13 +159,13 @@ function Column({
   onDragStart,
   onStageChange,
 }) {
-  const tone = STAGE_TONES[stage] || "bg-white/10 text-white/80";
+  const tone = STAGE_TONES[stage] || "bg-primary-700 text-primary-100";
   return (
     <div
-      className={`w-72 shrink-0 rounded-2xl border p-3 transition-colors ${
+      className={`w-72 shrink-0 rounded-card border p-3 transition-colors ${
         isDropTarget
-          ? "border-emerald-400/50 bg-emerald-500/[0.04]"
-          : "border-white/10 bg-white/[0.02]"
+          ? "border-accent-400/60 bg-accent-400/10"
+          : "border-primary-700 bg-primary-panel"
       }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -176,14 +176,14 @@ function Column({
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
             {t(`stages.${stage}`, lang)}
           </span>
-          <span className="text-[11px] text-white/40 tabular-nums">
+          <span className="text-[11px] text-primary-500 tabular-nums">
             {leads.length}
           </span>
         </div>
       </div>
       <div className="space-y-2">
         {leads.length === 0 ? (
-          <p className="text-xs text-white/30 text-center py-4">
+          <p className="text-xs text-primary-500 text-center py-4">
             {lang === "pt" ? "Vazio" : "Empty"}
           </p>
         ) : (
@@ -207,16 +207,16 @@ function KanbanCard({ lead, lang, onDragStart, onStageChange }) {
     <article
       draggable
       onDragStart={(e) => onDragStart(e, lead.id)}
-      className="rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/25 p-3 cursor-grab active:cursor-grabbing transition-colors"
+      className="rounded-xl bg-primary-900 border border-primary-700 hover:border-primary-600 p-3 cursor-grab active:cursor-grabbing transition-colors"
     >
       <Link href={`/admin/leads/${lead.id}`} className="block">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-sm text-white truncate">
+            <p className="font-semibold text-sm text-primary-50 truncate">
               {lead.full_name}
             </p>
             {lead.organization_name && (
-              <p className="text-[11px] text-white/50 truncate">
+              <p className="text-[11px] text-primary-400 truncate">
                 {lead.organization_name}
               </p>
             )}
@@ -224,19 +224,19 @@ function KanbanCard({ lead, lang, onDragStart, onStageChange }) {
           <TypeBadge type={lead.lead_type} lang={lang} />
         </div>
         {lead.summary && (
-          <p className="text-[11px] text-white/50 mt-1 line-clamp-2">
+          <p className="text-[11px] text-primary-400 mt-1 line-clamp-2">
             {lead.summary}
           </p>
         )}
         <div className="mt-2 flex items-center gap-2 flex-wrap">
           {lead.phone_e164 && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] text-white/50">
+            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary-400">
               <Phone className="w-3 h-3" />
               WhatsApp
             </span>
           )}
           {lead.assigned?.full_name && (
-            <span className="text-[10px] text-white/50 truncate max-w-[100px]">
+            <span className="text-[10px] text-primary-400 truncate max-w-[100px]">
               👤 {lead.assigned.full_name}
             </span>
           )}
@@ -247,7 +247,7 @@ function KanbanCard({ lead, lang, onDragStart, onStageChange }) {
               <TagPill key={tag} tag={tag} />
             ))}
             {lead.tags.length > 3 && (
-              <span className="text-[10px] text-white/40">
+              <span className="text-[10px] text-primary-500">
                 +{lead.tags.length - 3}
               </span>
             )}
@@ -258,7 +258,7 @@ function KanbanCard({ lead, lang, onDragStart, onStageChange }) {
       {/* Keyboard-accessible fallback for touch users where HTML5
           drag-and-drop is finicky. Native <select> for max mobile
           compatibility. */}
-      <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between">
+      <div className="mt-2 pt-2 border-t border-primary-700 flex items-center justify-between">
         <StageSelect
           stage={lead.stage}
           lang={lang}
@@ -267,7 +267,7 @@ function KanbanCard({ lead, lang, onDragStart, onStageChange }) {
         {lead.phone_e164 && !lead.do_not_contact && (
           <Link
             href={`/admin/leads/${lead.id}#send`}
-            className="p-1 rounded-full text-emerald-300 hover:bg-emerald-500/15"
+            className="p-1 rounded-full text-accent-400 hover:bg-accent-400/15"
             title={t("detail.sendWhatsapp", lang)}
           >
             <MessageCircle className="w-3.5 h-3.5" />
@@ -284,10 +284,10 @@ function StageSelect({ stage, lang, onChange }) {
       <select
         value={stage}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none pr-5 pl-2 py-0.5 text-[10px] font-semibold rounded-full bg-white/[0.05] border border-white/10 text-white/60 focus:outline-none cursor-pointer"
+        className="appearance-none pr-5 pl-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary-800 border border-primary-700 text-primary-300 focus:outline-none cursor-pointer"
       >
         {LEAD_STAGES.map((s) => (
-          <option key={s} value={s} className="bg-[#0e0e0e]">
+          <option key={s} value={s} className="bg-primary-800">
             {t(`stages.${s}`, lang)}
           </option>
         ))}
