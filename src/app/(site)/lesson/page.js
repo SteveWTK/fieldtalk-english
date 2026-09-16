@@ -64,6 +64,7 @@ import ProPathOnboarding from "@/components/onboarding/propath/ProPathOnboarding
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
 import PillarMentalSlot from "@/components/mental/PillarMentalSlot";
+import LevelBanner from "@/components/lesson/LevelBanner";
 
 // DS primitives — the same set that lives in the coach + mental
 // dashboards, so this page speaks the same visual language.
@@ -138,6 +139,8 @@ function PlayerLessonsMenu() {
     lessons,
     completions,
     achievements,
+    levels,
+    levelCompletions,
     loading,
     refetchProgress,
   } = usePlayerDashboard(userId);
@@ -321,6 +324,47 @@ function PlayerLessonsMenu() {
     router.replace("/lesson", { scroll: false });
   }, [loading, user, completedParam, pillars, router]);
 
+  // Auto-select the current unit when the user lands on /lesson.
+  //
+  // Runs when `pillars` or `levels` first hydrate and:
+  //   1. The URL didn't carry a `?completed=` deep-link (that effect
+  //      wins — it already set the right pillar).
+  //   2. The current `selectedPillar` isn't inside the player's
+  //      current Level (e.g. stale "survival" default sitting in
+  //      state when the player is actually working in Level 3).
+  // When both hold, we pick the first non-100% pillar in the current
+  // Level, falling back to the first pillar of that Level.
+  useEffect(() => {
+    if (loading) return;
+    if (completedParam) return;                // completedParam effect owns selection
+    if (!pillars || pillars.length === 0) return;
+    if (!levels || levels.length === 0) return;
+
+    const activeLvls = levels.filter((l) => l.is_active !== false);
+    // Find the Level currently in progress.
+    const inProgress = (() => {
+      for (const lvl of activeLvls) {
+        const lvlPillars = pillars
+          .filter((p) => (p.level_id ?? activeLvls[0]?.id) === lvl.id)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        if (lvlPillars.length === 0) continue;
+        const allComplete = lvlPillars.every((p) => (p.progress || 0) >= 100);
+        if (!allComplete) return { lvl, pillars: lvlPillars };
+      }
+      return null;
+    })();
+    if (!inProgress) return;
+
+    const inLevelNames = new Set(inProgress.pillars.map((p) => p.name));
+    if (inLevelNames.has(selectedPillar)) return; // player already viewing this level
+
+    const nextPillar =
+      inProgress.pillars.find((p) => (p.progress || 0) < 100) ||
+      inProgress.pillars[0];
+    if (nextPillar) setSelectedPillar(nextPillar.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, pillars, levels, completedParam]);
+
   // Loading state — dark skeleton that matches the final layout so
   // the paint-in feels intentional instead of a flash.
   if (loading) {
@@ -487,6 +531,57 @@ function PlayerLessonsMenu() {
     return null;
   })();
 
+  // ── Levels layer ────────────────────────────────────────────
+  // The top-level content organisation: each Level contains N Units
+  // (pillars). Fetched from the DB so display names + colours stay
+  // editable. Sequential progression (v1) — the player's "current"
+  // level is the first sort-ordered level with any incomplete pillar.
+  const activeLevels = (levels || []).filter((l) => l.is_active !== false);
+
+  // Group pillars by level_id. NULL-level pillars fall back under
+  // the first active level so nothing is orphaned during migration.
+  const pillarsByLevelId = new Map();
+  for (const p of pillars) {
+    const key = p.level_id ?? (activeLevels[0]?.id ?? null);
+    if (key == null) continue;
+    if (!pillarsByLevelId.has(key)) pillarsByLevelId.set(key, []);
+    pillarsByLevelId.get(key).push(p);
+  }
+  for (const arr of pillarsByLevelId.values()) {
+    arr.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  }
+
+  // Certificate lookup by level_id — used by the LevelBanner marker.
+  const certificateByLevelId = new Map(
+    (levelCompletions || []).map((c) => [c.level_id, c]),
+  );
+
+  // Current level = first (by sort_order) level whose pillars aren't
+  // all at 100%. Falls back to the last level if the player has
+  // finished everything. `null` while data is still loading.
+  const currentLevel = (() => {
+    for (const lvl of activeLevels) {
+      const lvlPillars = pillarsByLevelId.get(lvl.id) || [];
+      if (lvlPillars.length === 0) continue;
+      const allComplete = lvlPillars.every((p) => (p.progress || 0) >= 100);
+      if (!allComplete) return lvl;
+    }
+    return activeLevels[activeLevels.length - 1] || null;
+  })();
+
+  const currentLevelIndex = currentLevel
+    ? activeLevels.findIndex((l) => l.id === currentLevel.id) + 1
+    : null;
+  const currentLevelPillars = currentLevel
+    ? pillarsByLevelId.get(currentLevel.id) || []
+    : [];
+  const currentLevelUnitsComplete = currentLevelPillars.filter(
+    (p) => (p.progress || 0) >= 100,
+  ).length;
+  const currentLevelEarnedCert = currentLevel
+    ? certificateByLevelId.get(currentLevel.id) || null
+    : null;
+
   return (
     <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
@@ -565,12 +660,15 @@ function PlayerLessonsMenu() {
           />
         </div> */}
 
-        {/* Continue where you left off — hero card. Only renders when
-            we have a next lesson. Carries THE lime CTA for this
-            screen (per DS "one accent button per view"). */}
+        {/* Continue where you left off — hero card. Commented out
+            per the 2026-09 design decision to keep personalised
+            "continue" affordances on /dashboard only; on /lesson
+            the highlighted current Unit + Next lesson card carry
+            that job instead. Kept in the file (not deleted) so the
+            block can be restored quickly if user testing pushes back.
         {nextLesson && (
           <Panel
-            // eyebrow="Continue where you left off"
+            eyebrow="Continue where you left off"
             title={nextLesson.lesson.title}
             className="mb-4"
             headerAction={
@@ -606,6 +704,7 @@ function PlayerLessonsMenu() {
             </div>
           </Panel>
         )}
+        */}
 
         {/* End-of-unit CTA — sits ABOVE the pillar chips so it's the
             first thing a user sees after finishing a Unit's last
@@ -640,39 +739,49 @@ function PlayerLessonsMenu() {
           </div>
         )}
 
-        {/* Pillar chip picker — horizontal, one Chip per Unit with
-            per-pillar progress %. Wraps on narrow screens. Selected
-            chip renders lime; unselected chips take a neutral slate
-            treatment per DS Chip default. */}
-        <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-label text-primary-400 font-semibold mb-2">
-            {userLanguage === "pt" ? "Unidades" : "Units"}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {pillars.map((pillar) => {
+        {/* ─── LEVELS LAYER ──────────────────────────────────────
+            Row 1: Level banner — only the player's current Level
+                    (viewport-width, vertically slim, signal-tinted).
+            Row 2: 4-Unit card grid — the pillars assigned to this
+                    Level. 4 columns on wide screens, 2 columns on
+                    narrow. Current Unit carries the lime border. */}
+        {currentLevel && (
+          <div className="mb-4">
+            <LevelBanner
+              level={currentLevel}
+              unitsComplete={currentLevelUnitsComplete}
+              unitsTotal={currentLevelPillars.length}
+              earnedCertificate={currentLevelEarnedCert}
+              levelIndex={currentLevelIndex}
+              totalLevels={activeLevels.length}
+              lang={userLanguage === "pt" ? "pt" : "en"}
+            />
+          </div>
+        )}
+
+        {currentLevelPillars.length > 0 && (
+          <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {currentLevelPillars.map((pillar) => {
               const isActive = selectedPillar === pillar.name;
               const isNextUp =
                 endOfUnitJump?.unitPillarName === pillar.name && !isActive;
+              const isComplete = (pillar.progress || 0) >= 100;
               const Icon = getIconComponent(pillar.icon);
               return (
-                <Chip
+                <UnitCard
                   key={pillar.name}
-                  as="button"
-                  size="md"
+                  pillar={pillar}
                   Icon={Icon}
-                  selected={isActive}
-                  onClick={() => setSelectedPillar(pillar.name)}
-                  className={isNextUp ? "next-attention" : ""}
-                >
-                  <span>{pillar.display_name || pillar.name}</span>
-                  <span className="opacity-70 tabular-nums">
-                    · {pillar.progress || 0}%
-                  </span>
-                </Chip>
+                  isActive={isActive}
+                  isComplete={isComplete}
+                  isNextUp={isNextUp}
+                  onSelect={() => setSelectedPillar(pillar.name)}
+                  lang={userLanguage === "pt" ? "pt" : "en"}
+                />
               );
             })}
           </div>
-        </div>
+        )}
 
         {/* Selected Unit — its lesson grid. Uses Panel for the whole
             block so the pillar header + grid + mental slot read as
@@ -913,6 +1022,120 @@ function PlayerLessonsMenu() {
 }
 
 /* ─── LessonCard ──────────────────────────────────────────────── */
+
+/* ─── UnitCard ────────────────────────────────────────────────
+   A rectangular Unit tile — small cover image, name, progress, and
+   a lime border when active. Used inside the 4-Unit grid on the
+   current Level's row. Three visual states:
+     active     — accent-400 border (this is the Unit the player is
+                  currently viewing the lessons for)
+     complete   — subtle accent-400 ring + CheckCircle top-right
+     idle       — neutral slate ring, unit not yet selected
+
+   Independent of LessonCard because Units are top-level containers
+   with different information density — cover image bleeds to the
+   edge, progress bar sits at the bottom, name is the hero. */
+function UnitCard({
+  pillar,
+  Icon,
+  isActive,
+  isComplete,
+  isNextUp,
+  onSelect,
+  lang,
+}) {
+  const name = pillar.display_name || pillar.name;
+  const pct = pillar.progress || 0;
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      data-pillar-name={pillar.name}
+      className={[
+        "group relative overflow-hidden rounded-card border-2 text-left transition-all",
+        // Fill stays the panel neutral so the border does the
+        // heavy lifting for state.
+        "bg-primary-panel",
+        // State ring — active > complete > idle. Active wins so a
+        // completed Unit the player re-visits still shows the
+        // "you're viewing this" signal.
+        isActive
+          ? "border-accent-400"
+          : isComplete
+            ? "border-accent-400/40 hover:border-accent-400/60"
+            : "border-primary-700 hover:border-primary-500",
+        // A gentle horizontal wiggle for the next-up unit — matches
+        // the same animation used on the end-of-unit CTA arrow.
+        isNextUp ? "next-attention" : "",
+      ].join(" ")}
+    >
+      {/* Cover image band — bleeds to the top edge. Falls back to a
+          slate placeholder with just the Unit icon when no image is
+          set, so the card silhouette stays consistent across Units. */}
+      <div className="relative h-20 sm:h-24 bg-primary-800 overflow-hidden">
+        {pillar.image_url ? (
+          <>
+            <Image
+              src={pillar.image_url}
+              alt=""
+              fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
+              className="object-cover"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+            {/* Bottom fade so the title area below reads even over
+                bright/high-contrast cover images. */}
+            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-primary-panel to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {Icon && (
+              <Icon
+                className="w-7 h-7 text-primary-500"
+                strokeWidth={1.5}
+              />
+            )}
+          </div>
+        )}
+        {/* Complete indicator — sits over the image top-right. */}
+        {isComplete && (
+          <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-accent-400 text-primary-900 inline-flex items-center justify-center">
+            <CheckCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
+          </span>
+        )}
+      </div>
+
+      <div className="p-3">
+        <h3 className="font-display font-bold text-primary-50 text-sm leading-tight line-clamp-2">
+          {name}
+        </h3>
+        <div className="mt-2 flex items-center gap-2">
+          <div className="flex-1 h-1 rounded-full bg-primary-800 overflow-hidden">
+            <div
+              className={`h-full transition-all ${isComplete ? "bg-accent-400" : "bg-primary-500"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span className="text-[10px] tabular-nums font-semibold text-primary-400">
+            {pct}%
+          </span>
+        </div>
+        {lang === "pt" && isActive && (
+          <p className="mt-1.5 text-[10px] uppercase tracking-label text-accent-400 font-semibold">
+            Selecionada
+          </p>
+        )}
+        {lang !== "pt" && isActive && (
+          <p className="mt-1.5 text-[10px] uppercase tracking-label text-accent-400 font-semibold">
+            Selected
+          </p>
+        )}
+      </div>
+    </button>
+  );
+}
 
 // Grid-friendly lesson card. Renders one of five visual states
 // driven by `status`:

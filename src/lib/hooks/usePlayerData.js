@@ -132,6 +132,78 @@ export function usePlayerCompletions(userId) {
   return { completions, loading, error };
 }
 
+/**
+ * Fetches the levels list from /api/levels. Public data, no auth
+ * dependency — safe to call from any page. Ordered by sort_order,
+ * only active levels.
+ */
+export function useLevels() {
+  const [levels, setLevels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/levels");
+        const json = await res.json();
+        if (cancelled) return;
+        if (res.ok) setLevels(json.levels || []);
+        else setError(json.error || "load_failed");
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { levels, loading, error };
+}
+
+/**
+ * Fetches the caller's earned Level certificates. Auto-awards any
+ * newly-completed levels server-side (see
+ * /api/player-level-completions) — from the client's perspective
+ * this is a plain GET that returns "here's what you've earned".
+ * userId presence gates the fetch so this stays idle until auth
+ * has resolved.
+ */
+export function usePlayerLevelCompletions(userId) {
+  const [completions, setCompletions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/player-level-completions");
+        const json = await res.json();
+        if (cancelled) return;
+        if (res.ok) setCompletions(json.completions || []);
+        else setError(json.error || "load_failed");
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  return { completions, loading, error };
+}
+
 export function usePlayerAchievements(userId) {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -180,13 +252,21 @@ export function usePlayerDashboard(userId) {
     usePlayerCompletions(userId);
   const { achievements, loading: achievementsLoading } =
     usePlayerAchievements(userId);
+  // Levels + certificates — the top-level content hierarchy above
+  // Units. `levels` is public data; `levelCompletions` is per-user
+  // and auto-awards newly-earned certificates on read.
+  const { levels, loading: levelsLoading } = useLevels();
+  const { completions: levelCompletions, loading: levelCompletionsLoading } =
+    usePlayerLevelCompletions(userId);
 
   const loading =
     profileLoading ||
     progressLoading ||
     lessonsLoading ||
     completionsLoading ||
-    achievementsLoading;
+    achievementsLoading ||
+    levelsLoading ||
+    levelCompletionsLoading;
 
   // Calculate pillar progress based on completions
   const calculatePillarProgress = (pillarName) => {
@@ -217,6 +297,8 @@ export function usePlayerDashboard(userId) {
     lessons,
     completions,
     achievements,
+    levels,
+    levelCompletions,
     loading,
     refetchProgress,
   };
