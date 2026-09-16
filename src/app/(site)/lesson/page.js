@@ -64,7 +64,7 @@ import ProPathOnboarding from "@/components/onboarding/propath/ProPathOnboarding
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
 import PillarMentalSlot from "@/components/mental/PillarMentalSlot";
-import LevelBanner from "@/components/lesson/LevelBanner";
+// import LevelBanner from "@/components/lesson/LevelBanner";
 
 // DS primitives — the same set that lives in the coach + mental
 // dashboards, so this page speaks the same visual language.
@@ -336,7 +336,7 @@ function PlayerLessonsMenu() {
   // Level, falling back to the first pillar of that Level.
   useEffect(() => {
     if (loading) return;
-    if (completedParam) return;                // completedParam effect owns selection
+    if (completedParam) return; // completedParam effect owns selection
     if (!pillars || pillars.length === 0) return;
     if (!levels || levels.length === 0) return;
 
@@ -542,7 +542,7 @@ function PlayerLessonsMenu() {
   // the first active level so nothing is orphaned during migration.
   const pillarsByLevelId = new Map();
   for (const p of pillars) {
-    const key = p.level_id ?? (activeLevels[0]?.id ?? null);
+    const key = p.level_id ?? activeLevels[0]?.id ?? null;
     if (key == null) continue;
     if (!pillarsByLevelId.has(key)) pillarsByLevelId.set(key, []);
     pillarsByLevelId.get(key).push(p);
@@ -745,7 +745,8 @@ function PlayerLessonsMenu() {
             Row 2: 4-Unit card grid — the pillars assigned to this
                     Level. 4 columns on wide screens, 2 columns on
                     narrow. Current Unit carries the lime border. */}
-        {currentLevel && (
+
+        {/* {currentLevel && (
           <div className="mb-4">
             <LevelBanner
               level={currentLevel}
@@ -757,7 +758,7 @@ function PlayerLessonsMenu() {
               lang={userLanguage === "pt" ? "pt" : "en"}
             />
           </div>
-        )}
+        )} */}
 
         {currentLevelPillars.length > 0 && (
           <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1092,10 +1093,7 @@ function UnitCard({
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             {Icon && (
-              <Icon
-                className="w-7 h-7 text-primary-500"
-                strokeWidth={1.5}
-              />
+              <Icon className="w-7 h-7 text-primary-500" strokeWidth={1.5} />
             )}
           </div>
         )}
