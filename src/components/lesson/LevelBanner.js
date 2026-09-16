@@ -1,38 +1,35 @@
 // src/components/lesson/LevelBanner.js
 //
-// Full-width slim banner for the /lesson page. Shows the player's
-// current Level with a subtle signal-tinted wash + progress. Only
-// ONE banner is visible at a time — the level the player is
-// currently working through.
+// A slim, single-row progress rail for the /lesson page. Shows the
+// player's current Level and where they sit in the 10-Level journey
+// while taking up the minimum possible vertical space. Reads at a
+// glance:
 //
-// Props:
-//   level             — the level row (from /api/levels)
-//   unitsComplete     — number of pillars in this level that hit 100%
-//   unitsTotal        — number of pillars assigned to this level
-//   earnedCertificate — the player_level_completions row for this
-//                       level, if any (indicates a full completion)
-//   lang              — 'pt' | 'en' — picks display_name field
+//    ●  LEVEL 3 of 10 · A2 · Global Standard    ▓▓▓░░░ 2/4    🏆
+//
+// Deliberately spare. The full description, prose framing, and
+// celebration all live elsewhere (dashboard, level-earned modal).
+// This rail is the constant "you are here" affordance during a
+// lesson-picking session.
 //
 // The `signal_tone` field on the level (english/mental/performance/
 // alert/accent) drives:
-//   - the subtle full-bleed gradient wash behind the banner
-//   - the icon tint
-//   - the small "Level N of M" eyebrow accent
-//   - the MetricBar fill colour
-// Editable per-level via the admin surface so content teams can
-// tweak identity per level without a code change.
+//   - the leading dot colour
+//   - a subtle horizontal wash (gradient stays inside the rail — no
+//     multi-stop brand mixing per DS, just a signal-tinted 20%→0%
+//     fade)
+//   - the progress bar fill
+// All editable per-level so content teams can tweak identity
+// without a code change.
 
 "use client";
 
-import { Award, Trophy, Sparkles } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import MetricBar from "@/components/ui/metric-bar";
+import { Award, Trophy } from "lucide-react";
 
-/**
- * Maps the level's `signal_tone` value (a string) to the DS token
- * name used by MetricBar + the tint classes below. Falls back to
- * "accent" (lime) if the level's tone isn't a recognised signal.
- */
+// Which signal token drives progress-fill + dot + wash per tone.
+// Falls through to "accent" (lime) for any tone the DS doesn't
+// recognise.
 const SIGNAL_ALIAS = {
   english: "english",
   mental: "mental",
@@ -41,40 +38,43 @@ const SIGNAL_ALIAS = {
   accent: "accent",
 };
 
-// Wash + text tint classes per signal. Deliberately subtle — the
-// banner accents identity without overwhelming the units below.
-// If more signals ever land (or the palette expands), add rows
-// here; unrecognised tones fall through to the accent-lime block.
+// Tailwind classes per tone. Kept tight — only what the slim rail
+// actually needs, no separate ink/inkSoft split.
 const TONE_STYLES = {
   english: {
-    wash: "bg-gradient-to-r from-signal-english/[0.12] via-signal-english/[0.06] to-transparent",
+    wash: "bg-gradient-to-r from-signal-english/[0.14] via-signal-english/[0.05] to-transparent",
     ring: "border-signal-english/25",
+    dot: "bg-signal-english",
+    fill: "bg-signal-english",
     ink: "text-signal-english",
-    inkSoft: "text-signal-english/80",
   },
   mental: {
-    wash: "bg-gradient-to-r from-signal-mental/[0.14] via-signal-mental/[0.07] to-transparent",
+    wash: "bg-gradient-to-r from-signal-mental/[0.14] via-signal-mental/[0.05] to-transparent",
     ring: "border-signal-mental/25",
+    dot: "bg-signal-mental",
+    fill: "bg-signal-mental",
     ink: "text-signal-mental",
-    inkSoft: "text-signal-mental/80",
   },
   performance: {
-    wash: "bg-gradient-to-r from-signal-performance/[0.14] via-signal-performance/[0.07] to-transparent",
+    wash: "bg-gradient-to-r from-signal-performance/[0.14] via-signal-performance/[0.05] to-transparent",
     ring: "border-signal-performance/25",
+    dot: "bg-signal-performance",
+    fill: "bg-signal-performance",
     ink: "text-signal-performance",
-    inkSoft: "text-signal-performance/80",
   },
   alert: {
-    wash: "bg-gradient-to-r from-signal-alert/[0.14] via-signal-alert/[0.07] to-transparent",
+    wash: "bg-gradient-to-r from-signal-alert/[0.14] via-signal-alert/[0.05] to-transparent",
     ring: "border-signal-alert/25",
+    dot: "bg-signal-alert",
+    fill: "bg-signal-alert",
     ink: "text-signal-alert",
-    inkSoft: "text-signal-alert/80",
   },
   accent: {
-    wash: "bg-gradient-to-r from-accent-400/[0.14] via-accent-400/[0.07] to-transparent",
+    wash: "bg-gradient-to-r from-accent-400/[0.14] via-accent-400/[0.05] to-transparent",
     ring: "border-accent-400/30",
+    dot: "bg-accent-400",
+    fill: "bg-accent-400",
     ink: "text-accent-400",
-    inkSoft: "text-accent-400/80",
   },
 };
 
@@ -84,155 +84,136 @@ function pickLevelName(level, lang) {
   return level.display_name_en || level.display_name_pt || level.name;
 }
 
-function pickDescription(level, lang) {
-  if (!level) return null;
-  if (lang === "pt") return level.description_pt || level.description_en;
-  return level.description_en || level.description_pt;
-}
-
-/**
- * Resolve a Lucide icon component from its string name. Falls back
- * to `Trophy` when the name isn't a valid Lucide export.
- */
 function resolveIcon(name) {
   if (!name || typeof name !== "string") return Trophy;
   const Icon = LucideIcons[name];
   return Icon || Trophy;
 }
 
+/**
+ * @param {{
+ *   level: object,
+ *   unitsComplete?: number,
+ *   unitsTotal?: number,
+ *   earnedCertificate?: object | null,
+ *   levelIndex?: number | null,
+ *   totalLevels?: number | null,
+ *   lang?: 'pt' | 'en',
+ * }} props
+ */
 export default function LevelBanner({
   level,
   unitsComplete = 0,
   unitsTotal = 0,
   earnedCertificate = null,
-  levelIndex = null,       // 1-based position in the ordered list
-  totalLevels = null,      // total count of active levels
+  levelIndex = null,
+  totalLevels = null,
   lang = "pt",
 }) {
   if (!level) return null;
   const tone = TONE_STYLES[SIGNAL_ALIAS[level.signal_tone] || "accent"] || TONE_STYLES.accent;
   const Icon = resolveIcon(level.icon_name);
   const pct = unitsTotal > 0
-    ? Math.round((unitsComplete / unitsTotal) * 100)
+    ? Math.max(0, Math.min(100, (unitsComplete / unitsTotal) * 100))
     : 0;
   const isEarned = !!earnedCertificate;
   const name = pickLevelName(level, lang);
-  const description = pickDescription(level, lang);
 
   return (
     <section
       className={[
-        "relative overflow-hidden",
-        "rounded-panel border",
+        "relative overflow-hidden rounded-full border",
         tone.ring,
         "bg-primary-panel",
-        "px-4 sm:px-6 py-4 sm:py-5",
+        "pl-3 pr-2 py-1.5",
       ].join(" ")}
       aria-label={`${name} level`}
     >
-      {/* Signal-tinted wash — sits behind content, deliberately
-          subtle so the level identity registers without shouting.
-          Editable per-level via the level's `signal_tone` field. */}
+      {/* Signal-tinted wash — sits under the row content. */}
       <div
         className={`absolute inset-0 pointer-events-none ${tone.wash}`}
         aria-hidden="true"
       />
 
-      <div className="relative flex items-center gap-4 flex-wrap">
-        {/* Icon tile — signal-tinted, feature-identity slot */}
-        <div
-          className={[
-            "shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-control",
-            "bg-primary-800 border",
-            tone.ring,
-            "inline-flex items-center justify-center",
-            tone.ink,
-          ].join(" ")}
+      <div className="relative flex items-center gap-2.5">
+        {/* Signal dot — the tiny colour anchor that identifies which
+            tone this Level carries at a glance. */}
+        <span
+          className={`shrink-0 w-1.5 h-1.5 rounded-full ${tone.dot}`}
           aria-hidden="true"
-        >
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.75} />
-        </div>
+        />
 
-        {/* Title + eyebrow — takes remaining width */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-label font-semibold font-sans">
-            <span className={tone.ink}>
-              {lang === "pt" ? "Nível" : "Level"}
-              {typeof levelIndex === "number" && ` ${levelIndex}`}
-              {typeof totalLevels === "number" && ` ${lang === "pt" ? "de" : "of"} ${totalLevels}`}
-            </span>
-            {level.cefr_target && (
-              <span className={`ml-2 ${tone.inkSoft}`}>
-                · {level.cefr_target}
-              </span>
-            )}
-          </p>
-          <h2 className="text-xl sm:text-2xl font-display font-black tracking-tight text-primary-50 leading-tight">
+        {/* Compact icon — sits at 14px so the rail stays slim. */}
+        <Icon
+          className={`shrink-0 w-3.5 h-3.5 ${tone.ink}`}
+          strokeWidth={2}
+          aria-hidden="true"
+        />
+
+        {/* Level label — position eyebrow + CEFR + name on one line.
+            Truncates on narrow screens so the rail height stays
+            constant. */}
+        <div className="min-w-0 flex-1 flex items-baseline gap-2 flex-wrap sm:flex-nowrap">
+          <span className={`text-[10px] uppercase tracking-label font-bold ${tone.ink} whitespace-nowrap`}>
+            {lang === "pt" ? "Nível" : "Level"}
+            {typeof levelIndex === "number" && ` ${levelIndex}`}
+            {typeof totalLevels === "number" && ` ${lang === "pt" ? "de" : "of"} ${totalLevels}`}
+            {level.cefr_target && ` · ${level.cefr_target}`}
+          </span>
+          <span className="text-sm font-display font-bold text-primary-50 truncate">
             {name}
-          </h2>
-          {description && (
-            <p className="text-xs sm:text-sm text-primary-400 mt-1 max-w-2xl leading-relaxed">
-              {description}
-            </p>
-          )}
+          </span>
         </div>
 
-        {/* Certificate marker — solid + earned OR outlined + pending.
-            Sized to sit alongside the title on tablet+; wraps below
-            on narrow screens via the flex-wrap parent. */}
-        <div className="shrink-0 flex items-center gap-2">
-          <div
-            className={[
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full",
-              "text-[11px] font-semibold uppercase tracking-label",
-              "border transition-colors",
-              isEarned
-                ? "bg-accent-400/15 border-accent-400/40 text-accent-400"
-                : `bg-primary-800 ${tone.ring} ${tone.inkSoft}`,
-            ].join(" ")}
-            title={
-              isEarned
-                ? lang === "pt"
-                  ? "Certificado conquistado"
-                  : "Certificate earned"
-                : lang === "pt"
-                  ? "Certificado do nível"
-                  : "Level certificate"
-            }
-          >
-            {isEarned ? (
-              <Sparkles className="w-3.5 h-3.5" />
-            ) : (
-              <Award className="w-3.5 h-3.5" />
-            )}
-            <span>
-              {isEarned
-                ? lang === "pt"
-                  ? "Certificado"
-                  : "Certificate"
-                : lang === "pt"
-                  ? "Certificado"
-                  : "Certificate"}
-            </span>
+        {/* Inline progress — thin bar + fraction. Bar is fixed
+            width on tablet+ so it stays consistent regardless of
+            the level name length; on mobile the label truncates
+            first and the bar keeps its size. */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
+          <div className="w-24 h-1 rounded-full bg-primary-800 overflow-hidden">
+            <div
+              className={`h-full ${tone.fill} transition-all duration-ui ease-brand`}
+              style={{ width: `${pct}%` }}
+            />
           </div>
+          <span className="text-[10px] font-semibold tabular-nums text-primary-300 whitespace-nowrap">
+            {unitsComplete}/{unitsTotal}
+          </span>
         </div>
+
+        {/* Certificate marker — small pill; solid + accent when
+            earned, hollow signal-tinted when still pending. */}
+        <span
+          className={[
+            "shrink-0 inline-flex items-center justify-center",
+            "w-6 h-6 rounded-full border",
+            isEarned
+              ? "bg-accent-400 text-primary-900 border-transparent"
+              : `bg-primary-800 ${tone.ring} ${tone.ink}`,
+          ].join(" ")}
+          title={
+            isEarned
+              ? lang === "pt" ? "Certificado conquistado" : "Certificate earned"
+              : lang === "pt" ? "Certificado do nível" : "Level certificate"
+          }
+        >
+          <Award className="w-3 h-3" strokeWidth={2.25} />
+        </span>
       </div>
 
-      {/* Progress row — MetricBar tinted to the level's signal.
-          Rendered separately so the header row can wrap cleanly
-          on narrow screens. */}
-      <div className="relative mt-3">
-        <MetricBar
-          label={
-            <span className="text-[11px] font-sans font-medium text-primary-300">
-              {lang === "pt"
-                ? `${unitsComplete} de ${unitsTotal} unidades`
-                : `${unitsComplete} of ${unitsTotal} units`}
-            </span>
-          }
-          value={pct}
-          signal={SIGNAL_ALIAS[level.signal_tone] || "accent"}
-        />
+      {/* Mobile progress row — sits below the label on narrow
+          screens where the desktop-inline progress hides. Keeps the
+          rail short (~48px total height) while staying informative. */}
+      <div className="relative sm:hidden mt-1.5 flex items-center gap-2">
+        <div className="flex-1 h-1 rounded-full bg-primary-800 overflow-hidden">
+          <div
+            className={`h-full ${tone.fill} transition-all duration-ui ease-brand`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-[10px] font-semibold tabular-nums text-primary-300 whitespace-nowrap">
+          {unitsComplete}/{unitsTotal}
+        </span>
       </div>
     </section>
   );

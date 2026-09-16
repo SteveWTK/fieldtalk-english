@@ -64,7 +64,8 @@ import ProPathOnboarding from "@/components/onboarding/propath/ProPathOnboarding
 import PackOpeningModal from "@/components/stickers/PackOpeningModal";
 import NewContentBanner from "@/components/NewContentBanner";
 import PillarMentalSlot from "@/components/mental/PillarMentalSlot";
-// import LevelBanner from "@/components/lesson/LevelBanner";
+import LevelBanner from "@/components/lesson/LevelBanner";
+import LevelEarnedModal from "@/components/lesson/LevelEarnedModal";
 
 // DS primitives — the same set that lives in the coach + mental
 // dashboards, so this page speaks the same visual language.
@@ -115,6 +116,17 @@ function PlayerLessonsMenu() {
   // [Next Unit] →" hero CTA, which links directly to step 1 of that
   // next unit's first lesson (one click, no card-hunting).
   const [endOfUnitJump, setEndOfUnitJump] = useState(null);
+
+  // Level-earned celebration modal — mounts when a fresh
+  // player_level_completions row arrives with newly_awarded === true.
+  // The row is persisted server-side (see /api/player-level-completions)
+  // so dismissing the modal without action doesn't lose the award.
+  const [earnedModalLevel, setEarnedModalLevel] = useState(null);
+  // Session-local seen set — a `newly_awarded` row stays true for the
+  // life of the current dashboard fetch, so we track which level_ids
+  // we've already celebrated to avoid re-firing the modal on the same
+  // page load.
+  const [celebratedLevelIds, setCelebratedLevelIds] = useState(() => new Set());
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -364,6 +376,40 @@ function PlayerLessonsMenu() {
     if (nextPillar) setSelectedPillar(nextPillar.name);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, pillars, levels, completedParam]);
+
+  // Level-earned celebration — watch for a `newly_awarded` row in
+  // levelCompletions. When one arrives, celebrate the highest sort-
+  // ordered new award (in case multiple levels were completed at
+  // once — rare but possible if a delayed batch of completions
+  // rolls in). Guards against re-firing on the same page load via a
+  // session-local `celebratedLevelIds` set.
+  useEffect(() => {
+    if (loading) return;
+    if (earnedModalLevel) return; // one modal at a time
+    if (!levels || levels.length === 0) return;
+    if (!Array.isArray(levelCompletions)) return;
+    const freshRows = levelCompletions.filter(
+      (r) => r.newly_awarded && !celebratedLevelIds.has(r.level_id),
+    );
+    if (freshRows.length === 0) return;
+    // Prefer the highest-sort_order level so the celebration
+    // matches "the latest wall you broke through".
+    const levelById = new Map(levels.map((l) => [l.id, l]));
+    const sorted = freshRows
+      .map((r) => ({ row: r, level: levelById.get(r.level_id) }))
+      .filter((x) => x.level)
+      .sort(
+        (a, b) => (b.level.sort_order || 0) - (a.level.sort_order || 0),
+      );
+    const pick = sorted[0];
+    if (!pick) return;
+    setEarnedModalLevel(pick.level);
+    setCelebratedLevelIds((prev) => {
+      const next = new Set(prev);
+      next.add(pick.row.level_id);
+      return next;
+    });
+  }, [loading, levels, levelCompletions, earnedModalLevel, celebratedLevelIds]);
 
   // Loading state — dark skeleton that matches the final layout so
   // the paint-in feels intentional instead of a flash.
@@ -746,7 +792,7 @@ function PlayerLessonsMenu() {
                     Level. 4 columns on wide screens, 2 columns on
                     narrow. Current Unit carries the lime border. */}
 
-        {/* {currentLevel && (
+        {currentLevel && (
           <div className="mb-4">
             <LevelBanner
               level={currentLevel}
@@ -758,7 +804,7 @@ function PlayerLessonsMenu() {
               lang={userLanguage === "pt" ? "pt" : "en"}
             />
           </div>
-        )} */}
+        )}
 
         {currentLevelPillars.length > 0 && (
           <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -867,6 +913,30 @@ function PlayerLessonsMenu() {
           show={showXPGain}
           onComplete={() => setShowXPGain(false)}
         />
+
+        {/* Level-earned celebration — fires once when a newly_awarded
+            level row arrives from /api/player-level-completions. The
+            certificate row is already persisted, so dismissing this
+            without action is safe. */}
+        {earnedModalLevel && (
+          <LevelEarnedModal
+            earnedLevel={earnedModalLevel}
+            nextLevel={
+              (() => {
+                if (!Array.isArray(levels)) return null;
+                const sorted = [...levels].sort(
+                  (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
+                );
+                const idx = sorted.findIndex(
+                  (l) => l.id === earnedModalLevel.id,
+                );
+                return idx >= 0 ? sorted[idx + 1] || null : null;
+              })()
+            }
+            onClose={() => setEarnedModalLevel(null)}
+            lang={userLanguage === "pt" ? "pt" : "en"}
+          />
+        )}
 
         {/* Under Construction Modal — rebuilt on DS tokens. */}
         {showConstructionModal && (

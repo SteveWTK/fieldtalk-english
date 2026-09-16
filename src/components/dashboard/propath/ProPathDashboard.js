@@ -107,6 +107,8 @@ export default function ProPathDashboard() {
     pillars,
     lessons,
     completions,
+    levels,
+    levelCompletions,
     loading,
     refetchProgress,
   } = usePlayerDashboard(user?.id);
@@ -266,6 +268,45 @@ export default function ProPathDashboard() {
       : profile?.position || null;
   const totalXp = progress?.total_xp || 0;
 
+  // Current-Level indicator — small pill shown alongside position +
+  // Full Access in the hero. Determines the player's current Level by
+  // finding the first (by sort_order) active level whose pillars
+  // aren't all at 100%. Certificates already earned add the "N
+  // certificates" hint on hover for context.
+  const currentLevelInfo = (() => {
+    const activeLvls = (levels || []).filter((l) => l.is_active !== false);
+    if (activeLvls.length === 0) return null;
+    // Pillars grouped by level_id, with unassigned pillars falling to
+    // the first level (mirrors the /lesson-page fallback so the two
+    // surfaces stay consistent).
+    const byLevelId = new Map();
+    for (const p of pillars || []) {
+      const key = p.level_id ?? activeLvls[0].id;
+      if (!byLevelId.has(key)) byLevelId.set(key, []);
+      byLevelId.get(key).push(p);
+    }
+    let current = null;
+    for (const lvl of activeLvls) {
+      const lvlPillars = byLevelId.get(lvl.id) || [];
+      if (lvlPillars.length === 0) continue;
+      const done = lvlPillars.every((p) => (p.progress || 0) >= 100);
+      if (!done) {
+        current = lvl;
+        break;
+      }
+    }
+    // Player has finished every level with content — surface the
+    // highest so the pill still shows their peak.
+    if (!current) current = activeLvls[activeLvls.length - 1];
+    const idx = activeLvls.findIndex((l) => l.id === current.id) + 1;
+    return {
+      level: current,
+      index: idx,
+      total: activeLvls.length,
+      earnedCount: (levelCompletions || []).length,
+    };
+  })();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-primary-900 flex items-center justify-center">
@@ -354,6 +395,49 @@ export default function ProPathDashboard() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400/15 border border-accent-400/30 text-accent-300 text-[11px] font-bold uppercase tracking-wider">
                     {position}
                   </span>
+                )}
+                {/* Current-Level pill — the "you are here" marker for
+                    the 10-Level career journey. Slate-neutral background
+                    so it sits alongside the lime position badge without
+                    competing; the tiny signal-tinted dot on the left
+                    identifies the macrofase (english / mental /
+                    performance / accent). Clickable through to /lesson
+                    so a user can jump straight to the units for their
+                    level. */}
+                {currentLevelInfo?.level && (
+                  <Link
+                    href="/lesson"
+                    className="group inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-700 border border-primary-600 hover:bg-primary-600 hover:border-primary-500 text-primary-100 text-[11px] font-bold uppercase tracking-wider transition-colors"
+                    title={
+                      currentLevelInfo.earnedCount > 0
+                        ? `${currentLevelInfo.earnedCount} ${
+                            lang === "pt" ? "certificado(s)" : "certificate(s)"
+                          }`
+                        : undefined
+                    }
+                  >
+                    <span
+                      className={[
+                        "w-1.5 h-1.5 rounded-full",
+                        currentLevelInfo.level.signal_tone === "english"
+                          ? "bg-signal-english"
+                          : currentLevelInfo.level.signal_tone === "mental"
+                            ? "bg-signal-mental"
+                            : currentLevelInfo.level.signal_tone === "performance"
+                              ? "bg-signal-performance"
+                              : currentLevelInfo.level.signal_tone === "alert"
+                                ? "bg-signal-alert"
+                                : "bg-accent-400",
+                      ].join(" ")}
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {lang === "pt" ? "Nível" : "Level"} {currentLevelInfo.index}
+                      {currentLevelInfo.level.cefr_target && (
+                        <> · {currentLevelInfo.level.cefr_target}</>
+                      )}
+                    </span>
+                  </Link>
                 )}
                 {/* Full Edition badge — visible only for users with an
                     active paid / trialing / granted access record.
