@@ -36,6 +36,8 @@ import {
   Zap,
 } from "lucide-react";
 import StickerCard from "@/components/stickers/StickerCard";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
@@ -102,7 +104,7 @@ const COPY = {
     back: "Back",
     next: "Next",
     slide1: {
-      badge: "🏆 World Cup 2026 Edition",
+      badge: "World Cup 2026 Edition",
       headline: ["Welcome to a", "different", "World Cup experience"],
       subtitle:
         "Learn English the way you love it — with football, stickers and real competition.",
@@ -156,17 +158,17 @@ const COPY = {
     // so the tip can't be visually skimmed past on the way to the
     // "Open my first pack" CTA. Last slide, deliberate emphasis.
     slide5: {
-      headline: ["Save FieldTalk to your", "home screen"],
+      headline: ["Save Global Player to your", "home screen"],
       subtitle:
         "One tap from your home screen gets you straight back in — no hunting for the link.",
       stepsTitle: "How to add it:",
       steps: [
         "Open your browser's menu (the ⋮ or share icon).",
         "Tap “Add to Home Screen” (or “Install app”).",
-        "Confirm — that's it. The FieldTalk icon will appear.",
+        "Confirm — that's it. The Global Player icon will appear.",
       ],
-      reminder: "You can always do it later, but takes 10 seconds now!",
-      cta: "🎁 Open my first pack",
+      reminder: "You can always do it later, but takes 10 seconds now.",
+      cta: "Open my first pack",
     },
   },
   pt: {
@@ -174,7 +176,7 @@ const COPY = {
     back: "Voltar",
     next: "Próximo",
     slide1: {
-      badge: "🏆 Edição Copa do Mundo",
+      badge: "Edição Copa do Mundo",
       headline: ["Bem-vindo a uma", "experiência diferente", "da Copa"],
       subtitle:
         "Aprenda inglês do jeito que você ama — com futebol, figurinhas e competição real.",
@@ -225,17 +227,17 @@ const COPY = {
         "Já adicionamos um pacote inicial de figurinhas na sua conta. Abra a seguir pra ver quais jogadores chegam pro seu primeiro time.",
     },
     slide5: {
-      headline: ["Salve o FieldTalk na sua", "tela inicial"],
+      headline: ["Salve o Global Player na sua", "tela inicial"],
       subtitle:
         "Um toque na sua tela inicial e você volta direto pro jogo — sem caçar o link.",
       stepsTitle: "Como adicionar:",
       steps: [
         "Abra o menu do navegador (os ⋮ ou ícone de compartilhar).",
         "Toque em “Adicionar à tela inicial” (ou “Instalar app”).",
-        "Confirme — pronto. O ícone do FieldTalk aparece.",
+        "Confirme — pronto. O ícone do Global Player aparece.",
       ],
-      reminder: "Você pode deixar pra depois, mas leva 10 segundos agora!",
-      cta: "🎁 Abrir meu primeiro pacote",
+      reminder: "Você pode deixar pra depois, mas leva 10 segundos agora.",
+      cta: "Abrir meu primeiro pacote",
     },
   },
 };
@@ -283,17 +285,19 @@ export default function WelcomeOnboarding({ userId, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex flex-col text-white"
+      className="fixed inset-0 z-[60] flex flex-col bg-primary-900 text-primary-50"
       role="dialog"
       aria-modal="true"
       style={{
-        // Pitch-stripe pattern + emerald bottom glow over a near-black
-        // base. Matches the artwork in the original onboarding mock.
+        // Ambient lime wash + pitch-stripe pattern over the primary-900
+        // base. Matches the /, /signin and /signup treatment so the
+        // first-visit onboarding sits in the same visual room as the
+        // rest of the entry surface.
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 110%, rgba(16,185,129,0.18) 0%, transparent 70%),
-          repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(16,185,129,0.04) 48px, rgba(16,185,129,0.04) 50px),
-          repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(16,185,129,0.04) 48px, rgba(16,185,129,0.04) 50px),
-          #070707`,
+          radial-gradient(ellipse 80% 60% at 50% 110%, rgba(163,230,53,0.16) 0%, transparent 70%),
+          repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(163,230,53,0.04) 48px, rgba(163,230,53,0.04) 50px),
+          repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(163,230,53,0.04) 48px, rgba(163,230,53,0.04) 50px),
+          #020617`,
       }}
     >
       {/* Language toggle — top left. Updates the global language
@@ -307,8 +311,8 @@ export default function WelcomeOnboarding({ userId, onClose }) {
           onClick={() => setLang("en")}
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             userLanguage === "en"
-              ? "bg-emerald-500 text-[#062013]"
-              : "bg-white/5 text-white/60 hover:text-white"
+              ? "bg-accent-400 text-primary-900"
+              : "bg-primary-800 text-primary-400 hover:text-primary-50"
           }`}
         >
           EN
@@ -318,8 +322,8 @@ export default function WelcomeOnboarding({ userId, onClose }) {
           onClick={() => setLang("pt")}
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             userLanguage === "pt"
-              ? "bg-emerald-500 text-[#062013]"
-              : "bg-white/5 text-white/60 hover:text-white"
+              ? "bg-accent-400 text-primary-900"
+              : "bg-primary-800 text-primary-400 hover:text-primary-50"
           }`}
         >
           PT
@@ -332,7 +336,7 @@ export default function WelcomeOnboarding({ userId, onClose }) {
         <button
           type="button"
           onClick={() => close("dismiss")}
-          className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 text-xs text-white/50 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/5 transition-colors"
+          className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-50 px-3 py-1.5 rounded-full hover:bg-primary-800 transition-colors"
         >
           {copy.skip}
           <X className="w-3.5 h-3.5" />
@@ -357,33 +361,32 @@ export default function WelcomeOnboarding({ userId, onClose }) {
         <div className="max-w-md mx-auto">
           <ProgressDots current={slide} total={5} />
           <div className="mt-5 flex items-center justify-between gap-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
+              Icon={ArrowLeft}
               onClick={() => slide > 1 && setSlide(slide - 1)}
               disabled={slide === 1}
-              className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold text-white/70 hover:text-white border border-white/10 hover:border-white/30 disabled:opacity-0 disabled:cursor-default transition-colors"
+              className={slide === 1 ? "invisible" : ""}
             >
-              <ArrowLeft className="w-4 h-4" />
               {copy.back}
-            </button>
+            </Button>
 
             {slide < 5 ? (
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                IconTrailing={ArrowRight}
                 onClick={() => setSlide(slide + 1)}
-                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] text-sm font-bold tracking-wide transition-colors shadow-[0_6px_28px_rgba(16,185,129,0.35)]"
               >
                 {slide === 1 ? copy.slide1.cta : copy.next}
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              </Button>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="primary"
                 onClick={() => close("open_pack")}
-                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] text-sm font-bold tracking-wide transition-colors shadow-[0_6px_28px_rgba(16,185,129,0.35)]"
               >
                 {copy.slide5.cta}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -397,25 +400,28 @@ export default function WelcomeOnboarding({ userId, onClose }) {
 function SlideOne({ copy }) {
   return (
     <div className="onb-fade-up">
-      <div className="mb-5 inline-flex items-baseline gap-0">
-        <span className="text-5xl sm:text-6xl mr-2 onb-bounce inline-block">
-          ⚽
-        </span>
+      <div className="mb-5 inline-flex items-center justify-center">
+        <GlobalPlayerLogo
+          variant="crest"
+          tone="tonalDark"
+          size={80}
+          sting="sweep"
+        />
       </div>
-      <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1">
-        Field<span className="text-emerald-400">Talk</span>
+      <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1 text-primary-50">
+        Global <span className="text-accent-400">Player</span>
       </h2>
 
-      <span className="mt-4 inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-emerald-300 mb-5">
+      <span className="mt-4 inline-block px-3 py-1 rounded-full bg-primary-800 border border-accent-400/40 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-accent-300 mb-5">
         {copy.badge}
       </span>
 
-      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3">
+      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3 text-primary-50">
         {copy.headline[0]}{" "}
-        <span className="text-emerald-400">{copy.headline[1]}</span>{" "}
+        <span className="text-accent-400">{copy.headline[1]}</span>{" "}
         {copy.headline[2]}
       </h1>
-      <p className="text-sm sm:text-base text-white/65 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
+      <p className="text-sm sm:text-base text-primary-300 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
         {copy.subtitle}
       </p>
 
@@ -427,31 +433,31 @@ function SlideOne({ copy }) {
 function SlideTwo({ copy }) {
   return (
     <div className="onb-fade-up">
-      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-2">
+      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-2 text-primary-50">
         {copy.headline[0]}{" "}
-        <span className="text-emerald-400">{copy.headline[1]}</span>
+        <span className="text-accent-400">{copy.headline[1]}</span>
       </h1>
-      <p className="text-sm text-white/55 mb-6">{copy.subtitle}</p>
+      <p className="text-sm text-primary-400 mb-6">{copy.subtitle}</p>
 
       <ul className="space-y-2.5 text-left">
         {copy.steps.map((step, i) => (
           <li
             key={i}
-            className="onb-stagger flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm"
+            className="onb-stagger flex items-center gap-3 px-3.5 py-2.5 rounded-card bg-primary-800 border border-primary-700"
             style={{ animationDelay: `${(i + 1) * 70}ms` }}
           >
-            <span className="font-black text-emerald-400 tabular-nums text-lg w-6 shrink-0">
+            <span className="font-black text-accent-400 tabular-nums text-lg w-6 shrink-0">
               {String(i + 1).padStart(2, "0")}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm text-white leading-tight">
+              <p className="font-bold text-sm text-primary-50 leading-tight">
                 {step.title}
               </p>
-              <p className="text-xs text-white/55 mt-0.5 leading-snug">
+              <p className="text-xs text-primary-400 mt-0.5 leading-snug">
                 {step.body}
               </p>
             </div>
-            <step.Icon className="w-5 h-5 text-emerald-300/70 shrink-0" />
+            <step.Icon className="w-5 h-5 text-accent-300 shrink-0" />
           </li>
         ))}
       </ul>
@@ -464,11 +470,11 @@ function SlideTwo({ copy }) {
 function SlideThree({ copy }) {
   return (
     <div className="onb-fade-up">
-      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3">
+      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3 text-primary-50">
         {copy.headline[0]}{" "}
-        <span className="text-amber-300">{copy.headline[1]}</span>
+        <span className="text-signal-performance">{copy.headline[1]}</span>
       </h1>
-      <p className="text-sm text-white/65 mb-6 max-w-xs mx-auto leading-relaxed">
+      <p className="text-sm text-primary-300 mb-6 max-w-xs mx-auto leading-relaxed">
         {copy.subtitle}
       </p>
 
@@ -485,21 +491,23 @@ function SlideThree({ copy }) {
             <StickerCard sticker={sticker} size="sm" owned />
           </div>
         ))}
-        {/* Mystery card — hints at "more rarities to discover" */}
+        {/* Mystery card — hints at "more rarities to discover".
+            Kept on the signal-performance (gold) hue as intentional
+            feature-identity signalling for pack rarity, per DS. */}
         <div
-          className="onb-stagger w-20 h-28 rounded-xl flex flex-col items-center justify-center gap-1 bg-amber-300/10 border-2 border-dashed border-amber-300/40 shrink-0"
+          className="onb-stagger w-20 h-28 rounded-xl flex flex-col items-center justify-center gap-1 bg-primary-800 border-2 border-dashed border-signal-performance/40 shrink-0"
           style={{ animationDelay: "420ms" }}
         >
-          <span className="text-2xl font-black text-amber-300">
+          <span className="text-2xl font-black text-signal-performance">
             {copy.mystery}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-wider text-amber-300/80">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-signal-performance/80">
             {copy.mysteryLabel}
           </span>
         </div>
       </div>
 
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300/10 border border-amber-300/30 text-xs font-bold text-amber-200">
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-800 border border-signal-performance/30 text-xs font-bold text-signal-performance">
         <Zap className="w-3.5 h-3.5" />
         {copy.xpBadge}
       </div>
@@ -515,11 +523,11 @@ function SlideFour({ copy }) {
       <div className="text-6xl sm:text-7xl mb-4 onb-pulse-trophy inline-block">
         🏆
       </div>
-      <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-3">
+      <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-3 text-primary-50">
         {copy.headline[0]}{" "}
-        <span className="text-emerald-400">{copy.headline[1]}</span>
+        <span className="text-accent-400">{copy.headline[1]}</span>
       </h1>
-      <p className="text-sm sm:text-base text-white/65 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
+      <p className="text-sm sm:text-base text-primary-300 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
         {copy.subtitle}
       </p>
 
@@ -539,36 +547,35 @@ function SlideFive({ copy }) {
       <div className="text-6xl sm:text-7xl mb-4 onb-bounce inline-block">
         📱
       </div>
-      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3">
+      <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight mb-3 text-primary-50">
         {copy.headline[0]}{" "}
-        <span className="text-amber-300">{copy.headline[1]}</span>
+        <span className="text-signal-performance">{copy.headline[1]}</span>
       </h1>
-      <p className="text-sm sm:text-base text-white/65 max-w-xs sm:max-w-sm mx-auto leading-relaxed mb-5">
+      <p className="text-sm sm:text-base text-primary-300 max-w-xs sm:max-w-sm mx-auto leading-relaxed mb-5">
         {copy.subtitle}
       </p>
 
-      {/* Step-by-step instructions in a clearly-bordered amber card
-          — the same colour family as the previous embedded tip, but
-          significantly bigger and structured so each step reads
-          deliberately. */}
-      <div className="mx-auto max-w-sm rounded-2xl bg-amber-300/10 border border-amber-300/40 px-4 sm:px-5 py-4 text-left">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-amber-200/80 font-bold mb-3">
+      {/* Step-by-step instructions in a clearly-bordered card — kept
+          on the signal-performance (gold) hue as intentional feature
+          identity for the install/home-screen tip, per DS. */}
+      <div className="mx-auto max-w-sm rounded-card bg-primary-800 border border-signal-performance/40 px-4 sm:px-5 py-4 text-left">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-signal-performance/80 font-bold mb-3">
           {copy.stepsTitle}
         </p>
         <ol className="space-y-2">
           {copy.steps.map((step, i) => (
             <li
               key={i}
-              className="flex items-start gap-2.5 text-sm text-amber-100/90 leading-relaxed"
+              className="flex items-start gap-2.5 text-sm text-primary-100 leading-relaxed"
             >
-              <span className="shrink-0 w-5 h-5 rounded-full bg-amber-300/25 text-amber-100 text-[11px] font-bold flex items-center justify-center mt-0.5">
+              <span className="shrink-0 w-5 h-5 rounded-full bg-signal-performance/25 text-signal-performance text-[11px] font-bold flex items-center justify-center mt-0.5">
                 {i + 1}
               </span>
               <span>{step}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-4 pt-3 border-t border-amber-300/20 text-[11px] text-amber-200/70 italic">
+        <p className="mt-4 pt-3 border-t border-signal-performance/20 text-[11px] text-signal-performance/70 italic">
           {copy.reminder}
         </p>
       </div>
@@ -589,7 +596,7 @@ function ProgressDots({ current, total }) {
           <span
             key={i}
             className={`h-2 rounded-full transition-all ${
-              isActive ? "w-7 bg-emerald-400" : "w-2 bg-white/20"
+              isActive ? "w-7 bg-accent-400" : "w-2 bg-primary-700"
             }`}
           />
         );

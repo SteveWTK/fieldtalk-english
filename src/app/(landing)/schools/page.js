@@ -32,23 +32,23 @@ export default function BrazilianLandingPage() {
   return (
     <>
       {/* Hero Section with Photo */}
-      <section className="py-20 bg-gradient-to-br rom-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800">
+      <section className="py-20 bg-primary-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-primarys-900 dark:text-white mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-50 mb-6">
                 Uma Experiência Gamificada de Conversação para
-                <span className="block bg-gradient-to-r from-accent-700 to-accent-500 bg-clip-text text-transparent">
+                <span className="block bg-accent-400 bg-clip-text text-transparent">
                   Amantes do Futebol
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+              <p className="text-xl text-primary-300 mb-8">
                 Alunos empolgados. Aulas diferentes. Fácil de implementar.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/lesson"
-                  className="bg-gradient-to-r from-primary-600 to-accent-500 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+                  className="bg-accent-400 hover:bg-accent-300 text-primary-900 px-8 py-4 rounded-control font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
                 >
                   Área do Aluno <Play className="w-5 h-5 ml-2" />
                 </Link>
@@ -56,17 +56,17 @@ export default function BrazilianLandingPage() {
                   Fale com a Cultura
                 </button> */}
               </div>
-              <div className="mt-8 flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-300">
+              <div className="mt-8 flex items-center space-x-6 text-sm text-primary-300">
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-400 mr-2" />
                   Método exclusivo
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-400 mr-2" />
                   Professores especializados
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 text-accent-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-accent-400 mr-2" />
                   Resultados garantidos
                 </div>
               </div>
@@ -75,7 +75,7 @@ export default function BrazilianLandingPage() {
               <img
                 src="/images/hero/hero-schools-cr3.jpg"
                 alt="Jovem jogador brasileiro treinando"
-                className="rounded-2xl shadow-2xl w-full"
+                className="rounded-card shadow-2xl w-full"
                 onError={(e) => {
                   e.target.src =
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='300' y='200' text-anchor='middle' fill='%236b7280' font-size='18'%3EJovem jogador brasileiro%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='%236b7280' font-size='14'%3Etreinando com confiança%3C/text%3E%3C/svg%3E";
@@ -100,12 +100,12 @@ export default function BrazilianLandingPage() {
         </div>
       </section>
 
-      {/* Why Choose FieldTalk Section */}
-      <section className="pt-2 pb-16 bg-white dark:bg-gray-900">
+      {/* Why Choose Global Player Section */}
+      <section className="pt-2 pb-16 bg-primary-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Por que FieldTalk English?
+            <h2 className="text-3xl font-bold text-primary-50 mb-4">
+              Por que Global Player?
             </h2>
             {/* <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Não é apenas mais um curso de inglês. É a preparação completa para
@@ -113,41 +113,41 @@ export default function BrazilianLandingPage() {
             </p> */}
           </div>
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center p-6 rounded-xl bg-green-50 dark:bg-gray-800">
-              <Smartphone className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="text-center p-6 rounded-card bg-primary-panel">
+              <Smartphone className="w-12 h-12 text-accent-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-primary-50 mb-2">
                 Experiência gameficada
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-primary-300">
                 Atividades para preparar o aluno de forma leve e dinâmica para a
                 aula de conversação
               </p>
             </div>
-            <div className="text-center p-6 rounded-xl bg-blue-50 dark:bg-gray-800">
-              <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="text-center p-6 rounded-card bg-primary-panel">
+              <Users className="w-12 h-12 text-signal-english mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-primary-50 mb-2">
                 Os alunos decidem
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-primary-300">
                 Votação semanal no tópico da próxima aula de conversação
               </p>
             </div>
-            <div className="text-center p-6 rounded-xl bg-purple-50 dark:bg-gray-800">
-              <LaptopMinimal className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="text-center p-6 rounded-card bg-primary-panel">
+              <LaptopMinimal className="w-12 h-12 text-signal-mental mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-primary-50 mb-2">
                 Painel de acompanhamento
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-primary-300">
                 Gestor e pais acompanham desempenho nas atividades e presença
                 nas aulas
               </p>
             </div>
-            <div className="text-center p-6 rounded-xl bg-orange-50 dark:bg-gray-800">
-              <Trophy className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="text-center p-6 rounded-card bg-primary-panel">
+              <Trophy className="w-12 h-12 text-signal-performance mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-primary-50 mb-2">
                 Avaliações e certificados
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-primary-300">
                 Ao finalizar o módulo o aluno recebe um certificado digital com
                 seu desempenho
               </p>
@@ -157,10 +157,10 @@ export default function BrazilianLandingPage() {
       </section>
 
       {/* Three Pillars Section - Adapted for Students */}
-      <section id="metodo" className="py-16 bg-gray-50 dark:bg-gray-800">
+      <section id="metodo" className="py-16 bg-primary-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-4xl font-bold text-primary-50 mb-6">
               Os Três Pilares do Sucesso Internacional
             </h2>
             {/* <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -173,32 +173,32 @@ export default function BrazilianLandingPage() {
           <div className="grid lg:grid-cols-3 gap-8 mb-16">
             {/* Survival Pillar */}
             <div className="group relative">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-green-500">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Globe className="w-8 h-8 text-white" />
+              <div className="bg-primary-panel rounded-card p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-accent-400">
+                <div className="w-16 h-16 bg-accent-400 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Globe className="w-8 h-8 text-primary-900" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-2xl font-bold text-primary-50 mb-4">
                   1. Sobrevivência
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-primary-300 mb-6">
                   O essencial para se adaptar rapidamente à vida e cultura do
                   futebol inglês.
                 </p>
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-accent-400 rounded-full mr-3"></div>
                     Primeiro dia no clube
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-accent-400 rounded-full mr-3"></div>
                     Moradia e cuidados médicos
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-accent-400 rounded-full mr-3"></div>
                     Emergências e pedidos de ajuda
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-accent-400 rounded-full mr-3"></div>
                     Vida social e compras
                   </li>
                 </ul>
@@ -212,32 +212,32 @@ export default function BrazilianLandingPage() {
 
             {/* Precision Pillar */}
             <div className="group relative">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-blue-500">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="bg-primary-panel rounded-card p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-signal-english">
+                <div className="w-16 h-16 bg-signal-english rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Target className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-2xl font-bold text-primary-50 mb-4">
                   2. Precisão
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-primary-300 mb-6">
                   Linguagem técnica para performance profissional e compreensão
                   tática.
                 </p>
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-english rounded-full mr-3"></div>
                     Instruções táticas e formações
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-english rounded-full mr-3"></div>
                     Comunicação durante jogos
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-english rounded-full mr-3"></div>
                     Treinos e feedback técnico
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-english rounded-full mr-3"></div>
                     Relatórios médicos e lesões
                   </li>
                 </ul>
@@ -251,32 +251,32 @@ export default function BrazilianLandingPage() {
 
             {/* Fluency Pillar */}
             <div className="group relative">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-purple-500">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="bg-primary-panel rounded-card p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-t-4 border-signal-mental">
+                <div className="w-16 h-16 bg-signal-mental rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Star className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-2xl font-bold text-primary-50 mb-4">
                   3. Fluência
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-primary-300 mb-6">
                   Comunicação avançada para liderança, mídia e sucesso de longo
                   prazo.
                 </p>
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-mental rounded-full mr-3"></div>
                     Entrevistas e treinamento de mídia
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-mental rounded-full mr-3"></div>
                     Liderança de equipe
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-mental rounded-full mr-3"></div>
                     Negociações de contrato
                   </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                  <li className="flex items-center text-primary-100">
+                    <div className="w-2 h-2 bg-signal-mental rounded-full mr-3"></div>
                     Engajamento comunitário
                   </li>
                 </ul>

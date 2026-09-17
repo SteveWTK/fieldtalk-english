@@ -77,4 +77,22 @@ body {
   .animate-slideIn {
     animation: slideIn 0.4s ease-out both;
   }
+
+  /* Reduced-motion fallback — Stage 5 spec: every gp-* brand
+     animation collapses to a 200ms fade so users with
+     prefers-reduced-motion still see the mark appear without any
+     translate / stroke-dash / letter-space motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-gp-sweep,
+    .animate-gp-rise,
+    .animate-gp-draw,
+    .animate-gp-crest,
+    .animate-gp-flash,
+    .animate-gp-word {
+      animation-name: gp-fade !important;
+      animation-duration: 200ms !important;
+      animation-timing-function: ease-out !important;
+      animation-delay: 0ms !important;
+    }
+  }
 }

@@ -1,14 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// src/app/signin/page.js
+// src/app/(site)/signin/page.js
+//
+// Sign-in surface. Two paths in: Google (primary — 90%+ of our
+// users), and email + password (fallback). Both funnel to /lesson
+// on success. The old light-mode branch was retired with the DS
+// migration — this page renders on the same dark slate substrate as
+// the rest of the app so the front-door → sign-in → dashboard
+// transition feels like one continuous surface.
 "use client";
 
 import React, { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Globe, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
-// import AuthDebug from "@/components/AuthDebug";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -25,7 +33,7 @@ export default function SignInPage() {
     setLoading(true);
     setError("");
 
-    const { user, error } = await signIn(email, password);
+    const { error } = await signIn(email, password);
 
     if (error) {
       setError(error);
@@ -36,91 +44,74 @@ export default function SignInPage() {
     setLoading(false);
   };
 
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    setError("");
-
-    // Demo credentials - in production, create these accounts
-    const { user, error } = await signIn(
-      "demo@fieldtalkenglish.com",
-      "demo123"
-    );
-
-    if (error) {
-      setError("Demo login not available. Please use the form below.");
-    } else {
-      router.push("/lesson");
-    }
-
-    setLoading(false);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Logo and Header */}
-        <div className="text-center mb-8">
-          {/* <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gradient-to-r from-primary-500 to-accent-500 dark:text-white">
-              Global Player
-            </span>
-          </div> */}
-          {/* <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome Back
-          </h1> */}
-          <p className="text-xl font-bold text-gray-800 dark:text-gray-300">
-            Faça seu login com sua conta Google
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex items-center justify-center p-4">
+      {/* Subtle ambient lime wash — matches the root landing so
+          crossing this page feels like the same room, not a
+          different one. */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-md w-full">
+        {/* Logo + heading — the small "rise" sting fires the mark
+            in on mount so the sign-in surface feels alive. */}
+        <div className="text-center mb-8 flex flex-col items-center">
+          <GlobalPlayerLogo
+            variant="crest"
+            tone="tonalDark"
+            size={64}
+            sting="rise"
+          />
+          <p className="mt-4 text-lg sm:text-xl font-display font-bold text-primary-50">
+            Faça login com sua conta Google
           </p>
         </div>
 
         <div className="mb-4">
           <GoogleAuthButton text="Sign in with Google" />
         </div>
+
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            <div className="w-full border-t border-primary-700"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 font-bold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-400">
-              Ou entre com seu email e senha
+            <span className="px-3 font-semibold bg-primary-900 text-primary-400">
+              Ou entre com email e senha
             </span>
           </div>
         </div>
 
-        {/* Sign In Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        {/* Email + password form — DS card treatment. */}
+        <div className="bg-primary-panel border border-primary-700 rounded-panel p-6 sm:p-7">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-card text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="player@club.com"
-              />
-            </div>
+            <Input
+              id="email"
+              type="email"
+              label="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="player@club.com"
+              required
+            />
 
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-[12px] font-sans font-medium text-primary-400 mb-1.5"
               >
                 Senha
               </label>
@@ -131,13 +122,14 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                  className="w-full bg-primary-900 text-primary-100 placeholder:text-primary-500 border border-primary-600 rounded-control font-sans text-[15px] leading-normal px-[15px] py-[13px] pr-10 outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30 transition-colors"
                   placeholder="Sua senha"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-100"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -148,21 +140,24 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="md"
+              loading={loading}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
-              {loading ? "Signing in..." : "Entrar"}
-            </button>
+              {loading ? "Entrando…" : "Entrar"}
+            </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="mt-5 text-center">
+            <p className="text-sm text-primary-300">
               Não tem uma conta?{" "}
               <Link
                 href="/signup"
-                className="text-accent-600 hover:text-accent-700 font-medium"
+                className="text-accent-400 hover:text-accent-300 font-semibold transition-colors"
               >
                 Registre-se aqui.
               </Link>
@@ -170,30 +165,17 @@ export default function SignInPage() {
           </div>
         </div>
 
-        {/* Demo Login Button */}
-        {/* <div className="my-6">
-          <button
-            onClick={handleDemoLogin}
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-          >
-            <span>Try Demo Account</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-            Experience the platform instantly with sample data
-          </p>
-        </div> */}
-
-        {/* Partnership Note */}
+        {/* Partnership footnote — small, discreet, points to the
+            marketing team's inbox for club/academy conversations. */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            For club partnerships and custom implementations,{" "}
+          <p className="text-xs text-primary-500">
+            Para parcerias com clubes ou academias,{" "}
             <Link
               href="/#contact"
-              className="text-accent-600 hover:text-accent-700"
+              className="text-primary-300 hover:text-primary-100 transition-colors inline-flex items-center gap-1"
             >
-              contact our team
+              fale com a gente
+              <ArrowRight className="w-3 h-3" />
             </Link>
           </p>
         </div>

@@ -3,6 +3,8 @@
 
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
 // import Image from "next/image";
 
 export default function AboutUsPage() {
@@ -10,7 +12,7 @@ export default function AboutUsPage() {
 
   const t = {
     en: {
-      title: "About FieldTalk",
+      title: "About Global Player",
       subtitle: "Empowering Football Players Through Professional English",
       missionTitle: "Our Mission",
       missionText:
@@ -65,12 +67,12 @@ export default function AboutUsPage() {
 
       joinUsTitle: "Start Your Journey",
       joinUsText:
-        "Whether you're an aspiring professional player, a youth academy talent, or already playing professionally and looking to make the jump to international football, FieldTalk is your pathway to success.",
+        "Whether you're an aspiring professional player, a youth academy talent, or already playing professionally and looking to make the jump to international football, Global Player is your pathway to success.",
       getStartedBtn: "Start Training Today",
       contactBtn: "Contact Us",
     },
     pt: {
-      title: "Sobre o FieldTalk",
+      title: "Sobre o Global Player",
       subtitle: "Capacitando Jogadores de Futebol com Inglês Profissional",
       missionTitle: "Nossa Missão",
       missionText:
@@ -124,9 +126,9 @@ export default function AboutUsPage() {
         "Desenvolver programas especiais para escolinhas de futebol em comunidades carentes.",
       joinUsTitle: "Comece Sua Jornada",
       joinUsText:
-        "Seja você um jogador profissional aspirante, um talento de academia juvenil, ou já jogando profissionalmente e buscando dar o salto para o futebol internacional, o FieldTalk é seu caminho para o sucesso.",
+        "Seja você um jogador profissional aspirante, um talento de academia juvenil, ou já jogando profissionalmente e buscando dar o salto para o futebol internacional, o Global Player é seu caminho para o sucesso.",
       getStartedBtn: "Comece a Treinar Hoje",
-      contactBtn: "Contate-nos",
+      contactBtn: "Fale Conosco",
     },
   };
 
@@ -165,41 +167,64 @@ export default function AboutUsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-accent-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      {/* <section className="relative py-6 px-6 text-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-green-600/10 dark:from-blue-800/20 dark:to-green-800/20"></div>
-        <div className="relative max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-orbitron font-bold text-gray-800 dark:text-white mb-6">
-            {copy.teamTitle}
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden">
+      {/* Ambient lime wash — matches root landing / signin so the
+          about surface reads as the same room. */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+          }}
+        />
+      </div>
+
+      {/* Hero — crested mark + wordmark title + subtitle. Same
+          pattern as root /. */}
+      <section className="relative z-10 pt-14 sm:pt-20 pb-8 px-6 text-center">
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
+          <div className="mb-6">
+            <GlobalPlayerLogo
+              variant="crest"
+              tone="tonalDark"
+              size={80}
+              sting="sweep"
+            />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display font-black tracking-tight text-primary-50 mb-4">
+            {copy.title}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 font-light leading-relaxed">
-            {copy.teamSubtitle}
+          <p className="text-lg md:text-xl text-primary-300 leading-relaxed max-w-2xl">
+            {copy.subtitle}
           </p>
         </div>
-      </section> */}
+      </section>
 
       {/* Team Section */}
-      <section className="py-10 px-6">
+      <section className="relative z-10 py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-orbitron font-bold text-gray-800 dark:text-white mb-4">
+            <p className="text-[10px] uppercase tracking-label text-primary-500 font-bold mb-3">
+              {copy.teamTitle}
+            </p>
+            <h2 className="text-3xl md:text-4xl font-display font-black text-primary-50 mb-4">
               {copy.teamTitle}
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
+            <p className="text-lg text-primary-300 max-w-2xl mx-auto">
               {copy.teamSubtitle}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {teamMembers.map((member) => (
               <div
                 key={member.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700"
+                className="bg-primary-panel rounded-card p-6 border border-primary-700 hover:border-primary-500 transition-colors duration-ui"
               >
                 <div className="relative mb-6">
-                  <div className="w-32 h-32 md:w-36 md:h-36 mx-auto rounded-full bg-gradient-to-br from-accent-400 to-primary-400 p-1">
-                    {/* <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-4xl">
+                  <div className="w-32 h-32 md:w-36 md:h-36 mx-auto rounded-full bg-accent-400 p-1">
+                    {/* <div className="w-full h-full rounded-full bg-primary-700 flex items-center justify-center text-4xl">
                       <img
                         src={member.image}
                         alt={member.name}
@@ -209,20 +234,20 @@ export default function AboutUsPage() {
                     <motion.img
                       src={member.image}
                       alt="team"
-                      className="w-full h-full rounded-full object-cover  shadow-lg"
+                      className="w-full h-full rounded-full object-cover"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1 }}
                     />
                   </div>
                 </div>
-                <h3 className="text-xl font-orbitron font-bold text-center text-gray-800 dark:text-white mb-2">
+                <h3 className="text-xl font-display font-bold text-center text-primary-50 mb-2">
                   {member.name}
                 </h3>
-                <p className="text-sm font-medium text-center text-accent-600 dark:text-accent-200 mb-4">
+                <p className="text-xs uppercase tracking-label font-bold text-center text-accent-400 mb-4">
                   {member.title}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed text-center">
+                <p className="text-primary-300 text-sm leading-relaxed text-center">
                   {member.bio}
                 </p>
               </div>
@@ -232,14 +257,14 @@ export default function AboutUsPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16 px-6">
+      <section className="relative z-10 py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-blue-100 dark:border-gray-700">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-primary-panel rounded-panel p-8 border border-primary-700">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                <div className="w-12 h-12 bg-accent-400 rounded-full flex items-center justify-center mr-4">
                   <svg
-                    className="w-6 h-6 text-white"
+                    className="w-6 h-6 text-primary-900"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -252,20 +277,20 @@ export default function AboutUsPage() {
                     />
                   </svg>
                 </div>
-                <h2 className="text-3xl font-orbitron font-bold text-gray-800 dark:text-white">
+                <h2 className="text-2xl md:text-3xl font-display font-black text-primary-50">
                   {copy.missionTitle}
                 </h2>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+              <p className="text-primary-100 leading-relaxed text-lg">
                 {copy.missionText}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-green-100 dark:border-gray-700">
+            <div className="bg-primary-panel rounded-panel p-8 border border-primary-700">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                <div className="w-12 h-12 bg-accent-400 rounded-full flex items-center justify-center mr-4">
                   <svg
-                    className="w-6 h-6 text-white"
+                    className="w-6 h-6 text-primary-900"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -284,11 +309,11 @@ export default function AboutUsPage() {
                     />
                   </svg>
                 </div>
-                <h2 className="text-3xl font-orbitron font-bold text-gray-800 dark:text-white">
+                <h2 className="text-2xl md:text-3xl font-display font-black text-primary-50">
                   {copy.visionTitle}
                 </h2>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+              <p className="text-primary-100 leading-relaxed text-lg">
                 {copy.visionText}
               </p>
             </div>
@@ -297,11 +322,16 @@ export default function AboutUsPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-6 bg-white dark:bg-gray-800">
+      <section className="relative z-10 py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-orbitron font-bold text-center text-gray-800 dark:text-white mb-12">
-            {copy.whatMakesUsSpecial}
-          </h2>
+          <div className="text-center mb-12">
+            <p className="text-[10px] uppercase tracking-label text-primary-500 font-bold mb-3">
+              {copy.whatMakesUsSpecial}
+            </p>
+            <h2 className="text-3xl md:text-4xl font-display font-black text-primary-50">
+              {copy.whatMakesUsSpecial}
+            </h2>
+          </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
@@ -310,41 +340,35 @@ export default function AboutUsPage() {
                 text: copy.feature1Text,
                 icon: "⚽",
                 image: "/images/journey/week8-tactics.jpeg",
-                color: "green",
               },
               {
                 title: copy.feature2Title,
                 text: copy.feature2Text,
                 icon: "🎮",
                 image: "/images/hero/hero-clubs.jpg",
-                color: "blue",
               },
               {
                 title: copy.feature3Title,
                 text: copy.feature3Text,
                 icon: "🌍",
                 image: "/images/journey/week16-goal.webp",
-                color: "indigo",
               },
               {
                 title: copy.feature4Title,
                 text: copy.feature4Text,
                 icon: "🗣️",
                 image: "/images/journey/week2-laughing.jpeg",
-                color: "purple",
               },
             ].map((feature, index) => (
               <div
                 key={index}
-                className="text-center group hover:transform hover:scale-105 transition-all duration-300"
+                className="text-center group"
               >
-                <div
-                  className={`w-24 h-20 mx-auto mb-3 bg-${feature.color}-100 dark:bg-${feature.color}-900 rounded-xl flex items-center justify-center text-4xl group-hover:shadow-lg transition-shadow`}
-                >
+                <div className="w-24 h-20 mx-auto mb-4 bg-primary-800 rounded-card overflow-hidden border border-primary-700 group-hover:border-accent-400 transition-colors duration-ui">
                   <motion.img
                     src={feature.image}
                     alt="team"
-                    className="w-full h-full rounded-xl object-cover  shadow-lg"
+                    className="w-full h-full object-cover"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
@@ -355,10 +379,10 @@ export default function AboutUsPage() {
                 >
                   {feature.icon}
                 </div> */}
-                <h3 className="text-xl font-orbitron font-semibold text-gray-800 dark:text-white mb-4">
+                <h3 className="text-xl font-display font-bold text-primary-50 mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-primary-300 leading-relaxed text-sm">
                   {feature.text}
                 </p>
               </div>
@@ -368,13 +392,18 @@ export default function AboutUsPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-16 px-6 bg-white dark:bg-gray-800">
+      <section className="relative z-10 py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-orbitron font-bold text-center text-gray-800 dark:text-white mb-12">
-            {copy.valuesTitle}
-          </h2>
+          <div className="text-center mb-12">
+            <p className="text-[10px] uppercase tracking-label text-primary-500 font-bold mb-3">
+              {copy.valuesTitle}
+            </p>
+            <h2 className="text-3xl md:text-4xl font-display font-black text-primary-50">
+              {copy.valuesTitle}
+            </h2>
+          </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6">
             {[
               { title: copy.value1Title, text: copy.value1Text, icon: "🌿" },
               { title: copy.value2Title, text: copy.value2Text, icon: "🎓" },
@@ -384,14 +413,14 @@ export default function AboutUsPage() {
             ].map((value, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-4 p-6 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-t-2 border-accent-400 hover:transform hover:scale-[1.02] transition-all duration-300"
+                className="flex items-start space-x-4 p-6 rounded-card bg-primary-panel border border-primary-700 border-t-2 border-t-accent-400 hover:border-primary-500 hover:border-t-accent-400 transition-colors duration-ui"
               >
                 {/* <div className="text-3xl flex-shrink-0">{value.icon}</div> */}
                 <div>
-                  <h3 className="text-xl font-orbitron font-semibold text-gray-800 dark:text-white mb-2">
+                  <h3 className="text-xl font-display font-bold text-primary-50 mb-2">
                     {value.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-primary-300 leading-relaxed">
                     {value.text}
                   </p>
                 </div>
@@ -401,26 +430,29 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      {/* <section className="py-16 px-6 bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-800 dark:to-green-800">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-orbitron font-bold text-white mb-6">
+      {/* Call to Action — a single, calm panel closing the page.
+          One lime primary CTA per view (DS rule) — "Start Training
+          Today" is the next action; "Contact Us" plays the
+          secondary role. */}
+      <section className="relative z-10 py-16 px-6">
+        <div className="max-w-4xl mx-auto text-center bg-primary-panel rounded-panel p-10 border border-primary-700">
+          <h2 className="text-3xl md:text-4xl font-display font-black text-primary-50 mb-6">
             {copy.joinUsTitle}
           </h2>
-          <p className="text-xl text-blue-100 leading-relaxed mb-8">
+          <p className="text-lg text-primary-300 leading-relaxed mb-8">
             {copy.joinUsText}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-50 transform hover:scale-105 transition-all duration-200 shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="primary" size="md" as="a" href="/signup">
               {copy.getStartedBtn}
-            </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200">
+            </Button>
+            <Button variant="secondary" size="md" as="a" href="/contact">
               {copy.contactBtn}
-            </button>
+            </Button>
           </div>
         </div>
-      </section> */}
+      </section>
     </div>
   );
 }

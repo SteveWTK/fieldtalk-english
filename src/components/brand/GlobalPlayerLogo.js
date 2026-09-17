@@ -16,6 +16,21 @@
 // (lime) tokens rather than the design-system's CSS variables, so
 // the component renders correctly today without needing tokens/*.css
 // wired in yet.
+//
+// Motion "sting" prop — Stage 5 spec (MIGRATION.md §5). Wires up
+// the DS-canonical entrance animations without exposing keyframe
+// classnames to callers:
+//
+//   sting="sweep" — the landing-page entrance. Bars slide in from
+//                   the left with a 90ms stagger + slight overshoot.
+//   sting="rise"  — stacked vertical entrance. Bars fade up with
+//                   a 130ms stagger.
+//   sting="draw"  — SVG stroke draw-on. Bars trace themselves in
+//                   place; on crest variant the shield also draws.
+//   sting="none"  — default. No entrance animation.
+//
+// prefers-reduced-motion is honoured by globals.css falling every
+// gp-* animation back to a 200ms fade.
 
 const CREST_SHIELD =
   "M50 5 L91 20 V57 C91 82 72 96 50 103 C28 96 9 82 9 57 V20 Z";
@@ -49,11 +64,34 @@ const RAMPS = {
   currentColor: ["currentColor", "currentColor", "currentColor"],
 };
 
+// Per-bar animation config for each `sting` variant. Each function
+// takes the bar index (0, 1, 2) and returns a `style` object with
+// the right animation + delay. Kept co-located with the geometry
+// so the entire mark is one file.
+const STING = {
+  none: () => undefined,
+  // "Sweep" — landing entrance. 90ms stagger between bars.
+  sweep: (i) => ({
+    animation: `gp-sweep 780ms cubic-bezier(.16,1,.3,1) ${i * 90}ms both`,
+  }),
+  // "Rise" — stacked entrance. 130ms stagger between bars.
+  rise: (i) => ({
+    animation: `gp-rise 620ms cubic-bezier(.22,1,.36,1) ${i * 130}ms both`,
+  }),
+  // "Draw" — SVG stroke draw. 110ms stagger + a small lead-in so
+  // the eye catches each bar tracing itself.
+  draw: (i) => ({
+    strokeDasharray: 120,
+    animation: `gp-draw 420ms ease-out ${340 + i * 110}ms both`,
+  }),
+};
+
 /**
  * @param {{
  *   variant?: 'open' | 'crest',
  *   tone?: 'tonalDark' | 'tonalLight' | 'monoWhite' | 'monoInk' | 'monoLime' | 'currentColor',
  *   size?: number,           // height in px for crest; wide-format width for open
+ *   sting?: 'none' | 'sweep' | 'rise' | 'draw',
  *   shieldColor?: string,    // override the shield stroke (crest only)
  *   title?: string,          // accessibility label
  *   className?: string,
@@ -64,11 +102,13 @@ export default function GlobalPlayerLogo({
   variant = "open",
   tone = "tonalDark",
   size = 24,
+  sting = "none",
   shieldColor,
   title = "Global Player",
   className,
   style,
 }) {
+  const anim = STING[sting] || STING.none;
   const bars = RAMPS[tone] || RAMPS.tonalDark;
   const crest = variant === "crest";
   // The crest is drawn on a 100×108 viewBox; open bars use 100×74.
@@ -112,6 +152,15 @@ export default function GlobalPlayerLogo({
           fill="none"
           stroke={shield}
           strokeWidth={size < 48 ? 4.5 : 3.2}
+          style={
+            sting === "draw"
+              ? {
+                  strokeDasharray: 340,
+                  animation:
+                    "gp-crest 900ms cubic-bezier(.65,0,.35,1) both",
+                }
+              : undefined
+          }
         />
       )}
       {paths.map((d, i) => (
@@ -123,6 +172,7 @@ export default function GlobalPlayerLogo({
           strokeWidth={barWeight}
           strokeLinecap="round"
           strokeLinejoin="round"
+          style={anim(i)}
         />
       ))}
     </svg>

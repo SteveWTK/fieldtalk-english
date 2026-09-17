@@ -1,24 +1,20 @@
 // src/app/page.js
 //
-// Root landing — fieldtalkenglish.com.
+// Root landing — the front door for globalplayer.app (formerly
+// fieldtalkenglish.com — domain migration is an operational task).
 //
-// Front door for organic / search / direct traffic that doesn't
-// arrive via a partner branch link (those go to /wc2026?branch=<slug>).
+// Layout: an animated Global Player mark (Sweep sting per DS Stage
+// 5) + wordmark hero, tagline, then a single Pro Path entry card.
+// The WC2026 card is preserved as commented code below so it can be
+// re-enabled when needed; the layout gracefully collapses to one
+// column when only one card renders.
 //
-// Post-WC layout: two-edition chooser. Pro Path 26/27 is the primary
-// (evergreen, ongoing business focus, lime identity); WC2026 is the
-// secondary (legacy, still accessible until Aug 31 2026, emerald +
-// gold identity preserved). Each card routes to its dedicated
-// landing page (/propath or /wc2026) where the full edition
-// experience begins.
+// Signed-in players see their current edition's card highlighted
+// with a "Continue" CTA that skips straight to /lesson — the front
+// door gets out of their way.
 //
-// Signed-in users see their current edition's card highlighted with
-// a "Continue" CTA that skips straight to /lesson — the front door
-// gets out of their way.
-//
-// This page is deliberately calm — one hero, two clearly labelled
-// choices, no upsell chrome. If we ever add more editions, they slot
-// in as additional cards; the two-card layout becomes a small grid.
+// The page stays deliberately calm — one hero, one card, no upsell
+// chrome. Marketing sub-pages carry the sell narrative.
 "use client";
 
 import { useEffect, useState } from "react";
@@ -28,10 +24,11 @@ import { ArrowRight, Target } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 
 const COPY = {
   en: {
-    heroTitle: "FieldTalk English",
+    wordmark: "GLOBAL PLAYER",
     heroTagline: "The football English you'll actually use.",
     chooseHeading: "Choose your edition",
     continue: "Continue",
@@ -53,7 +50,7 @@ const COPY = {
     },
   },
   pt: {
-    heroTitle: "FieldTalk English",
+    wordmark: "GLOBAL PLAYER",
     heroTagline: "O inglês do futebol que você vai usar de verdade.",
     chooseHeading: "Escolha sua edição",
     continue: "Continuar",
@@ -117,11 +114,10 @@ export default function RootLandingPage() {
   const isSignedIn = !!user;
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden flex flex-col">
-      {/* Ambient glows — lime for the primary Pro Path card side,
-          a hint of emerald for the WC card side, so the palette
-          reads as "the two editions co-existing" rather than either
-          one owning the whole page. */}
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex flex-col">
+      {/* Ambient glows — a single lime wash on the top-left with a
+          slate counter-wash bottom-right. Reads as "brand lime is
+          the star here." */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-[-15%] left-[-15%] w-[70vw] h-[70vw] rounded-full blur-3xl"
@@ -135,7 +131,7 @@ export default function RootLandingPage() {
           className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(16,185,129,0.12), rgba(16,185,129,0) 70%)",
+              "radial-gradient(circle at center, rgba(148,163,184,0.10), rgba(148,163,184,0) 70%)",
             animation: "rl-glow-pulse 11s ease-in-out infinite reverse",
           }}
         />
@@ -143,7 +139,7 @@ export default function RootLandingPage() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.5) 100%)",
+              "radial-gradient(ellipse at center, rgba(2,6,23,0) 30%, rgba(2,6,23,0.5) 100%)",
           }}
         />
       </div>
@@ -157,7 +153,7 @@ export default function RootLandingPage() {
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "en"
               ? "bg-accent-400 text-primary-900"
-              : "bg-white/5 text-white/60 hover:text-white"
+              : "bg-primary-800 text-primary-400 hover:text-primary-100"
           }`}
         >
           EN
@@ -168,32 +164,46 @@ export default function RootLandingPage() {
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "pt"
               ? "bg-accent-400 text-primary-900"
-              : "bg-white/5 text-white/60 hover:text-white"
+              : "bg-primary-800 text-primary-400 hover:text-primary-100"
           }`}
         >
           PT
         </button>
       </div>
 
-      {/* Hero — brand mark + tagline. Compact so both cards sit
-          above the fold on a laptop. */}
-      <header className="relative z-10 pt-16 sm:pt-20 px-6 text-center">
+      {/* Hero — animated crest + wordmark + tagline. The Global
+          Player mark uses the DS "Sweep" sting (bars slide in from
+          the left with a 90ms stagger + slight overshoot); the
+          wordmark below uses "Word" (letter-space collapse). Under
+          prefers-reduced-motion, both fall back to a 200ms fade
+          (declared in globals.css). */}
+      <header className="relative z-10 pt-14 sm:pt-20 px-6 text-center flex flex-col items-center">
+        {mounted && (
+          <div className="mb-5 sm:mb-6">
+            <GlobalPlayerLogo
+              variant="crest"
+              tone="tonalDark"
+              size={96}
+              sting="sweep"
+            />
+          </div>
+        )}
         <h1
-          className={`font-black tracking-tight leading-[0.95] opacity-0 ${
-            mounted ? "rl-rise" : ""
+          className={`font-display font-black tracking-wordmark leading-none uppercase opacity-0 ${
+            mounted ? "animate-gp-word" : ""
           }`}
           style={{
-            animationDelay: "150ms",
-            fontSize: "clamp(2.25rem, 8vw, 4.5rem)",
+            animationDelay: "540ms",
+            fontSize: "clamp(1.75rem, 6vw, 3.25rem)",
           }}
         >
-          {copy.heroTitle}
+          {copy.wordmark}
         </h1>
         <p
-          className={`mt-3 text-sm sm:text-base text-white/60 max-w-lg mx-auto leading-relaxed opacity-0 ${
-            mounted ? "rl-fade-in" : ""
+          className={`mt-4 text-sm sm:text-base text-primary-300 max-w-lg leading-relaxed opacity-0 ${
+            mounted ? "animate-gp-fade" : ""
           }`}
-          style={{ animationDelay: "450ms" }}
+          style={{ animationDelay: "820ms" }}
         >
           {copy.heroTagline}
         </p>
@@ -202,10 +212,10 @@ export default function RootLandingPage() {
       {/* Edition chooser */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
         <p
-          className={`text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold mb-4 sm:mb-6 opacity-0 ${
+          className={`text-[10px] uppercase tracking-label text-primary-500 font-bold mb-4 sm:mb-6 opacity-0 ${
             mounted ? "rl-fade-in" : ""
           }`}
-          style={{ animationDelay: "700ms" }}
+          style={{ animationDelay: "1000ms" }}
         >
           {copy.chooseHeading}
         </p>
@@ -228,7 +238,7 @@ export default function RootLandingPage() {
             showContinue={isSignedIn && userEdition === "propath_26_27"}
             onContinue={goDirectly}
             mounted={mounted}
-            animationDelay="950ms"
+            animationDelay="1200ms"
           />
 
           {/* WC2026 — secondary card. Emerald + gold DNA preserved
@@ -256,8 +266,8 @@ export default function RootLandingPage() {
 
       {/* Minimal footer — no chrome, just © line. Keeps the page
           calm and directs the eye to the two cards. */}
-      <footer className="relative z-10 pb-6 sm:pb-8 text-center text-[11px] text-white/30">
-        © 2026 FieldTalk English
+      <footer className="relative z-10 pb-6 sm:pb-8 text-center text-[11px] text-primary-500">
+        © 2026 Global Player
       </footer>
 
       <style jsx global>{`
@@ -342,13 +352,18 @@ function EditionCard({
   animationDelay,
 }) {
   const isPropath = variant === "propath";
+  // WC2026 card is currently disabled (commented out on the render
+  // tree); keep the emerald branch here so re-enabling is a one-line
+  // change. Under Global Player DS the emerald tokens are legacy —
+  // when WC is re-enabled we'll retint or leave it as an
+  // intentional legacy nod.
   const borderClass = highlighted
     ? isPropath
       ? "border-accent-400/60 shadow-[0_0_40px_rgba(163,230,53,0.15)]"
       : "border-emerald-400/60 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
-    : "border-white/10 hover:border-white/25";
+    : "border-primary-700 hover:border-primary-500";
   const iconBg = isPropath
-    ? "bg-accent-400/15 text-accent-300"
+    ? "bg-accent-400/15 text-accent-400"
     : "bg-emerald-500/15 text-emerald-300";
   const ctaClass = isPropath
     ? "bg-accent-400 hover:bg-accent-300 text-primary-900"
@@ -356,7 +371,7 @@ function EditionCard({
 
   return (
     <div
-      className={`relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border ${borderClass} transition-colors overflow-hidden opacity-0 ${
+      className={`relative rounded-panel bg-primary-panel border ${borderClass} transition-colors overflow-hidden opacity-0 ${
         mounted ? "rl-rise" : ""
       }`}
       style={{ animationDelay }}
@@ -382,31 +397,31 @@ function EditionCard({
 
       <div className="p-5 sm:p-7">
         {highlighted && userLabel && (
-          <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 font-bold mb-2">
+          <p className="text-[10px] uppercase tracking-label text-primary-400 font-bold mb-2">
             {userLabel}
           </p>
         )}
         <div className="flex items-start gap-3 mb-3">
           <div
-            className={`shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center ${iconBg}`}
+            className={`shrink-0 w-11 h-11 rounded-control flex items-center justify-center ${iconBg}`}
           >
             <Icon className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">
             <p
-              className={`text-[10px] uppercase tracking-[0.25em] font-bold ${
-                isPropath ? "text-accent-300/80" : "text-emerald-300/80"
+              className={`text-[10px] uppercase tracking-label font-bold ${
+                isPropath ? "text-accent-400/80" : "text-emerald-300/80"
               }`}
             >
               {eyebrow}
             </p>
-            <h2 className="text-lg sm:text-xl font-black tracking-tight mt-0.5">
+            <h2 className="text-lg sm:text-xl font-display font-black tracking-tight mt-0.5 text-primary-50">
               {title}
             </h2>
           </div>
         </div>
 
-        <p className="text-sm text-white/70 leading-relaxed mb-5">{tagline}</p>
+        <p className="text-sm text-primary-300 leading-relaxed mb-5">{tagline}</p>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <Link
@@ -420,7 +435,7 @@ function EditionCard({
             <button
               type="button"
               onClick={onContinue}
-              className={`inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide border border-white/20 hover:border-white/40 text-white bg-white/[0.03] hover:bg-white/[0.08] transition-colors`}
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide border border-primary-600 hover:border-primary-400 text-primary-100 bg-primary-800 hover:bg-primary-700 transition-colors"
             >
               {continueLabel}
               <ArrowRight className="w-4 h-4" />

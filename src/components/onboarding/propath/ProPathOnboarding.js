@@ -43,20 +43,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowLeft,
-  X,
-  Check,
-  Sparkles,
-  Loader2,
-} from "lucide-react";
+import { ArrowRight, ArrowLeft, X, Check, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { NOT_SURE_YET, getPosition } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
 import WhatsAppPhoneSlide from "@/components/whatsapp/onboarding/WhatsAppPhoneSlide";
 import { getConsentText } from "@/lib/whatsapp/consent";
 import SkillRadarPreview from "@/components/onboarding/propath/SkillRadarPreview";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import { Button } from "@/components/ui/button";
 
 const COPY = {
   en: {
@@ -119,8 +114,8 @@ const COPY = {
 function mapPhoneError(reason, lang) {
   if (reason === "in_use") {
     return lang === "pt"
-      ? "Esse número já está vinculado a outra conta FieldTalk. Se é seu, entre com aquela conta ou use um número diferente."
-      : "This number is already linked to another FieldTalk account. If it's yours, sign in with that account or use a different number.";
+      ? "Esse número já está vinculado a outra conta Global Player. Se é seu, entre com aquela conta ou use um número diferente."
+      : "This number is already linked to another Global Player account. If it's yours, sign in with that account or use a different number.";
   }
   if (reason === "invalid_format") {
     return lang === "pt"
@@ -302,7 +297,7 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
   const slideKey = `slide-${slideIdx}`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#070707] text-white overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-primary-900 text-primary-50 overflow-y-auto">
       {/* Ambient glows — same lime + slate identity as landing +
           dashboard. Duplicated here so the overlay reads as part of
           the Pro Path world, not a modal from a different app. */}
@@ -328,14 +323,14 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
           hatch. Keeping it available respects users who want to
           bounce straight to the app. */}
       <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-white/45 font-bold">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-primary-400 font-bold">
           {copy.dots(slideIdx + 1, slides)}
         </p>
         <button
           type="button"
           onClick={handleSkip}
           disabled={saving}
-          className="inline-flex items-center gap-1 text-xs text-white/45 hover:text-white/70 transition-colors disabled:opacity-40"
+          className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 transition-colors disabled:opacity-40"
         >
           {copy.skip}
           <X className="w-3.5 h-3.5" />
@@ -398,24 +393,22 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
 
       {/* Footer nav. Fixed layout so slide-height changes don't shift
           the primary CTA around the viewport. */}
-      <footer className="relative z-10 px-4 sm:px-6 py-5 border-t border-white/5">
+      <footer className="relative z-10 px-4 sm:px-6 py-5 border-t border-primary-700">
         {saveError && (
-          <p className="text-center text-sm text-red-300 mb-3">{saveError}</p>
+          <p className="text-center text-sm text-signal-alert mb-3">{saveError}</p>
         )}
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={slideIdx === 0 || saving}
-            className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold transition-colors ${
-              slideIdx === 0
-                ? "opacity-0 pointer-events-none"
-                : "text-white/70 hover:text-white hover:bg-white/[0.06]"
-            }`}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {copy.back}
-          </button>
+          <div className={slideIdx === 0 ? "opacity-0 pointer-events-none" : ""}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              disabled={slideIdx === 0 || saving}
+              Icon={ArrowLeft}
+            >
+              {copy.back}
+            </Button>
+          </div>
 
           {/* Progress dots — dead centre, minimal, respect prefers-
               reduced-motion for the fill transition. */}
@@ -428,31 +421,23 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
                     ? "w-8 bg-accent-400"
                     : i < slideIdx
                       ? "w-1.5 bg-accent-400/60"
-                      : "w-1.5 bg-white/15"
+                      : "w-1.5 bg-primary-600"
                 }`}
               />
             ))}
           </div>
 
           {slideIdx < slides - 1 ? (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               onClick={goNext}
               disabled={!canAdvance || saving || checkingPhone}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-40 disabled:cursor-not-allowed text-primary-900 font-bold text-sm tracking-wide transition-colors"
+              loading={checkingPhone}
+              IconTrailing={checkingPhone ? undefined : ArrowRight}
             >
-              {checkingPhone ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {copy.finishing}
-                </>
-              ) : (
-                <>
-                  {copy.next}
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+              {checkingPhone ? copy.finishing : copy.next}
+            </Button>
           ) : (
             // Final-slide CTA lives INSIDE SlideReady (above the radar)
             // so it's always visible without scrolling on mobile /
@@ -520,22 +505,30 @@ export default function ProPathOnboarding({ userName, onDismiss }) {
 function SlidePosition({ copy, value, onChange, lang }) {
   return (
     <div className="text-center">
+      <div className="flex justify-center mb-4">
+        <GlobalPlayerLogo
+          variant="crest"
+          tone="tonalDark"
+          size={80}
+          sting="sweep"
+        />
+      </div>
       <p className="text-[10px] uppercase tracking-[0.3em] text-accent-300/80 font-bold mb-2">
         {copy.eyebrow}
       </p>
       <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
         {copy.title}
       </h2>
-      <p className="text-sm text-white/60 max-w-md mx-auto leading-relaxed mb-6">
+      <p className="text-sm text-primary-400 max-w-md mx-auto leading-relaxed mb-6">
         {copy.body}
       </p>
 
       {/* Pitch card — subtle bordered container with a faint centre
           line to sell the "you're picking on a pitch" metaphor
           without dominating the interface. */}
-      <div className="relative rounded-3xl border border-white/[0.07] bg-white/[0.015] p-3 sm:p-4">
+      <div className="relative rounded-card border border-primary-700 bg-primary-panel p-3 sm:p-4">
         <div
-          className="pointer-events-none absolute left-4 right-4 top-1/2 -translate-y-1/2 border-t border-dashed border-white/5"
+          className="pointer-events-none absolute left-4 right-4 top-1/2 -translate-y-1/2 border-t border-dashed border-primary-700"
           aria-hidden
         />
 
@@ -652,10 +645,10 @@ function SlidePosition({ copy, value, onChange, lang }) {
         type="button"
         onClick={() => onChange(null)}
         aria-pressed={value === null}
-        className={`mt-3 w-full rounded-2xl border p-3 text-sm transition-all ${
+        className={`mt-3 w-full rounded-card border p-3 text-sm transition-all ${
           value === null
-            ? "border-accent-400/60 bg-accent-400/[0.08] text-accent-100"
-            : "border-dashed border-white/15 bg-transparent text-white/55 hover:text-white/80 hover:border-white/30"
+            ? "border-accent-400/60 bg-accent-400/10 text-accent-300"
+            : "border-dashed border-primary-600 bg-transparent text-primary-400 hover:text-primary-100 hover:border-primary-400"
         }`}
       >
         {lang === "pt" ? NOT_SURE_YET.pt : NOT_SURE_YET.en}
@@ -675,22 +668,22 @@ function PosButton({ pos, active, onClick, lang }) {
       onClick={onClick}
       aria-pressed={active}
       aria-label={lang === "pt" ? pos.pt : pos.en}
-      className={`w-full h-full flex flex-col items-center justify-center rounded-xl border py-2 sm:py-2.5 px-1 transition-all ${
+      className={`w-full h-full flex flex-col items-center justify-center rounded-control border py-2 sm:py-2.5 px-1 transition-all ${
         active
-          ? "border-accent-400 bg-accent-400/10 shadow-[0_0_18px_rgba(163,230,53,0.18)]"
-          : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
+          ? "border-accent-400 bg-accent-400/10"
+          : "border-primary-700 bg-primary-panel hover:border-primary-600 hover:bg-primary-800"
       }`}
     >
       <span
         className={`text-base sm:text-lg font-black tracking-tight tabular-nums ${
-          active ? "text-accent-200" : "text-white/85"
+          active ? "text-accent-300" : "text-primary-100"
         }`}
       >
         {pos.code}
       </span>
       <span
         className={`text-[9px] sm:text-[10px] mt-0.5 leading-tight text-center line-clamp-1 ${
-          active ? "text-white/80" : "text-white/50"
+          active ? "text-primary-100" : "text-primary-400"
         }`}
       >
         {lang === "pt" ? pos.pt : pos.en}
@@ -709,7 +702,7 @@ function SlideGoal({ copy, value, onChange, lang }) {
       <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
         {copy.title}
       </h2>
-      <p className="text-sm text-white/60 max-w-md mx-auto leading-relaxed mb-6">
+      <p className="text-sm text-primary-400 max-w-md mx-auto leading-relaxed mb-6">
         {copy.body}
       </p>
 
@@ -724,17 +717,17 @@ function SlideGoal({ copy, value, onChange, lang }) {
               type="button"
               onClick={() => onChange(g.slug)}
               aria-pressed={active}
-              className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
+              className={`flex items-start gap-3 rounded-card border p-4 text-left transition-all ${
                 active
-                  ? "border-accent-400 bg-accent-400/10 shadow-[0_0_24px_rgba(163,230,53,0.15)]"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
+                  ? "border-accent-400 bg-accent-400/10"
+                  : "border-primary-700 bg-primary-panel hover:border-primary-600 hover:bg-primary-800"
               }`}
             >
               <div
-                className={`shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center ${
+                className={`shrink-0 w-11 h-11 rounded-card flex items-center justify-center ${
                   active
-                    ? "bg-accent-400/20 text-accent-200"
-                    : "bg-white/[0.06] text-white/70"
+                    ? "bg-accent-400/20 text-accent-300"
+                    : "bg-primary-800 text-primary-300"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -742,12 +735,12 @@ function SlideGoal({ copy, value, onChange, lang }) {
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm sm:text-base font-bold ${
-                    active ? "text-accent-100" : "text-white/90"
+                    active ? "text-accent-300" : "text-primary-50"
                   }`}
                 >
                   {t.title}
                 </p>
-                <p className="text-xs sm:text-sm text-white/60 mt-0.5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-primary-400 mt-0.5 leading-relaxed">
                   {t.body}
                 </p>
               </div>
@@ -786,7 +779,7 @@ function SlideReady({
             (lang === "pt" ? "jogador" : "player")}
         </span>
       </h2>
-      <p className="text-sm text-white/70 max-w-md mx-auto leading-relaxed mb-4">
+      <p className="text-sm text-primary-300 max-w-md mx-auto leading-relaxed mb-4">
         {copy.body}
       </p>
 
@@ -794,24 +787,18 @@ function SlideReady({
           the radar preview below is tall enough to push a footer CTA
           off-screen on mobile / smaller laptops. Users see the button
           the moment the slide lands. */}
-      <button
-        type="button"
-        onClick={onFinish}
-        disabled={saving}
-        className="inline-flex items-center gap-1.5 px-6 py-3 mb-5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-colors shadow-[0_0_28px_rgba(163,230,53,0.35)]"
-      >
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {finishingLabel}
-          </>
-        ) : (
-          <>
-            {copy.cta}
-            <ArrowRight className="w-4 h-4" />
-          </>
-        )}
-      </button>
+      <div className="inline-flex mb-5">
+        <Button
+          variant="primary"
+          size="md"
+          onClick={onFinish}
+          disabled={saving}
+          loading={saving}
+          IconTrailing={saving ? undefined : ArrowRight}
+        >
+          {saving ? finishingLabel : copy.cta}
+        </Button>
+      </div>
 
       {/* Skill Radar teaser — a static miniature of the same 24-cell
           radar users will see on their dashboard. All cells render in

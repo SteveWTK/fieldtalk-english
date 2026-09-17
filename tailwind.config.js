@@ -254,18 +254,69 @@ module.exports = {
         entrance: "620ms", // Page + card entrances
       },
       keyframes: {
+        // Global Player brand motion library — ported from
+        // .claude/skills/global-player-design-system/design-system/tokens/motion.css
+        // Kept exact 1:1 with the DS spec so the "official" logo
+        // strings mount the same way on marketing surfaces as
+        // they'd render inside any DS reference sandbox.
+        //
         // "Sweep" — the landing-page logo sting. Each bar slides
         // in from the left with a slight overshoot; wire up with
-        // 90ms stagger between the three bars. See HANDOFF.md §2
-        // and the reference SVG at docs/brand/handoff/GlobalPlayerLogo.tsx.
+        // 90ms stagger between the three bars.
         "gp-sweep": {
           from: { opacity: "0", transform: "translateX(-30px) scaleX(.86)" },
           "70%": { transform: "translateX(3px) scaleX(1.02)" },
           to: { opacity: "1", transform: "translateX(0) scaleX(1)" },
         },
+        // "Rise" — stacked entrance for hero copy blocks + logo
+        // where a vertical build reads better than the horizontal
+        // Sweep. Pair with 130ms stagger on siblings.
+        "gp-rise": {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        // "Draw" — SVG stroke draw-on used on the open-bars variant
+        // when we want the mark to build in place instead of sweep
+        // in. Pair with strokeDasharray inline (see GlobalPlayerLogo).
+        "gp-draw": {
+          from: { strokeDashoffset: "120" },
+          to: { strokeDashoffset: "0" },
+        },
+        // "Crest draw" — the shield outline draws once on the app
+        // splash. Longer than the bars and starts opaque low.
+        "gp-crest": {
+          from: { strokeDashoffset: "340", opacity: "0.2" },
+          to: { strokeDashoffset: "0", opacity: "1" },
+        },
+        // "Flash" — the lime glow pulse used sparingly on hero
+        // arrivals (once, never on loop, never on chrome).
+        "gp-flash": {
+          "0%": { filter: "none" },
+          "45%": { filter: "drop-shadow(0 0 10px rgba(163,230,53,.85))" },
+          "100%": { filter: "none" },
+        },
+        // "Word" — wordmark letter-space collapse from a wide
+        // spread. Used behind the "GLOBAL PLAYER" title on the
+        // landing hero.
+        "gp-word": {
+          from: { opacity: "0", letterSpacing: ".44em" },
+          to: { opacity: "1", letterSpacing: ".2em" },
+        },
+        // "Fade" — plain 200ms fade. Doubles as the
+        // prefers-reduced-motion fallback baked into globals.css.
+        "gp-fade": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
       },
       animation: {
         "gp-sweep": "gp-sweep 780ms cubic-bezier(.16,1,.3,1) both",
+        "gp-rise": "gp-rise 620ms cubic-bezier(.22,1,.36,1) both",
+        "gp-draw": "gp-draw 420ms ease-out both",
+        "gp-crest": "gp-crest 900ms cubic-bezier(.65,0,.35,1) both",
+        "gp-flash": "gp-flash 1200ms ease-out both",
+        "gp-word": "gp-word 620ms cubic-bezier(.22,1,.36,1) both",
+        "gp-fade": "gp-fade 200ms ease-out both",
       },
     },
   },

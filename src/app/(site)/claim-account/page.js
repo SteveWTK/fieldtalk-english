@@ -13,6 +13,9 @@ import {
   EyeOff,
   ArrowRight,
 } from "lucide-react";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 
 const translations = {
   en: {
@@ -89,6 +92,22 @@ const translations = {
   },
 };
 
+// Ambient lime wash — matches signin / signup / onboarding so this
+// surface sits in the same room as the rest of the auth flow.
+function AmbientWash() {
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <div
+        className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function ClaimAccountPage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
@@ -110,8 +129,8 @@ export default function ClaimAccountPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent-600" />
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent-400" />
       </div>
     );
   }
@@ -119,18 +138,20 @@ export default function ClaimAccountPage() {
   // Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
+      <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex items-center justify-center p-4">
+        <AmbientWash />
+        <div className="relative z-10 bg-primary-panel border border-primary-700 rounded-panel p-8 max-w-md w-full text-center">
+          <AlertTriangle className="w-12 h-12 text-signal-alert mx-auto mb-4" />
+          <p className="text-primary-100 mb-4">
             {copy.notLoggedIn}
           </p>
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => router.push("/login")}
-            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition-colors"
           >
             {copy.goToLogin}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -139,18 +160,20 @@ export default function ClaimAccountPage() {
   // Not a guest user
   if (!isGuest) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
+      <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex items-center justify-center p-4">
+        <AmbientWash />
+        <div className="relative z-10 bg-primary-panel border border-primary-700 rounded-panel p-8 max-w-md w-full text-center">
+          <CheckCircle2 className="w-12 h-12 text-accent-400 mx-auto mb-4" />
+          <p className="text-primary-100 mb-4">
             {copy.notGuest}
           </p>
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => router.push("/dashboard")}
-            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition-colors"
           >
             {copy.goToDashboard}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -159,27 +182,30 @@ export default function ClaimAccountPage() {
   // Success state
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+      <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex items-center justify-center p-4">
+        <AmbientWash />
+        <div className="relative z-10 bg-primary-panel border border-primary-700 rounded-panel p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 rounded-full bg-accent-400/10 border border-accent-400/40 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="w-8 h-8 text-accent-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-display font-bold text-primary-50 mb-2">
             {copy.successTitle}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-primary-400 mb-6">
             {copy.successMessage}
           </p>
-          <button
+          <Button
+            variant="primary"
+            size="md"
+            className="w-full"
+            IconTrailing={ArrowRight}
             onClick={async () => {
               await signOut();
               router.push("/login");
             }}
-            className="w-full py-3 px-6 bg-accent-600 hover:bg-accent-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {copy.signIn}
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -225,124 +251,118 @@ export default function ClaimAccountPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-12">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center mx-auto mb-4">
-            <UserPlus className="w-8 h-8 text-accent-600 dark:text-accent-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex items-center justify-center p-4 py-12">
+      <AmbientWash />
+
+      <div className="relative z-10 max-w-md w-full">
+        {/* Header — crest + heading, matching the signin / signup
+            room so a guest completing account setup feels like they
+            never left the auth flow. */}
+        <div className="text-center mb-8 flex flex-col items-center">
+          <GlobalPlayerLogo
+            variant="crest"
+            tone="tonalDark"
+            size={64}
+            sting="rise"
+          />
+          <h1 className="mt-4 text-2xl font-display font-bold text-primary-50">
             {copy.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
+          <p className="text-primary-400 mt-2">
             {copy.subtitle}
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {copy.emailLabel}
-            </label>
-            <input
+        <div className="bg-primary-panel border border-primary-700 rounded-panel p-8">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <Input
               type="email"
+              label={copy.emailLabel}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={copy.emailPlaceholder}
               required
-              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
             />
-          </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {copy.passwordLabel}
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={copy.passwordPlaceholder}
-                required
-                minLength={6}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors pr-12"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            {/* Password — hand-rolled to keep the show/hide toggle,
+                tokenised to match Input's DS treatment. */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-primary-400 mb-1.5"
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
+                {copy.passwordLabel}
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={copy.passwordPlaceholder}
+                  required
+                  minLength={6}
+                  className="w-full bg-primary-900 text-primary-100 placeholder:text-primary-500 border border-primary-600 rounded-control font-sans text-[15px] leading-normal px-[15px] py-[13px] pr-10 outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-100"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {copy.confirmPasswordLabel}
-            </label>
-            <input
+            {/* Confirm Password */}
+            <Input
               type={showPassword ? "text" : "password"}
+              label={copy.confirmPasswordLabel}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder={copy.confirmPasswordPlaceholder}
               required
               minLength={6}
-              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
             />
-          </div>
 
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {copy.nameLabel}
-            </label>
-            <input
+            {/* Name */}
+            <Input
               type="text"
+              label={copy.nameLabel}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={copy.namePlaceholder}
-              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
             />
-          </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 text-sm flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3 px-6 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-lg"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {copy.creating}
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5" />
-                {copy.createAccount}
-              </>
+            {/* Error message */}
+            {error && (
+              <div className="p-3 bg-signal-alert/10 border border-signal-alert/40 rounded-card text-signal-alert text-sm flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
             )}
-          </button>
-        </form>
+
+            {/* Submit — the single lime action on this view. */}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              Icon={isSubmitting ? undefined : UserPlus}
+              className="w-full"
+            >
+              {isSubmitting ? copy.creating : copy.createAccount}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
