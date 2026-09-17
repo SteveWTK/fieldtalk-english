@@ -48,8 +48,8 @@ import React from "react";
  */
 export default function LivingOrb({
   size = 260,
-  phaseLabel,
-  subLabel,
+  // phaseLabel,
+  // subLabel,
   paused = false,
   accent = "mental",
   breatheIn = 4,
@@ -70,10 +70,7 @@ export default function LivingOrb({
   // scale-up cleanly flips into scale-down with no plateau.
   const totalSec = Math.max(2, breatheIn + breatheHold + breatheOut);
   const inhaleEndPct = ((breatheIn / totalSec) * 100).toFixed(2);
-  const holdEndPct = (
-    ((breatheIn + breatheHold) / totalSec) *
-    100
-  ).toFixed(2);
+  const holdEndPct = (((breatheIn + breatheHold) / totalSec) * 100).toFixed(2);
 
   // Wrapper size — sits at 1.5× the orb diameter. The orb scales to
   // 1.18× at inhale peak (~330px for a 280 orb) and the orbit
@@ -142,7 +139,7 @@ export default function LivingOrb({
       {/* Phase labels — sit inside the orb visually, absolutely
           positioned so they don't inherit the scale. Keep it
           minimal — this is a meditation, not a UI dashboard. */}
-      {(phaseLabel || subLabel) && (
+      {/* {(phaseLabel || subLabel) && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           {phaseLabel && (
             <p className="text-2xl sm:text-3xl font-light tracking-wide text-white/95 drop-shadow-lg">
@@ -155,7 +152,7 @@ export default function LivingOrb({
             </p>
           )}
         </div>
-      )}
+      )} */}
 
       <style jsx>{`
         /* ── The orb — a soft-glow disk that breathes a custom cycle.
@@ -204,14 +201,23 @@ export default function LivingOrb({
              flows just as well. If breatheHold is 0 the two plateau
              stops sit at the same percent → clean rise-and-fall. */
         @keyframes breathe {
-          0% { transform: scale(1); }
-          ${inhaleEndPct}% { transform: scale(1.18); }
-          ${holdEndPct}% { transform: scale(1.18); }
-          100% { transform: scale(1); }
+          0% {
+            transform: scale(1);
+          }
+          ${inhaleEndPct}% {
+            transform: scale(1.18);
+          }
+          ${holdEndPct}% {
+            transform: scale(1.18);
+          }
+          100% {
+            transform: scale(1);
+          }
         }
 
         @keyframes shimmer {
-          0%, 100% {
+          0%,
+          100% {
             transform: rotate(0deg) scale(1);
             opacity: 0.85;
           }
@@ -222,11 +228,26 @@ export default function LivingOrb({
         }
 
         @keyframes highlight-drift {
-          0% { transform: translate(0, 0); opacity: 0.65; }
-          25% { transform: translate(15%, -8%); opacity: 0.8; }
-          50% { transform: translate(30%, 5%); opacity: 0.6; }
-          75% { transform: translate(15%, 12%); opacity: 0.75; }
-          100% { transform: translate(0, 0); opacity: 0.65; }
+          0% {
+            transform: translate(0, 0);
+            opacity: 0.65;
+          }
+          25% {
+            transform: translate(15%, -8%);
+            opacity: 0.8;
+          }
+          50% {
+            transform: translate(30%, 5%);
+            opacity: 0.6;
+          }
+          75% {
+            transform: translate(15%, 12%);
+            opacity: 0.75;
+          }
+          100% {
+            transform: translate(0, 0);
+            opacity: 0.65;
+          }
         }
 
         /* ── Orbiting particles ─────────────────────────────── */
@@ -250,16 +271,24 @@ export default function LivingOrb({
 
         @keyframes orbit {
           from {
-            transform: rotate(var(--angle)) translateX(var(--orbit-r)) rotate(calc(var(--angle) * -1));
+            transform: rotate(var(--angle)) translateX(var(--orbit-r))
+              rotate(calc(var(--angle) * -1));
           }
           to {
-            transform: rotate(calc(var(--angle) + 360deg)) translateX(var(--orbit-r)) rotate(calc((var(--angle) + 360deg) * -1));
+            transform: rotate(calc(var(--angle) + 360deg))
+              translateX(var(--orbit-r))
+              rotate(calc((var(--angle) + 360deg) * -1));
           }
         }
 
         @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.9; }
+          0%,
+          100% {
+            opacity: 0.3;
+          }
+          50% {
+            opacity: 0.9;
+          }
         }
       `}</style>
     </div>
@@ -295,8 +324,7 @@ const ACCENT_PALETTES = {
   mental: {
     outer:
       "radial-gradient(circle at 30% 30%, #c4b5fd, #7c3aed 55%, #4c1d95 90%)",
-    inner:
-      "radial-gradient(circle at 60% 60%, #ddd6fe, transparent 65%)",
+    inner: "radial-gradient(circle at 60% 60%, #ddd6fe, transparent 65%)",
     glow1: "rgba(196, 181, 253, 0.35)",
     glow2: "rgba(76, 29, 149, 0.35)",
     particle: "rgba(221, 214, 254, 0.9)",
@@ -304,8 +332,7 @@ const ACCENT_PALETTES = {
   english: {
     outer:
       "radial-gradient(circle at 30% 30%, #67e8f9, #0e7490 55%, #1e3a8a 90%)",
-    inner:
-      "radial-gradient(circle at 60% 60%, #a5f3fc, transparent 65%)",
+    inner: "radial-gradient(circle at 60% 60%, #a5f3fc, transparent 65%)",
     glow1: "rgba(103, 232, 249, 0.35)",
     glow2: "rgba(30, 58, 138, 0.35)",
     particle: "rgba(165, 243, 252, 0.9)",
@@ -313,8 +340,7 @@ const ACCENT_PALETTES = {
   performance: {
     outer:
       "radial-gradient(circle at 30% 30%, #fcd34d, #d97706 55%, #7c2d12 90%)",
-    inner:
-      "radial-gradient(circle at 60% 60%, #fde68a, transparent 65%)",
+    inner: "radial-gradient(circle at 60% 60%, #fde68a, transparent 65%)",
     glow1: "rgba(252, 211, 77, 0.35)",
     glow2: "rgba(124, 45, 18, 0.35)",
     particle: "rgba(253, 230, 138, 0.9)",
@@ -322,8 +348,7 @@ const ACCENT_PALETTES = {
   slate: {
     outer:
       "radial-gradient(circle at 30% 30%, #e2e8f0, #64748b 55%, #1e293b 90%)",
-    inner:
-      "radial-gradient(circle at 60% 60%, #f1f5f9, transparent 65%)",
+    inner: "radial-gradient(circle at 60% 60%, #f1f5f9, transparent 65%)",
     glow1: "rgba(226, 232, 240, 0.35)",
     glow2: "rgba(30, 41, 59, 0.35)",
     particle: "rgba(241, 245, 249, 0.85)",
