@@ -74,6 +74,24 @@ export function getSupportedEditionIds() {
   return new Set([...Object.keys(EDITIONS), "players"]);
 }
 
+/**
+ * The default edition every new player lands in when a specific one
+ * hasn't been tagged (root-domain signups, Google OAuth without a
+ * pending_edition, direct /join without ?edition=).
+ *
+ * Currently Pro Path (Global Player) — the primary evergreen product
+ * as of the 2026-09 rebrand. Every marketing / sales push (agents,
+ * academies, clubs, individual players) points at this edition.
+ *
+ * Partner-branded flows (e.g. /wc2026?branch=<slug>) still land in
+ * WC2026 because they pass `?edition=wc2026` explicitly — those
+ * override this default.
+ *
+ * Change this constant, not the string in individual auth routes,
+ * if the primary edition ever shifts again.
+ */
+export const DEFAULT_EDITION = "propath_26_27";
+
 // ─── Offerings (Stripe products we sell) ───────────────────────────
 
 // `displayPrice` and `displayInterval` are user-facing strings the

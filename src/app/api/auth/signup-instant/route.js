@@ -10,7 +10,10 @@
 import { NextResponse } from "next/server";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
-import { getSupportedEditionIds } from "@/lib/editions/editions";
+import {
+  getSupportedEditionIds,
+  DEFAULT_EDITION,
+} from "@/lib/editions/editions";
 
 // Derived from EDITIONS in editions.js at import time — new editions
 // added there flow through here automatically.
@@ -22,13 +25,21 @@ export async function POST(request) {
     const email = (body.email || "").trim().toLowerCase();
     const password = body.password || "";
     const fullName = (body.fullName || "").trim();
-    // Default-to-wc2026: every signup we do not explicitly tag as
-    // anything else lands in the WC2026 edition. Pre-launch the
-    // default was "players", but every active acquisition channel is
-    // now WC2026-shaped (root landing, /wc2026, partner branch
-    // links), so falling back to wc2026 is the correct behaviour.
-    const rawEdition = body.edition || "wc2026";
-    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "wc2026";
+    // Default-to-Pro-Path: every signup we do not explicitly tag as
+    // something else lands in the primary Global Player edition. The
+    // root landing, /join, and any B2B / marketing push all funnel
+    // here without a ?edition= param. Only partner-branded flows
+    // (e.g. /wc2026?branch=<slug>) will override this default by
+    // sending edition=wc2026 explicitly.
+    //
+    // Historical note: the default was `wc2026` up to 2026-09 when
+    // Pro Path was still one of two front-door editions. The rebrand
+    // retired the WC2026 chooser card, so every un-tagged signup now
+    // belongs in Pro Path.
+    const rawEdition = body.edition || DEFAULT_EDITION;
+    const edition = SUPPORTED_EDITIONS.has(rawEdition)
+      ? rawEdition
+      : DEFAULT_EDITION;
 
     // Partner attribution slug (e.g. "fortaleza", "ceara-aldeota").
     // Sanitised client-side already, but defence-in-depth:

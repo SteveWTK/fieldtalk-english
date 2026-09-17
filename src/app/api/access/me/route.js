@@ -28,6 +28,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { getEditionAccess } from "@/lib/access/editionAccess";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 
 const ACTIVE_STATUSES = new Set(["active", "trialing"]);
 
@@ -69,7 +70,10 @@ export async function GET(request) {
       if (!edition) edition = playerRow?.edition || null;
       isAdmin = playerRow?.user_type === "platform_admin";
     }
-    if (!edition) edition = "wc2026";
+    // Anonymous / unresolved edition falls back to the primary
+    // Global Player edition. Anonymous /lesson visitors will see
+    // Pro Path preview lessons rather than the retired WC2026 set.
+    if (!edition) edition = DEFAULT_EDITION;
 
     // ── Preview lesson IDs (first lesson per pillar in this edition) ──
     // We list pillars for the edition, then for each pillar grab the

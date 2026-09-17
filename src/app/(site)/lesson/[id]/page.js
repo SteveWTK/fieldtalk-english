@@ -669,7 +669,7 @@ function DynamicLessonContent() {
   if (!access.loading && !lessonAllowed) {
     return (
       <div className="min-h-screen bg-primary-900 text-primary-50 px-4 py-10 sm:py-14">
-        <PaywallCard edition={lessonEdition || "wc2026"} variant="full" />
+        <PaywallCard edition={lessonEdition || undefined} variant="full" />
       </div>
     );
   }

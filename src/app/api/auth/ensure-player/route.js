@@ -13,7 +13,10 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
 import { awardWelcomeBonusIfMissing } from "@/lib/players/awardWelcomeBonus";
-import { getSupportedEditionIds } from "@/lib/editions/editions";
+import {
+  getSupportedEditionIds,
+  DEFAULT_EDITION,
+} from "@/lib/editions/editions";
 
 // Derived from EDITIONS in editions.js at import time. Adding a new
 // edition there automatically expands what the auth flow accepts —
@@ -23,11 +26,15 @@ const SUPPORTED_EDITIONS = getSupportedEditionIds();
 export async function POST(request) {
   try {
     const body = await request.json();
-    // Default-to-wc2026 (same rationale as signup-instant — see comment
-    // there). Pre-launch the default was "players"; every live
-    // acquisition channel is now WC2026.
-    const rawEdition = body.edition || "wc2026";
-    const edition = SUPPORTED_EDITIONS.has(rawEdition) ? rawEdition : "wc2026";
+    // Default-to-Pro-Path — see the identical rationale in
+    // /api/auth/signup-instant. Every un-tagged Google OAuth signup
+    // lands in Pro Path (the primary Global Player edition) unless
+    // the caller stashed a different `pending_edition` before the
+    // OAuth redirect.
+    const rawEdition = body.edition || DEFAULT_EDITION;
+    const edition = SUPPORTED_EDITIONS.has(rawEdition)
+      ? rawEdition
+      : DEFAULT_EDITION;
 
     // Partner attribution slug from /wc2026?branch=<slug>. Sanitised
     // client-side; we re-validate the shape here.

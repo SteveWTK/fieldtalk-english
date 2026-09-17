@@ -75,6 +75,7 @@ import Button from "@/components/ui/button";
 import Chip from "@/components/ui/chip";
 import StatTile from "@/components/ui/stat-tile";
 import MetricBar from "@/components/ui/metric-bar";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 
 function PlayerLessonsMenu() {
   const [selectedPillar, setSelectedPillar] = useState("survival");
@@ -1302,7 +1303,7 @@ function LessonCard({
       {status === "edition_paywall" && (
         <div className="mt-3">
           <Link
-            href={`/pricing?edition=${encodeURIComponent(profile?.edition || "wc2026")}`}
+            href={`/pricing?edition=${encodeURIComponent(profile?.edition || DEFAULT_EDITION)}`}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-signal-performance/15 hover:bg-signal-performance/25 border border-signal-performance/40 hover:border-signal-performance/70 text-signal-performance text-[10px] font-bold uppercase tracking-label transition-colors"
             aria-label="Get the full edition to unlock"
           >

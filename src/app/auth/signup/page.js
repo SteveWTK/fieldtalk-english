@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Globe, ArrowRight, Users, Shield, User } from "lucide-react";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 
 export default function SignUpPage() {
   const [step, setStep] = useState(1); // 1: Role selection, 2: Details form
@@ -112,6 +113,12 @@ export default function SignUpPage() {
     const metadata = {
       full_name: formData.fullName,
       user_type: selectedRole,
+      // Always stamp the default edition so this legacy /auth/signup
+      // path can't create an un-tagged players row (which then falls
+      // to whatever the DB trigger's fallback is — historically the
+      // "players" slug or wc2026). The 2026-09 rebrand made Pro Path
+      // the single default; every un-tagged new user belongs there.
+      edition: DEFAULT_EDITION,
     };
 
     if (selectedRole === "player") {

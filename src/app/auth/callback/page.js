@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "lucide-react";
 import { readPartnerReferrer } from "@/lib/partners/referrer";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 import PartnerLogo from "@/components/branding/PartnerLogo";
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
@@ -60,10 +61,11 @@ export default function AuthCallbackPage() {
               headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({
-                // Default to wc2026 — every active acquisition channel
-                // is World Cup themed. `pending_edition` from /wc2026
-                // wins when present.
-                edition: pendingEdition || "wc2026",
+                // Default to the primary Global Player edition
+                // (Pro Path). Partner-branded flows override this by
+                // stashing `pending_edition` in localStorage before
+                // the OAuth redirect (see GoogleAuthButton).
+                edition: pendingEdition || DEFAULT_EDITION,
                 partnerReferrer: readPartnerReferrer(),
                 // Browser-detected preferred language. LanguageContext
                 // writes the detected value to localStorage on mount;

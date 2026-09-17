@@ -27,6 +27,7 @@ import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import { getBranch } from "@/lib/branches";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 import {
   rememberPartnerReferrer,
   readPartnerReferrer,
@@ -35,7 +36,14 @@ import {
 function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const edition = searchParams.get("edition") || null;
+  // Edition resolution — explicit `?edition=` param wins, everything
+  // else falls to the primary Global Player edition (Pro Path). The
+  // server routes have the same fallback; sending the resolved
+  // edition explicitly here means a client that reaches this page
+  // via a partner deep link still gets the right tag, and everyone
+  // else still lands in Pro Path without an untagged null flowing
+  // through to the API.
+  const edition = searchParams.get("edition") || DEFAULT_EDITION;
   const branchKey = searchParams.get("branch");
   // Branding rule (2026-09):
   //   - No branch slug            → Global Player mark only.

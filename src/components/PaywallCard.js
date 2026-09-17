@@ -16,6 +16,7 @@
 import Link from "next/link";
 import { Lock, ArrowRight, Sparkles } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 
 const COPY = {
   en: {
@@ -35,7 +36,10 @@ const COPY = {
   },
 };
 
-export default function PaywallCard({ edition = "wc2026", variant = "full" }) {
+export default function PaywallCard({
+  edition = DEFAULT_EDITION,
+  variant = "full",
+}) {
   const { userLanguage } = useTranslation();
   const t = COPY[userLanguage === "pt" ? "pt" : "en"];
   const href = `/pricing?edition=${encodeURIComponent(edition)}`;

@@ -15,6 +15,7 @@ import { ArrowRight, Users, User } from "lucide-react";
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import { DEFAULT_EDITION } from "@/lib/editions/editions";
 
 function SignUpPageContent() {
   const [step, setStep] = useState(1); // 1: Role selection, 2: Details form
@@ -33,10 +34,13 @@ function SignUpPageContent() {
 
   const { signUp } = useAuth();
   const router = useRouter();
-  // If the user arrived via /wc2026 → /signup?edition=wc2026 we tag their
-  // new player row with that edition so the lesson list filters correctly.
+  // Edition tag — the explicit `?edition=` param wins (e.g. a partner
+  // deep-link at /signup?edition=wc2026), otherwise fall to the
+  // primary Global Player edition so no un-tagged signup can slip
+  // through into a wrong-edition dashboard. See the DEFAULT_EDITION
+  // export in editions.js for the source of truth.
   const searchParams = useSearchParams();
-  const edition = searchParams.get("edition") || null;
+  const edition = searchParams.get("edition") || DEFAULT_EDITION;
 
   const roles = [
     {
@@ -133,11 +137,12 @@ function SignUpPageContent() {
       metadata.club_name = formData.clubName;
     }
 
-    // Preserve the edition tag (e.g. 'wc2026') so the DB trigger writes it
-    // to players.edition. Falls back to 'players' (the default).
-    if (edition) {
-      metadata.edition = edition;
-    }
+    // Always send an edition — the resolved value is either the
+    // explicit ?edition= param or DEFAULT_EDITION. The DB trigger
+    // reads user_metadata.edition and writes it to players.edition;
+    // sending it every time guarantees the row is tagged correctly
+    // regardless of what the trigger's own fallback is.
+    metadata.edition = edition;
 
     const { user, error } = await signUp(
       formData.email,
