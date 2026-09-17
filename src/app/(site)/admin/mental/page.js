@@ -97,12 +97,12 @@ function MentalAdminContent() {
             Global Player · CMS
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            {isPt ? "Treino Mental" : "Mental Training"}
+            {isPt ? "Mente de Elite" : "Peak Mind"}
           </h1>
           <p className="text-sm text-primary-400 mt-2 max-w-xl leading-relaxed">
             {isPt
-              ? "Gerencie atividades, moods e atribuições por unidade."
-              : "Manage activities, moods, and per-unit assignments."}
+              ? "Gerencie sessões, moods e atribuições por unidade."
+              : "Manage sessions, moods, and per-unit assignments."}
           </p>
         </header>
 

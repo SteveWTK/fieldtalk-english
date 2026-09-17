@@ -353,9 +353,12 @@ function eventMeta(e) {
   return `${mins} min`;
 }
 
+// Coach-facing labels for the recent-events timeline. Kept in sync
+// with the sports-psych register used across the Peak Mind hub —
+// "Focus drill" over "Meditation", etc.
 const ACTIVITY_TYPE_LABELS = {
   breathing: "Breathing exercise",
-  meditation: "Meditation",
+  meditation: "Focus drill",
   visualization: "Visualization",
   match_prep: "Match prep ritual",
   scenario: "Scenario training",

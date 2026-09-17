@@ -205,8 +205,8 @@ function AdminHubContent() {
           <AdminCard
             href="/admin/mental"
             Icon={Brain}
-            title="Mental Training"
-            body="Author meditations, silent-timer settings, and unit-slot assignments."
+            title="Peak Mind"
+            body="Author focus drills, solo protocols, and unit-slot assignments."
             accent="emerald"
           />
           <AdminCard

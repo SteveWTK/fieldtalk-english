@@ -8,10 +8,13 @@ import {
   Waves,
   Flame,
   Moon,
-  HeartCrack,
+  TrendingDown,
   Target,
-  Feather,
+  HeartPulse,
   Sparkles,
+  Zap,
+  Mic,
+  Timer,
 } from "lucide-react";
 
 export const ACTIVITY_TYPES = [
@@ -24,19 +27,17 @@ export const ACTIVITY_TYPES = [
 
 // Mood catalog — keys are stable (used in mental_activities.moods
 // TEXT[]), labels are bilingual, tones drive card gradients. `Icon`
-// is a lucide component reference (was `emoji` — swapped so the
-// mood picker matches the sharp, sleek register of the rest of the
-// app). Icon choice mirrors the old emoji intent:
-//   🌊 → Waves, 🔥 → Flame, 🌙 → Moon, 💔 → HeartCrack,
-//   🎯 → Target, 🧘 → Feather (lighter than a lotus glyph),
-//   ✨ → Sparkles.
+// is a lucide component reference. Copy + icon register was
+// repositioned (2026-09) from a "Buddhist calm" to an elite
+// sports-psych voice: pressure, setback, recovery — the moments an
+// athlete actually faces.
 export const MOODS = [
-  { key: "pre_match", pt: "Ansioso antes do jogo", en: "Pre-match nerves", tone: "sky", Icon: Waves },
+  { key: "pre_match", pt: "Pressão pré-jogo", en: "Pre-match pressure", tone: "sky", Icon: Waves },
   { key: "pre_training", pt: "Foco antes do treino", en: "Focus before training", tone: "emerald", Icon: Flame },
   { key: "cant_sleep", pt: "Sem conseguir dormir", en: "Can't sleep", tone: "indigo", Icon: Moon },
-  { key: "disappointment", pt: "Após uma decepção", en: "After a setback", tone: "amber", Icon: HeartCrack },
-  { key: "big_game_prep", pt: "Visualização de jogo grande", en: "Big game visualization", tone: "violet", Icon: Target },
-  { key: "wind_down", pt: "Só descansar a mente", en: "Just wind down", tone: "teal", Icon: Feather },
+  { key: "disappointment", pt: "Depois de uma queda", en: "After a setback", tone: "amber", Icon: TrendingDown },
+  { key: "big_game_prep", pt: "Preparação para jogo grande", en: "Big game prep", tone: "violet", Icon: Target },
+  { key: "wind_down", pt: "Recuperação pós-jogo", en: "Post-match recovery", tone: "teal", Icon: HeartPulse },
   { key: "general", pt: "Qualquer momento", en: "Anytime", tone: "neutral", Icon: Sparkles },
 ];
 
@@ -63,11 +64,16 @@ export const MOOD_KEYS = MOODS.map((m) => m.key);
 // but a blurred colour wash is atmospheric, not a shadow.
 export const ACTIVITY_TONES = {
   meditation: {
-    label: { pt: "Meditação guiada", en: "Guided meditation" },
+    // Labels repositioned (2026-09) from "Guided meditation" to the
+    // sport-native "Focus drill" register. PT is "Foco guiado" —
+    // preserves the "guided" intent from the original while dropping
+    // the spiritual freight of "meditação".
+    label: { pt: "Foco guiado", en: "Focus drill" },
     signal: "mental",
     glow: "bg-signal-mental/30",
     border: "border-signal-mental/40",
     chip: "bg-signal-mental/15 text-signal-mental",
+    Icon: Waves,
   },
   champion_scenario: {
     label: { pt: "Cenário de campeão", en: "Champion scenario" },
@@ -75,6 +81,7 @@ export const ACTIVITY_TONES = {
     glow: "bg-signal-performance/30",
     border: "border-signal-performance/40",
     chip: "bg-signal-performance/15 text-signal-performance",
+    Icon: Target,
   },
   match_prep: {
     label: { pt: "Ritual pré-jogo", en: "Match prep ritual" },
@@ -82,6 +89,7 @@ export const ACTIVITY_TONES = {
     glow: "bg-signal-english/30",
     border: "border-signal-english/40",
     chip: "bg-signal-english/15 text-signal-english",
+    Icon: Zap,
   },
   voice_of_champion: {
     label: { pt: "Voz de campeão", en: "Voice of champions" },
@@ -89,13 +97,17 @@ export const ACTIVITY_TONES = {
     glow: "bg-signal-mental/30",
     border: "border-signal-mental/40",
     chip: "bg-signal-mental/15 text-signal-mental",
+    Icon: Mic,
   },
   silent_timer: {
-    label: { pt: "Meditação silenciosa", en: "Silent meditation" },
+    // Repositioned from "Silent meditation" to "Solo protocol" —
+    // "protocol" reads like a training method, not a spiritual sit.
+    label: { pt: "Protocolo solo", en: "Solo protocol" },
     signal: null,
     glow: "bg-primary-600/30",
     border: "border-primary-600",
     chip: "bg-primary-700 text-primary-200",
+    Icon: Timer,
   },
 };
 
@@ -123,12 +135,20 @@ export const XP_REWARDS = {
 };
 
 // Bilingual copy dictionary.
+//
+// Positioning voice — the whole hub was repositioned (2026-09) from
+// a "quiet the mind" Buddhist register to an elite sports-psych
+// voice: pressure, arousal control, recovery, focus reps. The
+// underlying practice mechanics (breath phases, silent timer, guided
+// audio) are unchanged — only the copy shifted. See the mental hub
+// repositioning proposal note in the project memory for the full
+// vocabulary map.
 export const COPY = {
   hub: {
-    title: { pt: "Treino Mental", en: "Mental Training" },
+    title: { pt: "Mente de Elite", en: "Peak Mind" },
     subtitle: {
-      pt: "Treine sua mente com a mesma seriedade que treina seu corpo.",
-      en: "Train your mind with the same seriousness you train your body.",
+      pt: "A mente que carrega você no minuto 90. Treine ela como um profissional.",
+      en: "The mind that carries you at minute 90. Train it like the pros.",
     },
     stats: {
       streak: { pt: "Sequência", en: "Streak" },
@@ -142,30 +162,30 @@ export const COPY = {
         en: "Minutes all-time",
       },
       completedAllTime: {
-        pt: "Atividades completas",
-        en: "Activities completed",
+        pt: "Sessões concluídas",
+        en: "Sessions banked",
       },
     },
     moodPickerTitle: {
-      pt: "Como você está agora?",
-      en: "Where's your head at?",
+      pt: "Qual é o desafio?",
+      en: "What's the moment?",
     },
     moodPickerHint: {
-      pt: "Escolha um estado — recomendamos a atividade certa.",
-      en: "Pick a state — we'll surface the right activity.",
+      pt: "Escolha o momento — indicamos a sessão certa.",
+      en: "Pick the moment — we'll surface the right session.",
     },
     featured: { pt: "Destaques", en: "Featured" },
     library: { pt: "Biblioteca completa", en: "Full library" },
     filterAll: { pt: "Todos", en: "All" },
     empty: {
-      pt: "Nada por aqui ainda. Novas práticas em breve.",
-      en: "Nothing here yet. New practices coming soon.",
+      pt: "Nada por aqui ainda. Novas sessões em breve.",
+      en: "Nothing here yet. New sessions coming soon.",
     },
     silentTimerCard: {
-      title: { pt: "Meditação silenciosa", en: "Silent meditation" },
+      title: { pt: "Protocolo solo", en: "Solo protocol" },
       subtitle: {
-        pt: "Sua prática, sua duração, seus sinos.",
-        en: "Your practice, your length, your bells.",
+        pt: "Sua duração, seus sinos, seu ritmo.",
+        en: "Your length, your bells, your rhythm.",
       },
     },
   },
@@ -177,8 +197,8 @@ export const COPY = {
     complete: { pt: "Concluir", en: "Complete" },
     languageLabel: { pt: "Idioma", en: "Language" },
     silentSetupTitle: {
-      pt: "Configure sua meditação",
-      en: "Set up your meditation",
+      pt: "Configure seu protocolo",
+      en: "Set up your protocol",
     },
     silentLength: { pt: "Duração", en: "Length" },
     silentLengthMin: { pt: "min", en: "min" },
@@ -188,32 +208,32 @@ export const COPY = {
       en: "Bells every",
     },
     silentBellsOff: { pt: "Sem sinos", en: "No bells" },
-    silentBegin: { pt: "Começar a prática", en: "Start practice" },
-    breatheIn: { pt: "Inspire", en: "Breathe in" },
+    silentBegin: { pt: "Começar sessão", en: "Start session" },
+    breatheIn: { pt: "Inspire", en: "Inhale" },
     hold: { pt: "Segure", en: "Hold" },
-    breatheOut: { pt: "Expire", en: "Breathe out" },
+    breatheOut: { pt: "Expire", en: "Exhale" },
     justBreathe: {
-      pt: "Feche os olhos se quiser. O sino te avisa.",
-      en: "Close your eyes if you'd like. The bell will call you back.",
+      pt: "Feche os olhos se quiser. O sino te chama de volta.",
+      en: "Close your eyes if you'd like. The bell calls you back.",
     },
     completedCelebration: {
-      pt: "Sessão concluída",
-      en: "Session complete",
+      pt: "Sessão registrada",
+      en: "Session banked",
     },
     xpAwarded: { pt: "+{n} XP", en: "+{n} XP" },
     comprehensionTitle: {
-      pt: "Uma pergunta rápida",
-      en: "One quick question",
+      pt: "Checagem rápida",
+      en: "Quick check-in",
     },
     correct: { pt: "Certo!", en: "Correct!" },
     notQuite: { pt: "Quase!", en: "Not quite!" },
     continue: { pt: "Continuar", en: "Continue" },
   },
   admin: {
-    title: { pt: "Treino Mental", en: "Mental Training" },
+    title: { pt: "Mente de Elite", en: "Peak Mind" },
     subtitle: {
-      pt: "Gerencie atividades, moods e atribuições por unidade.",
-      en: "Manage activities, moods, and per-unit assignments.",
+      pt: "Gerencie sessões, moods e atribuições por unidade.",
+      en: "Manage sessions, moods, and per-unit assignments.",
     },
     newActivity: { pt: "Nova atividade", en: "New activity" },
     typeLabel: { pt: "Tipo", en: "Type" },

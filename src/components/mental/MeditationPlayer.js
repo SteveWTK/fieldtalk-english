@@ -23,7 +23,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, Sparkles } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
   t,
@@ -688,8 +688,12 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
 function CompletionScreen({ title, xpAwarded, onClose, lang }) {
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
+      {/* Completion glyph — swapped from Sparkles to a check mark
+          to match the "Session banked / Sessão registrada" register.
+          Reads like a training log confirmation, not a celebration
+          shimmer. */}
       <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
-        <Sparkles className="w-7 h-7 text-accent-300" />
+        <CheckCircle2 className="w-7 h-7 text-accent-300" strokeWidth={2} />
       </div>
       <h2 className="text-2xl font-light tracking-tight mb-2 text-primary-50">
         {t("player.completedCelebration", lang)}

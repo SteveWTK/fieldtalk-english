@@ -18,7 +18,7 @@ import {
   Play,
   Pause,
   Loader2,
-  Sparkles,
+  CheckCircle2,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -597,11 +597,14 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
 function CompletionScreen({ title, xpAwarded, onClose, lang, submitting }) {
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
+      {/* Completion glyph — swapped from Sparkles to CheckCircle2
+          to match the "Session banked / Sessão registrada" register.
+          Reads like a training log entry, not a celebration shimmer. */}
       <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
         {submitting ? (
           <Loader2 className="w-7 h-7 text-accent-300 animate-spin" />
         ) : (
-          <Sparkles className="w-7 h-7 text-accent-300" />
+          <CheckCircle2 className="w-7 h-7 text-accent-300" strokeWidth={2} />
         )}
       </div>
       <h2 className="text-2xl font-light tracking-tight mb-2">

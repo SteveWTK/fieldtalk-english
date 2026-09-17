@@ -11,7 +11,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Play, CheckCircle2 } from "lucide-react";
+import { Play, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import MentalActivityPlayer from "@/components/mental/MentalActivityPlayer";
 import {
@@ -101,8 +101,13 @@ export default function PillarMentalSlot({ unitId }) {
           />
         )}
         <div className="relative flex items-center gap-3">
+          {/* Icon tile — per-type glyph from ACTIVITY_TONES so a
+              player scans the card and reads "focus drill" vs
+              "match prep" from the icon shape alone. Falls back to
+              a Play triangle if a future activity type ships
+              without an Icon field. */}
           <div className={`shrink-0 w-11 h-11 rounded-control flex items-center justify-center ${tone.chip}`}>
-            <Sparkles className="w-5 h-5" />
+            {tone.Icon ? <tone.Icon className="w-5 h-5" strokeWidth={1.75} /> : <Play className="w-5 h-5" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
