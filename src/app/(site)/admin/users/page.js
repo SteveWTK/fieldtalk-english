@@ -197,35 +197,35 @@ function UsersAdminContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
         <Link
           href="/lesson"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
 
         <header>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400 font-semibold mb-1">
             Admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             User tracking
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             Live engagement snapshot. The{" "}
-            <span className="text-emerald-300 font-semibold">Power users</span>{" "}
+            <span className="text-accent-400 font-semibold">Power users</span>{" "}
             table surfaces who&apos;s burning through content the fastest; the{" "}
-            <span className="text-emerald-300 font-semibold">
+            <span className="text-accent-400 font-semibold">
               Lesson engagement
             </span>{" "}
             table flags lessons where users drop off (sorted by completion rate
@@ -234,15 +234,15 @@ function UsersAdminContent() {
         </header>
 
         {/* Filters */}
-        <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-5 flex flex-wrap items-end gap-3">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 sm:p-5 flex flex-wrap items-end gap-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               Edition
             </label>
             <select
               value={edition}
               onChange={(e) => setEdition(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm"
+              className="px-3 py-2 rounded-control bg-primary-800 border border-primary-600 text-primary-50 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 text-sm"
             >
               <option value="all">All editions</option>
               {(data?.filters?.availableEditions || []).map((e) => (
@@ -253,13 +253,13 @@ function UsersAdminContent() {
             </select>
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               Partner
             </label>
             <select
               value={partner}
               onChange={(e) => setPartner(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm max-w-[220px]"
+              className="px-3 py-2 rounded-control bg-primary-800 border border-primary-600 text-primary-50 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 text-sm max-w-[220px]"
             >
               <option value="all">All players</option>
               {(data?.filters?.availablePartners || []).map((p) => (
@@ -270,7 +270,7 @@ function UsersAdminContent() {
             </select>
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               From
             </label>
             <input
@@ -279,11 +279,11 @@ function UsersAdminContent() {
               onChange={(e) =>
                 setRange((r) => ({ ...r, since: e.target.value }))
               }
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm"
+              className="px-3 py-2 rounded-control bg-primary-800 border border-primary-600 text-primary-50 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 text-sm"
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               To
             </label>
             <input
@@ -292,14 +292,14 @@ function UsersAdminContent() {
               onChange={(e) =>
                 setRange((r) => ({ ...r, until: e.target.value }))
               }
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm"
+              className="px-3 py-2 rounded-control bg-primary-800 border border-primary-600 text-primary-50 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 text-sm"
             />
           </div>
           <button
             type="button"
             onClick={fetchStats}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] text-sm font-bold tracking-wide transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 text-sm font-bold tracking-wide transition-colors"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -311,7 +311,7 @@ function UsersAdminContent() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+          <div className="p-3 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
             {error}
           </div>
         )}
@@ -324,24 +324,24 @@ function UsersAdminContent() {
         </div>
 
         {/* Power Users */}
-        <section className="rounded-2xl bg-white/[0.04] border border-white/10 overflow-hidden">
-          <header className="p-4 sm:p-5 border-b border-white/5 flex items-center justify-between">
+        <section className="rounded-card bg-primary-panel border border-primary-700 overflow-hidden">
+          <header className="p-4 sm:p-5 border-b border-primary-700 flex items-center justify-between">
             <h2 className="font-bold text-base sm:text-lg">Power users</h2>
-            <p className="text-[11px] text-white/40 hidden sm:block">
+            <p className="text-[11px] text-primary-500 hidden sm:block">
               Top 25 · sorted by lessons completed
             </p>
           </header>
           {loading && !data ? (
             <div className="py-10 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
             </div>
           ) : (data?.powerUsers || []).length === 0 ? (
-            <div className="py-10 text-center text-sm text-white/50">
+            <div className="py-10 text-center text-sm text-primary-400">
               No users yet for the selected filters.
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-white/5 text-[10px] uppercase tracking-wider text-white/50">
+              <thead className="bg-primary-800 text-[10px] uppercase tracking-wider text-primary-400">
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold">Player</th>
                   <th className="text-left px-3 py-3 font-semibold hidden md:table-cell">
@@ -368,29 +368,29 @@ function UsersAdminContent() {
                   <tr
                     key={u.id}
                     onClick={() => setDrillId(u.id)}
-                    className="border-t border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors"
+                    className="border-t border-primary-700 hover:bg-primary-800 cursor-pointer transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-white truncate max-w-[200px]">
+                      <div className="font-semibold text-primary-50 truncate max-w-[200px]">
                         {u.name}
                       </div>
-                      <div className="text-[11px] text-white/40 truncate max-w-[200px]">
+                      <div className="text-[11px] text-primary-500 truncate max-w-[200px]">
                         {u.email || u.edition}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-white/65 text-xs hidden md:table-cell">
+                    <td className="px-3 py-3 text-primary-300 text-xs hidden md:table-cell">
                       {u.partner || "—"}
                     </td>
-                    <td className="text-right px-3 py-3 font-bold text-emerald-300 tabular-nums">
+                    <td className="text-right px-3 py-3 font-bold text-accent-400 tabular-nums">
                       {u.lessonsCompleted}
                     </td>
-                    <td className="text-right px-3 py-3 text-white/80 tabular-nums">
+                    <td className="text-right px-3 py-3 text-primary-100 tabular-nums">
                       {formatNumber(u.totalXp)}
                     </td>
-                    <td className="text-right px-3 py-3 text-white/80 tabular-nums hidden sm:table-cell">
+                    <td className="text-right px-3 py-3 text-primary-100 tabular-nums hidden sm:table-cell">
                       {u.packsOpened}
                     </td>
-                    <td className="text-right px-3 py-3 text-white/55 text-xs hidden sm:table-cell">
+                    <td className="text-right px-3 py-3 text-primary-300 text-xs hidden sm:table-cell">
                       {timeAgo(u.lastActiveAt)}
                     </td>
                     <td className="text-center px-3 py-3">
@@ -399,7 +399,7 @@ function UsersAdminContent() {
                         source={u.accessSource}
                       />
                     </td>
-                    <td className="px-2 text-white/40">
+                    <td className="px-2 text-primary-500">
                       <ChevronRight className="w-4 h-4" />
                     </td>
                   </tr>
@@ -410,27 +410,27 @@ function UsersAdminContent() {
         </section>
 
         {/* Lesson Engagement */}
-        <section className="rounded-2xl bg-white/[0.04] border border-white/10 overflow-hidden">
-          <header className="p-4 sm:p-5 border-b border-white/5 flex items-center justify-between">
+        <section className="rounded-card bg-primary-panel border border-primary-700 overflow-hidden">
+          <header className="p-4 sm:p-5 border-b border-primary-700 flex items-center justify-between">
             <h2 className="font-bold text-base sm:text-lg">
               Lesson engagement
             </h2>
-            <p className="text-[11px] text-white/40 hidden sm:block">
+            <p className="text-[11px] text-primary-500 hidden sm:block">
               Sorted by completion rate ascending — drop-off first
             </p>
           </header>
           {loading && !data ? (
             <div className="py-10 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
             </div>
           ) : (data?.lessonEngagement || []).length === 0 ? (
-            <div className="py-10 text-center text-sm text-white/50">
+            <div className="py-10 text-center text-sm text-primary-400">
               No lesson activity yet for the selected filters.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-white/5 text-[10px] uppercase tracking-wider text-white/50">
+                <thead className="bg-primary-800 text-[10px] uppercase tracking-wider text-primary-400">
                   <tr>
                     <th className="text-left px-4 py-3 font-semibold">
                       Lesson
@@ -454,29 +454,29 @@ function UsersAdminContent() {
                       l.started > 0 ? Math.round(l.completionRate * 100) : null;
                     const rateColour =
                       ratePct === null
-                        ? "text-white/30"
+                        ? "text-primary-500"
                         : ratePct < 40
-                          ? "text-red-300"
+                          ? "text-signal-alert"
                           : ratePct < 70
-                            ? "text-amber-300"
-                            : "text-emerald-300";
+                            ? "text-signal-performance"
+                            : "text-accent-400";
                     return (
-                      <tr key={l.id} className="border-t border-white/5">
+                      <tr key={l.id} className="border-t border-primary-700">
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-white truncate max-w-[260px]">
+                          <div className="font-semibold text-primary-50 truncate max-w-[260px]">
                             {l.title}
                           </div>
-                          <div className="text-[11px] text-white/40 md:hidden">
+                          <div className="text-[11px] text-primary-500 md:hidden">
                             {l.pillar}
                           </div>
                         </td>
-                        <td className="px-3 py-3 text-white/65 text-xs hidden md:table-cell">
+                        <td className="px-3 py-3 text-primary-300 text-xs hidden md:table-cell">
                           {l.pillar}
                         </td>
-                        <td className="text-right px-3 py-3 text-white/80 tabular-nums">
+                        <td className="text-right px-3 py-3 text-primary-100 tabular-nums">
                           {l.started}
                         </td>
-                        <td className="text-right px-3 py-3 text-white/80 tabular-nums">
+                        <td className="text-right px-3 py-3 text-primary-100 tabular-nums">
                           {l.completed}
                         </td>
                         <td
@@ -484,7 +484,7 @@ function UsersAdminContent() {
                         >
                           {ratePct === null ? "—" : `${ratePct}%`}
                         </td>
-                        <td className="text-right px-3 py-3 text-white/55 text-xs hidden sm:table-cell">
+                        <td className="text-right px-3 py-3 text-primary-300 text-xs hidden sm:table-cell">
                           {formatDuration(l.avgTimeMs)}
                         </td>
                       </tr>
@@ -497,15 +497,15 @@ function UsersAdminContent() {
         </section>
 
         {/* Recent Activity */}
-        <section className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-5">
+        <section className="rounded-card bg-primary-panel border border-primary-700 p-4 sm:p-5">
           <header className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-base sm:text-lg">Recent activity</h2>
-            <p className="text-[11px] text-white/40 hidden sm:block">
+            <p className="text-[11px] text-primary-500 hidden sm:block">
               Last {data?.recentActivity?.length || 0} events
             </p>
           </header>
           {(data?.recentActivity || []).length === 0 ? (
-            <p className="text-sm text-white/50 py-4 text-center">
+            <p className="text-sm text-primary-400 py-4 text-center">
               No activity yet.
             </p>
           ) : (
@@ -522,13 +522,13 @@ function UsersAdminContent() {
                     <button
                       type="button"
                       onClick={() => setDrillId(e.playerId)}
-                      className="font-semibold text-white hover:text-emerald-300"
+                      className="font-semibold text-primary-50 hover:text-accent-400"
                     >
                       {e.playerName}
                     </button>{" "}
-                    <span className="text-white/65">{e.label}</span>
+                    <span className="text-primary-300">{e.label}</span>
                   </div>
-                  <span className="text-[11px] text-white/40 whitespace-nowrap">
+                  <span className="text-[11px] text-primary-500 whitespace-nowrap">
                     {timeAgo(e.at)}
                   </span>
                 </li>
@@ -547,17 +547,17 @@ function UsersAdminContent() {
 }
 
 function KpiCard({ label, value, Icon, tone = "neutral", title }) {
-  const accent = tone === "emerald" ? "text-emerald-300" : "text-white";
+  const accent = tone === "emerald" ? "text-accent-400" : "text-primary-50";
   return (
     <div
-      className="rounded-2xl bg-white/[0.04] border border-white/10 p-3 sm:p-4"
+      className="rounded-card bg-primary-panel border border-primary-700 p-3 sm:p-4"
       title={title}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[9px] uppercase tracking-wider text-white/50">
+        <p className="text-[9px] uppercase tracking-wider text-primary-400">
           {label}
         </p>
-        <Icon className="w-3.5 h-3.5 text-white/30" />
+        <Icon className="w-3.5 h-3.5 text-primary-500" />
       </div>
       <p className={`text-xl sm:text-2xl font-black tabular-nums ${accent}`}>
         {value}
@@ -571,26 +571,26 @@ function KpiCard({ label, value, Icon, tone = "neutral", title }) {
 // a glance.
 function AccessBadge({ has, source }) {
   if (!has) {
-    return <span className="text-white/30 text-[11px]">—</span>;
+    return <span className="text-primary-500 text-[11px]">—</span>;
   }
   const map = {
-    subscription: { label: "Sub", cls: "bg-emerald-500/15 text-emerald-200" },
+    subscription: { label: "Sub", cls: "bg-accent-400/15 text-accent-300" },
     one_time_purchase: {
       label: "One-off",
-      cls: "bg-emerald-500/15 text-emerald-200",
+      cls: "bg-accent-400/15 text-accent-300",
     },
     seat_redemption: {
       label: "Seat",
-      cls: "bg-blue-500/15 text-blue-200",
+      cls: "bg-signal-english/15 text-signal-english",
     },
     admin_grant: {
       label: "Comp",
-      cls: "bg-amber-300/15 text-amber-200",
+      cls: "bg-signal-performance/15 text-signal-performance",
     },
   };
   const meta = map[source] || {
     label: "Full",
-    cls: "bg-white/10 text-white/70",
+    cls: "bg-primary-700 text-primary-300",
   };
   return (
     <span
@@ -620,15 +620,15 @@ function accessSourceLabel(source) {
 function activityDot(type) {
   switch (type) {
     case "lesson_completion":
-      return "bg-emerald-400";
+      return "bg-accent-400";
     case "pack_open":
-      return "bg-amber-300";
+      return "bg-signal-performance";
     case "seat_redemption":
-      return "bg-blue-300";
+      return "bg-signal-english";
     case "signup":
-      return "bg-violet-300";
+      return "bg-signal-mental";
     default:
-      return "bg-white/40";
+      return "bg-primary-500";
   }
 }
 
@@ -684,25 +684,25 @@ function UserDrillOver({ userId, onClose }) {
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <aside
-        className="relative w-full max-w-md sm:max-w-lg h-full bg-[#0b0b0b] border-l border-white/10 overflow-y-auto"
+        className="relative w-full max-w-md sm:max-w-lg h-full bg-primary-panel border-l border-primary-700 overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-3 right-3 p-1.5 rounded-full text-primary-400 hover:text-primary-50 hover:bg-primary-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {loading ? (
           <div className="min-h-screen flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
           </div>
         ) : error ? (
           <div className="p-6">
-            <p className="text-red-300 text-sm">{error}</p>
+            <p className="text-signal-alert text-sm">{error}</p>
           </div>
         ) : data ? (
           <UserDrillBody data={data} />
@@ -716,23 +716,23 @@ function UserDrillBody({ data }) {
   const p = data.player;
   const pr = data.progress || {};
   return (
-    <div className="p-6 space-y-6 text-white">
+    <div className="p-6 space-y-6 text-primary-50">
       <header className="pr-8">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400 font-semibold mb-1">
           Player detail
         </p>
         <h2 className="text-2xl font-black tracking-tight">{p.name}</h2>
-        <p className="text-sm text-white/55 mt-1">{p.email || "no email"}</p>
+        <p className="text-sm text-primary-300 mt-1">{p.email || "no email"}</p>
         <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px]">
-          <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+          <span className="px-2 py-0.5 rounded-full bg-primary-700 text-primary-300">
             {p.edition || "no edition"}
           </span>
           {p.user_type && p.user_type !== "player" && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-300/20 text-amber-200">
+            <span className="px-2 py-0.5 rounded-full bg-signal-performance/20 text-signal-performance">
               {p.user_type}
             </span>
           )}
-          <span className="text-white/40">
+          <span className="text-primary-500">
             joined{" "}
             {p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}
           </span>
@@ -740,12 +740,12 @@ function UserDrillBody({ data }) {
       </header>
 
       {data.partner && (
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-400/30 p-3 text-sm">
-          <p className="text-[10px] uppercase tracking-wider text-emerald-200/70 font-bold mb-1">
+        <div className="rounded-xl bg-accent-400/10 border border-accent-400/30 p-3 text-sm">
+          <p className="text-[10px] uppercase tracking-wider text-accent-300 font-bold mb-1">
             Partner
           </p>
           <p className="font-semibold">{data.partner.name}</p>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-primary-400">
             Redeemed{" "}
             {data.partner.redeemedAt
               ? new Date(data.partner.redeemedAt).toLocaleDateString()
@@ -759,32 +759,32 @@ function UserDrillBody({ data }) {
         <div
           className={`rounded-xl p-3 text-sm border ${
             data.access.hasFullAccess
-              ? "bg-emerald-500/10 border-emerald-400/30"
-              : "bg-white/[0.03] border-white/10"
+              ? "bg-accent-400/10 border-accent-400/30"
+              : "bg-primary-panel border-primary-700"
           }`}
         >
-          <p className="text-[10px] uppercase tracking-wider text-emerald-200/70 font-bold mb-1">
+          <p className="text-[10px] uppercase tracking-wider text-accent-300 font-bold mb-1">
             Full Access
           </p>
           {data.access.hasFullAccess ? (
             <>
               <p className="font-semibold flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 text-[10px] font-bold uppercase tracking-wider">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-accent-400/20 text-accent-300 text-[10px] font-bold uppercase tracking-wider">
                   Active
                 </span>
-                <span className="text-white/75">
+                <span className="text-primary-100">
                   via {accessSourceLabel(data.access.source)}
                 </span>
               </p>
               {data.access.until && (
-                <p className="text-xs text-white/50 mt-1">
+                <p className="text-xs text-primary-400 mt-1">
                   Until{" "}
                   {new Date(data.access.until).toLocaleDateString()}
                 </p>
               )}
             </>
           ) : (
-            <p className="text-white/55">No active access.</p>
+            <p className="text-primary-300">No active access.</p>
           )}
         </div>
       )}
@@ -802,32 +802,32 @@ function UserDrillBody({ data }) {
       </div>
 
       <section>
-        <h3 className="font-bold text-sm uppercase tracking-wider text-white/60 mb-2">
+        <h3 className="font-bold text-sm uppercase tracking-wider text-primary-300 mb-2">
           Lessons completed
         </h3>
         {data.lessonsCompleted.length === 0 ? (
-          <p className="text-sm text-white/45">None yet.</p>
+          <p className="text-sm text-primary-400">None yet.</p>
         ) : (
           <ol className="space-y-2">
             {data.lessonsCompleted.slice(0, 15).map((l) => (
               <li
                 key={l.id}
-                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2 text-sm"
+                className="rounded-control bg-primary-panel border border-primary-700 px-3 py-2 text-sm"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold truncate">{l.title}</p>
-                  <span className="text-[11px] text-emerald-300 tabular-nums shrink-0">
+                  <span className="text-[11px] text-accent-400 tabular-nums shrink-0">
                     +{l.xp_earned || 0} XP
                   </span>
                 </div>
-                <p className="text-[11px] text-white/45 mt-0.5">
+                <p className="text-[11px] text-primary-400 mt-0.5">
                   {l.pillar} · {timeAgo(l.completed_at)}
                   {l.time_spent ? ` · ${formatDuration(l.time_spent)}` : ""}
                 </p>
               </li>
             ))}
             {data.lessonsCompleted.length > 15 && (
-              <p className="text-[11px] text-white/40 text-center">
+              <p className="text-[11px] text-primary-500 text-center">
                 + {data.lessonsCompleted.length - 15} more
               </p>
             )}
@@ -836,11 +836,11 @@ function UserDrillBody({ data }) {
       </section>
 
       <section>
-        <h3 className="font-bold text-sm uppercase tracking-wider text-white/60 mb-2">
+        <h3 className="font-bold text-sm uppercase tracking-wider text-primary-300 mb-2">
           Recent XP events
         </h3>
         {data.recentXp.length === 0 ? (
-          <p className="text-sm text-white/45">None.</p>
+          <p className="text-sm text-primary-400">None.</p>
         ) : (
           <ol className="space-y-1.5">
             {data.recentXp.map((e) => (
@@ -848,13 +848,13 @@ function UserDrillBody({ data }) {
                 key={e.id}
                 className="text-xs flex items-center justify-between gap-2"
               >
-                <span className="text-white/80 truncate">
-                  <span className="font-mono uppercase text-white/55">
+                <span className="text-primary-100 truncate">
+                  <span className="font-mono uppercase text-primary-300">
                     {e.source}
                   </span>{" "}
                   +{e.amount} XP
                 </span>
-                <span className="text-white/40 whitespace-nowrap">
+                <span className="text-primary-500 whitespace-nowrap">
                   {timeAgo(e.earned_at)}
                 </span>
               </li>
@@ -868,8 +868,8 @@ function UserDrillBody({ data }) {
 
 function DetailStat({ label, value }) {
   return (
-    <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3">
-      <p className="text-[10px] uppercase tracking-wider text-white/50">
+    <div className="rounded-xl bg-primary-panel border border-primary-700 p-3">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400">
         {label}
       </p>
       <p className="text-lg font-black tabular-nums">{value}</p>

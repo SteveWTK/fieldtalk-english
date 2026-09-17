@@ -23,6 +23,7 @@ import {
 } from "@/lib/supabase/lesson-queries";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Button from "@/components/ui/button";
 
 function LessonsListContent() {
   const router = useRouter();
@@ -151,10 +152,10 @@ function LessonsListContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-400 mx-auto"></div>
+          <p className="mt-4 text-primary-300">
             Loading lessons...
           </p>
         </div>
@@ -163,67 +164,67 @@ function LessonsListContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-primary-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-primary-50">
               Lesson Management
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-primary-300 mt-2">
               Create and manage lesson content for Global Player
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="secondary"
+              Icon={Megaphone}
+              loading={announcing}
               onClick={handleAnnounceNewContent}
-              disabled={announcing}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-3 rounded-lg flex items-center gap-2 transition-colors"
               title="Send push notification + light up the in-app banner"
             >
-              <Megaphone className="w-5 h-5" />
-              {announcing ? "Sending…" : "Notify of new content"}
-            </button>
-            <button
+              {announcing ? "Sending..." : "Notify of new content"}
+            </Button>
+            <Button
+              variant="primary"
+              Icon={Plus}
               onClick={() => router.push("/admin/lessons/new")}
-              className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
             >
-              <Plus className="w-5 h-5" />
               Create New Lesson
-            </button>
+            </Button>
           </div>
         </div>
 
         {announceResult && (
           <div
-            className={`mb-4 px-4 py-3 rounded-lg text-sm ${
+            className={`mb-4 px-4 py-3 rounded-control text-sm ${
               announceResult.ok
-                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-500/30"
-                : "bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-500/30"
+                ? "bg-accent-400/10 text-accent-400 border border-accent-400/40"
+                : "bg-signal-alert/10 text-signal-alert border border-signal-alert/40"
             }`}
           >
             {announceResult.message}
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-primary-panel border border-primary-700 rounded-card p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-500" />
                 <input
                   type="text"
                   placeholder="Search lessons..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-100 placeholder-primary-500 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                 />
               </div>
             </div>
             <select
               value={filterPillar}
               onChange={(e) => setFilterPillar(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+              className="px-4 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-100 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
             >
               <option value="all">All Pillars</option>
               {pillars.map((pillar) => (
@@ -235,7 +236,7 @@ function LessonsListContent() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+              className="px-4 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-100 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -246,12 +247,12 @@ function LessonsListContent() {
 
         <div className="grid grid-cols-1 gap-4">
           {filteredLessons.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-primary-panel border border-primary-700 rounded-card p-12 text-center">
+              <BookOpen className="w-16 h-16 text-primary-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-primary-50 mb-2">
                 No lessons found
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-primary-300 mb-4">
                 {searchTerm || filterPillar !== "all" || filterStatus !== "all"
                   ? "Try adjusting your filters"
                   : "Get started by creating your first lesson"}
@@ -259,46 +260,46 @@ function LessonsListContent() {
               {!searchTerm &&
                 filterPillar === "all" &&
                 filterStatus === "all" && (
-                  <button
+                  <Button
+                    variant="primary"
+                    Icon={Plus}
                     onClick={() => router.push("/admin/lessons/new")}
-                    className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
                   >
-                    <Plus className="w-5 h-5" />
                     Create First Lesson
-                  </button>
+                  </Button>
                 )}
             </div>
           ) : (
             filteredLessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-primary-panel border border-primary-700 rounded-card p-6 transition-colors hover:border-primary-600"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-semibold text-primary-50">
                         {lesson.title}
                       </h3>
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
                           lesson.is_active
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                            ? "bg-accent-400/15 text-accent-400"
+                            : "bg-primary-800 text-primary-300"
                         }`}
                       >
                         {lesson.is_active ? "Active" : "Inactive"}
                       </span>
                       {lesson.pillar && (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-signal-english/15 text-signal-english">
                           {lesson.pillar.name}
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">
+                    <p className="text-primary-300 mb-3">
                       {lesson.description || "No description"}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-primary-400">
                       <span>Difficulty: {lesson.difficulty || "Not set"}</span>
                       <span>•</span>
                       <span>XP: {lesson.xp_reward || 0}</span>
@@ -311,7 +312,7 @@ function LessonsListContent() {
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={() => router.push(`/lesson/${lesson.id}`)}
-                      className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                      className="p-2 text-primary-300 hover:text-signal-english transition-colors"
                       title="Preview"
                     >
                       <Eye className="w-5 h-5" />
@@ -320,21 +321,21 @@ function LessonsListContent() {
                       onClick={() =>
                         router.push(`/admin/lessons/${lesson.id}/edit`)
                       }
-                      className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                      className="p-2 text-primary-300 hover:text-signal-english transition-colors"
                       title="Edit"
                     >
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleClone(lesson.id)}
-                      className="p-2 text-gray-600 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 transition-colors"
+                      className="p-2 text-primary-300 hover:text-accent-400 transition-colors"
                       title="Clone"
                     >
                       <Copy className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(lesson.id)}
-                      className="p-2 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      className="p-2 text-primary-300 hover:text-signal-alert transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -347,7 +348,7 @@ function LessonsListContent() {
         </div>
 
         {filteredLessons.length > 0 && (
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-6 text-center text-sm text-primary-300">
             Showing {filteredLessons.length} of {lessons.length} lessons
           </div>
         )}

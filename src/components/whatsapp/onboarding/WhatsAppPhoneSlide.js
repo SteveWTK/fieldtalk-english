@@ -40,7 +40,7 @@ export default function WhatsAppPhoneSlide({
 
   return (
     <div className="text-center">
-      <div className="w-16 h-16 rounded-full bg-accent-400/20 border border-accent-400/40 mx-auto mb-4 flex items-center justify-center shadow-[0_0_28px_rgba(163,230,53,0.18)]">
+      <div className="w-16 h-16 rounded-full bg-accent-400/20 border border-accent-400/40 mx-auto mb-4 flex items-center justify-center">
         <MessageCircle className="w-7 h-7 text-accent-300" />
       </div>
 

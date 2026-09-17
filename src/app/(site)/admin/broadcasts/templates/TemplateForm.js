@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Loader2,
   Save,
   Users,
   CheckCircle2,
@@ -25,6 +24,7 @@ import {
 import { BROADCAST_LANGUAGES } from "@/lib/broadcasts/config";
 import { POSITIONS } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
+import Button from "@/components/ui/button";
 
 const EDITIONS = [
   { value: "", label: "Any edition" },
@@ -236,11 +236,11 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Link
           href="/admin/broadcasts/templates"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white mb-4"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           All templates
@@ -251,7 +251,7 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
         </h1>
 
         {/* Name */}
-        <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
+        <label className="block text-xs uppercase tracking-wider text-primary-300 mb-1.5">
           Internal name
         </label>
         <input
@@ -260,11 +260,11 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           placeholder="e.g. 5 tips — every Friday"
-          className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/25 focus:outline-none focus:border-accent-400 mb-6"
+          className="w-full px-3 py-2.5 rounded-control bg-primary-900 border border-primary-600 text-primary-50 placeholder-primary-500 focus:outline-none focus:border-accent-400 mb-6"
         />
 
         {/* Body */}
-        <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
+        <label className="block text-xs uppercase tracking-wider text-primary-300 mb-2">
           Message body
         </label>
         <div className="flex gap-1 mb-2">
@@ -278,13 +278,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
                 onClick={() => setActiveLang(lang.code)}
                 className={`px-3 py-1.5 rounded-t-lg text-sm font-semibold border-b-2 transition-colors ${
                   isActive
-                    ? "border-accent-400 text-accent-200 bg-white/[0.04]"
-                    : "border-transparent text-white/60 hover:text-white/85"
+                    ? "border-accent-400 text-accent-400 bg-primary-panel"
+                    : "border-transparent text-primary-300 hover:text-primary-100"
                 }`}
               >
                 {lang.label}
                 {filled && (
-                  <CheckCircle2 className="inline-block w-3.5 h-3.5 ml-1.5 text-accent-300/80" />
+                  <CheckCircle2 className="inline-block w-3.5 h-3.5 ml-1.5 text-accent-400/80" />
                 )}
               </button>
             );
@@ -302,30 +302,30 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
               : "Write the message in English…"
           }
           rows={7}
-          className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/25 focus:outline-none focus:border-accent-400 resize-y"
+          className="w-full px-3 py-2.5 rounded-control bg-primary-900 border border-primary-600 text-primary-50 placeholder-primary-500 focus:outline-none focus:border-accent-400 resize-y"
         />
-        <p className="text-[11px] text-white/40 mt-1 mb-6">
+        <p className="text-[11px] text-primary-500 mt-1 mb-6">
           {bodies[activeLang].length} / 3000 characters.
         </p>
 
         {/* Cadence panel */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Repeat className="w-4 h-4 text-white/60" />
-            <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+            <Repeat className="w-4 h-4 text-primary-300" />
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
               How often
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+              <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                 Cadence
               </label>
               <select
                 value={cadence}
                 onChange={(e) => setCadence(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -335,13 +335,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
 
             {cadence === "weekly" && (
               <div>
-                <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+                <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                   Day of week
                 </label>
                 <select
                   value={cadenceDayOfWeek}
                   onChange={(e) => setCadenceDayOfWeek(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                  className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
                 >
                   {CADENCE_DAY_OF_WEEK.map((d) => (
                     <option key={d.value} value={d.value}>
@@ -354,7 +354,7 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
 
             {cadence === "monthly" && (
               <div>
-                <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+                <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                   Day of month (1–28)
                 </label>
                 <select
@@ -362,7 +362,7 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
                   onChange={(e) =>
                     setCadenceDayOfMonth(Number(e.target.value))
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                  className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
                 >
                   {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
                     <option key={d} value={d}>
@@ -374,13 +374,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
             )}
 
             <div>
-              <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+              <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                 Hour (BRT)
               </label>
               <select
                 value={cadenceHour}
                 onChange={(e) => setCadenceHour(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
               >
                 {HOUR_OPTIONS.map((h) => (
                   <option key={h} value={h}>
@@ -396,32 +396,32 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
               type="checkbox"
               checked={active}
               onChange={(e) => setActive(e.target.checked)}
-              className="w-4 h-4 rounded border-white/30 bg-white/5 text-accent-400 focus:ring-accent-400"
+              className="w-4 h-4 rounded border-primary-600 bg-primary-900 text-accent-400 focus:ring-accent-400/30"
             />
-            <span className="text-sm text-white/80">
+            <span className="text-sm text-primary-100">
               Active — the cron will generate broadcasts from this template
             </span>
           </label>
         </div>
 
         {/* Timing panel */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-4 h-4 text-white/60" />
-            <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+            <Clock className="w-4 h-4 text-primary-300" />
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
               Send timing (for each generated broadcast)
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+              <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                 Interval
               </label>
               <select
                 value={intervalSeconds}
                 onChange={(e) => setIntervalSeconds(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
               >
                 {INTERVAL_OPTIONS.map((i) => (
                   <option key={i} value={i}>
@@ -431,13 +431,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
               </select>
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+              <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                 Window start (BRT)
               </label>
               <select
                 value={windowStart}
                 onChange={(e) => setWindowStart(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
               >
                 {HOUR_OPTIONS.map((h) => (
                   <option key={h} value={h}>
@@ -447,13 +447,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
               </select>
             </div>
             <div>
-              <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+              <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
                 Window end (BRT)
               </label>
               <select
                 value={windowEnd}
                 onChange={(e) => setWindowEnd(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+                className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
               >
                 {Array.from({ length: 24 }, (_, i) => i + 1).map((h) => (
                   <option key={h} value={h}>
@@ -465,7 +465,7 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
           </div>
 
           <div>
-            <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+            <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
               Allowed days
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -484,8 +484,8 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
                     }
                     className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
                       isActive
-                        ? "border-accent-400 bg-accent-400/15 text-accent-200"
-                        : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                        ? "border-accent-400 bg-accent-400/15 text-accent-400"
+                        : "border-primary-700 bg-primary-800 text-primary-300 hover:border-primary-600 hover:text-primary-50"
                     }`}
                   >
                     {d.label}
@@ -497,10 +497,10 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
         </div>
 
         {/* Filters */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-white/60" />
-            <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+            <Users className="w-4 h-4 text-primary-300" />
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
               Audience filters
             </p>
           </div>
@@ -550,36 +550,32 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
             />
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="mt-4 pt-4 border-t border-primary-700">
             <p className="text-sm">
-              <span className="text-white/50">Estimated audience: </span>
-              <span className="font-black text-accent-300 text-lg tabular-nums">
+              <span className="text-primary-400">Estimated audience: </span>
+              <span className="font-black text-accent-400 text-lg tabular-nums">
                 {previewLoading ? "…" : (previewCount ?? "?")}
               </span>
-              <span className="text-white/50"> opted-in recipients</span>
+              <span className="text-primary-400"> opted-in recipients</span>
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+          <div className="mb-4 p-3 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
             {error}
           </div>
         )}
         <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleSave}
+          <Button
+            variant="primary"
+            Icon={Save}
+            loading={saving}
             disabled={!canSave}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-40 text-primary-900 text-sm font-bold transition-colors"
+            onClick={handleSave}
           >
-            {saving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
             {mode === "edit" ? "Save changes" : "Create template"}
-          </button>
+          </Button>
         </div>
       </main>
     </div>
@@ -589,13 +585,13 @@ export default function TemplateForm({ mode = "create", initial, templateId }) {
 function FilterSelect({ label, value, onChange, options }) {
   return (
     <div>
-      <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+      <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+        className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -617,7 +613,7 @@ function FilterMultiSelect({ label, values, onChange, options }) {
   };
   return (
     <div>
-      <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+      <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
         {label}
       </label>
       <div className="flex flex-wrap gap-1.5">
@@ -630,8 +626,8 @@ function FilterMultiSelect({ label, values, onChange, options }) {
               onClick={() => toggle(o.value)}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
                 active
-                  ? "border-accent-400 bg-accent-400/15 text-accent-200"
-                  : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                  ? "border-accent-400 bg-accent-400/15 text-accent-400"
+                  : "border-primary-700 bg-primary-800 text-primary-300 hover:border-primary-600 hover:text-primary-50"
               }`}
             >
               {o.label}

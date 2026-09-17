@@ -56,7 +56,7 @@ export default function WhatsAppPrefsSlide({
 
   return (
     <div className="text-center">
-      <div className="w-16 h-16 rounded-full bg-accent-400/20 border border-accent-400/40 mx-auto mb-4 flex items-center justify-center shadow-[0_0_28px_rgba(163,230,53,0.18)]">
+      <div className="w-16 h-16 rounded-full bg-accent-400/20 border border-accent-400/40 mx-auto mb-4 flex items-center justify-center">
         <CalendarClock className="w-7 h-7 text-accent-300" />
       </div>
 
@@ -90,7 +90,7 @@ export default function WhatsAppPrefsSlide({
                 aria-pressed={active}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm transition-colors ${
                   active
-                    ? "border-accent-400 bg-accent-400/10 text-accent-100 shadow-[0_0_18px_rgba(163,230,53,0.14)]"
+                    ? "border-accent-400 bg-accent-400/10 text-accent-100"
                     : "border-white/10 bg-white/[0.03] text-white/80 hover:border-white/25 hover:text-white"
                 }`}
               >
@@ -120,7 +120,7 @@ export default function WhatsAppPrefsSlide({
                 aria-pressed={active}
                 className={`px-2 py-2.5 rounded-lg border text-xs font-semibold transition-colors ${
                   active
-                    ? "border-accent-400 bg-accent-400/10 text-accent-100 shadow-[0_0_18px_rgba(163,230,53,0.14)]"
+                    ? "border-accent-400 bg-accent-400/10 text-accent-100"
                     : "border-white/10 bg-white/[0.03] text-white/80 hover:border-white/25 hover:text-white"
                 }`}
               >

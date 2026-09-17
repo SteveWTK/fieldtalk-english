@@ -92,23 +92,23 @@ function AdminHubContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
         <header>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400 font-semibold mb-1">
             Global Player
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Platform admin
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             Every admin tool in one place. Pick the section you need — the cards
             link straight in.
           </p>
@@ -266,7 +266,7 @@ function AdminHubContent() {
 function AdminSection({ title, children }) {
   return (
     <section>
-      <h2 className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-semibold mb-3">
+      <h2 className="text-[10px] uppercase tracking-[0.3em] text-primary-500 font-semibold mb-3">
         {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -289,21 +289,21 @@ function AdminCard({
   // neutral = content / organisations). Tasteful gradient, not loud.
   const accentClass =
     accent === "emerald"
-      ? "border-emerald-400/30 hover:border-emerald-300/60 hover:bg-emerald-500/[0.04]"
+      ? "border-accent-400/30 hover:border-accent-400/60 hover:bg-accent-400/[0.04]"
       : accent === "amber"
-        ? "border-amber-300/30 hover:border-amber-300/60 hover:bg-amber-300/[0.04]"
-        : "border-white/10 hover:border-white/25 hover:bg-white/[0.04]";
+        ? "border-signal-performance/30 hover:border-signal-performance/60 hover:bg-signal-performance/[0.04]"
+        : "border-primary-700 hover:border-primary-600 hover:bg-primary-800";
   const iconBg =
     accent === "emerald"
-      ? "bg-emerald-500/15 text-emerald-300"
+      ? "bg-accent-400/15 text-accent-300"
       : accent === "amber"
-        ? "bg-amber-300/15 text-amber-200"
-        : "bg-white/[0.06] text-white/75";
+        ? "bg-signal-performance/15 text-signal-performance"
+        : "bg-primary-800 text-primary-100";
 
   return (
     <Link
       href={href}
-      className={`group block rounded-2xl bg-white/[0.03] border ${accentClass} p-5 transition-colors`}
+      className={`group block rounded-card bg-primary-panel border ${accentClass} p-5 transition-colors`}
     >
       <div className="flex items-start gap-3">
         <div
@@ -313,14 +313,14 @@ function AdminCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-bold text-base text-white truncate">{title}</h3>
-            <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <h3 className="font-bold text-base text-primary-50 truncate">{title}</h3>
+            <ChevronRight className="w-4 h-4 text-primary-500 group-hover:text-primary-300 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
-          <p className="text-xs sm:text-sm text-white/55 mt-1 leading-relaxed">
+          <p className="text-xs sm:text-sm text-primary-300 mt-1 leading-relaxed">
             {body}
           </p>
           {meta && (
-            <p className="text-[11px] text-white/35 mt-2 font-semibold tabular-nums">
+            <p className="text-[11px] text-primary-500 mt-2 font-semibold tabular-nums">
               {meta}
             </p>
           )}

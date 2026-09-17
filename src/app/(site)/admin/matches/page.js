@@ -19,10 +19,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   Calendar,
+  Save,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import Button from "@/components/ui/button";
 
 function AdminMatchesContent() {
   const router = useRouter();
@@ -64,30 +66,30 @@ function AdminMatchesContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6 sm:space-y-8">
         <div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white mb-3"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-3"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to admin
           </Link>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Global Player · admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Matches
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-xl leading-relaxed">
             Enter results for finished matches; the system grades every
             user&apos;s picks and awards XP atomically. Already-resolved matches
             at the bottom are read-only.
@@ -96,10 +98,10 @@ function AdminMatchesContent() {
 
         {loading ? (
           <div className="py-16 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-5 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-5 text-sm text-signal-alert">
             {error}
           </div>
         ) : (
@@ -141,10 +143,10 @@ function AdminMatchesContent() {
 function Section({ title, subtitle, items, empty, renderItem }) {
   return (
     <section>
-      <h2 className="text-base font-bold text-white mb-1">{title}</h2>
-      <p className="text-[11px] text-white/50 mb-3">{subtitle}</p>
+      <h2 className="text-base font-bold text-primary-50 mb-1">{title}</h2>
+      <p className="text-[11px] text-primary-400 mb-3">{subtitle}</p>
       {items.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm text-white/50">
+        <div className="rounded-xl border border-primary-700 bg-primary-panel p-4 text-sm text-primary-400">
           {empty}
         </div>
       ) : (
@@ -166,14 +168,14 @@ function MatchHeader({ match }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-3">
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/45 font-semibold mb-0.5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-primary-400 font-semibold mb-0.5">
           {match.stage}
         </p>
-        <p className="font-bold text-sm text-white truncate">
+        <p className="font-bold text-sm text-primary-50 truncate">
           {match.home_team} vs {match.away_team}
         </p>
       </div>
-      <span className="shrink-0 inline-flex items-center gap-1 text-[11px] text-white/50">
+      <span className="shrink-0 inline-flex items-center gap-1 text-[11px] text-primary-400">
         <Calendar className="w-3 h-3" />
         {kickoff}
       </span>
@@ -230,7 +232,7 @@ function ResolveForm({ match, onResolved }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-amber-300/40 bg-amber-300/[0.04] p-4"
+      className="rounded-xl border border-signal-performance/40 bg-signal-performance/[0.04] p-4"
     >
       <MatchHeader match={match} />
 
@@ -241,7 +243,7 @@ function ResolveForm({ match, onResolved }) {
           onChange={setHome}
           disabled={submitting}
         />
-        <span className="pb-3 text-white/40 font-black text-base">×</span>
+        <span className="pb-3 text-primary-500 font-black text-base">×</span>
         <NumberField
           label={match.away_team}
           value={away}
@@ -258,33 +260,28 @@ function ResolveForm({ match, onResolved }) {
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 text-xs text-red-200 mb-3">
+        <div className="flex items-start gap-2 text-xs text-signal-alert mb-3">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       {result ? (
-        <div className="flex items-center gap-2 text-xs text-emerald-300">
+        <div className="flex items-center gap-2 text-xs text-accent-400">
           <CheckCircle2 className="w-4 h-4" />
           Resolved · {result.predictionsResolved} picks ·{" "}
           {result.totalXpAwarded} XP · {result.notified} notified
         </div>
       ) : (
-        <button
+        <Button
           type="submit"
-          disabled={submitting}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-[#1a0e00] text-xs font-bold"
+          variant="primary"
+          size="sm"
+          Icon={Save}
+          loading={submitting}
         >
-          {submitting ? (
-            <>
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Resolving…
-            </>
-          ) : (
-            "Resolve match"
-          )}
-        </button>
+          {submitting ? "Resolving…" : "Resolve match"}
+        </Button>
       )}
     </form>
   );
@@ -293,7 +290,7 @@ function ResolveForm({ match, onResolved }) {
 function NumberField({ label, value, onChange, disabled }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold truncate mb-1">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold truncate mb-1">
         {label}
       </p>
       <input
@@ -303,7 +300,7 @@ function NumberField({ label, value, onChange, disabled }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-center font-black text-lg focus:outline-none focus:border-amber-300"
+        className="w-full px-2 py-1.5 rounded-control bg-primary-900 border border-primary-700 text-primary-50 text-center font-black text-lg focus:outline-none focus:border-accent-400 focus:ring-accent-400/30"
       />
     </div>
   );
@@ -312,14 +309,14 @@ function NumberField({ label, value, onChange, disabled }) {
 function FirstScorerSelect({ value, onChange, disabled, homeTeam, awayTeam }) {
   return (
     <div className="w-full">
-      <p className="text-[10px] uppercase tracking-wider text-white/45 font-semibold mb-1">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400 font-semibold mb-1">
         First scorer
       </p>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-300"
+        className="w-full px-2 py-1.5 rounded-control bg-primary-900 border border-primary-700 text-primary-50 text-xs focus:outline-none focus:border-accent-400 focus:ring-accent-400/30"
       >
         <option value="">— optional —</option>
         <option value="home">{homeTeam}</option>
@@ -340,16 +337,16 @@ function UpcomingRow({ match }) {
       }).format(new Date(match.kickoff_at))
     : "";
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-700 bg-primary-panel px-4 py-3">
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/45 font-semibold mb-0.5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-primary-400 font-semibold mb-0.5">
           {match.stage}
         </p>
-        <p className="font-bold text-sm text-white truncate">
+        <p className="font-bold text-sm text-primary-50 truncate">
           {match.home_team} vs {match.away_team}
         </p>
       </div>
-      <span className="shrink-0 text-[11px] text-white/55 inline-flex items-center gap-1">
+      <span className="shrink-0 text-[11px] text-primary-300 inline-flex items-center gap-1">
         <Calendar className="w-3 h-3" />
         {kickoff}
       </span>
@@ -359,17 +356,17 @@ function UpcomingRow({ match }) {
 
 function ResolvedRow({ match }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-700 bg-primary-panel px-4 py-3">
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/45 font-semibold mb-0.5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-primary-400 font-semibold mb-0.5">
           {match.stage}
         </p>
-        <p className="font-bold text-sm text-white truncate">
+        <p className="font-bold text-sm text-primary-50 truncate">
           {match.home_team} {match.home_score}–{match.away_score}{" "}
           {match.away_team}
         </p>
       </div>
-      <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-200">
+      <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent-400/15 text-accent-400">
         Resolved
       </span>
     </div>

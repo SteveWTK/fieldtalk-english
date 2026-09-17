@@ -329,7 +329,7 @@ function SubscriptionBody({
 
   return (
     <>
-      <section className="rounded-2xl bg-accent-400/[0.08] border border-accent-400/50 p-5 sm:p-6 mb-4 shadow-[0_0_28px_rgba(163,230,53,0.10)]">
+      <section className="rounded-card bg-accent-400/[0.08] border border-accent-400/50 p-5 sm:p-6 mb-4">
         <div className="flex items-start gap-3">
           <div className="w-11 h-11 rounded-2xl bg-accent-400/25 flex items-center justify-center shrink-0">
             <ShieldCheck className="w-5 h-5 text-accent-300" />

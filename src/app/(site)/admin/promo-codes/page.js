@@ -25,6 +25,8 @@ import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { downloadCSV } from "@/lib/admin/codes";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 
 function PromoCodesAdminContent() {
   const router = useRouter();
@@ -102,31 +104,31 @@ function PromoCodesAdminContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
         <Link
           href="/lesson"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
 
         <header>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Bulk-generate Stripe discount codes
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-lg leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-lg leading-relaxed">
             Issues single-use promotion codes against an existing Stripe coupon.
             Each code redeems once and can be downloaded as a CSV for the
             partner to distribute.
@@ -135,129 +137,105 @@ function PromoCodesAdminContent() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 sm:p-6 space-y-4"
+          className="rounded-card bg-primary-panel border border-primary-700 p-5 sm:p-6 space-y-4"
         >
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-              Stripe coupon ID
-            </label>
-            <input
-              type="text"
-              value={couponId}
-              onChange={(e) => setCouponId(e.target.value)}
-              placeholder="e.g. 9rT5xZ8k (from Stripe → Coupons)"
-              disabled={submitting}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono text-sm"
-            />
-            <p className="mt-1 text-[11px] text-white/40">
-              Find this in Stripe → Coupons → click the coupon → ID below the
-              name. Coupon defines the discount amount; this tool just issues
-              codes for it.
-            </p>
-          </div>
+          <Input
+            label="Stripe coupon ID"
+            type="text"
+            value={couponId}
+            onChange={(e) => setCouponId(e.target.value)}
+            placeholder="e.g. 9rT5xZ8k (from Stripe → Coupons)"
+            disabled={submitting}
+            className="font-mono text-sm"
+            hint="Find this in Stripe → Coupons → click the coupon → ID below the name. Coupon defines the discount amount; this tool just issues codes for it."
+          />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Number of codes
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={500}
-                value={count}
-                onChange={(e) => setCount(Number(e.target.value))}
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400"
-              />
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Code prefix
-              </label>
-              <input
-                type="text"
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
-                placeholder="CC-CEARA-2026A"
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono text-sm uppercase"
-              />
-            </div>
+            <Input
+              label="Number of codes"
+              type="number"
+              min={1}
+              max={500}
+              value={count}
+              onChange={(e) => setCount(Number(e.target.value))}
+              disabled={submitting}
+            />
+            <Input
+              label="Code prefix"
+              type="text"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value)}
+              placeholder="CC-CEARA-2026A"
+              disabled={submitting}
+              className="font-mono text-sm uppercase"
+            />
           </div>
 
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-              Partner name <span className="text-white/35 normal-case">— optional, used on the partner-tracking page</span>
-            </label>
-            <input
-              type="text"
-              value={partnerName}
-              onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="e.g. Cultura Inglesa Fortaleza"
-              disabled={submitting}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 text-sm"
-            />
-            <p className="text-[11px] text-white/45 mt-1">
-              When set, the prefix is mapped to this partner so promo-code
-              purchases group correctly on the attribution page.
-            </p>
-          </div>
+          <Input
+            label={
+              <>
+                Partner name{" "}
+                <span className="text-primary-500 normal-case">
+                  — optional, used on the partner-tracking page
+                </span>
+              </>
+            }
+            type="text"
+            value={partnerName}
+            onChange={(e) => setPartnerName(e.target.value)}
+            placeholder="e.g. Cultura Inglesa Fortaleza"
+            disabled={submitting}
+            className="text-sm"
+            hint="When set, the prefix is mapped to this partner so promo-code purchases group correctly on the attribution page."
+          />
 
           {error && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+            <div className="flex items-start gap-2 p-3 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={submitting}
-            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-[#062013] font-bold text-sm tracking-wide transition-colors"
+            variant="primary"
+            fullWidth
+            Icon={submitting ? Loader2 : Sparkles}
+            loading={submitting}
           >
-            {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Generating…
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                Generate {count} codes
-              </>
-            )}
-          </button>
+            {submitting ? "Generating…" : `Generate ${count} codes`}
+          </Button>
         </form>
 
         {result && (
-          <div className="rounded-2xl bg-emerald-500/10 border border-emerald-400/40 p-5 sm:p-6">
-            <p className="text-xs uppercase tracking-wider text-emerald-300 font-semibold mb-1">
+          <div className="rounded-card bg-accent-400/10 border border-accent-400/40 p-5 sm:p-6">
+            <p className="text-xs uppercase tracking-wider text-accent-400 font-semibold mb-1">
               Done
             </p>
             <p className="text-lg font-bold mb-1">
               {result.created} codes created
               {result.failed > 0 && (
-                <span className="text-amber-300 ml-2 text-sm font-semibold">
+                <span className="text-signal-performance ml-2 text-sm font-semibold">
                   ({result.failed} failed)
                 </span>
               )}
             </p>
-            <p className="text-sm text-white/65 mb-4">
+            <p className="text-sm text-primary-300 mb-4">
               Each code redeems exactly once at Stripe Checkout via the
               &quot;Add promotion code&quot; field.
             </p>
-            <button
+            <Button
               type="button"
               onClick={handleDownload}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#062013] font-bold text-sm hover:bg-white/90 transition-colors"
+              variant="secondary"
+              size="sm"
+              Icon={Download}
             >
-              <Download className="w-4 h-4" />
               Download CSV
-            </button>
+            </Button>
 
             {result.errors?.length > 0 && (
-              <details className="mt-4 text-xs text-amber-200">
+              <details className="mt-4 text-xs text-signal-performance">
                 <summary className="cursor-pointer font-semibold">
                   {result.errors.length} failures (click to expand)
                 </summary>

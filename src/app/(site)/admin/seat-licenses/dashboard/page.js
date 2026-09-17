@@ -33,6 +33,8 @@ import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { downloadCSV } from "@/lib/admin/codes";
+import Button from "@/components/ui/button";
+import StatTile from "@/components/ui/stat-tile";
 
 // Default the date range to "this calendar month so far" — that's
 // the most common slice for partner invoicing.
@@ -131,26 +133,26 @@ function SeatLicensesDashboardContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <Link
             href="/lesson"
-            className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
           <Link
             href="/admin/seat-licenses"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-sm font-semibold text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-600 text-sm font-semibold text-primary-100 hover:text-primary-50 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Generate new licences
@@ -158,15 +160,15 @@ function SeatLicensesDashboardContent() {
         </div>
 
         <header>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Seat licence dashboard
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             Per-partner usage roll-up for billing. The{" "}
-            <span className="text-emerald-300 font-semibold">
+            <span className="text-accent-400 font-semibold">
               Redemptions in range
             </span>{" "}
             column is what to invoice — that&apos;s how many of the codes you
@@ -175,9 +177,9 @@ function SeatLicensesDashboardContent() {
         </header>
 
         {/* Date range + actions */}
-        <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-5 flex flex-wrap items-end gap-3">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 sm:p-5 flex flex-wrap items-end gap-3">
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               From
             </label>
             <input
@@ -186,11 +188,11 @@ function SeatLicensesDashboardContent() {
               onChange={(e) =>
                 setRange((r) => ({ ...r, since: e.target.value }))
               }
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm"
+              className="px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-100 focus:outline-none focus:border-accent-400 text-sm"
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1">
+            <label className="block text-[10px] uppercase tracking-wider text-primary-400 mb-1">
               To
             </label>
             <input
@@ -199,35 +201,34 @@ function SeatLicensesDashboardContent() {
               onChange={(e) =>
                 setRange((r) => ({ ...r, until: e.target.value }))
               }
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400 text-sm"
+              className="px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-100 focus:outline-none focus:border-accent-400 text-sm"
             />
           </div>
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             onClick={fetchStats}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-[#062013] text-sm font-bold tracking-wide transition-colors"
+            loading={loading}
+            Icon={loading ? undefined : RefreshCw}
           >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
             Refresh
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={handleExportCSV}
             disabled={loading || !data?.partners?.length}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 disabled:opacity-50 border border-white/15 text-white text-sm font-semibold transition-colors"
+            Icon={Download}
           >
-            <Download className="w-4 h-4" />
             Export CSV
-          </button>
+          </Button>
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+          <div className="flex items-start gap-2 p-3 rounded-control bg-signal-alert/10 border border-signal-alert/40 text-signal-alert text-sm">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             {error}
           </div>
@@ -236,49 +237,43 @@ function SeatLicensesDashboardContent() {
         {/* Totals strip */}
         {totalsRow && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Stat
-              label="Partners"
-              value={data.partners.length}
-              tone="neutral"
-            />
-            <Stat
+            <StatTile label="Partners" value={data.partners.length} />
+            <StatTile
               label="Licences issued"
               value={totalsRow.license_count}
-              tone="neutral"
             />
-            <Stat
+            <StatTile
               label="Seats used / issued"
               value={`${totalsRow.seats_used} / ${totalsRow.seats_total}`}
-              tone="neutral"
             />
-            <Stat
+            <StatTile
               label="Redemptions in range"
               value={totalsRow.redemptions_in_range}
-              tone="emerald"
+              tone="accent"
             />
           </div>
         )}
 
         {/* Partner table */}
-        <div className="rounded-2xl bg-white/[0.04] border border-white/10 overflow-hidden">
+        <div className="rounded-card bg-primary-panel border border-primary-700 overflow-hidden">
           {loading && !data ? (
             <div className="py-12 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
             </div>
           ) : data && data.partners.length === 0 ? (
-            <div className="py-12 text-center text-white/50 text-sm">
-              <Users className="w-8 h-8 mx-auto mb-3 text-white/30" />
+            <div className="py-12 text-center text-primary-400 text-sm">
+              <Users className="w-8 h-8 mx-auto mb-3 text-primary-500" />
               No seat licences issued yet.{" "}
               <Link
                 href="/admin/seat-licenses"
-                className="text-emerald-300 underline"
+                className="text-accent-400 underline"
               >
                 Generate the first batch.
               </Link>
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-white/5 text-[10px] uppercase tracking-wider text-white/50">
+              <thead className="bg-primary-800 text-[10px] uppercase tracking-wider text-primary-400">
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold">Partner</th>
                   <th className="text-right px-3 py-3 font-semibold hidden sm:table-cell">
@@ -315,18 +310,6 @@ function SeatLicensesDashboardContent() {
   );
 }
 
-function Stat({ label, value, tone = "neutral" }) {
-  const colour = tone === "emerald" ? "text-emerald-300" : "text-white";
-  return (
-    <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-      <p className="text-[10px] uppercase tracking-wider text-white/50 mb-1">
-        {label}
-      </p>
-      <p className={`text-2xl font-black ${colour}`}>{value}</p>
-    </div>
-  );
-}
-
 function PartnerRow({ partner, isOpen, onToggle }) {
   const latest = partner.most_recent_redemption_at
     ? new Date(partner.most_recent_redemption_at).toLocaleDateString()
@@ -334,29 +317,29 @@ function PartnerRow({ partner, isOpen, onToggle }) {
   return (
     <>
       <tr
-        className="border-t border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors"
+        className="border-t border-primary-700 hover:bg-primary-800 cursor-pointer transition-colors"
         onClick={onToggle}
       >
         <td className="px-4 py-3">
-          <div className="font-semibold text-white">{partner.partner_name}</div>
-          <div className="text-[11px] text-white/45 mt-0.5">
+          <div className="font-semibold text-primary-50">{partner.partner_name}</div>
+          <div className="text-[11px] text-primary-400 mt-0.5">
             {partner.editions.join(" / ")}
             {partner.contact_email ? ` · ${partner.contact_email}` : ""}
           </div>
         </td>
-        <td className="text-right px-3 py-3 text-white/80 hidden sm:table-cell tabular-nums">
+        <td className="text-right px-3 py-3 text-primary-100 hidden sm:table-cell tabular-nums">
           {partner.license_count}
         </td>
-        <td className="text-right px-3 py-3 text-white/80 tabular-nums">
+        <td className="text-right px-3 py-3 text-primary-100 tabular-nums">
           {partner.seats_used}/{partner.seats_total}
         </td>
-        <td className="text-right px-3 py-3 font-bold text-emerald-300 tabular-nums">
+        <td className="text-right px-3 py-3 font-bold text-accent-400 tabular-nums">
           {partner.redemptions_in_range}
         </td>
-        <td className="text-right px-3 py-3 text-white/55 hidden md:table-cell text-xs">
+        <td className="text-right px-3 py-3 text-primary-300 hidden md:table-cell text-xs">
           {latest}
         </td>
-        <td className="px-2 text-white/40">
+        <td className="px-2 text-primary-500">
           {isOpen ? (
             <ChevronDown className="w-4 h-4" />
           ) : (
@@ -365,8 +348,8 @@ function PartnerRow({ partner, isOpen, onToggle }) {
         </td>
       </tr>
       {isOpen && (
-        <tr className="bg-black/30 border-t border-white/5">
-          <td colSpan={6} className="px-4 py-3 text-xs text-white/65">
+        <tr className="bg-primary-900 border-t border-primary-700">
+          <td colSpan={6} className="px-4 py-3 text-xs text-primary-300">
             <DrilldownDetails partner={partner} />
           </td>
         </tr>
@@ -380,17 +363,17 @@ function DrilldownDetails({ partner }) {
   return (
     <div className="grid sm:grid-cols-2 gap-3">
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+        <p className="text-[10px] uppercase tracking-wider text-primary-500 mb-1">
           Capacity
         </p>
         <p>
-          <span className="font-semibold text-white">{partner.seats_used}</span>{" "}
+          <span className="font-semibold text-primary-50">{partner.seats_used}</span>{" "}
           of {partner.seats_total} seats used ·{" "}
-          <span className="text-emerald-300">{remaining} remaining</span>
+          <span className="text-accent-400">{remaining} remaining</span>
         </p>
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
+        <p className="text-[10px] uppercase tracking-wider text-primary-500 mb-1">
           Latest activity
         </p>
         <p>

@@ -7,8 +7,6 @@ import {
   QrCode,
   Plus,
   Download,
-  Users,
-  BarChart3,
   Copy,
   ToggleLeft,
   ToggleRight,
@@ -21,6 +19,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
+import Button from "@/components/ui/button";
+import StatTile from "@/components/ui/stat-tile";
 
 /**
  * Admin page to create and manage QR access code campaigns.
@@ -235,8 +237,8 @@ export default function QRCampaignsAdminPage() {
   // Loading
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent-600" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900">
+        <Loader2 className="w-8 h-8 animate-spin text-accent-400" />
       </div>
     );
   }
@@ -244,13 +246,13 @@ export default function QRCampaignsAdminPage() {
   // Admin guard
   if (!user || userProfile?.user_type !== "platform_admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-primary-900">
         <div className="text-center p-8">
-          <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+          <XCircle className="w-12 h-12 text-signal-alert mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-primary-50">
             Admin Access Required
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-primary-300 mt-2">
             You need platform admin access to view this page.
           </p>
         </div>
@@ -264,250 +266,189 @@ export default function QRCampaignsAdminPage() {
       : "https://fieldtalk.app";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <QrCode className="w-8 h-8 text-accent-600" />
-            QR Campaigns
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Create and manage QR code access campaigns for guest users
-          </p>
+    <div className="min-h-screen bg-primary-900 text-primary-50">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-primary-50 flex items-center gap-3">
+              <QrCode className="w-8 h-8 text-accent-400" />
+              QR Campaigns
+            </h1>
+            <p className="text-primary-300 mt-1">
+              Create and manage QR code access campaigns for guest users
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            Icon={Plus}
+          >
+            New Campaign
+          </Button>
         </div>
-        <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          New Campaign
-        </button>
-      </div>
 
       {/* Summary stats */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard
+          <StatTile
             label="Total Campaigns"
             value={summary.total_campaigns}
-            icon={<QrCode className="w-5 h-5" />}
           />
-          <StatCard
+          <StatTile
             label="Active Campaigns"
             value={summary.active_campaigns}
-            icon={<CheckCircle className="w-5 h-5 text-green-500" />}
           />
-          <StatCard
+          <StatTile
             label="Total Activations"
             value={summary.total_activations}
-            icon={<Users className="w-5 h-5 text-blue-500" />}
           />
-          <StatCard
+          <StatTile
             label="Conversions"
             value={summary.total_conversions}
-            icon={<BarChart3 className="w-5 h-5 text-purple-500" />}
+            tone="accent"
           />
         </div>
       )}
 
       {/* Create form */}
       {showCreateForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-primary-panel rounded-card p-6 mb-8 border border-primary-700">
+          <h2 className="text-xl font-bold text-primary-50 mb-4">
             Create New QR Campaign
           </h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Name (required) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g., Rayong Garden Entry QR"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Name *"
+                type="text"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="e.g., Rayong Garden Entry QR"
+                required
+              />
 
               {/* Campaign name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Campaign Name
-                </label>
-                <input
-                  type="text"
-                  value={formCampaignName}
-                  onChange={(e) => setFormCampaignName(e.target.value)}
-                  placeholder="e.g., rayong-botanical-2026"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Campaign Name"
+                type="text"
+                value={formCampaignName}
+                onChange={(e) => setFormCampaignName(e.target.value)}
+                placeholder="e.g., rayong-botanical-2026"
+              />
 
               {/* Location */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={formCampaignLocation}
-                  onChange={(e) => setFormCampaignLocation(e.target.value)}
-                  placeholder="e.g., Rayong Botanical Gardens, Thailand"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Location"
+                type="text"
+                value={formCampaignLocation}
+                onChange={(e) => setFormCampaignLocation(e.target.value)}
+                placeholder="e.g., Rayong Botanical Gardens, Thailand"
+              />
 
               {/* Destination path */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Destination Path
-                </label>
-                <input
-                  type="text"
-                  value={formDestination}
-                  onChange={(e) => setFormDestination(e.target.value)}
-                  placeholder="/dashboard"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Destination Path"
+                type="text"
+                value={formDestination}
+                onChange={(e) => setFormDestination(e.target.value)}
+                placeholder="/dashboard"
+              />
 
               {/* Access tier */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Access Tier
-                </label>
-                <select
-                  value={formAccessTier}
-                  onChange={(e) => setFormAccessTier(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="basic">Basic</option>
-                  <option value="premium">Premium</option>
-                  <option value="full">Full</option>
-                </select>
-              </div>
+              <Select
+                label="Access Tier"
+                value={formAccessTier}
+                onChange={(e) => setFormAccessTier(e.target.value)}
+                options={[
+                  { value: "basic", label: "Basic" },
+                  { value: "premium", label: "Premium" },
+                  { value: "full", label: "Full" },
+                ]}
+              />
 
               {/* Duration */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Duration (hours)
-                </label>
-                <input
-                  type="number"
-                  value={formDuration}
-                  onChange={(e) => setFormDuration(e.target.value)}
-                  min={1}
-                  max={8760}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Duration (hours)"
+                type="number"
+                value={formDuration}
+                onChange={(e) => setFormDuration(e.target.value)}
+                min={1}
+                max={8760}
+              />
 
               {/* Max uses */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Max Uses (blank = unlimited)
-                </label>
-                <input
-                  type="number"
-                  value={formMaxUses}
-                  onChange={(e) => setFormMaxUses(e.target.value)}
-                  min={1}
-                  placeholder="Unlimited"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Max Uses (blank = unlimited)"
+                type="number"
+                value={formMaxUses}
+                onChange={(e) => setFormMaxUses(e.target.value)}
+                min={1}
+                placeholder="Unlimited"
+              />
 
               {/* Code expiration */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Code Expires At (optional)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formExpires}
-                  onChange={(e) => setFormExpires(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
+              <Input
+                label="Code Expires At (optional)"
+                type="datetime-local"
+                value={formExpires}
+                onChange={(e) => setFormExpires(e.target.value)}
+              />
             </div>
 
             {/* Welcome messages */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="border-t border-primary-700 pt-4 mt-4">
+              <h3 className="text-sm font-medium text-primary-100 mb-3">
                 Welcome Messages (optional, shown on activation)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    English
-                  </label>
-                  <textarea
-                    value={formWelcome}
-                    onChange={(e) => setFormWelcome(e.target.value)}
-                    rows={2}
-                    placeholder="Welcome to Rayong Botanical Gardens!"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    Portuguese
-                  </label>
-                  <textarea
-                    value={formWelcomePt}
-                    onChange={(e) => setFormWelcomePt(e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    Thai
-                  </label>
-                  <textarea
-                    value={formWelcomeTh}
-                    onChange={(e) => setFormWelcomeTh(e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                  />
-                </div>
+                <Input
+                  label="English"
+                  multiline
+                  rows={2}
+                  value={formWelcome}
+                  onChange={(e) => setFormWelcome(e.target.value)}
+                  placeholder="Welcome to Rayong Botanical Gardens!"
+                />
+                <Input
+                  label="Portuguese"
+                  multiline
+                  rows={2}
+                  value={formWelcomePt}
+                  onChange={(e) => setFormWelcomePt(e.target.value)}
+                />
+                <Input
+                  label="Thai"
+                  multiline
+                  rows={2}
+                  value={formWelcomeTh}
+                  onChange={(e) => setFormWelcomeTh(e.target.value)}
+                />
               </div>
             </div>
 
             {/* Submit */}
             <div className="flex justify-end gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => {
                   setShowCreateForm(false);
                   resetForm();
                 }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={isGenerating || !formName}
-                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                loading={isGenerating}
+                Icon={isGenerating ? undefined : QrCode}
               >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <QrCode className="w-4 h-4" />
-                    Create QR Code
-                  </>
-                )}
-              </button>
+                {isGenerating ? "Creating..." : "Create QR Code"}
+              </Button>
             </div>
           </form>
         </div>
@@ -516,9 +457,9 @@ export default function QRCampaignsAdminPage() {
       {/* Campaigns list */}
       <div className="space-y-4">
         {campaigns.length === 0 && !isLoading && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700">
-            <QrCode className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="bg-primary-panel rounded-card p-8 text-center border border-primary-700">
+            <QrCode className="w-12 h-12 text-primary-500 mx-auto mb-3" />
+            <p className="text-primary-300">
               No campaigns yet. Create your first QR code campaign above.
             </p>
           </div>
@@ -536,31 +477,31 @@ export default function QRCampaignsAdminPage() {
           return (
             <div
               key={campaign.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="bg-primary-panel rounded-card border border-primary-700 overflow-hidden"
             >
               {/* Campaign header */}
               <div className="p-4 md:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                      <h3 className="text-lg font-bold text-primary-50 truncate">
                         {campaign.name}
                       </h3>
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           isActive
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            ? "bg-accent-400/15 text-accent-400"
+                            : "bg-signal-alert/15 text-signal-alert"
                         }`}
                       >
                         {isActive ? "Active" : isExpired ? "Expired" : "Inactive"}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-medium">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-signal-mental/15 text-signal-mental font-medium">
                         {campaign.access_tier}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    <div className="flex items-center gap-4 text-sm text-primary-400 mb-2">
                       {campaign.campaign_location && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5" />
@@ -583,12 +524,12 @@ export default function QRCampaignsAdminPage() {
 
                     {/* Code + URL */}
                     <div className="flex items-center gap-2 mt-2">
-                      <code className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-mono text-accent-700 dark:text-accent-300">
+                      <code className="text-sm bg-primary-800 px-2 py-1 rounded font-mono text-accent-400">
                         {campaign.code}
                       </code>
                       <button
                         onClick={() => downloadQR(qrUrl, campaign.code)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="text-primary-500 hover:text-primary-300"
                         title="Download QR"
                       >
                         <Download className="w-4 h-4" />
@@ -599,12 +540,12 @@ export default function QRCampaignsAdminPage() {
                     <div className="flex items-center gap-2 mt-3">
                       <button
                         onClick={() => copyToClipboard(qrUrl)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-accent-50 hover:bg-accent-100 dark:bg-accent-900/30 dark:hover:bg-accent-900/50 text-accent-700 dark:text-accent-300 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-accent-400/15 hover:bg-accent-400/25 text-accent-400 rounded-control text-sm font-medium transition-colors"
                       >
                         <Copy className="w-4 h-4" />
                         Copy Link
                       </button>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-primary-400">
                         Share via WhatsApp, SMS, or email
                       </span>
                     </div>
@@ -614,22 +555,22 @@ export default function QRCampaignsAdminPage() {
                   <div className="flex flex-col items-end gap-2">
                     <div className="grid grid-cols-3 gap-3 text-center">
                       <div>
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">
+                        <p className="text-lg font-bold text-primary-50">
                           {campaign.stats?.total_sessions || 0}
                         </p>
-                        <p className="text-xs text-gray-500">Guests</p>
+                        <p className="text-xs text-primary-400">Guests</p>
                       </div>
                       <div>
-                        <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                        <p className="text-lg font-bold text-accent-400">
                           {campaign.stats?.converted || 0}
                         </p>
-                        <p className="text-xs text-gray-500">Converted</p>
+                        <p className="text-xs text-primary-400">Converted</p>
                       </div>
                       <div>
-                        <p className="text-lg font-bold text-accent-600 dark:text-accent-400">
+                        <p className="text-lg font-bold text-accent-400">
                           {campaign.conversion_rate}%
                         </p>
-                        <p className="text-xs text-gray-500">Rate</p>
+                        <p className="text-xs text-primary-400">Rate</p>
                       </div>
                     </div>
 
@@ -638,20 +579,20 @@ export default function QRCampaignsAdminPage() {
                         onClick={() =>
                           toggleActive(campaign.id, campaign.is_active)
                         }
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="text-primary-500 hover:text-primary-300"
                         title={
                           campaign.is_active ? "Deactivate" : "Activate"
                         }
                       >
                         {campaign.is_active ? (
-                          <ToggleRight className="w-6 h-6 text-green-500" />
+                          <ToggleRight className="w-6 h-6 text-accent-400" />
                         ) : (
                           <ToggleLeft className="w-6 h-6" />
                         )}
                       </button>
                       <button
                         onClick={() => loadCampaignDetail(campaign.id)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="text-primary-500 hover:text-primary-300"
                       >
                         {isExpanded ? (
                           <ChevronUp className="w-5 h-5" />
@@ -666,12 +607,12 @@ export default function QRCampaignsAdminPage() {
 
               {/* Expanded detail: sessions list */}
               {isExpanded && (
-                <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 md:p-6">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <div className="border-t border-primary-700 bg-primary-900 p-4 md:p-6">
+                  <h4 className="text-sm font-medium text-primary-100 mb-3">
                     Guest Sessions ({sessions.length})
                   </h4>
                   {sessions.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-primary-400">
                       No guest sessions yet for this campaign.
                     </p>
                   ) : (
@@ -683,33 +624,33 @@ export default function QRCampaignsAdminPage() {
                         return (
                           <div
                             key={s.id}
-                            className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg px-3 py-2 text-sm"
+                            className="flex items-center justify-between bg-primary-panel rounded-control px-3 py-2 text-sm"
                           >
                             <div className="flex items-center gap-3">
                               {isConverted ? (
-                                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                <CheckCircle className="w-4 h-4 text-accent-400 flex-shrink-0" />
                               ) : isSessionExpired ? (
-                                <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                <XCircle className="w-4 h-4 text-signal-alert flex-shrink-0" />
                               ) : (
-                                <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                <Clock className="w-4 h-4 text-signal-english flex-shrink-0" />
                               )}
-                              <span className="text-gray-700 dark:text-gray-300">
+                              <span className="text-primary-100">
                                 {isConverted
                                   ? s.converted_to_email
                                   : `Guest (${s.user_id?.slice(0, 8)}...)`}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-3 text-xs text-primary-400">
                               <span>
                                 {new Date(s.started_at).toLocaleDateString()}
                               </span>
                               <span
                                 className={`px-1.5 py-0.5 rounded ${
                                   isConverted
-                                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                    ? "bg-accent-400/15 text-accent-400"
                                     : isSessionExpired
-                                      ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                      ? "bg-signal-alert/15 text-signal-alert"
+                                      : "bg-signal-english/15 text-signal-english"
                                 }`}
                               >
                                 {isConverted
@@ -729,23 +670,8 @@ export default function QRCampaignsAdminPage() {
             </div>
           );
         })}
+        </div>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon }) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-2 mb-1">
-        {icon}
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          {label}
-        </span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white">
-        {value}
-      </p>
     </div>
   );
 }

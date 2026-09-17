@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 
 const STATUS_META = {
-  draft: { label: "Draft", tone: "bg-white/10 text-white/70", Icon: Clock },
+  draft: { label: "Draft", tone: "bg-primary-700 text-primary-300", Icon: Clock },
   sending: {
     label: "Sending",
-    tone: "bg-blue-500/15 text-blue-300",
+    tone: "bg-signal-english/15 text-signal-english",
     Icon: Send,
   },
   complete: {
@@ -31,7 +31,7 @@ const STATUS_META = {
   },
   cancelled: {
     label: "Cancelled",
-    tone: "bg-red-500/15 text-red-300",
+    tone: "bg-signal-alert/15 text-signal-alert",
     Icon: XCircle,
   },
 };
@@ -66,11 +66,11 @@ export default function BroadcastsListPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-accent-300/80 font-bold">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-accent-400 font-bold">
               Admin
             </p>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
@@ -80,7 +80,7 @@ export default function BroadcastsListPage() {
           <div className="flex gap-2">
             <Link
               href="/admin/broadcasts/templates"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-sm font-semibold border border-white/15 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-primary-800 hover:bg-primary-700 text-primary-50 text-sm font-semibold border border-primary-600 transition-colors"
             >
               <Repeat className="w-4 h-4" />
               Recurring templates
@@ -96,24 +96,24 @@ export default function BroadcastsListPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60">
+          <div className="flex items-center gap-2 text-primary-300">
             <Loader2 className="w-4 h-4 animate-spin" />
             Loading…
           </div>
         ) : error ? (
-          <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/40 text-red-200">
+          <div className="p-4 rounded-card bg-signal-alert/15 border border-signal-alert/40 text-signal-alert">
             {error}
           </div>
         ) : broadcasts.length === 0 ? (
-          <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-8 text-center">
-            <PauseCircle className="w-10 h-10 text-white/30 mx-auto mb-3" />
-            <p className="text-white/70 font-semibold">No broadcasts yet</p>
-            <p className="text-xs text-white/45 mt-1">
+          <div className="rounded-card bg-primary-panel border border-primary-700 p-8 text-center">
+            <PauseCircle className="w-10 h-10 text-primary-500 mx-auto mb-3" />
+            <p className="text-primary-100 font-semibold">No broadcasts yet</p>
+            <p className="text-xs text-primary-400 mt-1">
               Compose your first message to see it here.
             </p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 overflow-hidden">
+          <div className="rounded-card border border-primary-700 overflow-hidden">
             {broadcasts.map((b) => {
               const meta = STATUS_META[b.status] || STATUS_META.draft;
               const StatusIcon = meta.Icon;
@@ -121,11 +121,11 @@ export default function BroadcastsListPage() {
                 <Link
                   key={b.id}
                   href={`/admin/broadcasts/${b.id}`}
-                  className="flex items-start gap-3 px-4 py-3.5 border-b border-white/5 hover:bg-white/[0.03] transition-colors last:border-b-0"
+                  className="flex items-start gap-3 px-4 py-3.5 border-b border-primary-700 hover:bg-primary-800 transition-colors last:border-b-0"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-white/95 truncate">
+                      <p className="font-semibold text-primary-50 truncate">
                         {b.name}
                       </p>
                       <span
@@ -135,25 +135,25 @@ export default function BroadcastsListPage() {
                         {meta.label}
                       </span>
                     </div>
-                    <p className="text-xs text-white/50 mt-1">
+                    <p className="text-xs text-primary-400 mt-1">
                       {formatDate(b.created_at)} · Languages:{" "}
                       {Object.keys(b.body || {}).join(", ") || "—"}
                     </p>
                   </div>
-                  <div className="text-right text-xs text-white/60 shrink-0">
+                  <div className="text-right text-xs text-primary-300 shrink-0">
                     <p>
-                      <span className="text-accent-300 font-bold">
+                      <span className="text-accent-400 font-bold">
                         {b.sent_count || 0}
                       </span>{" "}
                       / {b.recipient_count || 0} sent
                     </p>
                     {(b.failed_count || 0) > 0 && (
-                      <p className="text-red-300 mt-0.5">
+                      <p className="text-signal-alert mt-0.5">
                         {b.failed_count} failed
                       </p>
                     )}
                     {(b.skipped_count || 0) > 0 && (
-                      <p className="text-white/40 mt-0.5">
+                      <p className="text-primary-500 mt-0.5">
                         {b.skipped_count} skipped
                       </p>
                     )}

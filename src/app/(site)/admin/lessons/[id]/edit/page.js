@@ -22,6 +22,9 @@ import {
 } from "@/lib/supabase/lesson-queries";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
+import Button from "@/components/ui/button";
 
 import ScenarioStepForm from "@/components/admin/step-forms/ScenarioStepForm";
 import VocabularyStepForm from "@/components/admin/step-forms/VocabularyStepForm";
@@ -243,10 +246,10 @@ function LessonEditorContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-400 mx-auto"></div>
+          <p className="mt-4 text-primary-300">
             Loading lesson...
           </p>
         </div>
@@ -256,12 +259,12 @@ function LessonEditorContent() {
 
   if (!lesson) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-300">Lesson not found</p>
+          <p className="text-primary-300">Lesson not found</p>
           <button
             onClick={() => router.push("/admin/lessons")}
-            className="mt-4 text-blue-600 hover:text-blue-700"
+            className="mt-4 text-accent-400 hover:text-accent-300"
           >
             Back to Lessons
           </button>
@@ -271,27 +274,29 @@ function LessonEditorContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <div className="min-h-screen bg-primary-900">
+      <div className="sticky top-0 z-10 bg-primary-panel border-b border-primary-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push("/admin/lessons")}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              className="p-2 hover:bg-primary-800 rounded-control text-primary-100"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-primary-50">
                 Edit Lesson
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-primary-300">
                 {lesson.title || "Untitled Lesson"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="secondary"
+              Icon={Code}
               onClick={() => {
                 if (jsonMode) {
                   try {
@@ -308,179 +313,139 @@ function LessonEditorContent() {
                 }
                 setJsonMode(!jsonMode);
               }}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <Code className="w-4 h-4" />
               {jsonMode ? "Form Mode" : "JSON Mode"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              Icon={Eye}
               onClick={() => router.push(`/lesson/${lessonId}`)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <Eye className="w-4 h-4" />
               Preview
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              Icon={X}
               onClick={() => router.push("/admin/lessons")}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <X className="w-4 h-4" />
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              Icon={Save}
+              loading={saving}
               onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
             >
-              <Save className="w-4 h-4" />
               {saving ? "Saving..." : "Save"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {jsonMode ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-primary-panel border border-primary-700 rounded-card p-6">
+            <h2 className="text-lg font-semibold text-primary-50 mb-4">
               JSON Editor
             </h2>
             <textarea
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
               rows={30}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+              className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-100 font-mono text-sm focus:border-accent-400 focus:ring-accent-400/30 outline-none"
               style={{ fontFamily: "monospace" }}
             />
           </div>
         ) : (
           <>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-primary-panel border border-primary-700 rounded-card p-6 mb-6">
+              <h2 className="text-lg font-semibold text-primary-50 mb-4">
                 Lesson Settings
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={lesson.title || ""}
-                    onChange={(e) => updateLessonField("title", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Pillar
-                  </label>
-                  <select
-                    value={lesson.pillar_id || ""}
-                    onChange={(e) =>
-                      updateLessonField("pillar_id", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select a pillar</option>
-                    {pillars.map((pillar) => (
-                      <option key={pillar.id} value={pillar.id}>
-                        {pillar.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description (English)
-                  </label>
-                  <textarea
-                    value={lesson.description || ""}
-                    onChange={(e) =>
-                      updateLessonField("description", e.target.value)
-                    }
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description (Portuguese)
-                  </label>
-                  <textarea
-                    value={lesson.description_pt || ""}
-                    onChange={(e) =>
-                      updateLessonField("description_pt", e.target.value)
-                    }
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Difficulty
-                  </label>
-                  <select
-                    value={lesson.difficulty || ""}
-                    onChange={(e) =>
-                      updateLessonField("difficulty", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select difficulty</option>
-                    <option value="Survival Absolute">Survival Absolute</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Target Audience
-                  </label>
-                  <select
-                    value={lesson.target_audience || "players"}
-                    onChange={(e) => updateLessonField("target_audience", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="players">Players (Academies/Clubs)</option>
-                    <option value="schools">Schools (Students)</option>
-                    <option value="both">Both</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    XP Reward
-                  </label>
-                  <input
-                    type="number"
-                    value={lesson.xp_reward || 0}
-                    onChange={(e) =>
-                      updateLessonField(
-                        "xp_reward",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Sort Order
-                  </label>
-                  <input
-                    type="number"
-                    value={lesson.sort_order || 0}
-                    onChange={(e) =>
-                      updateLessonField(
-                        "sort_order",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
+                <Input
+                  label="Title"
+                  type="text"
+                  value={lesson.title || ""}
+                  onChange={(e) => updateLessonField("title", e.target.value)}
+                />
+                <Select
+                  label="Pillar"
+                  value={lesson.pillar_id || ""}
+                  onChange={(e) =>
+                    updateLessonField("pillar_id", e.target.value)
+                  }
+                >
+                  <option value="">Select a pillar</option>
+                  {pillars.map((pillar) => (
+                    <option key={pillar.id} value={pillar.id}>
+                      {pillar.name}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  label="Description (English)"
+                  multiline
+                  rows={3}
+                  value={lesson.description || ""}
+                  onChange={(e) =>
+                    updateLessonField("description", e.target.value)
+                  }
+                />
+                <Input
+                  label="Description (Portuguese)"
+                  multiline
+                  rows={3}
+                  value={lesson.description_pt || ""}
+                  onChange={(e) =>
+                    updateLessonField("description_pt", e.target.value)
+                  }
+                />
+                <Select
+                  label="Difficulty"
+                  value={lesson.difficulty || ""}
+                  onChange={(e) =>
+                    updateLessonField("difficulty", e.target.value)
+                  }
+                >
+                  <option value="">Select difficulty</option>
+                  <option value="Survival Absolute">Survival Absolute</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                  <option value="Expert">Expert</option>
+                </Select>
+                <Select
+                  label="Target Audience"
+                  value={lesson.target_audience || "players"}
+                  onChange={(e) => updateLessonField("target_audience", e.target.value)}
+                >
+                  <option value="players">Players (Academies/Clubs)</option>
+                  <option value="schools">Schools (Students)</option>
+                  <option value="both">Both</option>
+                </Select>
+                <Input
+                  label="XP Reward"
+                  type="number"
+                  value={lesson.xp_reward || 0}
+                  onChange={(e) =>
+                    updateLessonField(
+                      "xp_reward",
+                      parseInt(e.target.value) || 0
+                    )
+                  }
+                />
+                <Input
+                  label="Sort Order"
+                  type="number"
+                  value={lesson.sort_order || 0}
+                  onChange={(e) =>
+                    updateLessonField(
+                      "sort_order",
+                      parseInt(e.target.value) || 0
+                    )
+                  }
+                />
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <input
@@ -489,9 +454,9 @@ function LessonEditorContent() {
                       onChange={(e) =>
                         updateLessonField("is_active", e.target.checked)
                       }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-accent-400 border-primary-600 rounded focus:ring-accent-400/30"
                     />
-                    <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="ml-2 text-sm font-medium text-primary-100">
                       Active (visible to students)
                     </label>
                   </div>
@@ -505,9 +470,9 @@ function LessonEditorContent() {
                           e.target.checked
                         )
                       }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-accent-400 border-primary-600 rounded focus:ring-accent-400/30"
                     />
-                    <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="ml-2 text-sm font-medium text-primary-100">
                       Under Construction (shows as unclickable)
                     </label>
                   </div>
@@ -515,9 +480,9 @@ function LessonEditorContent() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <div className="bg-primary-panel border border-primary-700 rounded-card p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-primary-50">
                   Lesson Steps ({(lesson.content?.steps || []).length})
                 </h2>
                 <div className="relative">
@@ -528,7 +493,7 @@ function LessonEditorContent() {
                         e.target.value = "";
                       }
                     }}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg appearance-none pr-10 cursor-pointer"
+                    className="px-4 py-2 bg-primary-800 hover:bg-primary-700 border border-primary-600 text-primary-100 rounded-control appearance-none pr-10 cursor-pointer focus:border-accent-400 focus:ring-accent-400/30 outline-none"
                   >
                     <option value="">+ Add Step</option>
                     {STEP_TYPES.map((type) => (
@@ -537,7 +502,7 @@ function LessonEditorContent() {
                       </option>
                     ))}
                   </select>
-                  <Plus className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white pointer-events-none" />
+                  <Plus className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-primary-300 pointer-events-none" />
                 </div>
               </div>
 
@@ -549,29 +514,29 @@ function LessonEditorContent() {
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
-                    className={`border border-gray-200 dark:border-gray-700 rounded-lg ${
+                    className={`border border-primary-700 rounded-control ${
                       draggedIndex === index ? "opacity-50" : ""
                     }`}
                   >
                     <div
-                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-t-lg cursor-pointer"
+                      className="flex items-center justify-between p-4 bg-primary-800 rounded-t-lg cursor-pointer"
                       onClick={() =>
                         setExpandedStep(expandedStep === index ? null : index)
                       }
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
+                        <GripVertical className="w-5 h-5 text-primary-500 cursor-move" />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                            <span className="text-sm font-medium text-primary-400">
                               Step {index + 1}
                             </span>
-                            <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            <span className="px-2 py-1 text-xs font-medium rounded bg-signal-english/15 text-signal-english">
                               {STEP_TYPES.find((t) => t.value === step.type)
                                 ?.label || step.type}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-900 dark:text-white mt-1">
+                          <p className="text-sm text-primary-50 mt-1">
                             {step.title || "Untitled Step"}
                           </p>
                         </div>
@@ -583,19 +548,19 @@ function LessonEditorContent() {
                             e.stopPropagation();
                             deleteStep(index);
                           }}
-                          className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          className="p-2 text-signal-alert hover:text-signal-alert/80"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                         {expandedStep === index ? (
-                          <ChevronUp className="w-5 h-5 text-gray-400" />
+                          <ChevronUp className="w-5 h-5 text-primary-400" />
                         ) : (
-                          <ChevronDown className="w-5 h-5 text-gray-400" />
+                          <ChevronDown className="w-5 h-5 text-primary-400" />
                         )}
                       </div>
                     </div>
                     {expandedStep === index && (
-                      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="p-4 border-t border-primary-700">
                         {renderStepForm(step, index)}
                       </div>
                     )}
@@ -603,7 +568,7 @@ function LessonEditorContent() {
                 ))}
 
                 {(lesson.content?.steps || []).length === 0 && (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-12 text-primary-400">
                     <p>
                       No steps yet. Click &quot;+ Add Step&quot; to create your
                       first step.

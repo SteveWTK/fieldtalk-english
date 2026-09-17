@@ -13,7 +13,17 @@
 //                     readiness score. Reserved for that role.)
 //
 // Per DS: no donuts, no rings, no gauges — bars only.
+//
+// Motion: bars mount at width 0 and grow to their target value with
+// the `ui` duration token (220ms brand-curve). This is Stage 5 spec
+// verbatim — "Animate metric-bar widths from 0 on mount with the
+// `ui` token." A one-tick delay lets the width transition register
+// even on the very first render, so a fresh MetricBar visibly fills
+// in rather than snapping to full. Value changes AFTER mount also
+// animate through the same transition.
 "use client";
+
+import { useEffect, useState } from "react";
 
 const SIGNAL_FILL = {
   english: "bg-signal-english",
@@ -49,10 +59,20 @@ function MetricBar({
 }) {
   const pct = Math.max(0, Math.min(100, Number(value) || 0));
   const fill = SIGNAL_FILL[signal] || SIGNAL_FILL.accent;
-  // The value colour matches the fill when signal === accent (the
-  // lime composite score), but stays neutral primary-100 for the
-  // other signals so the row doesn't turn into a colour-block.
   const valueText = signal === "accent" ? SIGNAL_TEXT.accent : "text-primary-100";
+
+  // Mount-from-0 animation. `mounted` starts false; a
+  // requestAnimationFrame-deferred setter flips it true on the next
+  // paint so the browser has a chance to render width:0 before the
+  // transition kicks in. Without the rAF hop, React commits both
+  // width:0 and width:pct in the same frame and the browser skips
+  // the transition entirely.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const renderedPct = mounted ? pct : 0;
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`.trim()}>
@@ -65,7 +85,7 @@ function MetricBar({
       <div className="h-1.5 rounded-full bg-primary-700 overflow-hidden">
         <div
           className={`h-1.5 rounded-full ${fill} transition-[width] duration-ui ease-brand`}
-          style={{ width: `${pct}%` }}
+          style={{ width: `${renderedPct}%` }}
           role="progressbar"
           aria-valuenow={pct}
           aria-valuemin={0}

@@ -27,6 +27,8 @@ import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { downloadCSV } from "@/lib/admin/codes";
+import Input from "@/components/ui/input";
+import Button from "@/components/ui/button";
 
 function SeatLicensesAdminContent() {
   const router = useRouter();
@@ -110,33 +112,33 @@ function SeatLicensesAdminContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
         <Link
           href="/lesson"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
 
         <header>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Bulk-generate Full Access codes
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-lg leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-lg leading-relaxed">
             Issues seat licences that students redeem at{" "}
-            <Link href="/redeem" className="text-emerald-300 underline">
+            <Link href="/redeem" className="text-accent-400 underline">
               /redeem
             </Link>{" "}
             to unlock the edition without paying. Use single-use codes for
@@ -148,21 +150,21 @@ function SeatLicensesAdminContent() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 sm:p-6 space-y-4"
+          className="rounded-card bg-primary-panel border border-primary-700 p-5 sm:p-6 space-y-4"
         >
           {/* Shape toggle */}
           <div>
-            <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
+            <label className="block text-xs uppercase tracking-wider text-primary-300 mb-2">
               Licence shape
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setShape("single")}
-                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-control text-sm font-semibold transition-colors ${
                   shape === "single"
-                    ? "bg-emerald-500 text-[#062013]"
-                    : "bg-white/5 text-white/70 hover:bg-white/10"
+                    ? "bg-accent-400 text-primary-800"
+                    : "bg-primary-800 text-primary-300 hover:bg-primary-700"
                 }`}
               >
                 <Lock className="w-4 h-4" />
@@ -171,10 +173,10 @@ function SeatLicensesAdminContent() {
               <button
                 type="button"
                 onClick={() => setShape("shared")}
-                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-control text-sm font-semibold transition-colors ${
                   shape === "shared"
-                    ? "bg-emerald-500 text-[#062013]"
-                    : "bg-white/5 text-white/70 hover:bg-white/10"
+                    ? "bg-accent-400 text-primary-800"
+                    : "bg-primary-800 text-primary-300 hover:bg-primary-700"
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -184,175 +186,132 @@ function SeatLicensesAdminContent() {
           </div>
 
           {/* Partner */}
-          <div>
-            <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-              Partner name
-            </label>
-            <input
-              type="text"
-              value={partnerName}
-              onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="Cultura Inglesa Ceará — Aldeota"
-              disabled={submitting}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400"
-            />
-          </div>
+          <Input
+            label="Partner name"
+            type="text"
+            value={partnerName}
+            onChange={(e) => setPartnerName(e.target.value)}
+            placeholder="Cultura Inglesa Ceará — Aldeota"
+            disabled={submitting}
+          />
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Contact email
-              </label>
-              <input
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="coord@cultura-ceara.com.br"
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400"
-              />
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Edition
-              </label>
-              <input
-                type="text"
-                value={edition}
-                onChange={(e) => setEdition(e.target.value)}
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400"
-              />
-            </div>
+            <Input
+              label="Contact email"
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder="coord@cultura-ceara.com.br"
+              disabled={submitting}
+            />
+            <Input
+              label="Edition"
+              type="text"
+              value={edition}
+              onChange={(e) => setEdition(e.target.value)}
+              disabled={submitting}
+            />
           </div>
 
           {/* Count depends on shape */}
           <div className="grid grid-cols-2 gap-4">
             {shape === "single" ? (
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                  Codes to generate
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={count}
-                  onChange={(e) => setCount(Number(e.target.value))}
-                  disabled={submitting}
-                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                  Total seats on the code
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={sharedSeats}
-                  onChange={(e) => setSharedSeats(Number(e.target.value))}
-                  disabled={submitting}
-                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Code prefix
-              </label>
-              <input
-                type="text"
-                value={codePrefix}
-                onChange={(e) => setCodePrefix(e.target.value)}
-                placeholder="CC-CEARA-2026A"
+              <Input
+                label="Codes to generate"
+                type="number"
+                min={1}
+                max={500}
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
                 disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono text-sm uppercase"
               />
-            </div>
+            ) : (
+              <Input
+                label="Total seats on the code"
+                type="number"
+                min={1}
+                max={500}
+                value={sharedSeats}
+                onChange={(e) => setSharedSeats(Number(e.target.value))}
+                disabled={submitting}
+              />
+            )}
+            <Input
+              label="Code prefix"
+              type="text"
+              value={codePrefix}
+              onChange={(e) => setCodePrefix(e.target.value)}
+              placeholder="CC-CEARA-2026A"
+              disabled={submitting}
+              className="font-mono text-sm uppercase"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Valid until (optional)
-              </label>
-              <input
-                type="date"
-                value={validUntil}
-                onChange={(e) => setValidUntil(e.target.value)}
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-emerald-400"
-              />
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
-                Internal notes
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="PIX received 2 Jun, R$1,140"
-                disabled={submitting}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-emerald-400"
-              />
-            </div>
+            <Input
+              label="Valid until (optional)"
+              type="date"
+              value={validUntil}
+              onChange={(e) => setValidUntil(e.target.value)}
+              disabled={submitting}
+            />
+            <Input
+              label="Internal notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="PIX received 2 Jun, R$1,140"
+              disabled={submitting}
+            />
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+            <div className="flex items-start gap-2 p-3 rounded-control bg-signal-alert/10 border border-signal-alert/40 text-signal-alert text-sm">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            fullWidth
             disabled={submitting}
-            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-[#062013] font-bold text-sm tracking-wide transition-colors"
+            loading={submitting}
+            Icon={submitting ? undefined : Sparkles}
           >
-            {submitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Generating…
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                {shape === "single"
-                  ? `Generate ${count} codes`
-                  : `Create code for ${sharedSeats} seats`}
-              </>
-            )}
-          </button>
+            {submitting
+              ? "Generating…"
+              : shape === "single"
+                ? `Generate ${count} codes`
+                : `Create code for ${sharedSeats} seats`}
+          </Button>
         </form>
 
         {result && (
-          <div className="rounded-2xl bg-emerald-500/10 border border-emerald-400/40 p-5 sm:p-6">
-            <p className="text-xs uppercase tracking-wider text-emerald-300 font-semibold mb-1">
+          <div className="rounded-card bg-accent-400/10 border border-accent-400/40 p-5 sm:p-6">
+            <p className="text-xs uppercase tracking-wider text-accent-400 font-semibold mb-1">
               Done
             </p>
             <p className="text-lg font-bold mb-1">
               {result.created} licence{result.created === 1 ? "" : "s"} created
             </p>
-            <p className="text-sm text-white/65 mb-4">
+            <p className="text-sm text-primary-300 mb-4">
               Students redeem at{" "}
-              <Link href="/redeem" className="text-emerald-300 underline">
+              <Link href="/redeem" className="text-accent-400 underline">
                 /redeem
               </Link>{" "}
               — Full Access provisions instantly, no Stripe step.
             </p>
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={handleDownload}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#062013] font-bold text-sm hover:bg-white/90 transition-colors"
+              Icon={Download}
             >
-              <Download className="w-4 h-4" />
               Download CSV
-            </button>
+            </Button>
           </div>
         )}
       </main>

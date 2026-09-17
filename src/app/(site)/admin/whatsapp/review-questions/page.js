@@ -29,6 +29,7 @@ import {
   AlertCircle,
   Send,
 } from "lucide-react";
+import Button from "@/components/ui/button";
 
 const REQUIRED_LANGS = [
   { code: "pt", label: "PT" },
@@ -118,12 +119,12 @@ export default function ReviewQuestionsAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div className="mb-4">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to admin
@@ -131,18 +132,18 @@ export default function ReviewQuestionsAdminPage() {
         </div>
 
         <header className="mb-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/80 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/80 font-semibold mb-1">
             WhatsApp
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Review quiz questions
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             T+24h mini-quizzes sent via WhatsApp buttons. Author one 3-option
             question per lesson — sent 24 hours after the player completes it.
             Empty lessons are silently skipped.
           </p>
-          <p className="text-xs text-white/40 mt-2">
+          <p className="text-xs text-primary-500 mt-2">
             {authored} of {lessons.length} lessons authored.
           </p>
         </header>
@@ -171,16 +172,16 @@ export default function ReviewQuestionsAdminPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/60">
+          <div className="flex items-center gap-2 text-primary-300">
             <Loader2 className="w-4 h-4 animate-spin" />
             Loading…
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-4 text-sm text-signal-alert">
             {error}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-white/40">No lessons match the filter.</p>
+          <p className="text-sm text-primary-500">No lessons match the filter.</p>
         ) : (
           <div className="space-y-2">
             {filtered.map((lesson) => (
@@ -203,15 +204,15 @@ export default function ReviewQuestionsAdminPage() {
 
 function SelectPill({ label, value, onChange, options }) {
   return (
-    <label className="inline-flex items-center gap-2 text-xs text-white/60">
+    <label className="inline-flex items-center gap-2 text-xs text-primary-300">
       <span>{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white/[0.05] border border-white/10 text-white text-xs rounded-full px-3 py-1.5 focus:border-emerald-400/40 focus:outline-none"
+        className="bg-primary-800 border border-primary-700 text-primary-50 text-xs rounded-full px-3 py-1.5 focus:border-accent-400/40 focus:outline-none"
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="bg-[#0e0e0e]">
+          <option key={o.value} value={o.value} className="bg-primary-800">
             {o.label}
           </option>
         ))}
@@ -228,17 +229,17 @@ function LessonRow({ lesson, isExpanded, onToggle, onSaved }) {
   const pillarName = lesson.pillars?.name ?? "—";
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+    <div className="rounded-card border border-primary-700 bg-primary-panel overflow-hidden">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors text-left"
+        className="w-full flex items-center gap-3 p-4 hover:bg-primary-800 transition-colors text-left"
       >
         <div
-          className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+          className={`shrink-0 w-8 h-8 rounded-control flex items-center justify-center ${
             hasQuiz
-              ? "bg-emerald-500/15 text-emerald-300"
-              : "bg-white/[0.05] text-white/40"
+              ? "bg-accent-400/15 text-accent-400"
+              : "bg-primary-800 text-primary-500"
           }`}
         >
           {hasQuiz ? (
@@ -249,19 +250,19 @@ function LessonRow({ lesson, isExpanded, onToggle, onSaved }) {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm truncate">{lesson.title}</h3>
-          <p className="text-xs text-white/45">
+          <p className="text-xs text-primary-400">
             {edition} · {pillarName}
           </p>
         </div>
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4 text-white/40" />
+          <ChevronDown className="w-4 h-4 text-primary-500" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-white/40" />
+          <ChevronRight className="w-4 h-4 text-primary-500" />
         )}
       </button>
 
       {isExpanded && (
-        <div className="border-t border-white/10 p-4 sm:p-6 bg-black/25">
+        <div className="border-t border-primary-700 p-4 sm:p-6 bg-primary-900">
           <QuestionEditor
             lessonId={lesson.id}
             initial={question}
@@ -435,10 +436,10 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
       {/* Buttons */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+          <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
             Answer buttons
           </p>
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-primary-500">
             Pick exactly one correct answer.
           </p>
         </div>
@@ -472,53 +473,47 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
       </Field>
 
       {/* Actions */}
-      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-white/10">
-        <button
+      <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-primary-700">
+        <Button
           type="button"
+          variant="primary"
+          size="sm"
           onClick={handleSave}
           disabled={saving || clearing || testing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm disabled:opacity-50 transition-colors"
+          loading={saving}
+          Icon={saving ? undefined : Save}
         >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
           Save
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={handleTestSend}
           disabled={saving || clearing || testing}
+          loading={testing}
+          Icon={testing ? undefined : Send}
           title="Sends the current (unsaved) version to your own WhatsApp, bypassing the 24h wait + all gates. Reply with a button to test the router."
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-white/80 hover:text-white border border-white/15 text-sm disabled:opacity-50 transition-colors"
         >
-          {testing ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
           Send test to me
-        </button>
+        </Button>
         {initial && (
-          <button
+          <Button
             type="button"
+            variant="danger"
+            size="sm"
             onClick={handleClear}
             disabled={saving || clearing || testing}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-red-500/15 text-white/60 hover:text-red-300 border border-white/10 hover:border-red-500/40 text-sm disabled:opacity-50 transition-colors"
+            loading={clearing}
+            Icon={clearing ? undefined : Trash2}
           >
-            {clearing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
             Remove quiz
-          </button>
+          </Button>
         )}
         {msg && (
           <div
             className={`ml-auto inline-flex items-center gap-1.5 text-xs font-medium ${
-              msg.tone === "error" ? "text-red-300" : "text-emerald-300"
+              msg.tone === "error" ? "text-signal-alert" : "text-accent-400"
             }`}
           >
             {msg.tone === "error" ? (
@@ -540,10 +535,10 @@ function QuestionEditor({ lessonId, initial, onSaved }) {
 function Field({ label, hint, children }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-1">
+      <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">
         {label}
       </p>
-      {hint && <p className="text-[11px] text-white/40 mb-2">{hint}</p>}
+      {hint && <p className="text-[11px] text-primary-500 mb-2">{hint}</p>}
       <div className="space-y-2">{children}</div>
     </div>
   );
@@ -553,12 +548,12 @@ function TextArea({ langLabel, value, max, onChange }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        <span className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
           {langLabel}
         </span>
         <span
           className={`text-[10px] tabular-nums ${
-            value.length > max ? "text-red-400" : "text-white/35"
+            value.length > max ? "text-signal-alert" : "text-primary-500"
           }`}
         >
           {value.length}/{max}
@@ -568,7 +563,7 @@ function TextArea({ langLabel, value, max, onChange }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 focus:border-emerald-400/50 focus:outline-none resize-y"
+        className="w-full bg-primary-800 border border-primary-700 rounded-control px-3 py-2 text-sm text-primary-50 placeholder:text-primary-500 focus:border-accent-400 focus:outline-none resize-y"
       />
     </div>
   );
@@ -577,23 +572,23 @@ function TextArea({ langLabel, value, max, onChange }) {
 function ButtonEditor({ idx, button, onLabel, onPickCorrect }) {
   return (
     <div
-      className={`rounded-xl border p-3 ${
+      className={`rounded-control border p-3 ${
         button.correct
-          ? "border-emerald-400/40 bg-emerald-500/[0.05]"
-          : "border-white/10 bg-white/[0.02]"
+          ? "border-accent-400/40 bg-accent-400/[0.05]"
+          : "border-primary-700 bg-primary-800"
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] uppercase tracking-wider text-white/50 font-bold">
+        <span className="text-[11px] uppercase tracking-wider text-primary-400 font-bold">
           Button {idx + 1} (id: {button.id})
         </span>
-        <label className="inline-flex items-center gap-1.5 text-[11px] text-white/60 cursor-pointer">
+        <label className="inline-flex items-center gap-1.5 text-[11px] text-primary-300 cursor-pointer">
           <input
             type="radio"
             name={`correct-${idx}-parent`}
             checked={button.correct}
             onChange={onPickCorrect}
-            className="accent-emerald-400"
+            className="accent-accent-400"
           />
           Correct answer
         </label>
@@ -602,14 +597,14 @@ function ButtonEditor({ idx, button, onLabel, onPickCorrect }) {
         {REQUIRED_LANGS.map((l) => (
           <div key={l.code}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold">
+              <span className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
                 {l.label} label
               </span>
               <span
                 className={`text-[10px] tabular-nums ${
                   (button.label[l.code] || "").length > MAX_LABEL_CHARS
-                    ? "text-red-400"
-                    : "text-white/35"
+                    ? "text-signal-alert"
+                    : "text-primary-500"
                 }`}
               >
                 {(button.label[l.code] || "").length}/{MAX_LABEL_CHARS}
@@ -619,7 +614,7 @@ function ButtonEditor({ idx, button, onLabel, onPickCorrect }) {
               type="text"
               value={button.label[l.code] || ""}
               onChange={(e) => onLabel(l.code, e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-emerald-400/50 focus:outline-none"
+              className="w-full bg-primary-900 border border-primary-700 rounded-control px-3 py-1.5 text-sm text-primary-50 focus:border-accent-400 focus:outline-none"
             />
           </div>
         ))}
@@ -631,13 +626,13 @@ function ButtonEditor({ idx, button, onLabel, onPickCorrect }) {
 function PreviewCard({ question }) {
   const [lang, setLang] = useState("pt");
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+    <div className="rounded-card border border-primary-700 bg-primary-panel p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="inline-flex items-center gap-2 text-xs text-white/60">
+        <div className="inline-flex items-center gap-2 text-xs text-primary-300">
           <MessageSquareQuote className="w-4 h-4" />
           <span className="font-semibold">Preview (what the user sees)</span>
         </div>
-        <div className="inline-flex rounded-full bg-white/[0.05] border border-white/10 p-0.5">
+        <div className="inline-flex rounded-full bg-primary-800 border border-primary-700 p-0.5">
           {REQUIRED_LANGS.map((l) => (
             <button
               key={l.code}
@@ -645,8 +640,8 @@ function PreviewCard({ question }) {
               onClick={() => setLang(l.code)}
               className={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors ${
                 lang === l.code
-                  ? "bg-emerald-400 text-black"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-accent-400 text-primary-800"
+                  : "text-primary-300 hover:text-primary-50"
               }`}
             >
               {l.label}
@@ -655,10 +650,10 @@ function PreviewCard({ question }) {
         </div>
       </div>
       <div className="max-w-md">
-        <div className="rounded-2xl bg-[#075E54]/15 border border-[#075E54]/30 p-3">
-          <p className="text-sm text-white whitespace-pre-wrap">
+        <div className="rounded-card bg-[#075E54]/15 border border-[#075E54]/30 p-3">
+          <p className="text-sm text-primary-50 whitespace-pre-wrap">
             {question.prompt[lang] || (
-              <span className="italic text-white/35">(prompt empty)</span>
+              <span className="italic text-primary-500">(prompt empty)</span>
             )}
           </p>
         </div>
@@ -666,10 +661,10 @@ function PreviewCard({ question }) {
           {question.buttons.map((b) => (
             <div
               key={b.id}
-              className="rounded-xl bg-white/[0.04] border border-white/10 px-3 py-2 text-sm text-white/80 text-center"
+              className="rounded-control bg-primary-800 border border-primary-700 px-3 py-2 text-sm text-primary-100 text-center"
             >
               {b.label[lang] || (
-                <span className="italic text-white/35">(empty)</span>
+                <span className="italic text-primary-500">(empty)</span>
               )}
             </div>
           ))}

@@ -37,8 +37,8 @@ export default function EditTemplatePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white p-8">
-        <div className="max-w-3xl mx-auto p-4 rounded-2xl bg-red-500/15 border border-red-500/40 text-red-200">
+      <div className="min-h-screen bg-primary-900 text-primary-50 p-8">
+        <div className="max-w-3xl mx-auto p-4 rounded-card bg-signal-alert/15 border border-signal-alert/40 text-signal-alert">
           {error}
         </div>
       </div>
@@ -47,8 +47,8 @@ export default function EditTemplatePage() {
 
   if (!template) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
       </div>
     );
   }

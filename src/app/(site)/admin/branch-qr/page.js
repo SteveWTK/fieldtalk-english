@@ -37,6 +37,7 @@ import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { BRANCHES, DEFAULT_BRANCH_KEY } from "@/lib/branches";
+import Button from "@/components/ui/button";
 
 // Production site URL — used to build the QR target. Falls back to
 // window.location.origin in the browser so the page still works
@@ -91,33 +92,33 @@ function BranchQrAdminContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6 sm:space-y-8">
         <div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white mb-3"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-3"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to admin
           </Link>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Global Player · admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Partner QR codes
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             Print-ready QR codes that lead directly to each partner&apos;s
             branded WC2026 landing page. Anyone scanning lands on{" "}
-            <code className="text-white/75 text-xs">
+            <code className="text-primary-100 text-xs">
               /wc2026?branch=&lt;slug&gt;
             </code>{" "}
             and gets partner-attributed from the first interaction.
@@ -133,16 +134,16 @@ function BranchQrAdminContent() {
             adding a new partner in branches.js automatically adds a
             QR card here — no edits to this file needed. */}
         <section>
-          <h2 className="text-base font-bold text-white mb-1">
+          <h2 className="text-base font-bold text-primary-50 mb-1">
             Registered partner branches
           </h2>
-          <p className="text-[11px] text-white/50 mb-3">
+          <p className="text-[11px] text-primary-400 mb-3">
             Pulled from{" "}
-            <code className="text-white/75 text-xs">src/lib/branches.js</code>.
+            <code className="text-primary-100 text-xs">src/lib/branches.js</code>.
             Add a new entry there to create a new card.
           </p>
           {partnerEntries.length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm text-white/50">
+            <div className="rounded-xl border border-primary-700 bg-primary-panel p-4 text-sm text-primary-400">
               No partner branches registered yet.
             </div>
           ) : (
@@ -161,9 +162,9 @@ function BranchQrAdminContent() {
 
         {/* Print tips — short, in-page so the team doesn't have to
             ask. Anchored to common questions from the Cultura team. */}
-        <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
-          <h2 className="text-sm font-bold text-white mb-2">Printing tips</h2>
-          <ul className="text-xs text-white/55 space-y-1.5 leading-relaxed list-disc pl-4">
+        <section className="rounded-xl border border-primary-700 bg-primary-panel p-4 sm:p-5">
+          <h2 className="text-sm font-bold text-primary-50 mb-2">Printing tips</h2>
+          <ul className="text-xs text-primary-300 space-y-1.5 leading-relaxed list-disc pl-4">
             <li>
               Minimum print size <strong>2 cm × 2 cm</strong> for reliable
               scanning at arm&apos;s length. Bigger is better for posters at
@@ -235,7 +236,7 @@ function BranchCard({ slug, branch, url }) {
   };
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
+    <article className="rounded-card border border-primary-700 bg-primary-panel p-4 sm:p-5">
       <header className="flex items-start gap-3 mb-4">
         {branch.logoSrc && (
           <Image
@@ -243,15 +244,15 @@ function BranchCard({ slug, branch, url }) {
             alt={branch.alt || slug}
             width={36}
             height={36}
-            className="w-9 h-9 rounded-md object-contain bg-white/5 p-1 shrink-0"
+            className="w-9 h-9 rounded-md object-contain bg-primary-800 p-1 shrink-0"
             unoptimized
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-200/80 font-semibold">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-accent-400/80 font-semibold">
             {slug}
           </p>
-          <h3 className="font-bold text-sm text-white truncate">
+          <h3 className="font-bold text-sm text-primary-50 truncate">
             {branch.alt || slug}
           </h3>
         </div>
@@ -259,9 +260,9 @@ function BranchCard({ slug, branch, url }) {
 
       {/* QR preview — white bg so the QR is visible on the dark
           theme. Aspect-square so it never distorts. */}
-      <div className="aspect-square w-full max-w-[240px] mx-auto rounded-xl bg-white p-3 mb-3 flex items-center justify-center">
+      <div className="aspect-square w-full max-w-[240px] mx-auto rounded-xl bg-primary-800 border border-primary-700 p-3 mb-3 flex items-center justify-center">
         {error ? (
-          <div className="text-red-600 text-xs flex items-center gap-1.5">
+          <div className="text-signal-alert text-xs flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
           </div>
@@ -271,44 +272,39 @@ function BranchCard({ slug, branch, url }) {
           <img
             src={dataUrl}
             alt={`QR for ${slug}`}
-            className="w-full h-full"
+            className="w-full h-full bg-white rounded"
           />
         ) : (
-          <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
         )}
       </div>
 
-      <p className="text-[11px] text-white/55 break-all mb-3 font-mono">
+      <p className="text-[11px] text-primary-300 break-all mb-3 font-mono">
         {url}
       </p>
 
       <div className="flex items-center gap-2">
-        <button
+        <Button
           type="button"
           onClick={handleCopy}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs font-semibold transition-colors"
+          variant="secondary"
+          size="sm"
+          Icon={copied ? Check : Copy}
+          className="flex-1"
         >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="text-emerald-300">Copied</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-3.5 h-3.5" />
-              Copy URL
-            </>
-          )}
-        </button>
-        <button
+          {copied ? "Copied" : "Copy URL"}
+        </Button>
+        <Button
           type="button"
           onClick={handleDownload}
           disabled={!dataUrl}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-[#062013] text-xs font-bold transition-colors"
+          variant="primary"
+          size="sm"
+          Icon={Download}
+          className="flex-1"
         >
-          <Download className="w-3.5 h-3.5" />
           Download PNG
-        </button>
+        </Button>
       </div>
     </article>
   );
@@ -369,14 +365,14 @@ function AdHocGenerator({ origin }) {
   };
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+    <section className="rounded-card border border-primary-700 bg-primary-panel p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-1">
-        <QrCode className="w-4 h-4 text-emerald-300" />
-        <h2 className="text-base font-bold text-white">Custom URL</h2>
+        <QrCode className="w-4 h-4 text-accent-400" />
+        <h2 className="text-base font-bold text-primary-50">Custom URL</h2>
       </div>
-      <p className="text-[11px] text-white/50 mb-3">
+      <p className="text-[11px] text-primary-400 mb-3">
         One-off QR for any URL or path on the site. Paths like{" "}
-        <code className="text-white/75 text-xs">/wc2026?branch=foo</code>{" "}
+        <code className="text-primary-100 text-xs">/wc2026?branch=foo</code>{" "}
         are auto-prefixed with the site origin.
       </p>
 
@@ -389,36 +385,28 @@ function AdHocGenerator({ origin }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="https://… or /path"
-          className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono"
+          className="flex-1 px-3 py-2 rounded-control bg-primary-900 border border-primary-700 text-primary-50 text-sm placeholder-primary-500 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 font-mono"
         />
-        <button
+        <Button
           type="submit"
-          disabled={generating}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-[#062013] text-sm font-bold transition-colors"
+          variant="primary"
+          size="sm"
+          Icon={QrCode}
+          loading={generating}
         >
-          {generating ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Generating
-            </>
-          ) : (
-            <>
-              <QrCode className="w-3.5 h-3.5" />
-              Generate
-            </>
-          )}
-        </button>
+          {generating ? "Generating" : "Generate"}
+        </Button>
       </form>
 
       {error && (
-        <div className="flex items-center gap-1.5 text-xs text-red-200 mb-3">
+        <div className="flex items-center gap-1.5 text-xs text-signal-alert mb-3">
           <AlertCircle className="w-3.5 h-3.5" />
           {error}
         </div>
       )}
 
       {dataUrl && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 flex flex-col sm:flex-row items-start gap-4">
+        <div className="rounded-xl border border-primary-700 bg-primary-800 p-4 flex flex-col sm:flex-row items-start gap-4">
           <div className="w-32 h-32 rounded-lg bg-white p-2 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -428,20 +416,21 @@ function AdHocGenerator({ origin }) {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-200/80 font-semibold mb-1">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-accent-400/80 font-semibold mb-1">
               Encodes
             </p>
-            <p className="text-[11px] text-white/65 font-mono break-all mb-3">
+            <p className="text-[11px] text-primary-300 font-mono break-all mb-3">
               {resolvedUrl}
             </p>
-            <button
+            <Button
               type="button"
               onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#062013] text-xs font-bold transition-colors"
+              variant="secondary"
+              size="sm"
+              Icon={Download}
             >
-              <Download className="w-3.5 h-3.5" />
               Download PNG
-            </button>
+            </Button>
           </div>
         </div>
       )}

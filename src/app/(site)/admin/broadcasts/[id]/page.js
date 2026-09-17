@@ -25,10 +25,10 @@ import {
 } from "lucide-react";
 
 const STATUS_META = {
-  draft: { label: "Draft", tone: "bg-white/10 text-white/70", Icon: Clock },
+  draft: { label: "Draft", tone: "bg-primary-700 text-primary-300", Icon: Clock },
   sending: {
     label: "Sending",
-    tone: "bg-blue-500/15 text-blue-300",
+    tone: "bg-signal-english/15 text-signal-english",
     Icon: Send,
   },
   complete: {
@@ -38,7 +38,7 @@ const STATUS_META = {
   },
   cancelled: {
     label: "Cancelled",
-    tone: "bg-red-500/15 text-red-300",
+    tone: "bg-signal-alert/15 text-signal-alert",
     Icon: XCircle,
   },
 };
@@ -146,24 +146,24 @@ export default function BroadcastDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
       </div>
     );
   }
 
   if (error || !broadcast) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white p-8">
+      <div className="min-h-screen bg-primary-900 text-primary-50 p-8">
         <div className="max-w-3xl mx-auto">
           <Link
             href="/admin/broadcasts"
-            className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white mb-4"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             All broadcasts
           </Link>
-          <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/40 text-red-200">
+          <div className="p-4 rounded-card bg-signal-alert/15 border border-signal-alert/40 text-signal-alert">
             {error || "Not found"}
           </div>
         </div>
@@ -178,11 +178,11 @@ export default function BroadcastDetailPage() {
     broadcast.status === "draft" || broadcast.status === "sending";
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Link
           href="/admin/broadcasts"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white mb-4"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           All broadcasts
@@ -193,7 +193,7 @@ export default function BroadcastDetailPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
               {broadcast.name}
             </h1>
-            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-white/50">
+            <div className="flex items-center gap-2 mt-2 flex-wrap text-xs text-primary-400">
               <span
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}
               >
@@ -231,7 +231,7 @@ export default function BroadcastDetailPage() {
                 type="button"
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-red-500/20 hover:border-red-400/60 text-white text-sm font-semibold border border-white/15 disabled:opacity-40 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-800 hover:bg-signal-alert/20 hover:border-signal-alert/60 text-primary-50 text-sm font-semibold border border-primary-600 disabled:opacity-40 transition-colors"
               >
                 {cancelling ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -246,10 +246,10 @@ export default function BroadcastDetailPage() {
 
         {actionMessage && (
           <div
-            className={`mb-4 p-3 rounded-lg text-sm ${
+            className={`mb-4 p-3 rounded-control text-sm ${
               actionMessage.type === "ok"
-                ? "bg-accent-400/10 border border-accent-400/40 text-accent-200"
-                : "bg-red-500/15 border border-red-500/40 text-red-200"
+                ? "bg-accent-400/10 border border-accent-400/40 text-accent-300"
+                : "bg-signal-alert/15 border border-signal-alert/40 text-signal-alert"
             }`}
           >
             {actionMessage.text}
@@ -262,35 +262,35 @@ export default function BroadcastDetailPage() {
           <Counter
             label="Sent"
             value={broadcast.sent_count}
-            tone="text-accent-300"
+            tone="text-accent-400"
           />
           <Counter
             label="Failed"
             value={broadcast.failed_count}
             tone={
               (broadcast.failed_count || 0) > 0
-                ? "text-red-300"
-                : "text-white/60"
+                ? "text-signal-alert"
+                : "text-primary-300"
             }
           />
           <Counter
             label="Skipped"
             value={broadcast.skipped_count}
-            tone="text-white/60"
+            tone="text-primary-300"
           />
         </div>
 
         {/* ── Body preview ────────────────────────────────────── */}
-        <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
-          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-3">
+        <section className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
+          <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-3">
             Message body
           </p>
           {Object.entries(broadcast.body || {}).map(([lang, text]) => (
             <div key={lang} className="mb-4 last:mb-0">
-              <p className="text-[10px] uppercase tracking-wider text-accent-300/80 font-bold mb-1">
+              <p className="text-[10px] uppercase tracking-wider text-accent-400 font-bold mb-1">
                 {lang}
               </p>
-              <p className="text-sm text-white/85 whitespace-pre-wrap break-words">
+              <p className="text-sm text-primary-100 whitespace-pre-wrap break-words">
                 {text}
               </p>
             </div>
@@ -298,24 +298,24 @@ export default function BroadcastDetailPage() {
         </section>
 
         {/* ── Filter summary ──────────────────────────────────── */}
-        <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
-          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-2">
+        <section className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
+          <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-2">
             Audience filter
           </p>
           {Object.keys(broadcast.target_filter || {}).length === 0 ? (
-            <p className="text-sm text-white/50">
+            <p className="text-sm text-primary-400">
               No restrictions (all opted-in players).
             </p>
           ) : (
-            <pre className="text-xs text-white/70 whitespace-pre-wrap font-mono">
+            <pre className="text-xs text-primary-300 whitespace-pre-wrap font-mono">
               {JSON.stringify(broadcast.target_filter, null, 2)}
             </pre>
           )}
         </section>
 
         {/* ── Schedule + timing summary ───────────────────────── */}
-        <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
-          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-3">
+        <section className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
+          <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-3">
             Schedule &amp; timing
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
@@ -343,20 +343,20 @@ export default function BroadcastDetailPage() {
             />
           </div>
           {broadcast.generated_from_template_id && (
-            <p className="text-[11px] text-white/40 mt-3">
+            <p className="text-[11px] text-primary-500 mt-3">
               Auto-generated from a recurring template.
             </p>
           )}
         </section>
 
         {/* ── Recipients list ─────────────────────────────────── */}
-        <section className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-          <p className="text-xs uppercase tracking-wider text-white/60 font-semibold mb-3">
+        <section className="rounded-card bg-primary-panel border border-primary-700 p-4">
+          <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-3">
             Recipients ({recipients.length}{" "}
             {recipients.length >= 200 ? "shown, more in DB" : "total"})
           </p>
           {recipients.length === 0 ? (
-            <p className="text-sm text-white/50">
+            <p className="text-sm text-primary-400">
               No recipients yet — fan-out happens when you click Send.
             </p>
           ) : (
@@ -375,18 +375,18 @@ export default function BroadcastDetailPage() {
 function ScheduleField({ label, value }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
         {label}
       </p>
-      <p className="text-sm text-white/90 mt-0.5">{value}</p>
+      <p className="text-sm text-primary-100 mt-0.5">{value}</p>
     </div>
   );
 }
 
-function Counter({ label, value, tone = "text-white/90" }) {
+function Counter({ label, value, tone = "text-primary-100" }) {
   return (
-    <div className="rounded-xl bg-white/[0.03] border border-white/10 px-3 py-2.5">
-      <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold">
+    <div className="rounded-xl bg-primary-panel border border-primary-700 px-3 py-2.5">
+      <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">
         {label}
       </p>
       <p className={`text-xl font-black tabular-nums ${tone}`}>
@@ -399,22 +399,22 @@ function Counter({ label, value, tone = "text-white/90" }) {
 function RecipientRow({ recipient }) {
   const statusColor =
     recipient.status === "sent"
-      ? "text-accent-300"
+      ? "text-accent-400"
       : recipient.status === "failed"
-        ? "text-red-300"
+        ? "text-signal-alert"
         : recipient.status === "skipped"
-          ? "text-white/40"
-          : "text-blue-300";
+          ? "text-primary-500"
+          : "text-signal-english";
   const slotIsFuture =
     recipient.status === "pending" &&
     recipient.scheduled_slot &&
     new Date(recipient.scheduled_slot).getTime() > Date.now();
   return (
-    <div className="flex items-center gap-3 text-xs py-1.5 border-b border-white/[0.04] last:border-b-0">
-      <span className="text-white/70 font-mono truncate flex-1">
+    <div className="flex items-center gap-3 text-xs py-1.5 border-b border-primary-700 last:border-b-0">
+      <span className="text-primary-300 font-mono truncate flex-1">
         {recipient.phone_e164}
       </span>
-      <span className="text-white/40 uppercase tracking-wider text-[10px]">
+      <span className="text-primary-500 uppercase tracking-wider text-[10px]">
         {recipient.language}
       </span>
       <span
@@ -423,19 +423,19 @@ function RecipientRow({ recipient }) {
         {recipient.status}
       </span>
       {slotIsFuture && (
-        <span className="text-blue-200/70 text-[10px]">
+        <span className="text-signal-english/70 text-[10px]">
           <Clock className="w-3 h-3 inline mr-1" />
           {formatDate(recipient.scheduled_slot)}
         </span>
       )}
       {recipient.error && (
-        <span className="text-red-300/60 text-[10px] truncate max-w-[200px]">
+        <span className="text-signal-alert/70 text-[10px] truncate max-w-[200px]">
           <AlertTriangle className="w-3 h-3 inline mr-1" />
           {recipient.error}
         </span>
       )}
       {recipient.skip_reason && (
-        <span className="text-white/40 text-[10px] truncate max-w-[200px]">
+        <span className="text-primary-500 text-[10px] truncate max-w-[200px]">
           {recipient.skip_reason}
         </span>
       )}

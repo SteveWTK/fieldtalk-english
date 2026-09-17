@@ -33,6 +33,7 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
+import StatTile from "@/components/ui/stat-tile";
 
 function PartnerTrackingContent() {
   const router = useRouter();
@@ -126,30 +127,30 @@ function PartnerTrackingContent() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white">
-        <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-50">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6 sm:space-y-8">
         <div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-1 text-sm text-white/65 hover:text-white mb-3"
+            className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-3"
           >
             <ChevronLeft className="w-4 h-4" />
             Back to admin
           </Link>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-300/70 font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-accent-400/70 font-semibold mb-1">
             Global Player · admin
           </p>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Partner tracking
           </h1>
-          <p className="text-sm text-white/55 mt-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-primary-300 mt-2 max-w-2xl leading-relaxed">
             How many Full Access users each partner has brought in, split
             across the three attribution paths. Reconcile by name —
             partner identifiers differ between paths.
@@ -158,10 +159,10 @@ function PartnerTrackingContent() {
 
         {loading ? (
           <div className="py-16 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-5 text-sm text-red-200">
+          <div className="rounded-card border border-signal-alert/40 bg-signal-alert/10 p-5 text-sm text-signal-alert">
             {error}
           </div>
         ) : (
@@ -171,7 +172,7 @@ function PartnerTrackingContent() {
             <Section
               title="1 · Seat redemptions"
               subtitle="Bulk seat-licence codes redeemed by students."
-              icon={<KeyRound className="w-4 h-4 text-emerald-300" />}
+              icon={<KeyRound className="w-4 h-4 text-accent-400" />}
               empty="No redemptions yet."
               items={data?.seat_redemptions || []}
               columns={[
@@ -194,7 +195,7 @@ function PartnerTrackingContent() {
             <Section
               title="2 · Promo-code purchases"
               subtitle="Full Access bought through Stripe with a partner-branded code."
-              icon={<Tag className="w-4 h-4 text-emerald-300" />}
+              icon={<Tag className="w-4 h-4 text-accent-400" />}
               empty="No promo-code purchases yet."
               items={data?.promo_code_purchases || []}
               columns={[
@@ -202,7 +203,7 @@ function PartnerTrackingContent() {
                   header: "Partner",
                   get: (r) =>
                     r.partner_name === "(unmapped)" ? (
-                      <span className="text-amber-200/80 inline-flex items-center gap-1">
+                      <span className="text-signal-performance inline-flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
                         unmapped
                       </span>
@@ -213,7 +214,7 @@ function PartnerTrackingContent() {
                 {
                   header: "Code prefix",
                   get: (r) => (
-                    <code className="text-[11px] text-white/65">
+                    <code className="text-[11px] text-primary-300">
                       {r.prefix}
                     </code>
                   ),
@@ -240,14 +241,14 @@ function PartnerTrackingContent() {
             <Section
               title="3 · Direct branch-link signups"
               subtitle="Players who arrived via /wc2026?branch=<slug>."
-              icon={<LinkIcon className="w-4 h-4 text-emerald-300" />}
+              icon={<LinkIcon className="w-4 h-4 text-accent-400" />}
               empty="No branch-link signups yet."
               items={data?.direct_referrals || []}
               columns={[
                 {
                   header: "Branch",
                   get: (r) => (
-                    <code className="text-[11px] text-white/85 font-semibold">
+                    <code className="text-[11px] text-primary-100 font-semibold">
                       {r.slug}
                     </code>
                   ),
@@ -264,8 +265,8 @@ function PartnerTrackingContent() {
                     <span
                       className={
                         r.paid > 0
-                          ? "text-emerald-300 font-bold"
-                          : "text-white/40"
+                          ? "text-accent-400 font-bold"
+                          : "text-primary-500"
                       }
                     >
                       {r.paid}
@@ -321,9 +322,9 @@ function PartnerTrackingContent() {
    ──────────────────────────────────────────────────────────── */
 
 const EVENT_LABELS = {
-  seat_redemption: { label: "Seat redemption", tone: "emerald" },
-  promo_purchase: { label: "Promo purchase", tone: "emerald" },
-  branch_signup: { label: "Branch signup", tone: "amber" },
+  seat_redemption: { label: "Seat redemption", tone: "accent" },
+  promo_purchase: { label: "Promo purchase", tone: "accent" },
+  branch_signup: { label: "Branch signup", tone: "performance" },
 };
 
 function EventsSection({
@@ -349,17 +350,17 @@ function EventsSection({
   return (
     <section>
       <div className="flex items-center gap-2 mb-1">
-        <Activity className="w-4 h-4 text-emerald-300" />
-        <h2 className="text-base font-bold text-white">
+        <Activity className="w-4 h-4 text-accent-400" />
+        <h2 className="text-base font-bold text-primary-50">
           4 · Per-user events
         </h2>
         {activeFilters > 0 && (
-          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-200">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent-400/15 text-accent-400">
             {activeFilters} filter{activeFilters === 1 ? "" : "s"}
           </span>
         )}
       </div>
-      <p className="text-[11px] text-white/50 mb-3 ml-6">
+      <p className="text-[11px] text-primary-400 mb-3 ml-6">
         Every partner-attributed action by an individual user. Filter and
         search to answer specific partner questions.
       </p>
@@ -374,15 +375,15 @@ function EventsSection({
         setQuery={setQuery}
       />
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+      <div className="rounded-xl border border-primary-700 bg-primary-panel overflow-hidden">
         {loading ? (
           <div className="py-10 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+            <Loader2 className="w-5 h-5 animate-spin text-accent-400" />
           </div>
         ) : error ? (
-          <div className="p-5 text-sm text-red-200">{error}</div>
+          <div className="p-5 text-sm text-signal-alert">{error}</div>
         ) : filteredEvents.length === 0 ? (
-          <div className="p-5 text-sm text-white/50 text-center">
+          <div className="p-5 text-sm text-primary-400 text-center">
             {events.length === 0
               ? "No partner-attributed events yet."
               : "No events match these filters."}
@@ -390,7 +391,7 @@ function EventsSection({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.16em] text-white/45 font-semibold">
+              <thead className="bg-primary-800 text-[10px] uppercase tracking-[0.16em] text-primary-400 font-semibold">
                 <tr>
                   <th className="px-3 py-2 text-left">Player</th>
                   <th className="px-3 py-2 text-left">Partner</th>
@@ -410,13 +411,13 @@ function EventsSection({
         )}
       </div>
 
-      <div className="flex items-center justify-between mt-2 text-[11px] text-white/45">
+      <div className="flex items-center justify-between mt-2 text-[11px] text-primary-400">
         <span>
           Showing {filteredEvents.length} of {events.length} event
           {events.length === 1 ? "" : "s"}.
         </span>
         {truncated && (
-          <span className="text-amber-200/70">
+          <span className="text-signal-performance">
             More than {limit} total — older events not shown. Filter by
             partner to drill in.
           </span>
@@ -436,9 +437,9 @@ function EventFilters({
   setQuery,
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 mb-3 grid grid-cols-1 sm:grid-cols-[1fr_1fr_1.5fr] gap-2">
+    <div className="rounded-xl border border-primary-700 bg-primary-panel p-3 mb-3 grid grid-cols-1 sm:grid-cols-[1fr_1fr_1.5fr] gap-2">
       <FilterSelect
-        icon={<Filter className="w-3.5 h-3.5 text-white/45" />}
+        icon={<Filter className="w-3.5 h-3.5 text-primary-400" />}
         value={partnerFilter}
         onChange={setPartnerFilter}
         options={[
@@ -447,7 +448,7 @@ function EventFilters({
         ]}
       />
       <FilterSelect
-        icon={<Filter className="w-3.5 h-3.5 text-white/45" />}
+        icon={<Filter className="w-3.5 h-3.5 text-primary-400" />}
         value={typeFilter}
         onChange={setTypeFilter}
         options={[
@@ -458,19 +459,19 @@ function EventFilters({
         ]}
       />
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary-500" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search name, email or code…"
-          className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-emerald-400"
+          className="w-full pl-8 pr-8 py-2 rounded-control bg-primary-900 border border-primary-700 text-primary-50 text-sm placeholder-primary-500 focus:outline-none focus:border-accent-400 focus:ring-accent-400/30"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-primary-500 hover:text-primary-50"
             aria-label="Clear search"
           >
             <X className="w-3.5 h-3.5" />
@@ -490,10 +491,10 @@ function FilterSelect({ icon, value, onChange, options }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-8 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-400 appearance-none cursor-pointer"
+        className="w-full pl-8 pr-3 py-2 rounded-control bg-primary-900 border border-primary-700 text-primary-50 text-sm focus:outline-none focus:border-accent-400 focus:ring-accent-400/30 appearance-none cursor-pointer"
       >
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="bg-[#0f0f0f]">
+          <option key={o.value} value={o.value} className="bg-primary-800">
             {o.label}
           </option>
         ))}
@@ -508,27 +509,27 @@ function EventRow({ event: e }) {
     tone: "neutral",
   };
   const eventToneClass =
-    eventMeta.tone === "emerald"
-      ? "bg-emerald-500/15 text-emerald-200"
-      : eventMeta.tone === "amber"
-        ? "bg-amber-300/15 text-amber-200"
-        : "bg-white/10 text-white/70";
+    eventMeta.tone === "accent"
+      ? "bg-accent-400/15 text-accent-400"
+      : eventMeta.tone === "performance"
+        ? "bg-signal-performance/15 text-signal-performance"
+        : "bg-primary-700 text-primary-300";
   return (
-    <tr className="border-t border-white/5 hover:bg-white/[0.025] transition-colors">
+    <tr className="border-t border-primary-700 hover:bg-primary-800 transition-colors">
       <td className="px-3 py-2.5">
-        <div className="font-semibold text-white truncate max-w-[180px]">
+        <div className="font-semibold text-primary-50 truncate max-w-[180px]">
           {e.player_name}
         </div>
         {e.player_email && (
-          <div className="text-[11px] text-white/40 truncate max-w-[180px]">
+          <div className="text-[11px] text-primary-500 truncate max-w-[180px]">
             {e.player_email}
           </div>
         )}
       </td>
-      <td className="px-3 py-2.5 text-white/75 text-xs">
+      <td className="px-3 py-2.5 text-primary-100 text-xs">
         {e.partner_name}
         {e.edition && (
-          <span className="text-white/40"> · {e.edition}</span>
+          <span className="text-primary-500"> · {e.edition}</span>
         )}
       </td>
       <td className="px-3 py-2.5">
@@ -538,23 +539,23 @@ function EventRow({ event: e }) {
           {eventMeta.label}
         </span>
       </td>
-      <td className="px-3 py-2.5 text-[11px] text-white/55 max-w-[200px] truncate">
+      <td className="px-3 py-2.5 text-[11px] text-primary-300 max-w-[200px] truncate">
         {e.detail || "—"}
       </td>
       <td className="px-3 py-2.5 text-center">
         {e.has_full_access ? (
           <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-200"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-400/15 text-accent-400"
             title={e.access_source || "active"}
           >
             <Check className="w-3 h-3" />
             Full
           </span>
         ) : (
-          <span className="text-white/30 text-[11px]">—</span>
+          <span className="text-primary-500 text-[11px]">—</span>
         )}
       </td>
-      <td className="px-3 py-2.5 text-right text-[11px] text-white/55 tabular-nums whitespace-nowrap">
+      <td className="px-3 py-2.5 text-right text-[11px] text-primary-300 tabular-nums whitespace-nowrap">
         {fmtDateTime(e.occurred_at)}
       </td>
     </tr>
@@ -580,29 +581,17 @@ function TotalsRow({ totals }) {
   if (!totals) return null;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <TotalTile label="Seat redemptions" value={totals.seat_redemptions} />
-      <TotalTile label="Promo-code purchases" value={totals.promo_code_purchases} />
-      <TotalTile label="Direct signups" value={totals.direct_signups} />
-      <TotalTile
-        label="Direct → paid"
-        value={totals.direct_paid}
-        accent="emerald"
+      <StatTile label="Seat redemptions" value={totals.seat_redemptions ?? 0} />
+      <StatTile
+        label="Promo-code purchases"
+        value={totals.promo_code_purchases ?? 0}
       />
-    </div>
-  );
-}
-
-function TotalTile({ label, value, accent }) {
-  const accentClass =
-    accent === "emerald"
-      ? "border-emerald-400/30 bg-emerald-500/[0.06]"
-      : "border-white/10 bg-white/[0.04]";
-  return (
-    <div className={`rounded-2xl border ${accentClass} p-4`}>
-      <p className="text-[10px] uppercase tracking-[0.18em] text-white/50 font-semibold mb-1">
-        {label}
-      </p>
-      <p className="text-2xl font-black tabular-nums">{value ?? 0}</p>
+      <StatTile label="Direct signups" value={totals.direct_signups ?? 0} />
+      <StatTile
+        label="Direct → paid"
+        value={totals.direct_paid ?? 0}
+        tone="accent"
+      />
     </div>
   );
 }
@@ -612,17 +601,17 @@ function Section({ title, subtitle, icon, items, empty, columns, footerNote }) {
     <section>
       <div className="flex items-center gap-2 mb-1">
         {icon}
-        <h2 className="text-base font-bold text-white">{title}</h2>
+        <h2 className="text-base font-bold text-primary-50">{title}</h2>
       </div>
-      <p className="text-[11px] text-white/50 mb-3 ml-6">{subtitle}</p>
+      <p className="text-[11px] text-primary-400 mb-3 ml-6">{subtitle}</p>
       {items.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm text-white/50">
+        <div className="rounded-xl border border-primary-700 bg-primary-panel p-4 text-sm text-primary-400">
           {empty}
         </div>
       ) : (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-x-auto">
+        <div className="rounded-xl border border-primary-700 bg-primary-panel overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.16em] text-white/45 font-semibold">
+            <thead className="bg-primary-800 text-[10px] uppercase tracking-[0.16em] text-primary-400 font-semibold">
               <tr>
                 {columns.map((c, i) => (
                   <th
@@ -640,7 +629,7 @@ function Section({ title, subtitle, icon, items, empty, columns, footerNote }) {
               {items.map((row, ri) => (
                 <tr
                   key={ri}
-                  className="border-t border-white/5 hover:bg-white/[0.025] transition-colors"
+                  className="border-t border-primary-700 hover:bg-primary-800 transition-colors"
                 >
                   {columns.map((c, ci) => (
                     <td
@@ -649,7 +638,7 @@ function Section({ title, subtitle, icon, items, empty, columns, footerNote }) {
                         c.align === "right"
                           ? "text-right tabular-nums"
                           : "text-left"
-                      } ${c.bold ? "font-bold text-white" : "text-white/75"}`}
+                      } ${c.bold ? "font-bold text-primary-50" : "text-primary-100"}`}
                     >
                       {c.get(row) ?? "—"}
                     </td>
@@ -667,11 +656,11 @@ function Section({ title, subtitle, icon, items, empty, columns, footerNote }) {
 
 function UnmappedHint({ prefixes }) {
   return (
-    <div className="mt-3 rounded-xl border border-amber-300/40 bg-amber-300/[0.06] p-3 text-[12px] text-amber-100/85">
+    <div className="mt-3 rounded-xl border border-signal-performance/40 bg-signal-performance/[0.06] p-3 text-[12px] text-signal-performance">
       <p className="font-semibold mb-1">
         {prefixes.length} unmapped prefix
         {prefixes.length === 1 ? "" : "es"} —{" "}
-        <span className="font-normal text-amber-100/65">
+        <span className="font-normal text-signal-performance/70">
           attach a partner name to these so they show up grouped above.
         </span>
       </p>
@@ -679,15 +668,15 @@ function UnmappedHint({ prefixes }) {
         {prefixes.map((p) => (
           <code
             key={p}
-            className="text-[10px] bg-amber-300/15 px-1.5 py-0.5 rounded text-amber-200"
+            className="text-[10px] bg-signal-performance/15 px-1.5 py-0.5 rounded text-signal-performance"
           >
             {p}
           </code>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-amber-100/55">
+      <p className="mt-2 text-[11px] text-signal-performance/60">
         Map them via SQL:{" "}
-        <code className="bg-black/40 px-1 py-0.5 rounded">
+        <code className="bg-primary-900 px-1 py-0.5 rounded">
           INSERT INTO partner_promo_prefixes (prefix, partner_name) VALUES
           (&apos;PREFIX&apos;, &apos;Partner Name&apos;)
         </code>{" "}

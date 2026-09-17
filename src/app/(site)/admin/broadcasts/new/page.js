@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Loader2,
   Send,
   Save,
   Users,
@@ -33,6 +32,7 @@ import {
 import { BROADCAST_LANGUAGES, TEST_RECIPIENTS } from "@/lib/broadcasts/config";
 import { POSITIONS } from "@/lib/players/positions";
 import { PROPATH_GOALS } from "@/lib/players/proPathGoals";
+import Button from "@/components/ui/button";
 
 const EDITIONS = [
   { value: "", label: "Any edition" },
@@ -265,11 +265,11 @@ export default function BroadcastComposePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white">
+    <div className="min-h-screen bg-primary-900 text-primary-50">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <Link
           href="/admin/broadcasts"
-          className="inline-flex items-center gap-1 text-sm text-white/60 hover:text-white mb-4"
+          className="inline-flex items-center gap-1 text-sm text-primary-300 hover:text-primary-50 mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           All broadcasts
@@ -280,7 +280,7 @@ export default function BroadcastComposePage() {
         </h1>
 
         {/* ── Name ─────────────────────────────────────────────── */}
-        <label className="block text-xs uppercase tracking-wider text-white/60 mb-1.5">
+        <label className="block text-xs uppercase tracking-wider text-primary-300 mb-1.5">
           Internal name
         </label>
         <input
@@ -289,11 +289,11 @@ export default function BroadcastComposePage() {
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
           placeholder="e.g. 5 tips — week 3"
-          className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/25 focus:outline-none focus:border-accent-400 mb-6"
+          className="w-full px-3 py-2.5 rounded-control bg-primary-900 border border-primary-600 text-primary-50 placeholder-primary-500 focus:outline-none focus:border-accent-400 mb-6"
         />
 
         {/* ── Bilingual body tabs ─────────────────────────────── */}
-        <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
+        <label className="block text-xs uppercase tracking-wider text-primary-300 mb-2">
           Message body
         </label>
         <div className="flex gap-1 mb-2">
@@ -307,13 +307,13 @@ export default function BroadcastComposePage() {
                 onClick={() => setActiveLang(lang.code)}
                 className={`px-3 py-1.5 rounded-t-lg text-sm font-semibold border-b-2 transition-colors ${
                   active
-                    ? "border-accent-400 text-accent-200 bg-white/[0.04]"
-                    : "border-transparent text-white/60 hover:text-white/85"
+                    ? "border-accent-400 text-accent-400 bg-primary-panel"
+                    : "border-transparent text-primary-300 hover:text-primary-100"
                 }`}
               >
                 {lang.label}
                 {filled && (
-                  <CheckCircle2 className="inline-block w-3.5 h-3.5 ml-1.5 text-accent-300/80" />
+                  <CheckCircle2 className="inline-block w-3.5 h-3.5 ml-1.5 text-accent-400/80" />
                 )}
               </button>
             );
@@ -331,22 +331,22 @@ export default function BroadcastComposePage() {
               : "Write the message in English…"
           }
           rows={7}
-          className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/15 text-white placeholder-white/25 focus:outline-none focus:border-accent-400 resize-y"
+          className="w-full px-3 py-2.5 rounded-control bg-primary-900 border border-primary-600 text-primary-50 placeholder-primary-500 focus:outline-none focus:border-accent-400 resize-y"
         />
-        <p className="text-[11px] text-white/40 mt-1 mb-6">
+        <p className="text-[11px] text-primary-500 mt-1 mb-6">
           {bodies[activeLang].length} / 3000 characters. Empty language tabs
           are skipped for recipients on that language.
         </p>
 
         {/* ── Test send ───────────────────────────────────────── */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <TestTube2 className="w-4 h-4 text-white/60" />
-            <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+            <TestTube2 className="w-4 h-4 text-primary-300" />
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
               Test send
             </p>
           </div>
-          <p className="text-[11px] text-white/50 mb-3">
+          <p className="text-[11px] text-primary-400 mb-3">
             Sends the currently-active language tab to one of the test
             recipients. Bypasses the DB — no broadcast row is created.
           </p>
@@ -354,7 +354,7 @@ export default function BroadcastComposePage() {
             <select
               value={testRecipientId}
               onChange={(e) => setTestRecipientId(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+              className="px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
             >
               {TEST_RECIPIENTS.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -362,31 +362,24 @@ export default function BroadcastComposePage() {
                 </option>
               ))}
             </select>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
+              Icon={Send}
+              loading={testing}
               onClick={handleTestSend}
-              disabled={testing}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
             >
-              {testing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Sending…
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Send test ({activeLang.toUpperCase()})
-                </>
-              )}
-            </button>
+              {testing
+                ? "Sending..."
+                : `Send test (${activeLang.toUpperCase()})`}
+            </Button>
           </div>
           {testMessage && (
             <p
               className={`mt-2 text-xs ${
                 testMessage.type === "ok"
-                  ? "text-accent-300"
-                  : "text-red-300"
+                  ? "text-accent-400"
+                  : "text-signal-alert"
               }`}
             >
               {testMessage.text}
@@ -413,10 +406,10 @@ export default function BroadcastComposePage() {
         />
 
         {/* ── Segment filters ─────────────────────────────────── */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+        <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Users className="w-4 h-4 text-white/60" />
-            <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+            <Users className="w-4 h-4 text-primary-300" />
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
               Audience filters
             </p>
           </div>
@@ -464,15 +457,15 @@ export default function BroadcastComposePage() {
             />
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+          <div className="mt-4 pt-4 border-t border-primary-700 flex items-center justify-between gap-3">
             <p className="text-sm">
-              <span className="text-white/50">Will send to </span>
-              <span className="font-black text-accent-300 text-lg tabular-nums">
+              <span className="text-primary-400">Will send to </span>
+              <span className="font-black text-accent-400 text-lg tabular-nums">
                 {previewLoading ? "…" : (previewCount ?? "?")}
               </span>
-              <span className="text-white/50"> opted-in recipients</span>
+              <span className="text-primary-400"> opted-in recipients</span>
             </p>
-            <p className="text-[11px] text-white/40">
+            <p className="text-[11px] text-primary-500">
               Baseline: opted in · has phone · not paused
             </p>
           </div>
@@ -480,44 +473,36 @@ export default function BroadcastComposePage() {
 
         {/* ── Save / Send ─────────────────────────────────────── */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+          <div className="mb-4 p-3 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
             {error}
           </div>
         )}
         {previewCount === 0 && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-200 text-sm flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-control bg-signal-performance/10 border border-signal-performance/40 text-signal-performance text-sm flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             No recipients match your filters. Adjust filters or save as draft
             for later.
           </div>
         )}
         <div className="flex gap-2 justify-end">
-          <button
-            type="button"
-            onClick={() => handleSave({ sendImmediately: false })}
+          <Button
+            variant="secondary"
+            Icon={Save}
+            loading={saving}
             disabled={!canSave}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-sm font-bold disabled:opacity-40 transition-colors"
+            onClick={() => handleSave({ sendImmediately: false })}
           >
-            {saving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
             Save as draft
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave({ sendImmediately: true })}
+          </Button>
+          <Button
+            variant="primary"
+            Icon={Send}
+            loading={saving}
             disabled={!canSave || previewCount === 0}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-40 text-primary-900 text-sm font-bold transition-colors"
+            onClick={() => handleSave({ sendImmediately: true })}
           >
-            {saving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
             Save & send now
-          </button>
+          </Button>
         </div>
       </main>
     </div>
@@ -535,10 +520,10 @@ function SchedulePanel({
   setScheduledFor,
 }) {
   return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+    <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
       <div className="flex items-center gap-2 mb-4">
-        <Calendar className="w-4 h-4 text-white/60" />
-        <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+        <Calendar className="w-4 h-4 text-primary-300" />
+        <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
           Schedule
         </p>
       </div>
@@ -556,16 +541,16 @@ function SchedulePanel({
       </div>
       {scheduleMode === "later" && (
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+          <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
             Start fan-out at
           </label>
           <input
             type="datetime-local"
             value={scheduledFor}
             onChange={(e) => setScheduledFor(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+            className="px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
           />
-          <p className="text-[10px] text-white/40 mt-1">
+          <p className="text-[10px] text-primary-500 mt-1">
             Local time (your browser). Sends still respect the
             business-hours window + allowed days below.
           </p>
@@ -582,8 +567,8 @@ function ScheduleToggle({ label, active, onClick }) {
       onClick={onClick}
       className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
         active
-          ? "border-accent-400 bg-accent-400/15 text-accent-200"
-          : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+          ? "border-accent-400 bg-accent-400/15 text-accent-400"
+          : "border-primary-700 bg-primary-800 text-primary-300 hover:border-primary-600 hover:text-primary-50"
       }`}
     >
       {label}
@@ -625,23 +610,23 @@ function TimingPanel({
   };
 
   return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
+    <div className="rounded-card bg-primary-panel border border-primary-700 p-4 mb-6">
       <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-4 h-4 text-white/60" />
-        <p className="text-xs uppercase tracking-wider text-white/60 font-semibold">
+        <Clock className="w-4 h-4 text-primary-300" />
+        <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold">
           Send timing
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+          <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
             Interval between sends
           </label>
           <select
             value={intervalSeconds}
             onChange={(e) => setIntervalSeconds(Number(e.target.value))}
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+            className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
           >
             {INTERVAL_OPTIONS.map((i) => (
               <option key={i} value={i}>
@@ -649,19 +634,19 @@ function TimingPanel({
               </option>
             ))}
           </select>
-          <p className="text-[10px] text-white/40 mt-1">
+          <p className="text-[10px] text-primary-500 mt-1">
             8s is safe for cold WhatsApp accounts.
           </p>
         </div>
 
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+          <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
             Window start (BRT)
           </label>
           <select
             value={windowStart}
             onChange={(e) => setWindowStart(Number(e.target.value))}
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+            className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
           >
             {HOUR_OPTIONS.slice(0, 24).map((h) => (
               <option key={h} value={h}>
@@ -672,13 +657,13 @@ function TimingPanel({
         </div>
 
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+          <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
             Window end (BRT)
           </label>
           <select
             value={windowEnd}
             onChange={(e) => setWindowEnd(Number(e.target.value))}
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+            className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
           >
             {HOUR_OPTIONS.slice(1).map((h) => (
               <option key={h} value={h}>
@@ -690,7 +675,7 @@ function TimingPanel({
       </div>
 
       <div>
-        <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+        <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
           Allowed days
         </label>
         <div className="flex flex-wrap gap-1.5">
@@ -703,8 +688,8 @@ function TimingPanel({
                 onClick={() => toggleDay(d.code)}
                 className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
                   active
-                    ? "border-accent-400 bg-accent-400/15 text-accent-200"
-                    : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                    ? "border-accent-400 bg-accent-400/15 text-accent-400"
+                    : "border-primary-700 bg-primary-800 text-primary-300 hover:border-primary-600 hover:text-primary-50"
                 }`}
               >
                 {d.label}
@@ -712,7 +697,7 @@ function TimingPanel({
             );
           })}
         </div>
-        <p className="text-[10px] text-white/40 mt-1.5">
+        <p className="text-[10px] text-primary-500 mt-1.5">
           Sends outside the window OR on blocked days automatically
           shift to the next allowed slot — nothing gets dropped.
         </p>
@@ -724,13 +709,13 @@ function TimingPanel({
 function FilterSelect({ label, value, onChange, options }) {
   return (
     <div>
-      <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+      <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/15 text-white text-sm"
+        className="w-full px-3 py-2 rounded-control bg-primary-900 border border-primary-600 text-primary-50 text-sm"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -752,7 +737,7 @@ function FilterMultiSelect({ label, values, onChange, options, hint }) {
   };
   return (
     <div>
-      <label className="block text-[11px] uppercase tracking-wider text-white/55 mb-1.5 font-semibold">
+      <label className="block text-[11px] uppercase tracking-wider text-primary-400 mb-1.5 font-semibold">
         {label}
       </label>
       <div className="flex flex-wrap gap-1.5">
@@ -765,8 +750,8 @@ function FilterMultiSelect({ label, values, onChange, options, hint }) {
               onClick={() => toggle(o.value)}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
                 active
-                  ? "border-accent-400 bg-accent-400/15 text-accent-200"
-                  : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
+                  ? "border-accent-400 bg-accent-400/15 text-accent-400"
+                  : "border-primary-700 bg-primary-800 text-primary-300 hover:border-primary-600 hover:text-primary-50"
               }`}
             >
               {o.label}
@@ -774,7 +759,7 @@ function FilterMultiSelect({ label, values, onChange, options, hint }) {
           );
         })}
       </div>
-      {hint && <p className="text-[10px] text-white/40 mt-1">{hint}</p>}
+      {hint && <p className="text-[10px] text-primary-500 mt-1">{hint}</p>}
     </div>
   );
 }

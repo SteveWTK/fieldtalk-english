@@ -4,6 +4,7 @@ import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 
 export default function ProtectedRoute({ children, allowedRoles = null }) {
   const { user, loading } = useAuth();
@@ -48,9 +49,20 @@ export default function ProtectedRoute({ children, allowedRoles = null }) {
   }
 
   if (loading || checkingRole) {
+    // App splash — the first thing every authed user sees on route
+    // change or cold load. Uses the DS "Crest draw" sting reserved
+    // for this moment per MIGRATION.md Stage 5: shield outline draws,
+    // then bars stamp in with a staggered lime highlight. Falls back
+    // to a 200ms fade under prefers-reduced-motion (declared in
+    // globals.css).
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center">
+        <GlobalPlayerLogo
+          variant="crest"
+          tone="tonalDark"
+          size={96}
+          sting="draw"
+        />
       </div>
     );
   }
