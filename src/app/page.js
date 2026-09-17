@@ -1,28 +1,33 @@
 // src/app/page.js
 //
-// Root landing — the front door for globalplayer.app (formerly
-// fieldtalkenglish.com — domain migration is an operational task).
+// Root landing — the front door for globalplayer.app.
 //
-// Layout: an animated Global Player mark (Sweep sting per DS Stage
-// 5) + wordmark hero, tagline, then a single Pro Path entry card.
-// The WC2026 card is preserved as commented code below so it can be
-// re-enabled when needed; the layout gracefully collapses to one
-// column when only one card renders.
+// Layout (2026-09):
+//   [ambient lime wash — atmospheric only]
+//   [lang toggle — floating top-right]
+//   [Hero]
+//     - Global Player crest, Sweep sting (DS-approved landing sting)
+//     - GLOBAL PLAYER wordmark, gp-word letter-space collapse
+//     - Tagline, gp-fade
+//   [Signature accent line — the lime/slate stripe from the old
+//    Pro Path card, promoted to a page-level flourish; slides in
+//    with gp-sweep after the hero settles]
+//   [Single CTA — routes based on auth state:
+//     logged-in  → "Enter" / "Entrar"  → /dashboard
+//     logged-out → "Start" / "Começar" → /join]
+//   [© footer]
 //
-// Signed-in players see their current edition's card highlighted
-// with a "Continue" CTA that skips straight to /lesson — the front
-// door gets out of their way.
-//
-// The page stays deliberately calm — one hero, one card, no upsell
-// chrome. Marketing sub-pages carry the sell narrative.
+// The two-edition chooser (Pro Path + WC2026 cards) was retired
+// 2026-09. The old /propath step added a click without adding
+// value now that "Pro Path" is the only edition. New / returning
+// players go straight from here into the product.
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Target } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
-import { usePlayerProfile } from "@/lib/hooks/usePlayerData";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 
@@ -30,88 +35,48 @@ const COPY = {
   en: {
     wordmark: "GLOBAL PLAYER",
     heroTagline: "The football English you'll actually use.",
-    chooseHeading: "Choose your edition",
-    continue: "Continue",
-    yourEdition: "Your edition",
-    langLabel: "EN",
-    propath: {
-      eyebrow: "The season's edition",
-      title: "Pro Path",
-      tagline:
-        "Dressing room, coach, agent, media — the English every serious player needs.",
-      cta: "Explore Pro Path",
-    },
-    wc2026: {
-      eyebrow: "Legacy edition",
-      title: "World Cup 2026",
-      tagline:
-        "Match-day English through the tournament that made the world watch. Still available.",
-      cta: "Explore WC2026",
-    },
+    startCta: "Start",
+    enterCta: "Enter",
   },
   pt: {
     wordmark: "GLOBAL PLAYER",
     heroTagline: "O inglês do futebol que você vai usar de verdade.",
-    chooseHeading: "Escolha sua edição",
-    continue: "Continuar",
-    yourEdition: "Sua edição",
-    langLabel: "PT",
-    propath: {
-      eyebrow: "A edição da temporada",
-      title: "Pro Path",
-      tagline:
-        "Vestiário, técnico, empresário, imprensa — o inglês que todo jogador sério precisa.",
-      cta: "Conhecer o Pro Path",
-    },
-    wc2026: {
-      eyebrow: "Edição legado",
-      title: "Copa do Mundo 2026",
-      tagline:
-        "O inglês dos gramados na Copa que fez o mundo assistir. Ainda disponível.",
-      cta: "Conhecer a WC2026",
-    },
+    startCta: "Começar",
+    enterCta: "Entrar",
   },
 };
 
-// Two lightweight stripe motifs — one per edition — so each card
-// gets its own visual DNA at a glance. Pro Path leans lime + slate
-// (matches /propath); WC keeps the multi-nation flag palette.
-const PROPATH_STRIPE = [
-  "#a3e635", // lime
-  "#bef264", // pale lime
-  "#84cc16", // lime-500
-  "#94a3b8", // slate-400
+// The signature accent line — four shades from lime → pale lime →
+// lime-500 → slate-400. Same palette that used to live on the top
+// of the Pro Path card; promoted to a page-level flourish now that
+// the card is gone. Kept in a constant so we can tune the ratio /
+// swap in richer palettes without hunting through JSX.
+const ACCENT_STRIPE = [
+  "#a3e635", // accent-400
+  "#bef264", // accent-300
+  "#84cc16", // accent-500
+  "#94a3b8", // primary-400 (slate)
 ];
-// const WC_STRIPE = [
-//   "#009C3B", // Brazil green
-//   "#FFDF00", // Brazil yellow
-//   "#FFFFFF",
-//   "#CE1126",
-//   "#0055A4",
-//   "#75AADB",
-// ];
 
 export default function RootLandingPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { profile } = usePlayerProfile(user?.id);
   const { lang, setLang } = useLanguage();
   const copy = COPY[lang] || COPY.en;
 
   // Defer entrance animations until mount so the first paint doesn't
-  // catch mid-frame. Matches the /propath and /wc2026 pattern.
+  // catch mid-frame.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // If the caller is signed in, "Continue" routes them straight into
-  // the app. Otherwise both cards behave the same (go to that
-  // edition's landing → its Enter button → /join with edition tag).
-  const goDirectly = () => router.push("/lesson");
-
-  const userEdition = profile?.edition || null;
+  // Route the single CTA based on auth state — a signed-in player
+  // goes straight to their dashboard; a new visitor goes to /join.
   const isSignedIn = !!user;
+  const ctaHref = isSignedIn ? "/dashboard" : "/join";
+  const ctaLabel = isSignedIn ? copy.enterCta : copy.startCta;
+  const goDirectly = () => router.push(ctaHref);
 
   return (
     <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex flex-col">
@@ -209,59 +174,60 @@ export default function RootLandingPage() {
         </p>
       </header>
 
-      {/* Edition chooser */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
-        <p
-          className={`text-[10px] uppercase tracking-label text-primary-500 font-bold mb-4 sm:mb-6 opacity-0 ${
-            mounted ? "rl-fade-in" : ""
+      {/* Signature accent stripe — the lime/slate motif that used
+          to top the Pro Path card, now a page-level flourish. Slides
+          in with gp-sweep once the hero has settled so the two
+          stings don't compete. `origin-left` keeps the overshoot
+          reading as "line drawing itself in from the left". */}
+      <div className="relative z-10 mt-8 sm:mt-10 w-full max-w-xl mx-auto px-6">
+        <div
+          className={`flex h-2 w-full overflow-hidden rounded-full opacity-0 ${
+            mounted ? "animate-gp-sweep" : ""
           }`}
-          style={{ animationDelay: "1000ms" }}
+          style={{ animationDelay: "1000ms", transformOrigin: "left center" }}
         >
-          {copy.chooseHeading}
-        </p>
-
-        <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-1 gap-4 sm:gap-6">
-          {/* Pro Path — primary card. Accent lime border + glow so
-              it visually leads. */}
-          <EditionCard
-            variant="propath"
-            eyebrow={copy.propath.eyebrow}
-            title={copy.propath.title}
-            tagline={copy.propath.tagline}
-            cta={copy.propath.cta}
-            stripe={PROPATH_STRIPE}
-            Icon={Target}
-            href="/propath"
-            highlighted={isSignedIn ? userEdition === "propath_26_27" : true}
-            userLabel={copy.yourEdition}
-            continueLabel={copy.continue}
-            showContinue={isSignedIn && userEdition === "propath_26_27"}
-            onContinue={goDirectly}
-            mounted={mounted}
-            animationDelay="1200ms"
-          />
-
-          {/* WC2026 — secondary card. Emerald + gold DNA preserved
-              from the tournament identity. Reads as "still here"
-              rather than "not chosen". */}
-          {/* <EditionCard
-            variant="wc"
-            eyebrow={copy.wc2026.eyebrow}
-            title={copy.wc2026.title}
-            tagline={copy.wc2026.tagline}
-            cta={copy.wc2026.cta}
-            stripe={WC_STRIPE}
-            Icon={Trophy}
-            href="/wc2026"
-            highlighted={isSignedIn && userEdition === "wc2026"}
-            userLabel={copy.yourEdition}
-            continueLabel={copy.continue}
-            showContinue={isSignedIn && userEdition === "wc2026"}
-            onContinue={goDirectly}
-            mounted={mounted}
-            animationDelay="1150ms"
-          /> */}
+          {ACCENT_STRIPE.map((color, i) => (
+            <div
+              key={i}
+              className="flex-1"
+              style={{
+                backgroundColor: color,
+                boxShadow: `inset 0 0 8px ${color}`,
+              }}
+            />
+          ))}
         </div>
+      </div>
+
+      {/* Single CTA — Start (logged-out) or Enter (logged-in).
+          Routes straight to /join or /dashboard so the front door
+          gets out of the player's way. */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-10 sm:py-14">
+        <button
+          type="button"
+          onClick={goDirectly}
+          className={`group inline-flex items-center gap-2 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 font-display font-black uppercase tracking-button px-8 py-3.5 text-base sm:text-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-900 opacity-0 ${
+            mounted ? "animate-gp-rise" : ""
+          }`}
+          style={{ animationDelay: "1300ms" }}
+        >
+          {ctaLabel}
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+        {/* Signed-out helper line — small nudge so newcomers know
+            what "Start" actually starts. Signed-in users don't need
+            this. */}
+        {!isSignedIn && (
+          <Link
+            href="/signin"
+            className={`mt-5 text-xs text-primary-400 hover:text-primary-100 transition-colors opacity-0 ${
+              mounted ? "animate-gp-fade" : ""
+            }`}
+            style={{ animationDelay: "1500ms" }}
+          >
+            {lang === "pt" ? "Já tem uma conta? Entrar" : "Already have an account? Sign in"}
+          </Link>
+        )}
       </main>
 
       {/* Minimal footer — no chrome, just © line. Keeps the page
@@ -271,34 +237,10 @@ export default function RootLandingPage() {
       </footer>
 
       <style jsx global>{`
-        @keyframes rl-rise {
-          0% {
-            opacity: 0;
-            transform: translateY(24px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes rl-fade-in {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-        @keyframes rl-stripe {
-          0% {
-            opacity: 0;
-            transform: scaleX(0);
-          }
-          100% {
-            opacity: 1;
-            transform: scaleX(1);
-          }
-        }
+        /* Slow ambient glow pulse for the corner washes — the one
+           bespoke keyframe left after the rewrite. Everything else
+           (hero entrance, wordmark, stripe, CTA) uses the shared
+           gp-* motion tokens from tailwind.config. */
         @keyframes rl-glow-pulse {
           0%,
           100% {
@@ -310,139 +252,8 @@ export default function RootLandingPage() {
             transform: scale(1.08);
           }
         }
-        .rl-rise {
-          animation: rl-rise 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .rl-fade-in {
-          animation: rl-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .rl-stripe {
-          animation: rl-stripe 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          transform-origin: left center;
-        }
       `}</style>
     </div>
   );
 }
 
-// Edition card — dark glassy panel with an edition-specific colour
-// stripe at the top. Two variants:
-//   variant="propath" → lime border + subtle lime glow when highlighted
-//   variant="wc"      → emerald border + subtle amber glow when highlighted
-//
-// `highlighted` is a strong visual cue for "this is you / this is the
-// primary one". Signed-out users see Pro Path highlighted (the
-// ongoing edition); signed-in users see whichever edition matches
-// their profile.
-function EditionCard({
-  variant,
-  eyebrow,
-  title,
-  tagline,
-  cta,
-  stripe,
-  Icon,
-  href,
-  highlighted,
-  userLabel,
-  continueLabel,
-  showContinue,
-  onContinue,
-  mounted,
-  animationDelay,
-}) {
-  const isPropath = variant === "propath";
-  // WC2026 card is currently disabled (commented out on the render
-  // tree); keep the emerald branch here so re-enabling is a one-line
-  // change. Under Global Player DS the emerald tokens are legacy —
-  // when WC is re-enabled we'll retint or leave it as an
-  // intentional legacy nod.
-  const borderClass = highlighted
-    ? isPropath
-      ? "border-accent-400/60 shadow-[0_0_40px_rgba(163,230,53,0.15)]"
-      : "border-emerald-400/60 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
-    : "border-primary-700 hover:border-primary-500";
-  const iconBg = isPropath
-    ? "bg-accent-400/15 text-accent-400"
-    : "bg-emerald-500/15 text-emerald-300";
-  const ctaClass = isPropath
-    ? "bg-accent-400 hover:bg-accent-300 text-primary-900"
-    : "bg-emerald-500 hover:bg-emerald-400 text-[#062013]";
-
-  return (
-    <div
-      className={`relative rounded-panel bg-primary-panel border ${borderClass} transition-colors overflow-hidden opacity-0 ${
-        mounted ? "rl-rise" : ""
-      }`}
-      style={{ animationDelay }}
-    >
-      {/* Top stripe — visual DNA per edition. Slides in on mount. */}
-      <div
-        className={`flex h-1.5 w-full overflow-hidden opacity-0 ${
-          mounted ? "rl-stripe" : ""
-        }`}
-        style={{ animationDelay }}
-      >
-        {stripe.map((color, i) => (
-          <div
-            key={i}
-            className="flex-1"
-            style={{
-              backgroundColor: color,
-              boxShadow: `inset 0 0 6px ${color}`,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="p-5 sm:p-7">
-        {highlighted && userLabel && (
-          <p className="text-[10px] uppercase tracking-label text-primary-400 font-bold mb-2">
-            {userLabel}
-          </p>
-        )}
-        <div className="flex items-start gap-3 mb-3">
-          <div
-            className={`shrink-0 w-11 h-11 rounded-control flex items-center justify-center ${iconBg}`}
-          >
-            <Icon className="w-5 h-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-[10px] uppercase tracking-label font-bold ${
-                isPropath ? "text-accent-400/80" : "text-emerald-300/80"
-              }`}
-            >
-              {eyebrow}
-            </p>
-            <h2 className="text-lg sm:text-xl font-display font-black tracking-tight mt-0.5 text-primary-50">
-              {title}
-            </h2>
-          </div>
-        </div>
-
-        <p className="text-sm text-primary-300 leading-relaxed mb-5">{tagline}</p>
-
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Link
-            href={href}
-            className={`inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide transition-colors ${ctaClass}`}
-          >
-            {cta}
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          {showContinue && (
-            <button
-              type="button"
-              onClick={onContinue}
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide border border-primary-600 hover:border-primary-400 text-primary-100 bg-primary-800 hover:bg-primary-700 transition-colors"
-            >
-              {continueLabel}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}

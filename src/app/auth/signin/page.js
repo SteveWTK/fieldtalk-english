@@ -57,7 +57,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-primary-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -66,13 +66,13 @@ export default function SignInPage() {
               <Globe className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold text-gradient-to-r from-primary-500 to-accent-500 dark:text-white">
-              FieldTalk English
+              Global Player
             </span>
           </div> */}
-          {/* <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          {/* <h1 className="text-2xl font-bold text-primary-50 mb-2">
             Welcome Back
           </h1> */}
-          <p className="text-xl font-bold text-gray-800 dark:text-gray-300">
+          <p className="text-xl font-bold text-primary-100">
             Faça seu login com sua conta Google
           </p>
         </div>
@@ -82,19 +82,19 @@ export default function SignInPage() {
         </div>
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            <div className="w-full border-t border-primary-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 font-bold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-400">
+            <span className="px-2 font-bold bg-primary-900 text-primary-100">
               Ou entre com seu email e senha
             </span>
           </div>
         </div>
 
         {/* Sign In Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <div className="bg-primary-panel rounded-panel p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm">
               {error}
             </div>
           )}
@@ -103,7 +103,7 @@ export default function SignInPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-primary-100 mb-1"
               >
                 Email
               </label>
@@ -113,7 +113,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:border-accent-400 focus:ring-accent-400/30 focus:ring-2"
                 placeholder="player@club.com"
               />
             </div>
@@ -121,7 +121,7 @@ export default function SignInPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-primary-100 mb-1"
               >
                 Password
               </label>
@@ -132,13 +132,13 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                  className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:border-accent-400 focus:ring-accent-400/30 focus:ring-2 pr-10"
                   placeholder="Your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-100"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -152,18 +152,18 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-accent-400 text-primary-900 py-2 px-4 rounded-control font-semibold hover:bg-accent-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-primary-400">
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="text-accent-600 hover:text-accent-700 font-medium"
+                className="text-accent-400 hover:text-accent-300 font-medium"
               >
                 Sign up
               </Link>
@@ -188,11 +188,11 @@ export default function SignInPage() {
 
         {/* Partnership Note */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-primary-400">
             For club partnerships and custom implementations,{" "}
             <Link
               href="/#contact"
-              className="text-accent-600 hover:text-accent-700"
+              className="text-accent-400 hover:text-accent-300"
             >
               contact our team
             </Link>

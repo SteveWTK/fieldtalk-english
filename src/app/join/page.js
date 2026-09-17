@@ -18,11 +18,14 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 import { getBranch } from "@/lib/branches";
 import {
   rememberPartnerReferrer,
@@ -53,6 +56,12 @@ function JoinPageContent() {
     : edition && edition !== "wc2026"
       ? INSPIRE_FUTURE_LOGO
       : getBranch(null);
+
+  // If the branch resolver returned our umbrella fallback (no partner
+  // slug, no partner-owned edition), show the Global Player mark
+  // itself rather than a legacy wide wordmark. Partner brands
+  // (branchKey present) always keep their own logo.
+  const useGlobalPlayerMark = !branchKey && branch === INSPIRE_FUTURE_LOGO;
 
   // Mirror the /wc2026 capture so users who deep-link straight to
   // /join?branch=<slug> (e.g. from a partner email blast that skips
@@ -135,21 +144,15 @@ function JoinPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden flex flex-col">
-      {/* Ambient glows — same vocabulary as the WC landing for continuity */}
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex flex-col">
+      {/* Ambient lime wash — same vocabulary as the root/signin
+          surfaces so crossing here feels like the same room. */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl"
+          className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
           style={{
             background:
-              "radial-gradient(circle at center, rgba(16,185,129,0.18), rgba(16,185,129,0) 70%)",
-          }}
-        />
-        <div
-          className="absolute bottom-[-25%] right-[-15%] w-[55vw] h-[55vw] rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(234,179,8,0.12), rgba(234,179,8,0) 70%)",
+              "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
           }}
         />
       </div>
@@ -157,19 +160,28 @@ function JoinPageContent() {
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           {/* Logo + heading */}
-          <div className="text-center mb-8">
-            <Image
-              src={branch.logoSrc}
-              alt={branch.alt}
-              width={140}
-              height={50}
-              priority
-              className="h-10 sm:h-12 w-auto opacity-90 mx-auto mb-6"
-            />
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+          <div className="text-center mb-8 flex flex-col items-center">
+            {useGlobalPlayerMark ? (
+              <GlobalPlayerLogo
+                variant="crest"
+                tone="tonalDark"
+                size={64}
+                sting="rise"
+              />
+            ) : (
+              <Image
+                src={branch.logoSrc}
+                alt={branch.alt}
+                width={140}
+                height={50}
+                priority
+                className="h-10 sm:h-12 w-auto opacity-90 mb-6"
+              />
+            )}
+            <h1 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-primary-50">
               {t("join_heading")}
             </h1>
-            <p className="text-sm sm:text-base text-white/60">
+            <p className="text-sm sm:text-base text-primary-300">
               {t("join_subtitle")}
             </p>
           </div>
@@ -186,10 +198,10 @@ function JoinPageContent() {
           {/* Separator */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
+              <div className="w-full border-t border-primary-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-3 bg-[#070707] text-white/50 tracking-wider uppercase">
+              <span className="px-3 bg-primary-900 text-primary-400 tracking-wider uppercase">
                 {t("or_with_email")}
               </span>
             </div>
@@ -198,28 +210,26 @@ function JoinPageContent() {
           {/* Email form */}
           <form onSubmit={handleEmailSignup} className="space-y-3">
             {error && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+              <div className="flex items-start gap-2 p-3 rounded-control bg-signal-alert/10 border border-signal-alert/40 text-signal-alert text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
-            <input
+            <Input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder={t("full_name_optional")}
-              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
             />
 
-            <input
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
               placeholder={t("email_label")}
-              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
             />
 
             <div>
@@ -231,7 +241,7 @@ function JoinPageContent() {
                   required
                   autoComplete="new-password"
                   placeholder={t("password_label")}
-                  className="w-full px-4 py-3 pr-12 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-emerald-400/60 focus:bg-white/10 transition-colors"
+                  className="w-full px-[15px] py-[13px] pr-12 rounded-control bg-primary-900 border border-primary-600 text-primary-100 placeholder:text-primary-500 font-sans text-[15px] leading-normal outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30 transition-colors"
                 />
                 <button
                   type="button"
@@ -239,7 +249,7 @@ function JoinPageContent() {
                   aria-label={
                     showPassword ? t("hide_password") : t("show_password")
                   }
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white/70"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-primary-400 hover:text-primary-100"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -248,26 +258,31 @@ function JoinPageContent() {
                   )}
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-white/40 px-1">
+              <p className="mt-1.5 text-xs text-primary-500 px-1">
                 {t("password_min_hint")}
               </p>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="md"
+              Icon={ArrowRight}
+              loading={loading}
               disabled={loading || !email}
-              className="w-full mt-2 px-4 py-3.5 rounded-full font-bold tracking-[0.1em] uppercase text-sm text-[#070707] bg-white hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-transform"
+              fullWidth
+              className="mt-2"
             >
               {loading ? t("creating_account") : t("create_account")}
-            </button>
+            </Button>
           </form>
 
           {/* Already-have-account link */}
-          <p className="text-center mt-8 text-sm text-white/60">
+          <p className="text-center mt-8 text-sm text-primary-300">
             {t("already_have_account")}{" "}
             <Link
               href="/signin"
-              className="text-emerald-400 hover:text-emerald-300 font-medium"
+              className="text-accent-400 hover:text-accent-300 font-medium"
             >
               {t("sign_in_link")}
             </Link>
@@ -282,7 +297,7 @@ export default function JoinPage() {
   // useSearchParams needs to be wrapped in Suspense for static rendering.
   return (
     <Suspense
-      fallback={<div className="min-h-screen bg-[#070707]" aria-hidden />}
+      fallback={<div className="min-h-screen bg-primary-900" aria-hidden />}
     >
       <JoinPageContent />
     </Suspense>

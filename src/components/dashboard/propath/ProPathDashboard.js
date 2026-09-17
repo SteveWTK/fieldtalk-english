@@ -488,9 +488,13 @@ export default function ProPathDashboard() {
                       ? lang === "pt"
                         ? "Continuar"
                         : "Continue"
-                      : lang === "pt"
-                        ? "Próxima aula"
-                        : "Next lesson"}
+                      : nextLessonInfo.sortOrder === 1
+                        ? lang === "pt"
+                          ? "Primeira aula"
+                          : "First lesson"
+                        : lang === "pt"
+                          ? "Próxima aula"
+                          : "Next lesson"}
                   </span>
                   <span className="font-normal">
                     {" · "}
@@ -534,9 +538,13 @@ export default function ProPathDashboard() {
                     ? lang === "pt"
                       ? "Continuar"
                       : "Continue"
-                    : lang === "pt"
-                      ? "Próxima aula"
-                      : "Next lesson"}
+                    : nextLessonInfo.sortOrder === 1
+                      ? lang === "pt"
+                        ? "Primeira aula"
+                        : "First lesson"
+                      : lang === "pt"
+                        ? "Próxima aula"
+                        : "Next lesson"}
                 </span>
                 <span className="font-normal">
                   {" · "}

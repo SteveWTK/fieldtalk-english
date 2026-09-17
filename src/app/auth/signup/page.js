@@ -142,7 +142,7 @@ export default function SignUpPage() {
   // Step 1: Role Selection
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center p-4">
         <div className="max-w-2xl w-full">
           {/* Logo and Header */}
           <div className="text-center mb-8">
@@ -150,14 +150,14 @@ export default function SignUpPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
                 <Globe className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                FieldTalk English
+              <span className="text-2xl font-bold text-primary-50">
+                Global Player
               </span>
             </div> */}
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Join FieldTalk
+            <h1 className="text-3xl font-bold text-primary-50 mb-2">
+              Join Global Player
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-primary-400">
               Choose your account type to get started
             </p>
           </div>
@@ -169,17 +169,17 @@ export default function SignUpPage() {
                 key={role.id}
                 onClick={() => handleRoleSelection(role.id)}
                 disabled={loading}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-left hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary-panel rounded-panel p-6 text-left transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div
-                  className={`w-12 h-12 bg-gradient-to-r ${role.color} rounded-lg flex items-center justify-center mb-4`}
+                  className={`w-12 h-12 bg-gradient-to-r ${role.color} rounded-control flex items-center justify-center mb-4`}
                 >
                   <role.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-primary-50 mb-2">
                   {role.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-primary-400">
                   {role.description}
                 </p>
               </button>
@@ -187,17 +187,17 @@ export default function SignUpPage() {
           </div>
 
           {error && (
-            <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm text-center">
+            <div className="mt-6 p-4 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm text-center">
               {error}
             </div>
           )}
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-primary-400">
               Already have an account?{" "}
               <Link
                 href="/auth/signin"
-                className="text-primary-600 hover:text-primary-700 font-medium"
+                className="text-accent-400 hover:text-accent-300 font-medium"
               >
                 Sign in
               </Link>
@@ -210,7 +210,7 @@ export default function SignUpPage() {
 
   // Step 2: Details Form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900 dark:to-accent-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-primary-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -218,17 +218,17 @@ export default function SignUpPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-full flex items-center justify-center">
               <Globe className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
-              FieldTalk English
+            <span className="text-2xl font-bold text-primary-50">
+              Global Player
             </span>
           </div>
           <button
             onClick={() => setStep(1)}
-            className="text-accent-600 hover:text-accent-700 text-sm mb-4"
+            className="text-accent-400 hover:text-accent-300 text-sm mb-4"
           >
             ← Change account type
           </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-primary-50 mb-2">
             {selectedRole === "player"
               ? "Player Registration"
               : "Coach Registration"}
@@ -236,16 +236,16 @@ export default function SignUpPage() {
         </div>
 
         {/* Registration Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <div className="bg-primary-panel rounded-panel p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-primary-100 mb-1">
                 Full Name
               </label>
               <input
@@ -254,7 +254,7 @@ export default function SignUpPage() {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                 placeholder="Your full name"
               />
             </div>
@@ -262,7 +262,7 @@ export default function SignUpPage() {
             {selectedRole === "player" && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-primary-100 mb-1">
                     Position
                   </label>
                   <select
@@ -270,7 +270,7 @@ export default function SignUpPage() {
                     value={formData.position}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                   >
                     <option value="">Select...</option>
                     <option value="Goalkeeper">Goalkeeper</option>
@@ -280,7 +280,7 @@ export default function SignUpPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-primary-100 mb-1">
                     Nationality
                   </label>
                   <input
@@ -289,7 +289,7 @@ export default function SignUpPage() {
                     value={formData.nationality}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                     placeholder="Your nationality"
                   />
                 </div>
@@ -299,7 +299,7 @@ export default function SignUpPage() {
             {selectedRole === "client_admin" && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-primary-100 mb-1">
                     Club/Organization Name
                   </label>
                   <input
@@ -308,12 +308,12 @@ export default function SignUpPage() {
                     value={formData.clubName}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                     placeholder="Your club or organization"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-primary-100 mb-1">
                     Your Role
                   </label>
                   <input
@@ -323,14 +323,14 @@ export default function SignUpPage() {
                     onChange={handleChange}
                     placeholder="e.g., Head Coach, Academy Director"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-primary-100 mb-1">
                 Email
               </label>
               <input
@@ -339,13 +339,13 @@ export default function SignUpPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                 placeholder="your.email@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-primary-100 mb-1">
                 Password
               </label>
               <input
@@ -355,18 +355,18 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-primary-600 rounded-control bg-primary-900 text-primary-50 focus:ring-2 focus:ring-accent-400/30 focus:border-accent-400"
                 placeholder="Minimum 6 characters"
               />
             </div>
 
-            <p className="text-xs text-gray-500 text-center mt-4">
+            <p className="text-xs text-primary-400 text-center mt-4">
               By signing up, you agree to our{" "}
-              <Link href="/terms" className="text-blue-600 hover:underline">
+              <Link href="/terms" className="text-accent-400 hover:underline">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-blue-600 hover:underline">
+              <Link href="/privacy" className="text-accent-400 hover:underline">
                 Privacy Policy
               </Link>
             </p>
@@ -374,7 +374,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-accent-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full bg-accent-400 text-primary-900 py-3 px-4 rounded-control font-semibold transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <span>{loading ? "Creating account..." : "Create Account"}</span>
               {!loading && <ArrowRight className="w-4 h-4" />}
@@ -382,11 +382,11 @@ export default function SignUpPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-primary-400">
               Already have an account?{" "}
               <Link
                 href="/signin"
-                className="text-accent-600 hover:primary-accent-700 font-medium"
+                className="text-accent-400 hover:text-accent-300 font-medium"
               >
                 Sign in
               </Link>

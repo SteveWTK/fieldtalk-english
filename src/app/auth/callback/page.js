@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Loader } from "lucide-react";
 import { readPartnerReferrer } from "@/lib/partners/referrer";
 import PartnerLogo from "@/components/branding/PartnerLogo";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
 
 export default function AuthCallbackPage() {
   const [status, setStatus] = useState("loading");
@@ -105,23 +107,45 @@ export default function AuthCallbackPage() {
 
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center p-4">
-        <div className="text-center bg-white/5 border border-white/10 p-8 rounded-2xl max-w-sm w-full">
-          <h1 className="text-2xl font-bold mb-4">Authentication Error</h1>
-          <p className="text-white/60 mb-6">{message}</p>
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Ambient lime wash — matches the rest of the auth flow. */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+            style={{
+              background:
+                "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+            }}
+          />
+        </div>
+        <div className="relative text-center bg-primary-panel border border-primary-700 p-8 rounded-panel max-w-sm w-full">
+          <div className="flex justify-center mb-6">
+            <GlobalPlayerLogo
+              variant="crest"
+              tone="tonalDark"
+              size={64}
+              sting="rise"
+            />
+          </div>
+          <h1 className="text-2xl font-bold mb-4 text-primary-50">
+            Authentication Error
+          </h1>
+          <p className="text-primary-300 mb-6">{message}</p>
           <div className="space-y-2">
-            <button
+            <Button
+              variant="primary"
+              fullWidth
               onClick={() => router.push("/signin")}
-              className="block w-full bg-white text-[#070707] py-2.5 px-4 rounded-full font-semibold hover:scale-[1.01] transition-transform"
             >
               Try Again
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
               onClick={() => window.location.reload()}
-              className="block w-full border border-white/20 text-white py-2.5 px-4 rounded-full hover:bg-white/5 transition-colors"
             >
               Reload Page
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -129,36 +153,41 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Soft ambient glow so the load doesn't feel like a black void */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at center, rgba(16,185,129,0.10), rgba(0,0,0,0) 60%)",
-        }}
-      />
+    <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Ambient lime wash — matches the rest of the auth flow. */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+          }}
+        />
+      </div>
       <div className="relative text-center">
         {/* Partner logo first (when the user signed up via a partner
             branch link with placements.loading enabled). Sits above
-            the FieldTalk wordmark so the partner name reads as the
+            the Global Player wordmark so the partner name reads as the
             "presenter" of this experience for the brief moment the
             splash is up. Renders null for non-attributed users so
-            organic traffic still sees the standard FieldTalk
+            organic traffic still sees the standard Global Player
             wordmark front-and-centre. */}
         <PartnerLogo placement="loading" size="lg" className="mx-auto mb-6" />
 
-        <div className="flex items-center justify-center space-x-2 mb-8">
-          {/* <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-yellow-500 rounded-full flex items-center justify-center">
-            <Globe className="w-6 h-6 text-white" />
-          </div> */}
-          <span className="text-2xl font-bold tracking-tight">
-            FieldTalk English
+        <div className="flex flex-col items-center justify-center mb-8">
+          <GlobalPlayerLogo
+            variant="crest"
+            tone="tonalDark"
+            size={64}
+            sting="rise"
+          />
+          <span className="mt-4 text-2xl font-bold tracking-tight text-primary-50">
+            Global Player
           </span>
         </div>
 
-        <Loader className="w-8 h-8 text-emerald-400 mx-auto mb-4 animate-spin" />
-        <p className="text-white/70">
+        <Loader className="w-8 h-8 text-accent-400 mx-auto mb-4 animate-spin" />
+        <p className="text-primary-300">
           {status === "success" ? message : "Completing your sign in..."}
         </p>
       </div>

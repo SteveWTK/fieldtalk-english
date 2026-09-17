@@ -1,44 +1,48 @@
 // src/app/propath/page.js
 //
-// FieldTalk Pro Path 26/27 landing page. Marketing sends players
+// Global Player Pro Path 26/27 landing page. Marketing sends players
 // (and academies/clubs interested in trials) here. Signed-in users
 // tap "Enter" and go straight to /lesson; guests get routed to
 // /join with edition=propath_26_27 pre-applied so their player row
 // is tagged on signup.
 //
 // Visual language sibling to /wc2026:
-//   - Same dark base (#070707) + ambient glows so both editions
+//   - Same dark base (primary-900) + ambient lime wash so both editions
 //     feel like the same brand.
 //   - Different accent story: WC leans multi-nation stripe + gold;
-//     Pro Path leans single cool-white/emerald "floodlight" bar
-//     with a subtle cyan touch (evocative of tunnel + pitch lighting,
-//     not fanfare).
+//     Pro Path leans single lime "floodlight" bar (evocative of tunnel
+//     + pitch lighting, not fanfare).
 //   - Tagline emphasises real-world utility, not gamification.
 //
 // Partner-branch flow (?branch=<slug>) reuses the same infrastructure
 // as WC2026 so an academy can co-brand its own Pro Path landing.
+//
+// The root `/` no longer routes here (streamlined 2026-09), but
+// existing external links may still land users on this page, so the
+// chrome must read as fully Global Player.
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getBranch } from "@/lib/branches";
 import { rememberPartnerReferrer } from "@/lib/partners/referrer";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import { Button } from "@/components/ui/button";
 
 // Single accent bar rather than a multi-nation stripe — a horizontal
 // "floodlight" sweeping across the page. Two-stop gradient keeps the
 // visual identity distinct from WC2026's flags-inspired multi-colour.
-// const ACCENT_BAR_GRADIENT =
-//   "linear-gradient(90deg, #34d399 0%, #a7f3d0 50%, #67e8f9 100%)";
 const ACCENT_BAR_GRADIENT =
   "linear-gradient(90deg, #a3e635 0%, #bef264 50%, #d9f99d 100%)";
 
 // Umbrella-brand default for Pro Path landings without a branch
 // override. WC2026 keeps the Cultura lion as its default; Pro Path
 // defaults to Inspire Future (our parent business name) to underline
-// that this edition is the FieldTalk product rather than a specific
+// that this edition is the Global Player product rather than a specific
 // partner campaign. Academy / club logos still take over when a
 // ?branch=<slug> is present via the shared BRANCHES registry.
 const INSPIRE_FUTURE_LOGO = {
@@ -85,11 +89,18 @@ function ProPathLandingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden flex flex-col">
-      {/* Ambient background — two slow radial glows in cooler tones
-          than /wc2026 to signal "athletic / clinical" rather than
-          "tournament / celebratory". */}
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden flex flex-col">
+      {/* Ambient lime wash — matches the root `/` treatment so a user
+          landing here from an old external link reads the page as
+          part of the same Global Player brand system. */}
       <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-[-15%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(163,230,53,0.12), rgba(163,230,53,0) 70%)",
+          }}
+        />
         <div className="absolute top-[-15%] left-[-15%] w-[70vw] h-[70vw] rounded-full blur-3xl bg-pp-glow-lime" />
         <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl bg-pp-glow-slate" />
         <div className="absolute inset-0 bg-pp-vignette" />
@@ -112,7 +123,7 @@ function ProPathLandingContent() {
           />
         </div>
         <p
-          className={`text-xs sm:text-sm tracking-[0.35em] text-white/50 italic uppercase opacity-0 ${
+          className={`text-xs sm:text-sm tracking-[0.35em] text-primary-400 italic uppercase opacity-0 ${
             mounted ? "pp-fade-in" : ""
           }`}
           style={{ animationDelay: "450ms" }}
@@ -121,10 +132,23 @@ function ProPathLandingContent() {
         </p>
       </header>
 
-      {/* Middle: main title + tagline + accent bar */}
+      {/* Middle: Global Player crest + main title + tagline + accent
+          bar. Crest sits above the wordmark so the page reads as
+          Global Player first, edition name second. */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+        {mounted && (
+          <div className="mb-6 sm:mb-8">
+            <GlobalPlayerLogo
+              variant="crest"
+              tone="tonalDark"
+              size={80}
+              sting="sweep"
+            />
+          </div>
+        )}
+
         <h1
-          className={`font-black tracking-tight leading-[0.95] opacity-0 ${
+          className={`font-display font-black tracking-tight leading-[0.95] text-primary-50 opacity-0 ${
             mounted ? "pp-rise" : ""
           }`}
           style={{
@@ -132,7 +156,7 @@ function ProPathLandingContent() {
             fontSize: "clamp(2.5rem, 12vw, 6rem)",
           }}
         >
-          FieldTalk English
+          Global Player
         </h1>
 
         <div
@@ -149,7 +173,7 @@ function ProPathLandingContent() {
         {/* Tagline — one line, restrained. This is the real product
             positioning; sits between the edition name and the CTA. */}
         {/* <p
-          className={`mt-6 max-w-lg text-sm sm:text-base text-white/60 leading-relaxed opacity-0 ${
+          className={`mt-6 max-w-lg text-sm sm:text-base text-primary-300 leading-relaxed opacity-0 ${
             mounted ? "pp-fade-in" : ""
           }`}
           style={{ animationDelay: "1250ms" }}
@@ -177,18 +201,19 @@ function ProPathLandingContent() {
       {/* Bottom: single CTA. Logged-in users skip to /lesson; guests
           land in /join with edition pre-applied. */}
       <footer className="relative z-10 pb-16 sm:pb-20 flex justify-center px-6">
-        <button
-          onClick={handleEnter}
-          className={`group relative px-14 py-4 rounded-full font-bold tracking-[0.15em] uppercase text-base sm:text-lg text-[#070707] bg-white hover:scale-[1.03] active:scale-[0.98] transition-transform duration-300 opacity-0 ${
-            mounted ? "pp-rise" : ""
-          }`}
+        <div
+          className={`opacity-0 ${mounted ? "pp-rise" : ""}`}
           style={{ animationDelay: "1700ms" }}
         >
-          <span className="relative z-10">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleEnter}
+            Icon={ArrowRight}
+          >
             {user ? t("propath_cta_enter") : t("propath_cta_start")}
-          </span>
-          <span className="absolute inset-0 rounded-full ring-2 ring-white/30 group-hover:ring-accent-300/60 pp-pulse-ring" />
-        </button>
+          </Button>
+        </div>
       </footer>
 
       {/* All animations self-contained — pp- prefix keeps them from
@@ -287,18 +312,6 @@ function ProPathLandingContent() {
             transform: scale(1.08);
           }
         }
-        @keyframes pp-pulse-ring {
-          0%,
-          100% {
-            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-          }
-          50% {
-            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.05);
-          }
-        }
-        .pp-pulse-ring {
-          animation: pp-pulse-ring 2.6s ease-in-out infinite;
-        }
       `}</style>
     </div>
   );
@@ -309,7 +322,7 @@ export default function ProPathLanding() {
   // rendering — same pattern as /wc2026.
   return (
     <Suspense
-      fallback={<div className="min-h-screen bg-[#070707]" aria-hidden />}
+      fallback={<div className="min-h-screen bg-primary-900" aria-hidden />}
     >
       <ProPathLandingContent />
     </Suspense>
