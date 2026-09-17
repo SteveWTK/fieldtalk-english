@@ -280,26 +280,26 @@ export default function TimelineDrag({
           isPlaced
             ? "px-2 py-1 min-w-[80px]"
             : "px-3 py-2 cursor-grab active:cursor-grabbing"
-        } ${isShaking ? "animate-shake" : ""} bg-white dark:bg-gray-700 rounded-lg shadow-md border-2 ${
+        } ${isShaking ? "animate-shake" : ""} bg-primary-panel rounded-control border-2 ${
           isPlaced
-            ? "border-green-500"
-            : "border-gray-300 dark:border-gray-600 hover:border-accent-500"
+            ? "border-accent-400"
+            : "border-primary-700 hover:border-accent-400/60"
         } transition-colors`}
       >
         <p
-          className={`font-semibold text-gray-900 dark:text-white text-center ${
+          className={`font-semibold text-primary-50 text-center ${
             isCompact ? "text-xs" : "text-sm"
           }`}
         >
           {event.title}
         </p>
         {isPlaced && (
-          <p className="text-xs text-green-600 dark:text-green-400 text-center font-bold">
+          <p className="text-xs text-accent-400 text-center font-bold">
             {event.year}
           </p>
         )}
         {!isPlaced && event.description && !isCompact && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1 max-w-[200px]">
+          <p className="text-xs text-primary-400 text-center mt-1 max-w-[200px]">
             {event.description}
           </p>
         )}
@@ -313,7 +313,7 @@ export default function TimelineDrag({
   // stays consistent with what the user sees.
   const renderHorizontalTimeline = () => (
     <div
-      className="relative w-full bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700"
+      className="relative w-full bg-primary-900 rounded-panel border-2 border-dashed border-primary-700"
       style={{ height: "180px" }}
     >
       {/* Inner: timelineRef + percent-positioned content */}
@@ -327,17 +327,17 @@ export default function TimelineDrag({
               className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
               style={{ left: `${left}%` }}
             >
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <span className="text-xs font-medium text-primary-300 mb-1">
                 {year}
               </span>
-              <div className="h-3 w-0.5 bg-gray-400 dark:bg-gray-500" />
+              <div className="h-3 w-0.5 bg-primary-600" />
             </div>
           );
         })}
 
         {/* Axis line */}
         <div
-          className="absolute left-0 right-0 h-px bg-gray-400 dark:bg-gray-500"
+          className="absolute left-0 right-0 h-px bg-primary-600"
           style={{ top: "32px" }}
         />
 
@@ -349,7 +349,7 @@ export default function TimelineDrag({
             style={{ left: `${percentForYear(event.year)}%`, top: "40px" }}
           >
             <div className="animate-pop-in flex flex-col items-center">
-              <div className="w-0.5 h-3 bg-green-500 mb-1" />
+              <div className="w-0.5 h-3 bg-accent-400 mb-1" />
               {renderEventCard(event, { isPlaced: true, isCompact: true })}
             </div>
           </div>
@@ -361,7 +361,7 @@ export default function TimelineDrag({
   // ---- Timeline render: vertical ----
   const renderVerticalTimeline = () => (
     <div
-      className="relative bg-gradient-to-r from-blue-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 flex-1"
+      className="relative bg-primary-900 rounded-panel border-2 border-dashed border-primary-700 flex-1"
       style={{
         minHeight: "250px",
         minWidth: layoutMode === "tablet" ? "180px" : undefined,
@@ -383,17 +383,17 @@ export default function TimelineDrag({
               className="absolute -translate-y-1/2 flex items-center justify-end gap-1"
               style={{ top: `${top}%`, left: 0, width: "56px" }}
             >
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              <span className="text-xs font-medium text-primary-300 whitespace-nowrap">
                 {year}
               </span>
-              <div className="w-3 h-0.5 bg-gray-400 dark:bg-gray-500" />
+              <div className="w-3 h-0.5 bg-primary-600" />
             </div>
           );
         })}
 
         {/* Axis line */}
         <div
-          className="absolute top-0 bottom-0 w-px bg-gray-400 dark:bg-gray-500"
+          className="absolute top-0 bottom-0 w-px bg-primary-600"
           style={{ left: "56px" }}
         />
 
@@ -407,7 +407,7 @@ export default function TimelineDrag({
               style={{ top: `${top}%`, left: "56px" }}
             >
               <div className="animate-pop-in-v flex items-center gap-1">
-                <div className="h-0.5 w-3 bg-green-500" />
+                <div className="h-0.5 w-3 bg-accent-400" />
                 {renderEventCard(event, { isPlaced: true, isCompact: true })}
               </div>
             </div>
@@ -423,7 +423,7 @@ export default function TimelineDrag({
     const isColumn = layoutMode === "tablet";
     return (
       <div
-        className={`bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 ${
+        className={`bg-primary-panel rounded-panel p-4 border border-primary-700 ${
           isColumn ? "flex-shrink-0" : ""
         }`}
         style={isColumn ? { width: "180px" } : undefined}
@@ -455,7 +455,7 @@ export default function TimelineDrag({
       {/* Instruction & progress */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-sm text-primary-100">
             {step?.content || labels.instruction}
           </p>
           {/* {tolerance > 0 && (
@@ -465,13 +465,13 @@ export default function TimelineDrag({
           )} */}
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-primary-50">
             {placedCount}/{totalEvents} {labels.progress}
           </span>
           <button
             onClick={toggleMute}
             aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            className="text-primary-300 hover:text-primary-50 p-1"
           >
             {isMuted ? (
               <VolumeX className="w-4 h-4" />
@@ -482,7 +482,7 @@ export default function TimelineDrag({
           {placedCount > 0 && !completed && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs text-primary-300 hover:text-primary-50"
             >
               <RotateCcw className="w-3 h-3" />
               {labels.reset}
@@ -493,7 +493,7 @@ export default function TimelineDrag({
 
       {/* Error toast */}
       {errorMessage && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm">
           <AlertCircle className="w-4 h-4" />
           {errorMessage}
         </div>
@@ -540,13 +540,13 @@ export default function TimelineDrag({
             {isVertical ? (
               // Vertical timeline: short tick on the LEFT of the card
               <div
-                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-green-500 shadow-md"
+                className="absolute right-full top-1/2 -translate-y-1/2 h-0.5 bg-accent-400 shadow-md"
                 style={{ width: "40px" }}
               />
             ) : (
               // Horizontal timeline: short tick on TOP of the card
               <div
-                className="absolute bottom-full left-1/2 -translate-x-1/2 w-0.5 bg-green-500 shadow-md"
+                className="absolute bottom-full left-1/2 -translate-x-1/2 w-0.5 bg-accent-400 shadow-md"
                 style={{ height: "40px" }}
               />
             )}

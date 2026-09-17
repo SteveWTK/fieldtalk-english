@@ -259,7 +259,7 @@ export default function DragDropVocabulary({
 
   if (totalItems === 0) {
     return (
-      <p className="text-center text-gray-600 dark:text-gray-400 py-8">
+      <p className="text-center text-primary-300 py-8">
         {labels.empty}
       </p>
     );
@@ -270,10 +270,10 @@ export default function DragDropVocabulary({
     const { isShaking = false } = opts;
     return (
       <div
-        className={`select-none touch-none px-4 py-3 rounded-lg shadow-md border-2 cursor-grab active:cursor-grabbing bg-white dark:bg-gray-700 transition-colors text-center font-semibold text-gray-900 dark:text-white ${
+        className={`select-none touch-none px-4 py-3 rounded-control border-2 cursor-grab active:cursor-grabbing bg-primary-900 transition-colors text-center font-semibold text-primary-50 ${
           isShaking
-            ? "animate-shake border-red-500"
-            : "border-gray-300 dark:border-gray-600 hover:border-accent-500"
+            ? "animate-shake border-signal-alert"
+            : "border-primary-700 hover:border-accent-400"
         }`}
         style={{ minWidth: "100px" }}
       >
@@ -292,17 +292,17 @@ export default function DragDropVocabulary({
         ref={(el) => {
           targetRefsRef.current[item.id] = el;
         }}
-        className={`rounded-lg shadow-md border-2 overflow-hidden bg-primary-100 dark:bg-primary-700 transition-all ${
+        className={`rounded-control border-2 overflow-hidden bg-primary-800 transition-all ${
           isMatched
-            ? "border-green-500"
+            ? "border-accent-400"
             : isHovered
-              ? "border-accent-500 scale-105"
-              : "border-gray-300 dark:border-gray-600"
+              ? "border-accent-400/60 bg-accent-400/10 scale-105"
+              : "border-primary-700"
         }`}
         style={{ width: "120px" }}
       >
         {isMatched && (
-          <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 text-center flex items-center justify-center gap-1">
+          <div className="bg-accent-400 text-primary-800 text-xs font-bold px-2 py-1 text-center flex items-center justify-center gap-1">
             <CheckCircle className="w-3 h-3" />
             {item.english}
           </div>
@@ -320,7 +320,7 @@ export default function DragDropVocabulary({
               }}
             />
           ) : (
-            <span className="text-center text-[16px] font-bold text-gray-700 dark:text-gray-300">
+            <span className="text-center text-[16px] font-bold text-primary-100">
               {item.translation}
             </span>
           )}
@@ -339,13 +339,13 @@ export default function DragDropVocabulary({
           {step?.content || labels.instruction}
         </p> */}
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-primary-50">
             {matchedCount}/{totalItems} {labels.progress}
           </span>
           <button
             onClick={toggleMute}
             aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            className="text-primary-300 hover:text-primary-50 p-1"
           >
             {isMuted ? (
               <VolumeX className="w-4 h-4" />
@@ -356,7 +356,7 @@ export default function DragDropVocabulary({
           {matchedCount > 0 && !completed && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs text-primary-300 hover:text-primary-50"
             >
               <RotateCcw className="w-3 h-3" />
               {labels.reset}
@@ -367,7 +367,7 @@ export default function DragDropVocabulary({
 
       {/* Error toast */}
       {errorMessage && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm">
           <AlertCircle className="w-4 h-4" />
           {errorMessage}
         </div>
@@ -375,7 +375,7 @@ export default function DragDropVocabulary({
 
       {/* English tray */}
       {!completed && unmatchedSources.length > 0 && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-primary-900 rounded-panel px-4 py-4 border border-primary-700">
           <div className="flex flex-wrap gap-3 justify-center">
             {unmatchedSources.map((item) => (
               <div
@@ -420,7 +420,7 @@ export default function DragDropVocabulary({
 
       {/* Completion */}
       {completed && (
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4 text-center">
+        <div className="bg-accent-400/10 rounded-panel p-4 text-center">
           {/* <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" /> */}
           {/* <div className="inline-flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
             <CheckCircle className="w-5 h-5" />

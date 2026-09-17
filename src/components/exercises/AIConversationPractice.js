@@ -14,6 +14,7 @@ import {
   Bot,
   AlertCircle,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AIConversationPractice({
   scenario,
@@ -398,20 +399,20 @@ export default function AIConversationPractice({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Scenario Header */}
-      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mb-4">
+      <div className="bg-signal-mental/10 border border-signal-mental/30 rounded-control p-4 mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <MessageSquare className="w-6 h-6 text-signal-mental" />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
+              <h3 className="font-semibold text-primary-50">
                 Conversation Practice
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-primary-300">
                 {scenario}
               </p>
             </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-primary-300">
             Turn {turnCount}/{maxTurns}
           </div>
         </div>
@@ -456,7 +457,7 @@ export default function AIConversationPractice({
         )} */}
 
       {/* Messages Area */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg h-96 overflow-y-auto mb-4 p-4">
+      <div className="bg-primary-panel border border-primary-700 rounded-control h-96 overflow-y-auto mb-4 p-4">
         <div className="space-y-4">
           {messages.map((message, index) => {
             if (message.role === "system") return null;
@@ -475,15 +476,15 @@ export default function AIConversationPractice({
                   <div className="flex items-center space-x-2 mb-1">
                     {isUser ? (
                       <>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-primary-400">
                           You
                         </span>
-                        <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <User className="w-4 h-4 text-primary-400" />
                       </>
                     ) : (
                       <>
-                        <Bot className="w-4 h-4 text-blue-500" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <Bot className="w-4 h-4 text-signal-english" />
+                        <span className="text-xs text-primary-400">
                           Coach
                         </span>
                       </>
@@ -491,10 +492,10 @@ export default function AIConversationPractice({
                   </div>
 
                   <div
-                    className={`rounded-lg p-3 ${
+                    className={`rounded-control p-3 border ${
                       isUser
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                        ? "bg-accent-400/15 text-primary-50 border-accent-400/30"
+                        : "bg-primary-800 border-primary-700 text-primary-100"
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
@@ -502,10 +503,10 @@ export default function AIConversationPractice({
 
                   {/* Error feedback for user messages */}
                   {error && (
-                    <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
+                    <div className="mt-2 p-2 bg-signal-performance/10 border border-signal-performance/40 rounded text-xs">
                       <div className="flex items-start space-x-1">
-                        <AlertCircle className="w-3 h-3 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-yellow-800 dark:text-yellow-300">
+                        <AlertCircle className="w-3 h-3 text-signal-performance flex-shrink-0 mt-0.5" />
+                        <p className="text-signal-performance">
                           {error}
                         </p>
                       </div>
@@ -518,7 +519,7 @@ export default function AIConversationPractice({
                       onClick={() =>
                         speakMessage(message.content, message.timestamp)
                       }
-                      className="mt-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center space-x-1"
+                      className="mt-2 text-xs text-primary-400 hover:text-primary-200 flex items-center space-x-1"
                     >
                       <Volume2 className="w-3 h-3" />
                       <span>Listen</span>
@@ -531,8 +532,8 @@ export default function AIConversationPractice({
 
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
-                <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+              <div className="bg-primary-800 border border-primary-700 rounded-control p-3">
+                <Loader2 className="w-4 h-4 animate-spin text-primary-400" />
               </div>
             </div>
           )}
@@ -542,14 +543,14 @@ export default function AIConversationPractice({
       </div>
 
       {/* Input Area */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <div className="bg-primary-panel border border-primary-700 rounded-control p-4">
         <div className="flex items-end space-x-2">
           <button
             onClick={toggleListening}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-control transition-colors ${
               isListening
-                ? "bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400"
+                ? "bg-signal-alert/15 text-signal-alert"
+                : "bg-primary-800 text-primary-300 hover:bg-primary-700"
             }`}
           >
             {isListening ? (
@@ -565,43 +566,36 @@ export default function AIConversationPractice({
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message... (or use the microphone)"
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full p-2 border border-primary-600 rounded-control
+                       bg-primary-900 text-primary-100 placeholder:text-primary-500
+                       focus:border-accent-400 focus:ring-accent-400/30 focus:ring-2 resize-none outline-none"
               rows="2"
               disabled={loading || turnCount >= maxTurns}
             />
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={sendMessage}
             disabled={!input.trim() || loading || turnCount >= maxTurns}
-            className={`p-2 rounded-lg transition-colors ${
-              input.trim() && !loading && turnCount < maxTurns
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            loading={loading}
+            Icon={loading ? undefined : Send}
+            aria-label="Send"
           >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
+            Send
+          </Button>
 
           <button
             onClick={resetConversation}
-            className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 
-                     dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 
-                     rounded-lg transition-colors"
+            className="p-2 bg-primary-800 text-primary-300 hover:bg-primary-700 rounded-control transition-colors"
           >
             <RotateCcw className="w-5 h-5" />
           </button>
         </div>
 
         {turnCount >= maxTurns && (
-          <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <p className="text-sm text-green-800 dark:text-green-300">
+          <div className="mt-3 p-3 bg-accent-400/10 border border-accent-400/30 rounded-control">
+            <p className="text-sm text-accent-400">
               Great job! You&apos;ve completed the conversation practice.
             </p>
           </div>

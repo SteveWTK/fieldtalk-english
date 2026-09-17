@@ -260,7 +260,7 @@ export default function AIListeningChallenge({
   if (!currentClip && !isComplete) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-primary-300">
           {t("no_audio_clips_available")}
         </p>
       </div>
@@ -270,14 +270,14 @@ export default function AIListeningChallenge({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Instructions */}
-      <div className="bg-fieldtalk-50 dark:bg-primary-900/20 border border-fieldtalk-200 dark:border-primary-800 rounded-lg p-6 mb-6">
+      <div className="bg-primary-panel border border-primary-700 rounded-panel p-6 mb-6">
         <div className="flex items-start space-x-3">
-          <Headphones className="w-6 h-6 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" />
+          <Headphones className="w-6 h-6 text-accent-400 flex-shrink-0 mt-1" />
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="font-semibold text-primary-50 mb-2">
               {t("Desafio de Áudio")}
             </h3>
-            <p className="text-gray-700 dark:text-gray-300">
+            <p className="text-primary-100">
               {content || t("listen_and_select_correct_answer")}
             </p>
           </div>
@@ -286,15 +286,15 @@ export default function AIListeningChallenge({
 
       {/* Progress Bar */}
       <div className="mb-6">
-        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <div className="flex justify-between text-sm text-primary-300 mb-2">
           <span>{t("progress")}</span>
           <span>
             {completedClips.size} / {audioClips.length} {t("completed")}
           </span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-primary-700 rounded-full h-2">
           <div
-            className="bg-gradient-to-r from-primary-500 to-accent-500 h-2 rounded-full transition-all duration-300"
+            className="bg-accent-400 h-2 rounded-full transition-all duration-300"
             style={{
               width: `${(completedClips.size / audioClips.length) * 100}%`,
             }}
@@ -305,9 +305,9 @@ export default function AIListeningChallenge({
       {!isComplete ? (
         <>
           {/* Current Clip */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <div className="bg-primary-panel rounded-panel border border-primary-700 p-6 mb-6">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center space-x-2 text-gray-600 dark:text-gray-400 mb-4">
+              <div className="inline-flex items-center justify-center space-x-2 text-primary-300 mb-4">
                 <span className="text-sm">
                   {t("clip")} {currentClipIndex + 1} {t("of")}{" "}
                   {audioClips.length}
@@ -325,12 +325,12 @@ export default function AIListeningChallenge({
               <button
                 onClick={isPlaying ? stopAudio : playAudio}
                 disabled={audioLoading}
-                className="bg-accent-600 text-white px-8 py-4 rounded-lg hover:bg-accent-700 
+                className="bg-accent-400 text-primary-800 px-8 py-4 rounded-control hover:bg-accent-300
                          disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                          flex items-center space-x-3 mx-auto text-lg"
               >
                 {audioLoading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-primary-800 border-t-transparent rounded-full animate-spin" />
                 ) : isPlaying ? (
                   <Pause className="w-6 h-6" />
                 ) : (
@@ -351,7 +351,7 @@ export default function AIListeningChallenge({
             {/* Answer Options */}
             {hasPlayedCurrentClip && (
               <div className="space-y-3 animate-fadeIn">
-                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                <h4 className="font-medium text-primary-50 mb-3">
                   {t("O que você ouviu?")}
                 </h4>
                 {currentClip.options.map((option, index) => (
@@ -359,19 +359,19 @@ export default function AIListeningChallenge({
                     key={index}
                     onClick={() => handleAnswerSelect(option)}
                     disabled={showFeedback}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all
+                    className={`w-full text-left p-4 rounded-control border-2 transition-all
                       ${
                         selectedAnswer === option
                           ? showFeedback
                             ? isCorrect && option === currentClip.correct_answer
-                              ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                              ? "border-accent-400 bg-accent-400/10"
                               : !isCorrect && option === selectedAnswer
-                                ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                                ? "border-signal-alert bg-signal-alert/10"
                                 : option === currentClip.correct_answer
-                                  ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                                  : "border-gray-300 dark:border-gray-600"
-                            : "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                          : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                                  ? "border-accent-400 bg-accent-400/10"
+                                  : "border-primary-600"
+                            : "border-accent-400 bg-accent-400/10"
+                          : "border-primary-600 hover:border-primary-500"
                       }
                       ${showFeedback ? "cursor-not-allowed" : "cursor-pointer"}
                     `}
@@ -381,12 +381,12 @@ export default function AIListeningChallenge({
                         className={`
                         ${
                           showFeedback && option === currentClip.correct_answer
-                            ? "text-green-700 dark:text-green-300 font-medium"
+                            ? "text-accent-400 font-medium"
                             : showFeedback &&
                                 option === selectedAnswer &&
                                 !isCorrect
-                              ? "text-red-700 dark:text-red-300"
-                              : "text-gray-900 dark:text-white"
+                              ? "text-signal-alert"
+                              : "text-primary-50"
                         }
                       `}
                       >
@@ -394,12 +394,12 @@ export default function AIListeningChallenge({
                       </span>
                       {showFeedback &&
                         option === currentClip.correct_answer && (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <CheckCircle className="w-5 h-5 text-accent-400" />
                         )}
                       {showFeedback &&
                         option === selectedAnswer &&
                         !isCorrect && (
-                          <XCircle className="w-5 h-5 text-red-600" />
+                          <XCircle className="w-5 h-5 text-signal-alert" />
                         )}
                     </div>
                   </button>
@@ -411,7 +411,7 @@ export default function AIListeningChallenge({
             {hasPlayedCurrentClip && selectedAnswer && !showFeedback && (
               <button
                 onClick={submitAnswer}
-                className="mt-6 w-full bg-accent-600 text-white py-3 rounded-lg hover:bg-accent-700 
+                className="mt-6 w-full bg-accent-400 text-primary-800 py-3 rounded-control hover:bg-accent-300
                          transition-colors font-medium"
               >
                 {t("Enviar resposta")}
@@ -421,24 +421,24 @@ export default function AIListeningChallenge({
             {/* Feedback Message */}
             {showFeedback && (
               <div
-                className={`mt-6 p-4 rounded-lg ${
+                className={`mt-6 p-4 rounded-control ${
                   isCorrect
-                    ? "bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-700"
-                    : "bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700"
+                    ? "bg-accent-400/10 border border-accent-400/40"
+                    : "bg-signal-alert/10 border border-signal-alert/40"
                 }`}
               >
                 <div className="flex items-start space-x-2">
                   {isCorrect ? (
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-accent-400 flex-shrink-0 mt-0.5" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <XCircle className="w-5 h-5 text-signal-alert flex-shrink-0 mt-0.5" />
                   )}
                   <div>
                     <p
                       className={`font-medium ${
                         isCorrect
-                          ? "text-green-800 dark:text-green-200"
-                          : "text-red-800 dark:text-red-200"
+                          ? "text-accent-400"
+                          : "text-signal-alert"
                       }`}
                     >
                       {isCorrect
@@ -449,8 +449,7 @@ export default function AIListeningChallenge({
                       <button
                         onClick={playAudio}
                         disabled={audioLoading || isPlaying}
-                        className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 
-                                 dark:hover:text-red-300 flex items-center space-x-1"
+                        className="mt-2 text-sm text-signal-alert hover:text-signal-alert/80 flex items-center space-x-1"
                       >
                         <Volume2 className="w-4 h-4" />
                         <span>{t("Ouça novamente")}</span>
@@ -463,25 +462,25 @@ export default function AIListeningChallenge({
           </div>
 
           {/* Score Display */}
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-center text-sm text-primary-300">
             {t("score")}: {score} / {audioClips.length}
           </div>
         </>
       ) : (
         /* Completion Screen */
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-8 text-center">
-          <Award className="w-16 h-16 text-green-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
+        <div className="bg-accent-400/10 border border-accent-400/40 rounded-panel p-8 text-center">
+          <Award className="w-16 h-16 text-accent-400 mx-auto mb-4" />
+          <h3 className="text-2xl font-bold text-primary-50 mb-2">
             {t("challenge_complete")}
           </h3>
-          <p className="text-gray-700 dark:text-gray-300 mb-6">
+          <p className="text-primary-100 mb-6">
             {t("you_scored")} {score} {t("out_of")} {audioClips.length}!
           </p>
 
           <div className="flex justify-center space-x-4">
             <button
               onClick={resetChallenge}
-              className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 
+              className="px-6 py-2 bg-transparent text-primary-50 border border-primary-600 rounded-control hover:border-primary-400
                        transition-colors flex items-center space-x-2"
             >
               <RotateCcw className="w-4 h-4" />
@@ -492,7 +491,7 @@ export default function AIListeningChallenge({
                 onClick={() =>
                   onComplete(Math.round((score / audioClips.length) * 100))
                 }
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 
+                className="px-6 py-2 bg-accent-400 text-primary-800 rounded-control hover:bg-accent-300
                          transition-colors flex items-center space-x-2"
               >
                 <CheckCircle className="w-4 h-4" />

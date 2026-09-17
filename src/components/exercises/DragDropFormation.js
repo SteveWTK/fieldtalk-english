@@ -277,14 +277,14 @@ export default function DragDropFormation({
             : "w-20 h-24 sm:w-24 sm:h-28 cursor-grab active:cursor-grabbing"
         } ${isShaking ? "animate-shake" : ""} ${
           isDragging ? "opacity-50" : ""
-        } bg-white dark:bg-gray-700 rounded-lg shadow-md border-2 ${
+        } bg-primary-panel rounded-control border-2 ${
           isPlaced
-            ? "border-green-500"
-            : "border-gray-300 dark:border-gray-600 hover:border-accent-500"
+            ? "border-accent-400"
+            : "border-primary-700 hover:border-accent-400"
         } flex flex-col items-center justify-center p-1 transition-colors`}
       >
         {card.image_url ? (
-          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 dark:bg-gray-600 overflow-hidden mb-1">
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-800 overflow-hidden mb-1">
             <Image
               src={card.image_url}
               alt={card.name}
@@ -297,11 +297,11 @@ export default function DragDropFormation({
             />
           </div>
         ) : (
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold text-sm sm:text-base mb-1">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-accent-400 flex items-center justify-center text-primary-800 font-bold text-sm sm:text-base mb-1">
             {card.name?.charAt(0) || "?"}
           </div>
         )}
-        <p className="text-xs sm:text-sm font-semibold text-center text-gray-900 dark:text-white leading-tight line-clamp-2">
+        <p className="text-xs sm:text-sm font-semibold text-center text-primary-50 leading-tight line-clamp-2">
           {card.name}
         </p>
       </div>
@@ -458,7 +458,7 @@ export default function DragDropFormation({
           <button
             type="button"
             onClick={markOnboardSeen}
-            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-12 bg-blue-800/95 text-white text-sm sm:text-base font-semibold px-4 py-2.5 rounded-xl ring-1 ring-white/15 shadow-lg cursor-pointer onboard-hint-enter"
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-12 bg-primary-panel text-primary-50 text-sm sm:text-base font-semibold px-4 py-2.5 rounded-panel ring-1 ring-primary-600 cursor-pointer onboard-hint-enter"
             aria-label={
               isPortuguese ? "Arraste para a posição" : "Drag to position"
             }
@@ -466,7 +466,7 @@ export default function DragDropFormation({
             {isPortuguese ? "Arraste para a posição" : "Drag to position"}
           </button>
           <div className="ddf-hand-anim absolute left-1/2 -translate-x-1/2">
-            <Hand className="w-9 h-9 text-white drop-shadow-lg rotate-[20deg]" />
+            <Hand className="w-9 h-9 text-accent-400 rotate-[20deg]" />
           </div>
         </div>
       )}
@@ -482,13 +482,13 @@ export default function DragDropFormation({
           )}
         </p> */}
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-primary-50">
             {placedCount}/{totalSlots} {labels.progress}
           </span>
           <button
             onClick={toggleMute}
             aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            className="text-primary-400 hover:text-primary-50 p-1"
           >
             {isMuted ? (
               <VolumeX className="w-4 h-4" />
@@ -499,7 +499,7 @@ export default function DragDropFormation({
           {placedCount > 0 && !completed && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs text-primary-400 hover:text-primary-50"
             >
               <RotateCcw className="w-3 h-3" />
               {labels.reset}
@@ -510,7 +510,7 @@ export default function DragDropFormation({
 
       {/* Error toast */}
       {errorMessage && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 bg-signal-alert/10 text-signal-alert border border-signal-alert/40 rounded-control text-sm">
           <AlertCircle className="w-4 h-4" />
           {errorMessage}
         </div>
@@ -519,7 +519,7 @@ export default function DragDropFormation({
       {/* Pitch */}
       <div
         ref={pitchRef}
-        className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md"
+        className="relative w-full mx-auto rounded-panel overflow-hidden border border-primary-700"
         style={{
           maxWidth: isHorizontal ? "700px" : "500px",
           aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
@@ -573,7 +573,7 @@ export default function DragDropFormation({
 
       {/* Card tray */}
       {trayCards.length > 0 && !completed && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-primary-panel rounded-panel p-4 border border-primary-700">
           <div className="flex flex-wrap gap-3 justify-center">
             {trayCards.map((card) => {
               // const isDragging = draggingCardId === card.id;

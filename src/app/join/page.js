@@ -32,36 +32,24 @@ import {
   readPartnerReferrer,
 } from "@/lib/partners/referrer";
 
-// Umbrella-brand default for non-WC editions (Pro Path first) so we
-// don't fall through to the Cultura lion — which was the sensible
-// default when WC was the only edition, but reads as wrong branding
-// on a Pro Path signup screen. Same INSPIRE_FUTURE_LOGO used on the
-// /propath landing; kept in sync by convention.
-const INSPIRE_FUTURE_LOGO = {
-  logoSrc: "/logos/FieldTalk-wide-dm-w.png",
-  alt: "Inspire Future",
-};
-
 function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const edition = searchParams.get("edition") || null;
   const branchKey = searchParams.get("branch");
-  // With a branch slug present, honour the partner brand. Without
-  // one, pick the umbrella logo appropriate to the edition — WC
-  // keeps its Cultura default (via getBranch), non-WC editions get
-  // Inspire Future.
-  const branch = branchKey
-    ? getBranch(branchKey)
-    : edition && edition !== "wc2026"
-      ? INSPIRE_FUTURE_LOGO
-      : getBranch(null);
-
-  // If the branch resolver returned our umbrella fallback (no partner
-  // slug, no partner-owned edition), show the Global Player mark
-  // itself rather than a legacy wide wordmark. Partner brands
-  // (branchKey present) always keep their own logo.
-  const useGlobalPlayerMark = !branchKey && branch === INSPIRE_FUTURE_LOGO;
+  // Branding rule (2026-09):
+  //   - No branch slug            → Global Player mark only.
+  //   - Branch slug present       → co-branded. Global Player is the
+  //                                 primary anchor (that's the app
+  //                                 they're joining); the partner
+  //                                 mark sits below as an "in
+  //                                 partnership with" credit.
+  // The old logic defaulted to a Cultura fallback when neither
+  // `edition` nor `branch` was set, which meant users arriving from
+  // the streamlined root landing saw the Cultura lion — wrong for
+  // the umbrella brand. That path is gone; the umbrella IS Global
+  // Player now.
+  const partnerBranch = branchKey ? getBranch(branchKey) : null;
 
   // Mirror the /wc2026 capture so users who deep-link straight to
   // /join?branch=<slug> (e.g. from a partner email blast that skips
@@ -159,24 +147,34 @@ function JoinPageContent() {
 
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          {/* Logo + heading */}
+          {/* Logo + heading — Global Player is always the primary
+              anchor. When a partner branch is present, the partner
+              mark sits below as an "in partnership with" credit so
+              they get recognition without the app itself feeling
+              white-labelled. */}
           <div className="text-center mb-8 flex flex-col items-center">
-            {useGlobalPlayerMark ? (
-              <GlobalPlayerLogo
-                variant="crest"
-                tone="tonalDark"
-                size={64}
-                sting="rise"
-              />
-            ) : (
-              <Image
-                src={branch.logoSrc}
-                alt={branch.alt}
-                width={140}
-                height={50}
-                priority
-                className="h-10 sm:h-12 w-auto opacity-90 mb-6"
-              />
+            <GlobalPlayerLogo
+              variant="crest"
+              tone="tonalDark"
+              size={64}
+              sting="rise"
+            />
+            {partnerBranch && (
+              <div className="mt-4 flex flex-col items-center gap-1.5">
+                <span className="text-[10px] uppercase tracking-label text-primary-500 font-semibold">
+                  {lang === "pt"
+                    ? "Em parceria com"
+                    : "In partnership with"}
+                </span>
+                <Image
+                  src={partnerBranch.logoSrc}
+                  alt={partnerBranch.alt}
+                  width={120}
+                  height={40}
+                  priority
+                  className="h-7 sm:h-8 w-auto opacity-80"
+                />
+              </div>
             )}
             <h1 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-primary-50">
               {t("join_heading")}

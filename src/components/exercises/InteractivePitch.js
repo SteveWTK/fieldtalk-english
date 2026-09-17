@@ -126,7 +126,7 @@ export default function InteractivePitch({
     <div className="interactive-pitch-container">
       {/* Main instruction text */}
       <div className="mb-4">
-        <p className="text-lg text-gray-700 dark:text-gray-300">
+        <p className="text-lg text-primary-100">
           {interactiveConfig.instruction || t("click_areas_to_learn")}
         </p>
       </div>
@@ -274,17 +274,17 @@ export default function InteractivePitch({
 
       {/* Area Information Panel */}
       {currentArea && (
-        <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="mt-4 p-4 bg-signal-english/10 rounded-control border border-signal-english/40">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-accent-600 dark:text-accent-400" />
-              <h4 className="font-semibold text-primary-900 dark:text-primary-50">
+              <MapPin className="w-5 h-5 text-accent-400" />
+              <h4 className="font-semibold text-primary-50">
                 {currentArea.label}
               </h4>
             </div>
             <button
               onClick={() => setShowTranslations(!showTranslations)}
-              className="font-bold text-accent-600 dark:text-accent-400 hover:text-accent-800 dark:hover:text-accent-300 text-sm flex items-center space-x-1"
+              className="font-bold text-accent-400 hover:text-accent-300 text-sm flex items-center space-x-1"
             >
               <Info className="w-4 h-4" />
               <span>
@@ -300,11 +300,11 @@ export default function InteractivePitch({
           </p> */}
 
           {showTranslations && currentArea.translation && (
-            <div className="bg-white dark:bg-primary-800 p-3 rounded mb-3">
-              <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">
+            <div className="bg-primary-800 p-3 rounded-control mb-3">
+              <p className="text-sm text-primary-400 mb-1">
                 Português:
               </p>
-              <p className="text-primary-600 dark:text-primary-400 font-medium">
+              <p className="text-primary-100 font-medium">
                 {currentArea.translation}
               </p>
             </div>
@@ -313,10 +313,10 @@ export default function InteractivePitch({
           <button
             onClick={() => playAreaAudio(currentArea)}
             disabled={audioLoading}
-            className="flex items-center space-x-2 bg-accent-600 text-white px-4 py-2 rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center space-x-2 bg-accent-400 text-primary-800 px-4 py-2 rounded-control hover:bg-accent-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {audioLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary-800 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Volume2 className="w-4 h-4" />
             )}
@@ -327,13 +327,13 @@ export default function InteractivePitch({
 
       {/* Progress indicator */}
       <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-primary-300">
           {t("explored")}: {clickedAreas.size} /{" "}
           {interactiveConfig.click_areas?.length || 0} {t("areas")}
         </p>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+        <div className="w-full bg-primary-700 rounded-full h-2 mt-2">
           <div
-            className="bg-accent-600 h-2 rounded-full transition-all duration-300"
+            className="bg-accent-400 h-2 rounded-full transition-all duration-300"
             style={{
               width: `${(clickedAreas.size / (interactiveConfig.click_areas?.length || 1)) * 100}%`,
             }}
@@ -341,7 +341,7 @@ export default function InteractivePitch({
         </div>
 
         {clickedAreas.size === interactiveConfig.click_areas?.length && (
-          <div className="mt-3 p-3 bg-green-100 dark:bg-accent-900/20 text-accent-800 dark:text-accent-200 rounded-lg">
+          <div className="mt-3 p-3 bg-accent-400/10 text-accent-400 rounded-control">
             <p className="font-semibold">{t("all_areas_explored")}</p>
           </div>
         )}

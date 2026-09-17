@@ -46,8 +46,8 @@ const ACCENT_BAR_GRADIENT =
 // partner campaign. Academy / club logos still take over when a
 // ?branch=<slug> is present via the shared BRANCHES registry.
 const INSPIRE_FUTURE_LOGO = {
-  logoSrc: "/logos/FieldTalk-wide-dm-w.png",
-  alt: "Inspire Future",
+  logoSrc: "/logos/gp-open-tonal-dark-1000.png",
+  alt: "Global Player",
 };
 
 function ProPathLandingContent() {

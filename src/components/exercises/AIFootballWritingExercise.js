@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Send,
-  Loader2,
   CheckCircle,
   AlertCircle,
   RefreshCw,
@@ -19,6 +18,7 @@ import {
   Globe,
   Languages,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Bilingual content for football scenarios
 const FOOTBALL_SCENARIOS = [
@@ -373,16 +373,16 @@ export default function AIFootballWritingExercise({
 
   // Get score color and emoji
   const getScoreDisplay = (score) => {
-    if (score >= 8) return { color: "text-green-600", emoji: "🏆" };
-    if (score >= 6) return { color: "text-yellow-600", emoji: "⭐" };
-    return { color: "text-orange-600", emoji: "💪" };
+    if (score >= 8) return { color: "text-accent-400", emoji: "🏆" };
+    if (score >= 6) return { color: "text-signal-performance", emoji: "⭐" };
+    return { color: "text-signal-alert", emoji: "💪" };
   };
 
   // Word count indicator color
   const getWordCountColor = () => {
-    if (wordCount < selectedScenario.minWords) return "text-orange-600";
-    if (wordCount > selectedScenario.maxWords) return "text-red-600";
-    return "text-green-600";
+    if (wordCount < selectedScenario.minWords) return "text-signal-performance";
+    if (wordCount > selectedScenario.maxWords) return "text-signal-alert";
+    return "text-accent-400";
   };
 
   return (
@@ -390,28 +390,28 @@ export default function AIFootballWritingExercise({
       {/* Header with Language Toggle */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
-            <Trophy className="w-7 h-7 text-yellow-500" />
+          <h2 className="text-2xl font-bold text-primary-50 flex items-center space-x-2">
+            <Trophy className="w-7 h-7 text-signal-performance" />
             <span>{t('title')}</span>
           </h2>
           <div className="flex items-center space-x-4">
             {/* Language Toggle Button */}
             <button
               onClick={toggleInstructionLanguage}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 
-                       rounded-lg border border-gray-300 dark:border-gray-600 
-                       hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors
-                       text-sm font-medium text-gray-700 dark:text-gray-300"
+              className="flex items-center space-x-2 px-3 py-1.5 bg-primary-800
+                       rounded-control border border-primary-700
+                       hover:bg-primary-700 transition-colors
+                       text-sm font-medium text-primary-100"
               title={instructionLang === 'pt' ? 'Switch to English instructions' : 'Mudar para instruções em português'}
             >
               <Languages className="w-4 h-4" />
               <span className="flex items-center space-x-1">
-                <span className={instructionLang === 'pt' ? 'font-bold text-blue-600 dark:text-blue-400' : ''}>PT</span>
-                <span className="text-gray-400">/</span>
-                <span className={instructionLang === 'en' ? 'font-bold text-blue-600 dark:text-blue-400' : ''}>EN</span>
+                <span className={instructionLang === 'pt' ? 'font-bold text-accent-400' : ''}>PT</span>
+                <span className="text-primary-500">/</span>
+                <span className={instructionLang === 'en' ? 'font-bold text-accent-400' : ''}>EN</span>
               </span>
             </button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-primary-400">
               {t('subtitle')}
             </span>
           </div>
@@ -424,11 +424,11 @@ export default function AIFootballWritingExercise({
               key={scenario.id}
               onClick={() => !loading && !showFeedback && setSelectedScenario(scenario)}
               disabled={loading || showFeedback}
-              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2
+              className={`px-4 py-2 rounded-control font-medium transition-all flex items-center space-x-2
                 ${
                   selectedScenario.id === scenario.id
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "bg-signal-english/15 text-signal-english border border-signal-english/40"
+                    : "bg-primary-800 text-primary-100 border border-primary-700 hover:bg-primary-700"
                 }
                 ${(loading || showFeedback) && "opacity-50 cursor-not-allowed"}
               `}
@@ -441,24 +441,24 @@ export default function AIFootballWritingExercise({
       </div>
 
       {/* Writing Prompt */}
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+      <div className="bg-signal-english/10 border border-signal-english/30 rounded-panel p-6 mb-6">
         <div className="flex items-start space-x-3">
           {selectedScenario.icon}
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="font-semibold text-primary-50 mb-2">
               {t('writingTask')}
             </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-3">
+            <p className="text-primary-100 mb-3">
               {getScenarioContent('prompt')}
             </p>
             <div className="flex items-center space-x-4 text-sm">
-              <span className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+              <span className="flex items-center space-x-1 text-primary-400">
                 <Target className="w-4 h-4" />
                 <span>
                   {t('writeWords', { min: selectedScenario.minWords, max: selectedScenario.maxWords })}
                 </span>
               </span>
-              <span className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+              <span className="flex items-center space-x-1 text-primary-400">
                 <Clock className="w-4 h-4" />
                 <span>{t('timeEstimate')}</span>
               </span>
@@ -468,14 +468,14 @@ export default function AIFootballWritingExercise({
       </div>
 
       {/* Cultural Tip */}
-      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mb-6">
+      <div className="bg-signal-mental/10 border border-signal-mental/30 rounded-panel p-4 mb-6">
         <div className="flex items-start space-x-2">
-          <Globe className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+          <Globe className="w-5 h-5 text-signal-mental flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-purple-900 dark:text-purple-300 mb-1">
+            <p className="text-sm font-medium text-signal-mental mb-1">
               {t('culturalTip')}
             </p>
-            <p className="text-sm text-purple-800 dark:text-purple-400">
+            <p className="text-sm text-primary-100">
               {getScenarioContent('culturalTip')}
             </p>
           </div>
@@ -484,30 +484,30 @@ export default function AIFootballWritingExercise({
 
       {/* Writing Tips (Collapsible) */}
       {showTips && !showFeedback && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <div className="bg-signal-performance/10 border border-signal-performance/30 rounded-panel p-4 mb-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-yellow-900 dark:text-yellow-300 mb-2 flex items-center space-x-2">
+              <p className="text-sm font-medium text-signal-performance mb-2 flex items-center space-x-2">
                 <Info className="w-4 h-4" />
                 <span>{t('writingTips')}</span>
               </p>
               <ul className="space-y-1">
                 {getScenarioContent('tips').map((tip, idx) => (
-                  <li key={idx} className="text-sm text-yellow-800 dark:text-yellow-400 flex items-start">
+                  <li key={idx} className="text-sm text-primary-100 flex items-start">
                     <ChevronRight className="w-3 h-3 mt-0.5 mr-1 flex-shrink-0" />
                     <span>{tip}</span>
                   </li>
                 ))}
               </ul>
               {getScenarioContent('sampleStart') && (
-                <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-2 italic">
+                <p className="text-sm text-primary-300 mt-2 italic">
                   {getScenarioContent('sampleStart')}
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowTips(false)}
-              className="text-yellow-600 hover:text-yellow-700 ml-2"
+              className="text-primary-400 hover:text-primary-50 ml-2"
             >
               ×
             </button>
@@ -522,10 +522,10 @@ export default function AIFootballWritingExercise({
             value={text}
             onChange={handleTextChange}
             placeholder={`${t('startWriting')} ${getScenarioContent('sampleStart') || ""}`}
-            className="w-full h-48 p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg 
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none
-                     placeholder-gray-400 dark:placeholder-gray-500"
+            className="w-full h-48 p-4 border border-primary-600 rounded-control
+                     bg-primary-900 text-primary-100
+                     focus:outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30 resize-none
+                     placeholder-primary-500 transition-colors"
             disabled={loading || showFeedback}
           />
           <div className={`absolute bottom-2 right-2 text-sm font-medium ${getWordCountColor()}`}>
@@ -535,8 +535,8 @@ export default function AIFootballWritingExercise({
 
         {/* Error Display */}
         {error && (
-          <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <p className="text-sm text-red-800 dark:text-red-300 flex items-center space-x-2">
+          <div className="mt-2 p-3 bg-signal-alert/10 border border-signal-alert/40 rounded-panel">
+            <p className="text-sm text-signal-alert flex items-center space-x-2">
               <AlertCircle className="w-4 h-4" />
               <span>{error}</span>
             </p>
@@ -545,14 +545,14 @@ export default function AIFootballWritingExercise({
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-primary-400">
             {wordCount < selectedScenario.minWords && (
-              <span className="text-orange-600 font-medium">
+              <span className="text-signal-performance font-medium">
                 {t('needMoreWords', { count: selectedScenario.minWords - wordCount })}
               </span>
             )}
             {wordCount > selectedScenario.maxWords && (
-              <span className="text-red-600 font-medium">
+              <span className="text-signal-alert font-medium">
                 {t('tooManyWords', { count: wordCount - selectedScenario.maxWords })}
               </span>
             )}
@@ -561,58 +561,42 @@ export default function AIFootballWritingExercise({
             {!showTips && !showFeedback && (
               <button
                 onClick={() => setShowTips(true)}
-                className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                className="px-3 py-2 text-primary-400 hover:text-primary-50"
               >
                 <Info className="w-5 h-5" />
               </button>
             )}
             {showFeedback ? (
               <>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={resetExercise}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
-                           rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors
-                           flex items-center space-x-2"
+                  Icon={RefreshCw}
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>{t('tryAgain')}</span>
-                </button>
-                <button
+                  {t('tryAgain')}
+                </Button>
+                <Button
+                  variant="primary"
                   onClick={tryNewScenario}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                           transition-colors flex items-center space-x-2"
+                  IconTrailing={ChevronRight}
                 >
-                  <ChevronRight className="w-4 h-4" />
-                  <span>{t('nextExercise')}</span>
-                </button>
+                  {t('nextExercise')}
+                </Button>
               </>
             ) : (
-              <button
+              <Button
+                variant="primary"
                 onClick={submitForFeedback}
                 disabled={
-                  loading || 
-                  wordCount < selectedScenario.minWords || 
+                  loading ||
+                  wordCount < selectedScenario.minWords ||
                   wordCount > selectedScenario.maxWords
                 }
-                className={`px-6 py-2 rounded-lg font-medium transition-all
-                  ${
-                    wordCount >= selectedScenario.minWords && wordCount <= selectedScenario.maxWords
-                      ? "bg-gradient-to-r from-blue-600 to-green-600 text-white hover:from-blue-700 hover:to-green-700 shadow-lg"
-                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                  } flex items-center space-x-2`}
+                loading={loading}
+                Icon={loading ? undefined : Send}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>{t('gettingFeedback')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>{t('getFeedback')}</span>
-                  </>
-                )}
-              </button>
+                {loading ? t('gettingFeedback') : t('getFeedback')}
+              </Button>
             )}
           </div>
         </div>
@@ -621,13 +605,13 @@ export default function AIFootballWritingExercise({
       {/* AI Feedback Display */}
       {showFeedback && feedback && (
         <div className="space-y-4 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-primary-panel rounded-card p-6 border border-primary-700">
             {/* Score Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-primary-700">
+              <h4 className="text-lg font-semibold text-primary-50 flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-signal-performance" />
                 <span>{t('aiCoachFeedback')}</span>
-                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                <span className="text-sm font-normal text-primary-400">
                   (Em Português 🇧🇷)
                 </span>
               </h4>
@@ -642,28 +626,28 @@ export default function AIFootballWritingExercise({
             {/* Grammar Feedback */}
             {feedback.grammar && feedback.grammar.length > 0 && (
               <div className="mb-6">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                <h5 className="font-medium text-primary-50 mb-3 flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 text-signal-performance" />
                   <span>{t('grammarCorrections')}</span>
                 </h5>
                 <div className="space-y-3">
                   {feedback.grammar.map((item, idx) => (
-                    <div key={idx} className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3">
+                    <div key={idx} className="bg-signal-performance/10 border border-signal-performance/30 rounded-panel p-3">
                       <div className="flex items-start space-x-2">
-                        <span className="text-orange-600 dark:text-orange-400 font-bold text-sm">
+                        <span className="text-signal-performance font-bold text-sm">
                           {idx + 1}.
                         </span>
                         <div className="flex-1">
                           <div className="text-sm mb-1">
-                            <span className="line-through text-red-600 dark:text-red-400">
+                            <span className="line-through text-signal-alert">
                               {item.error}
                             </span>
                             {" → "}
-                            <span className="text-green-600 dark:text-green-400 font-medium">
+                            <span className="text-accent-400 font-medium">
                               {item.correction}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 italic">
+                          <p className="text-xs text-primary-300 italic">
                             {item.explanation}
                           </p>
                         </div>
@@ -677,21 +661,21 @@ export default function AIFootballWritingExercise({
             {/* Vocabulary Suggestions */}
             {feedback.vocabulary && feedback.vocabulary.length > 0 && (
               <div className="mb-6">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-                  <Trophy className="w-4 h-4 text-blue-500" />
+                <h5 className="font-medium text-primary-50 mb-3 flex items-center space-x-2">
+                  <Trophy className="w-4 h-4 text-signal-english" />
                   <span>{t('betterVocab')}</span>
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {feedback.vocabulary.map((item, idx) => (
-                    <div key={idx} className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                    <div key={idx} className="bg-signal-english/10 border border-signal-english/30 rounded-panel p-3">
                       <div className="text-sm">
-                        <span className="text-gray-700 dark:text-gray-300">{item.original}</span>
+                        <span className="text-primary-100">{item.original}</span>
                         {" → "}
-                        <span className="text-blue-600 dark:text-blue-400 font-bold">
+                        <span className="text-signal-english font-bold">
                           {item.suggestion}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-primary-300 mt-1">
                         {item.reason}
                       </p>
                     </div>
@@ -702,11 +686,11 @@ export default function AIFootballWritingExercise({
 
             {/* Clarity Feedback */}
             {feedback.clarity && (
-              <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+              <div className="mb-6 p-4 bg-primary-800 border border-primary-700 rounded-panel">
+                <h5 className="font-medium text-primary-50 mb-2">
                   {t('communicationClarity')}
                 </h5>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-primary-100">
                   {feedback.clarity}
                 </p>
               </div>
@@ -715,15 +699,15 @@ export default function AIFootballWritingExercise({
             {/* Next Steps */}
             {feedback.improvements && feedback.improvements.length > 0 && (
               <div className="mb-6">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-                  <Target className="w-4 h-4 text-purple-500" />
+                <h5 className="font-medium text-primary-50 mb-3 flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-signal-mental" />
                   <span>{t('trainingGoals')}</span>
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {feedback.improvements.map((item, idx) => (
                     <div key={idx} className="flex items-start space-x-2">
-                      <CheckCircle className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{item}</span>
+                      <CheckCircle className="w-4 h-4 text-signal-mental mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-primary-100">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -732,9 +716,9 @@ export default function AIFootballWritingExercise({
 
             {/* Encouragement Message */}
             {(feedback.encouragement || getFootballEncouragement(feedback.score)) && (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-sm text-green-800 dark:text-green-300 flex items-start space-x-2">
-                  <Trophy className="w-5 h-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+              <div className="bg-accent-400/10 border border-accent-400/40 rounded-panel p-4">
+                <p className="text-sm text-accent-400 flex items-start space-x-2">
+                  <Trophy className="w-5 h-5 flex-shrink-0 text-accent-400" />
                   <span className="font-medium">
                     {feedback.encouragement || getFootballEncouragement(feedback.score)}
                   </span>
@@ -746,10 +730,10 @@ export default function AIFootballWritingExercise({
           {/* XP Earned (if score is good) */}
           {feedback.score >= 7 && (
             <div className="text-center">
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
+              <p className="text-lg font-bold text-accent-400">
                 {t('xpEarned', { xp: calculateXP(feedback.score, wordCount) })}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-primary-400">
                 {t('greatProgress')}
               </p>
             </div>

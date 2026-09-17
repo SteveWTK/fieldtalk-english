@@ -178,7 +178,7 @@ export default function InteractivePitchFormation({
 
   if (totalItems === 0) {
     return (
-      <p className="text-center text-gray-600 dark:text-gray-400 py-8">
+      <p className="text-center text-primary-300 py-8">
         {labels.empty}
       </p>
     );
@@ -369,18 +369,18 @@ export default function InteractivePitchFormation({
 
     const buttonClasses =
       variant === "slot"
-        ? `w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-md transition-all text-white ${
+        ? `w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-md transition-all text-primary-800 ${
             isActive
-              ? "ring-4 ring-emerald-300 scale-110 bg-emerald-600"
+              ? "ring-4 ring-accent-300 scale-110 bg-accent-400"
               : isClicked
-                ? "bg-emerald-600 ring-2 ring-emerald-200"
-                : "bg-gradient-to-br from-accent-500 to-accent-700 hover:scale-110 ring-2 ring-white/40"
+                ? "bg-accent-400 ring-2 ring-accent-300"
+                : "bg-accent-400 hover:scale-110 ring-2 ring-white/40"
           }`
         : `rounded-full flex items-center justify-center transition-all ${
             isActive
-              ? "bg-yellow-300 ring-4 ring-yellow-200 w-8 h-8 sm:w-9 sm:h-9"
+              ? "bg-signal-performance ring-4 ring-signal-performance/40 w-8 h-8 sm:w-9 sm:h-9"
               : isClicked
-                ? "bg-yellow-400 ring-2 ring-yellow-200 w-7 h-7 sm:w-8 sm:h-8"
+                ? "bg-signal-performance ring-2 ring-signal-performance/40 w-7 h-7 sm:w-8 sm:h-8"
                 : "bg-white ring-2 ring-white/70 w-6 h-6 sm:w-7 sm:h-7 hover:scale-125"
           }`;
 
@@ -399,7 +399,7 @@ export default function InteractivePitchFormation({
           {isClicked && !isActive ? (
             <CheckCircle
               className={
-                variant === "slot" ? "w-5 h-5" : "w-3.5 h-3.5 text-emerald-700"
+                variant === "slot" ? "w-5 h-5" : "w-3.5 h-3.5 text-accent-700"
               }
             />
           ) : (
@@ -407,7 +407,7 @@ export default function InteractivePitchFormation({
               className={
                 variant === "slot"
                   ? "w-5 h-5 sm:w-6 sm:h-6"
-                  : "w-3.5 h-3.5 text-emerald-700"
+                  : "w-3.5 h-3.5 text-accent-700"
               }
             />
           )}
@@ -448,7 +448,7 @@ export default function InteractivePitchFormation({
           {clickedIds.size > 0 && !completed && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs text-primary-300 hover:text-primary-50"
             >
               <RotateCcw className="w-3 h-3" />
               {labels.reset}
@@ -459,7 +459,7 @@ export default function InteractivePitchFormation({
 
       {/* Pitch */}
       <div
-        className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md"
+        className="relative w-full mx-auto rounded-panel overflow-hidden"
         style={{
           maxWidth: isHorizontal ? "700px" : "500px",
           aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",

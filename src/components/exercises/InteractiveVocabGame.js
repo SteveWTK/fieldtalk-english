@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Play, RotateCcw, Volume2, CheckCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/components/AuthProvider";
+import { Button } from "@/components/ui/button";
 
 export default function InteractiveVocabGame({
   gameConfig,
@@ -216,13 +217,13 @@ export default function InteractiveVocabGame({
             {/* <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Pass the Ball Game
             </h3> */}
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-primary-400">
               Command {currentCommand + 1} of {commands.length}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Score</p>
-            <p className="text-2xl font-bold text-accent-600">
+            <p className="text-sm text-primary-400">Score</p>
+            <p className="text-2xl font-bold text-accent-400">
               {score}/{commands.length}
             </p>
           </div>
@@ -233,22 +234,18 @@ export default function InteractiveVocabGame({
       <div className="game-controls mb-4 text-center">
         {gameState === "ready" && (
           <div>
-            <button
+            <Button
+              variant="primary"
               onClick={playCommand}
               disabled={audioLoading}
+              loading={audioLoading}
+              Icon={audioLoading ? undefined : Play}
               data-autoplay-next={currentCommand > 0}
-              className="bg-accent-600 text-white px-6 py-3 rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto transition-colors"
+              className="mx-auto"
             >
-              {audioLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Play className="w-5 h-5" />
-              )}
-              <span>
-                {audioLoading ? t("loading") : t("listen_to_command")}
-              </span>
-            </button>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              {audioLoading ? t("loading") : t("listen_to_command")}
+            </Button>
+            <p className="text-sm text-primary-400 mt-2">
               {t("click_where_ball_should_go")}
             </p>
           </div>
@@ -256,18 +253,18 @@ export default function InteractiveVocabGame({
 
         {gameState === "playing" && (
           <div>
-            <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-lg mb-3">
-              <p className="text-lg font-semibold text-primary-900 dark:text-white mb-2">
+            <div className="bg-primary-800 p-4 rounded-panel mb-3 border border-primary-700">
+              <p className="text-lg font-semibold text-primary-50 mb-2">
                 &quot;{currentCmd.text}&quot;
               </p>
               <div className="flex justify-center space-x-3 mt-2">
                 <button
                   onClick={playCommand}
                   disabled={audioLoading}
-                  className="text-premium-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                  className="text-primary-300 hover:text-primary-50 text-sm flex items-center space-x-1 px-3 py-1 rounded-control hover:bg-primary-700 transition-colors"
                 >
                   {audioLoading ? (
-                    <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Volume2 className="w-4 h-4" />
                   )}
@@ -277,7 +274,7 @@ export default function InteractiveVocabGame({
                 </button>
                 <button
                   onClick={() => setShowTranslation(!showTranslation)}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm flex items-center space-x-1 px-3 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                  className="text-primary-300 hover:text-primary-50 text-sm flex items-center space-x-1 px-3 py-1 rounded-control hover:bg-primary-700 transition-colors"
                 >
                   <span>
                     {showTranslation ? "Esconda" : "Mostre"} a tradução
@@ -285,23 +282,23 @@ export default function InteractiveVocabGame({
                 </button>
               </div>
               {showTranslation && (
-                <p className="text-accent-800 dark:text-accent-400 font-bold italic mt-2">
+                <p className="text-accent-400 font-bold italic mt-2">
                   {currentCmd.translation}
                 </p>
               )}
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-primary-400">
               Clique onde a bola deve ir!
             </p>
 
             {/* Feedback message */}
             {showFeedback && (
               <div
-                className={`mt-3 p-3 rounded-lg ${
+                className={`mt-3 p-3 rounded-panel border ${
                   lastClickCorrect
-                    ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200"
-                    : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200"
+                    ? "bg-accent-400/10 text-accent-400 border-accent-400/40"
+                    : "bg-signal-alert/10 text-signal-alert border-signal-alert/40"
                 }`}
               >
                 <p className="font-semibold">
@@ -313,10 +310,10 @@ export default function InteractiveVocabGame({
                   <button
                     onClick={playCommand}
                     disabled={audioLoading}
-                    className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors flex items-center space-x-1 mx-auto"
+                    className="mt-2 text-sm bg-signal-alert/20 text-signal-alert border border-signal-alert/40 px-3 py-1 rounded-control hover:bg-signal-alert/30 transition-colors flex items-center space-x-1 mx-auto"
                   >
                     {audioLoading ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-signal-alert border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <Volume2 className="w-4 h-4" />
                     )}
@@ -332,23 +329,23 @@ export default function InteractiveVocabGame({
 
         {gameState === "completed" && (
           <div className="text-center">
-            <div className="bg-green-100 dark:bg-green-900/20 p-6 rounded-lg">
-              <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
-              <h3 className="text-xl font-bold text-green-800 dark:text-green-200 mb-2">
+            <div className="bg-accent-400/10 border border-accent-400/40 p-6 rounded-panel">
+              <CheckCircle className="w-12 h-12 text-accent-400 mx-auto mb-3" />
+              <h3 className="text-xl font-bold text-accent-400 mb-2">
                 Great Job! 🎉
               </h3>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <p className="text-primary-100 mb-4">
                 {t("you_completed")} {score} {t("out_of")} {commands.length}{" "}
                 {t("commands_correctly")}
               </p>
               <div className="flex justify-center space-x-4">
-                <button
+                <Button
+                  variant="primary"
                   onClick={resetGame}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2 transition-colors"
+                  Icon={RotateCcw}
                 >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>{t("play_again")}</span>
-                </button>
+                  {t("play_again")}
+                </Button>
               </div>
             </div>
           </div>

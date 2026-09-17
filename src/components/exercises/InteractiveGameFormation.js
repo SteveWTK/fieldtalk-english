@@ -24,6 +24,7 @@ import { useIsWide } from "@/lib/hooks/useIsWide";
 import { useOnboardingFlag } from "@/lib/hooks/useOnboardingFlag";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 import OnboardingHint from "./OnboardingHint";
+import Button from "@/components/ui/button";
 
 /**
  * InteractiveGameFormation — visual sibling to DragDropFormation, but
@@ -555,7 +556,7 @@ export default function InteractiveGameFormation({
   // ---- Empty-state guard ----
   if (slots.length === 0 || commands.length === 0) {
     return (
-      <p className="text-center text-gray-600 dark:text-gray-400 py-8">
+      <p className="text-center text-primary-300 py-8">
         {labels.empty}
       </p>
     );
@@ -709,17 +710,17 @@ export default function InteractiveGameFormation({
           )}
         </p> */}
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-primary-50">
             {currentCommand + (gameState === "completed" ? 0 : 1)}/
             {totalCommands} {labels.progress}
           </span>
-          <span className="font-semibold text-accent-700 dark:text-accent-300">
+          <span className="font-semibold text-accent-400">
             {labels.score}: {score}/{totalCommands}
           </span>
           <button
             onClick={toggleMute}
             aria-label={isMuted ? "Unmute" : "Mute"}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            className="text-primary-300 hover:text-primary-50 p-1"
           >
             {isMuted ? (
               <VolumeX className="w-4 h-4" />
@@ -732,7 +733,7 @@ export default function InteractiveGameFormation({
               onClick={resetGame}
               aria-label={labels.startAgain}
               title={labels.startAgain}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+              className="text-primary-300 hover:text-primary-50 p-1"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -747,10 +748,10 @@ export default function InteractiveGameFormation({
                 disabled={audioLoading}
                 aria-label={labels.play}
                 title={labels.play}
-                className="igf-play-btn flex items-center justify-center w-9 h-9 rounded-full bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-white shadow transition-colors"
+                className="igf-play-btn flex items-center justify-center w-9 h-9 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-50 text-primary-800 transition-colors"
               >
                 {audioLoading ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Play className="w-4 h-4" fill="currentColor" />
                 )}
@@ -781,16 +782,16 @@ export default function InteractiveGameFormation({
           initial "ready" state is bare; the play button lives in the
           header above. */}
       {gameState === "playing" && (
-        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 sm:p-4">
+        <div className="bg-primary-panel border border-primary-700 rounded-panel p-3 sm:p-4">
           <div>
-            <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-center mb-2">
+            <p className="text-base sm:text-lg font-semibold text-primary-50 text-center mb-2">
               &ldquo;{currentCmd?.text}&rdquo;
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <button
                 onClick={playCommand}
                 disabled={audioLoading}
-                className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 bg-primary-800 text-primary-100 border border-primary-700 rounded-full text-sm font-medium hover:bg-primary-700 transition-colors"
               >
                 {audioLoading ? (
                   <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -802,7 +803,7 @@ export default function InteractiveGameFormation({
               {currentCmd?.translation && (
                 <button
                   onClick={() => setShowTranslation((v) => !v)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-primary-800 text-primary-100 border border-primary-700 rounded-full text-sm font-medium hover:bg-primary-700 transition-colors"
                 >
                   <Languages className="w-4 h-4" />
                   {labels.translation}
@@ -810,17 +811,17 @@ export default function InteractiveGameFormation({
               )}
             </div>
             {showTranslation && currentCmd?.translation && (
-              <p className="text-center text-accent-700 dark:text-accent-400 italic mt-2 text-sm">
+              <p className="text-center text-accent-400 italic mt-2 text-sm">
                 {currentCmd.translation}
               </p>
             )}
             {/* Countdown bar — only when timing is enabled & we're in
                   the answer window for this command. */}
             {timingEnabled && currentTimeLimit && !feedback && (
-              <div className="mt-3 h-1.5 rounded-full bg-emerald-200/40 dark:bg-emerald-900/40 overflow-hidden">
+              <div className="mt-3 h-1.5 rounded-full bg-primary-700 overflow-hidden">
                 <div
                   key={timerKey}
-                  className="h-full bg-emerald-500 dark:bg-emerald-400 ig-timer-bar"
+                  className="h-full bg-accent-400 ig-timer-bar"
                   style={{
                     animationDuration: `${currentTimeLimit}ms`,
                   }}
@@ -831,8 +832,8 @@ export default function InteractiveGameFormation({
               <div
                 className={`mt-3 text-center text-sm font-semibold ${
                   feedback === "correct"
-                    ? "text-emerald-700 dark:text-emerald-300"
-                    : "text-red-700 dark:text-red-300"
+                    ? "text-accent-400"
+                    : "text-signal-alert"
                 }`}
               >
                 {feedback === "correct"
@@ -848,7 +849,7 @@ export default function InteractiveGameFormation({
       <div
         ref={pitchRef}
         onClick={handlePitchClick}
-        className="relative w-full mx-auto rounded-xl overflow-hidden shadow-md select-none"
+        className="relative w-full mx-auto rounded-panel overflow-hidden select-none"
         style={{
           maxWidth: isHorizontal ? "700px" : "500px",
           aspectRatio: isHorizontal ? "7 / 5" : "5 / 7",
@@ -884,12 +885,12 @@ export default function InteractiveGameFormation({
             <div
               key={slot.id}
               ref={(el) => (slotRefs.current[slot.id] = el)}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-md transition-all ${
+              className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all ${
                 isCorrectTarget
-                  ? "bg-emerald-500 ring-4 ring-emerald-200 scale-110"
+                  ? "bg-accent-400 ring-4 ring-accent-400/40 scale-110"
                   : isTarget
-                    ? "bg-red-500 ring-4 ring-red-200"
-                    : "bg-gradient-to-br from-accent-500 to-accent-700 ring-2 ring-white/40"
+                    ? "bg-signal-alert ring-4 ring-signal-alert/40"
+                    : "bg-accent-400 ring-2 ring-white/40"
               }`}
               style={{ left: pos.left, top: pos.top, pointerEvents: "none" }}
               aria-label={slot.label}
@@ -924,14 +925,14 @@ export default function InteractiveGameFormation({
           return (
             <div
               ref={(el) => (slotRefs.current["GOAL"] = el)}
-              className={`absolute rounded-md shadow-md transition-all overflow-hidden ring-2 ${
+              className={`absolute rounded-md transition-all overflow-hidden ring-2 ${
                 isGoalCorrect
-                  ? "bg-emerald-500/85 ring-emerald-200 scale-105"
+                  ? "bg-accent-400/85 ring-accent-400/40 scale-105"
                   : isGoalWrong
-                    ? "bg-red-500/85 ring-red-200"
+                    ? "bg-signal-alert/85 ring-signal-alert/40"
                     : isGoalActive
-                      ? "bg-slate-700/90 ring-white/90"
-                      : "bg-slate-800/80 ring-white/70"
+                      ? "bg-primary-700/90 ring-white/90"
+                      : "bg-primary-800/80 ring-white/70"
               }`}
               style={{ ...goalRectStyle, pointerEvents: "none" }}
               aria-label="Goal"
@@ -976,7 +977,7 @@ export default function InteractiveGameFormation({
                 type="button"
                 onPointerDown={handleBallPointerDown}
                 disabled={gameState !== "playing" || interactionMode !== "drag"}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black shadow-lg transition-all duration-700 ${
+                className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-black transition-all duration-700 ${
                   interactionMode === "drag" && gameState === "playing"
                     ? "cursor-grab active:cursor-grabbing hover:scale-110"
                     : "cursor-default"
@@ -996,9 +997,9 @@ export default function InteractiveGameFormation({
         {/* Round transition badge — brief overlay when a faster round starts. */}
         {roundBadge && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="ig-round-badge px-4 py-2 rounded-full bg-black/75 text-white font-bold text-lg shadow-lg">
+            <div className="ig-round-badge px-4 py-2 rounded-full bg-black/75 text-primary-50 font-bold text-lg">
               {isPortuguese ? "Rodada" : "Round"} {roundBadge}
-              <span className="ml-2 text-amber-300">⚡</span>
+              <span className="ml-2 text-signal-performance">⚡</span>
             </div>
           </div>
         )}
@@ -1046,7 +1047,7 @@ export default function InteractiveGameFormation({
           }}
         >
           <div
-            className="w-8 h-8 rounded-full border-2 border-black shadow-lg"
+            className="w-8 h-8 rounded-full border-2 border-black"
             style={{
               backgroundImage:
                 "radial-gradient(circle at 30% 30%, white 25%, #ddd 70%)",
@@ -1057,21 +1058,17 @@ export default function InteractiveGameFormation({
 
       {/* Completion panel */}
       {gameState === "completed" && (
-        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
+        <div className="bg-primary-panel border border-primary-700 rounded-panel p-6 text-center">
           {/* <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {labels.complete}
           </h3> */}
-          <p className="text-gray-700 dark:text-gray-300 mb-3">
+          <p className="text-primary-100 mb-3">
             {score}/{totalCommands}
           </p>
-          <button
-            onClick={resetGame}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
+          <Button variant="primary" onClick={resetGame} Icon={RotateCcw}>
             {labels.playAgain}
-          </button>
+          </Button>
         </div>
       )}
 

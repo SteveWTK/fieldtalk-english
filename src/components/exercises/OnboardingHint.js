@@ -32,15 +32,15 @@ export default function OnboardingHint({
   // green pitch where the original emerald was washing out.
   const toneStyles = {
     emerald: {
-      pill: "bg-blue-800/95",
+      pill: "bg-signal-english/95",
       borderColour: "rgb(30, 64, 175)",
     },
     amber: {
-      pill: "bg-amber-500/95",
+      pill: "bg-signal-performance/95",
       borderColour: "rgb(245, 158, 11)",
     },
     blue: {
-      pill: "bg-blue-600/95",
+      pill: "bg-signal-english/95",
       borderColour: "rgb(37, 99, 235)",
     },
   };
@@ -93,7 +93,7 @@ export default function OnboardingHint({
       aria-label={text}
     >
       <div
-        className={`relative ${pill} text-white text-sm sm:text-base font-semibold px-3 py-2 rounded-xl shadow-lg ring-1 ring-white/15 cursor-pointer max-w-[18rem] whitespace-normal text-center ${className}`}
+        className={`relative ${pill} text-primary-50 text-sm sm:text-base font-semibold px-3 py-2 rounded-panel ring-1 ring-primary-600 cursor-pointer max-w-[18rem] whitespace-normal text-center ${className}`}
       >
         {text}
         {arrowEl}

@@ -276,7 +276,7 @@ export default function AudioComprehension({
         return (
           <span>
             {parts[0]}
-            <span className="inline-block min-w-[60px] mx-1 px-2 border-b-2 border-accent-500">
+            <span className="inline-block min-w-[60px] mx-1 px-2 border-b-2 border-accent-400">
               {showQuestionFeedback ? previousAnswer.selected : "____"}
             </span>
             {parts[1]}
@@ -287,19 +287,19 @@ export default function AudioComprehension({
     };
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-primary-panel rounded-panel p-6 border border-primary-700">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-medium text-primary-400">
             {labels.questionOf(currentQuestionIndex + 1, questions.length)}
           </span>
-          <span className="text-xs px-2 py-1 rounded-full bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300">
+          <span className="text-xs px-2 py-1 rounded-full bg-accent-400/15 text-accent-400">
             {question.type === "multiple_choice"
               ? "Multiple choice"
               : "Gap fill"}
           </span>
         </div>
 
-        <p className="text-lg text-gray-900 dark:text-white mb-6">
+        <p className="text-lg text-primary-50 mb-6">
           {renderQuestionText()}
         </p>
 
@@ -308,25 +308,25 @@ export default function AudioComprehension({
             const isSelected = selectedOption === option;
             const isCorrectAnswer = option === question.correct_answer;
             let buttonClass =
-              "w-full text-left px-4 py-3 rounded-lg border-2 transition-all ";
+              "w-full text-left px-4 py-3 rounded-control border-2 transition-all ";
 
             if (showQuestionFeedback) {
               if (isCorrectAnswer) {
                 buttonClass +=
-                  "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-900 dark:text-green-200";
+                  "border-accent-400 bg-accent-400/10 text-accent-400";
               } else if (isSelected && !isCorrectAnswer) {
                 buttonClass +=
-                  "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200";
+                  "border-signal-alert bg-signal-alert/10 text-signal-alert";
               } else {
                 buttonClass +=
-                  "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 opacity-60";
+                  "border-primary-700 text-primary-400 opacity-60";
               }
             } else if (isSelected) {
               buttonClass +=
-                "border-accent-500 bg-accent-50 dark:bg-accent-900/20 text-gray-900 dark:text-white";
+                "border-accent-400 bg-accent-400/10 text-primary-50";
             } else {
               buttonClass +=
-                "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600";
+                "border-primary-700 text-primary-100 hover:border-primary-600";
             }
 
             return (
@@ -339,10 +339,10 @@ export default function AudioComprehension({
                 <div className="flex items-center justify-between">
                   <span>{option}</span>
                   {showQuestionFeedback && isCorrectAnswer && (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-accent-400" />
                   )}
                   {showQuestionFeedback && isSelected && !isCorrectAnswer && (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-signal-alert" />
                   )}
                 </div>
               </button>
@@ -352,10 +352,10 @@ export default function AudioComprehension({
 
         {showQuestionFeedback && (
           <div
-            className={`p-3 rounded-lg mb-4 ${
+            className={`p-3 rounded-control mb-4 ${
               previousAnswer.correct
-                ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200"
-                : "bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200"
+                ? "bg-accent-400/10 text-accent-400"
+                : "bg-signal-performance/10 text-signal-performance"
             }`}
           >
             <div className="flex items-start gap-2">
@@ -386,14 +386,14 @@ export default function AudioComprehension({
             <button
               onClick={handleSubmitAnswer}
               disabled={selectedOption === null}
-              className="px-6 py-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-2 bg-accent-400 hover:bg-accent-300 disabled:bg-primary-700 disabled:text-primary-500 disabled:cursor-not-allowed text-primary-800 font-medium rounded-control transition-colors"
             >
               {labels.submit}
             </button>
           ) : (
             <button
               onClick={handleNextQuestion}
-              className="px-6 py-2 bg-accent-500 hover:bg-accent-600 text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-2 bg-accent-400 hover:bg-accent-300 text-primary-800 font-medium rounded-control transition-colors"
             >
               {currentQuestionIndex < questions.length - 1
                 ? labels.next
@@ -411,18 +411,18 @@ export default function AudioComprehension({
     const totalQuestions = questions.length;
 
     return (
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 text-center">
-        <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="bg-accent-400/10 border border-accent-400/40 rounded-panel p-6 text-center">
+        <Trophy className="w-12 h-12 text-signal-performance mx-auto mb-3" />
+        <h3 className="text-xl font-bold text-primary-50 mb-2">
           {labels.completedTitle}
         </h3>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <p className="text-primary-100 mb-4">
           {labels.score}: {correctCount} / {totalQuestions}
         </p>
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-primary-300">
           {labels.playCount}: {playCount}
           {playCount > maxReplaysForFullXp && (
-            <span className="ml-2 text-amber-600">
+            <span className="ml-2 text-signal-performance">
               (-{Math.min(50, (playCount - maxReplaysForFullXp) * 25)}% XP)
             </span>
           )}
@@ -437,7 +437,7 @@ export default function AudioComprehension({
           and centred on laptops/desktops so it doesn't dominate the step.
           Mirrors the ai_gap_fill image_url pattern. */}
       {step?.image_url && (
-        <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 sm:max-w-md sm:mx-auto">
+        <div className="rounded-panel overflow-hidden border border-primary-700 sm:max-w-md sm:mx-auto">
           <Image
             src={step.image_url}
             alt=""
@@ -453,14 +453,14 @@ export default function AudioComprehension({
       )}
 
       {/* Audio Player */}
-      <div className="bg-gradient-to-r from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-xl p-6">
+      <div className="bg-primary-panel border border-primary-700 rounded-panel p-6">
         {/* preload="auto" tells the browser to start downloading the
             audio as soon as the step appears, so the user doesn't wait
             for the file when they click play. */}
         <audio ref={audioRef} src={audioConfig.audio_url} preload="auto" />
 
         {audioError && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+          <div className="mb-4 p-3 bg-signal-alert/10 border border-signal-alert/40 text-signal-alert rounded-control text-sm">
             {audioError}
           </div>
         )}
@@ -469,7 +469,7 @@ export default function AudioComprehension({
           <button
             onClick={togglePlay}
             disabled={!!audioError}
-            className="w-14 h-14 rounded-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white flex items-center justify-center transition-colors shadow-lg"
+            className="w-14 h-14 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-50 text-primary-800 flex items-center justify-center transition-colors"
             aria-label={isPlaying ? labels.pause : labels.play}
           >
             {isPlaying ? (
@@ -482,29 +482,29 @@ export default function AudioComprehension({
           <button
             onClick={replayFromStart}
             disabled={!!audioError || !audioLoaded}
-            className="w-12 h-12 rounded-full border-2 border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white disabled:opacity-50 flex items-center justify-center transition-colors"
+            className="w-12 h-12 rounded-full border-2 border-primary-600 text-primary-100 hover:border-primary-400 hover:text-primary-50 disabled:opacity-50 flex items-center justify-center transition-colors"
             aria-label={labels.replay}
           >
             <RotateCcw className="w-5 h-5" />
           </button>
 
           <div className="flex-1">
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-primary-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-accent-500 transition-all"
+                className="h-full bg-accent-400 transition-all"
                 style={{
                   width:
                     duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
                 }}
               />
             </div>
-            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <div className="flex justify-between text-xs text-primary-300 mt-1">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+          <div className="flex items-center gap-1 text-sm text-primary-300">
             <Volume2 className="w-4 h-4" />
             <span>
               {labels.playCount}: {playCount}
@@ -512,22 +512,22 @@ export default function AudioComprehension({
           </div>
         </div>
 
-        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+        <p className="text-xs text-primary-400 italic">
           {labels.replayHint}
         </p>
       </div>
 
       {/* Transcript section */}
       {audioConfig.transcript && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-primary-900 rounded-panel border border-primary-700 overflow-hidden">
           <div className="flex items-center justify-between p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white">
+            <h4 className="font-semibold text-primary-50">
               {labels.transcript}
             </h4>
             {shouldAllowTranscriptToggle() && (
               <button
                 onClick={() => setTranscriptVisible((v) => !v)}
-                className="flex items-center gap-1 text-sm text-accent-600 dark:text-accent-400 hover:underline"
+                className="flex items-center gap-1 text-sm text-accent-400 hover:underline"
               >
                 {transcriptVisible ? (
                   <>
@@ -544,7 +544,7 @@ export default function AudioComprehension({
             )}
           </div>
           {transcriptVisible && (
-            <div className="px-4 pb-4 text-gray-700 dark:text-gray-300 italic border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div className="px-4 pb-4 text-primary-100 italic border-t border-primary-700 pt-4">
               {audioConfig.transcript}
             </div>
           )}

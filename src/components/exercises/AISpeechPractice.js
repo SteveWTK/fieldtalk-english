@@ -9,6 +9,7 @@ import {
   Volume2,
   Square,
 } from "lucide-react";
+import Button from "@/components/ui/button";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 
 export default function AISpeechPractice({
@@ -197,13 +198,13 @@ export default function AISpeechPractice({
     <div className="ai-speech-practice">
       <div className="mb-6">
         {/* <h3 className="text-lg font-semibold mb-2">Pratique sua Pronuncia.</h3> */}
-        <p className="px-4 mb-4 text-primary-800 dark:text-white">
+        <p className="px-4 mb-4 text-primary-100">
           Read the words below
         </p>
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-signal-english/10 p-4 rounded-control">
           {/* <p className="text-gray-700 mb-2">{prompt}</p> */}
-          <div className="bg-white p-3 rounded border-l-4 border-accent-500">
-            <p className="font-mono text-lg">&quot;{expectedText}&quot;</p>
+          <div className="bg-primary-panel p-3 rounded-control border-l-4 border-accent-400">
+            <p className="font-mono text-lg text-primary-50">&quot;{expectedText}&quot;</p>
           </div>
         </div>
       </div>
@@ -216,9 +217,9 @@ export default function AISpeechPractice({
               onClick={isRecording ? stopRecording : startRecording}
               className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-all ${
                 isRecording
-                  ? "bg-[#b91c1c] hover:bg-[#991b1b] animate-pulse"
-                  : "bg-accent-500 hover:bg-accent-600"
-              } text-white`}
+                  ? "bg-signal-alert hover:bg-signal-alert/90 animate-pulse text-primary-50"
+                  : "bg-accent-400 hover:bg-accent-300 text-primary-800"
+              }`}
             >
               {isRecording ? (
                 <Square className="w-8 h-8" />
@@ -227,7 +228,7 @@ export default function AISpeechPractice({
               )}
             </button>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-primary-300">
               {isRecording
                 ? `Recording... ${recordingTime}s`
                 : "Click to start recording"}
@@ -235,15 +236,15 @@ export default function AISpeechPractice({
 
             {isRecording && (
               <div className="mt-2">
-                <div className="w-32 h-2 bg-gray-200 rounded-full mx-auto">
+                <div className="w-32 h-2 bg-primary-700 rounded-full mx-auto">
                   <div
-                    className="h-2 bg-red-500 rounded-full transition-all duration-1000"
+                    className="h-2 bg-signal-alert rounded-full transition-all duration-1000"
                     style={{
                       width: `${Math.min((recordingTime / 10) * 100, 100)}%`,
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Max 10 seconds</p>
+                <p className="text-xs text-primary-400 mt-1">Max 10 seconds</p>
               </div>
             )}
           </div>
@@ -252,41 +253,34 @@ export default function AISpeechPractice({
         {audioBlob && !feedback && (
           <div>
             <div className="flex justify-center space-x-3 mb-4">
-              <button
+              <Button
+                variant="secondary"
                 onClick={playRecording}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+                Icon={isPlaying ? Pause : Volume2}
               >
-                {isPlaying ? (
-                  <Pause className="w-5 h-5" />
-                ) : (
-                  <Volume2 className="w-5 h-5" />
-                )}
-                <span>{isPlaying ? "Pause" : "Play"}</span>
-              </button>
+                {isPlaying ? "Pause" : "Play"}
+              </Button>
 
-              <button
+              <Button
+                variant="primary"
                 onClick={analyzeRecording}
                 disabled={loading}
-                className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 disabled:opacity-50 flex items-center space-x-2"
+                loading={loading}
+                Icon={Play}
               >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <Play className="w-5 h-5" />
-                )}
-                <span>{loading ? "Analyzing..." : "Get Feedback"}</span>
-              </button>
+                {loading ? "Analyzing..." : "Get Feedback"}
+              </Button>
 
-              <button
+              <Button
+                variant="secondary"
                 onClick={resetRecording}
-                className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 flex items-center space-x-2"
+                Icon={RotateCcw}
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>Try Again</span>
-              </button>
+                Try Again
+              </Button>
             </div>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-primary-300">
               Recording ready! Listen to review your pronunciation, then click
               &quot;Get Feedback&quot; for analysis.
             </p>
@@ -302,43 +296,43 @@ export default function AISpeechPractice({
               <div
                 className={`text-2xl font-bold ${
                   feedback.pronunciation_score >= 80
-                    ? "text-green-500"
+                    ? "text-accent-400"
                     : feedback.pronunciation_score >= 60
-                      ? "text-yellow-500"
-                      : "text-red-500"
+                      ? "text-signal-performance"
+                      : "text-signal-alert"
                 }`}
               >
                 {feedback.pronunciation_score}
               </div>
-              <div className="text-sm text-gray-600">Pronunciation</div>
+              <div className="text-sm text-primary-300">Pronunciation</div>
             </div>
             <div className="text-center">
               <div
                 className={`text-2xl font-bold ${
                   feedback.accuracy_score >= 80
-                    ? "text-green-500"
+                    ? "text-accent-400"
                     : feedback.accuracy_score >= 60
-                      ? "text-yellow-500"
-                      : "text-red-500"
+                      ? "text-signal-performance"
+                      : "text-signal-alert"
                 }`}
               >
                 {feedback.accuracy_score}
               </div>
-              <div className="text-sm text-gray-600">Accuracy</div>
+              <div className="text-sm text-primary-300">Accuracy</div>
             </div>
             <div className="text-center">
               <div
                 className={`text-2xl font-bold ${
                   feedback.overall_score >= 80
-                    ? "text-green-500"
+                    ? "text-accent-400"
                     : feedback.overall_score >= 60
-                      ? "text-yellow-500"
-                      : "text-red-500"
+                      ? "text-signal-performance"
+                      : "text-signal-alert"
                 }`}
               >
                 {feedback.overall_score}
               </div>
-              <div className="text-sm text-gray-600">Overall</div>
+              <div className="text-sm text-primary-300">Overall</div>
             </div>
           </div>
 
@@ -402,14 +396,12 @@ export default function AISpeechPractice({
           </div> */}
 
           <div className="mt-6 flex justify-center gap-3 flex-wrap">
-            <button
-              onClick={resetRecording}
-              className="bg-gray-500 text-white px-5 py-2.5 rounded-lg hover:bg-gray-600 text-sm sm:text-base"
-            >
+            <Button variant="secondary" onClick={resetRecording}>
               Practice Again
-            </button>
+            </Button>
             {onComplete && (
-              <button
+              <Button
+                variant="primary"
                 onClick={() => {
                   // XP has already been granted via the feedback-arrival
                   // useEffect (which fires onAttempt with the delta),
@@ -418,10 +410,9 @@ export default function AISpeechPractice({
                   // avoiding double-counting the XP.
                   onComplete(0);
                 }}
-                className="bg-emerald-500 hover:bg-emerald-400 text-[#070707] font-bold px-5 py-2.5 rounded-lg text-sm sm:text-base"
               >
                 Continue →
-              </button>
+              </Button>
             )}
           </div>
           {/* Feedback details preserved for future use:

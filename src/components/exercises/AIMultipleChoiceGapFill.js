@@ -23,6 +23,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { playSuccessSound, playErrorSound } from "@/lib/soundEffects";
 import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
+import Button from "@/components/ui/button";
 
 export default function AIMultipleChoiceGapFill({
   sentences,
@@ -518,11 +519,11 @@ export default function AIMultipleChoiceGapFill({
       usedHints >= MAX_HINTS_PER_GAP || loadingHint[sentenceId];
 
     if (isDisabled) {
-      return "px-3 py-1 bg-gray-200 text-gray-400 cursor-not-allowed rounded-xl text-sm font-medium";
+      return "px-3 py-1 bg-primary-700 text-primary-500 cursor-not-allowed rounded-panel text-sm font-medium";
     } else if (usedHints === 1) {
-      return "px-3 py-1 bg-growth-100 text-growth-700 hover:bg-growth-200 dark:bg-growth-900/20 dark:text-growth-400 dark:hover:bg-growth-900/30 rounded-xl text-sm font-medium transition-colors flex items-center space-x-1";
+      return "px-3 py-1 bg-signal-performance/15 text-signal-performance hover:bg-signal-performance/20 rounded-panel text-sm font-medium transition-colors flex items-center space-x-1";
     } else {
-      return "px-3 py-1 bg-accent-100 text-accent-700 hover:bg-accent-200 dark:bg-accent-900/20 dark:text-accent-400 dark:hover:bg-accent-900/30 rounded-xl text-sm font-medium transition-colors flex items-center space-x-1";
+      return "px-3 py-1 bg-accent-400/15 text-accent-400 hover:bg-accent-400/20 rounded-panel text-sm font-medium transition-colors flex items-center space-x-1";
     }
   };
 
@@ -538,7 +539,7 @@ export default function AIMultipleChoiceGapFill({
     return (
       <div
         key={sentenceId}
-        className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+        className="mb-6 p-4 bg-primary-panel rounded-card border border-primary-700"
       >
         <div className="flex items-center justify-between mb-3">
           {/* <div className="flex items-center space-x-2">
@@ -583,18 +584,18 @@ export default function AIMultipleChoiceGapFill({
         </div>
 
         {/* Sentence with gap */}
-        <div className="text-lg text-primary-900 dark:text-white leading-relaxed mb-4">
+        <div className="text-lg text-primary-50 leading-relaxed mb-4">
           {parts[0]}
           <span
-            className={`mx-2 px-3 py-1 rounded-2xl border-r-2 border-b-2 transition-colors min-w-[120px] inline-block text-center
+            className={`mx-2 px-3 py-1 rounded-card border-r-2 border-b-2 transition-colors min-w-[120px] inline-block text-center
             ${
               feedback?.isCorrect
-                ? "border-accent-400 bg-accent-100 dark:border-accent-600 dark:bg-accent-200 text-accent-900"
+                ? "border-accent-400 bg-accent-400/15 text-accent-400"
                 : feedback?.isCorrect === false
-                  ? "border-red-500 bg-red-100 text-red-700"
+                  ? "border-signal-alert bg-signal-alert/15 text-signal-alert"
                   : selectedOption
-                    ? "border-primary-500 bg-primary-50 text-primary-800"
-                    : "border-gray-300 bg-gray-50 text-gray-50"
+                    ? "border-accent-400/60 bg-accent-400/10 text-primary-50"
+                    : "border-primary-700 bg-primary-800 text-primary-400"
             }`}
           >
             {selectedOption || "....."}
@@ -609,11 +610,11 @@ export default function AIMultipleChoiceGapFill({
               <button
                 key={index}
                 onClick={() => handleOptionSelect(sentenceId, option)}
-                className={`p-3 rounded-2xl border-r-2 border-b-2 transition-all text-left
+                className={`p-3 rounded-card border-r-2 border-b-2 transition-all text-left
                   ${
                     selectedOption === option
-                      ? "border-r-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 hover:translate-x-1 text-primary-800 dark:text-fieldtalk-300"
-                      : "border-r-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:translate-x-1 bg-white dark:bg-gray-700 dark:text-white"
+                      ? "border-accent-400/60 bg-accent-400/10 hover:translate-x-1 text-primary-50"
+                      : "border-primary-700 hover:border-primary-600 hover:translate-x-1 bg-primary-900 text-primary-50"
                   }`}
               >
                 <span className="font-medium">{option}</span>
@@ -626,12 +627,13 @@ export default function AIMultipleChoiceGapFill({
         <div className="flex items-center justify-between gap-3 mt-4">
           <div className="flex items-center space-x-2">
             {!feedback?.isCorrect && selectedOption && (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => checkAnswer(sentenceId, sentence)}
-                className="rounded-2xl border-2 transition-all text-left px-4 py-1 border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-300 hover:scale-105 font-medium"
               >
                 {t("check_answer")}
-              </button>
+              </Button>
             )}
 
             {/* {!feedback?.isCorrect && (
@@ -664,21 +666,21 @@ export default function AIMultipleChoiceGapFill({
             <div className="flex items-center space-x-2">
               {feedback.isCorrect ? (
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  <CheckCircle className="w-5 h-5 text-accent-400" />
+                  <span className="text-sm text-accent-400 font-medium">
                     {t("correct")}
                   </span>
                   {usedHints > 0 && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-primary-400">
                       ({usedHints} hint{usedHints > 1 ? "s" : ""} used)
                     </span>
                   )}
                 </div>
               ) : (
                 <>
-                  <XCircle className="w-5 h-5 text-red-500" />
+                  <XCircle className="w-5 h-5 text-signal-alert" />
                   <div className="text-sm">
-                    <span className="text-red-600 dark:text-red-400">
+                    <span className="text-signal-alert">
                       {t("incorrect")}. Try again.
                     </span>
 
@@ -695,32 +697,22 @@ export default function AIMultipleChoiceGapFill({
         {/* AI Hint Display */}
         {hints[sentenceId] && (
           <div
-            className={`mt-3 p-3 rounded-xl border ${
+            className={`mt-3 p-3 rounded-panel border ${
               usedHints === 1
-                ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-                : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
+                ? "bg-signal-performance/15 border-signal-performance/40"
+                : "bg-signal-performance/20 border-signal-performance/40"
             }`}
           >
             <div className="flex items-start space-x-2">
               <Lightbulb
-                className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                  usedHints === 1
-                    ? "text-yellow-600 dark:text-yellow-400"
-                    : "text-orange-600 dark:text-orange-400"
-                }`}
+                className={`w-4 h-4 flex-shrink-0 mt-0.5 text-signal-performance`}
               />
               <div className="flex-1">
-                <p
-                  className={`text-sm ${
-                    usedHints === 1
-                      ? "text-yellow-800 dark:text-yellow-300"
-                      : "text-orange-800 dark:text-orange-300"
-                  }`}
-                >
+                <p className="text-sm text-signal-performance">
                   <strong>Hint {usedHints}:</strong> {hints[sentenceId]}
                 </p>
                 {hasUsedAllHints && (
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 italic">
+                  <p className="text-xs text-signal-performance mt-1 italic">
                     This was your final hint for this gap. Think carefully!
                   </p>
                 )}
@@ -733,14 +725,14 @@ export default function AIMultipleChoiceGapFill({
         {hintHistory[sentenceId] && hintHistory[sentenceId].length > 1 && (
           <div className="mt-2">
             <details className="text-sm">
-              <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+              <summary className="cursor-pointer text-primary-300 hover:text-primary-100">
                 View all hints ({hintHistory[sentenceId].length})
               </summary>
               <div className="mt-2 space-y-2 pl-4">
                 {hintHistory[sentenceId].map((hint, index) => (
                   <div
                     key={index}
-                    className="text-xs text-gray-600 dark:text-gray-400"
+                    className="text-xs text-primary-300"
                   >
                     <strong>Hint {index + 1}:</strong> {hint}
                   </div>
@@ -757,7 +749,7 @@ export default function AIMultipleChoiceGapFill({
           </div>
         )} */}
         {imageUrl && (
-          <div className="mt-6 mb-2 mx-16 sm:mx-48 md:mx-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div className="mt-6 mb-2 mx-16 sm:mx-48 md:mx-64 rounded-panel overflow-hidden border border-primary-700">
             <Image
               src={imageUrl}
               alt=""

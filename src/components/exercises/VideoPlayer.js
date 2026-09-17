@@ -105,16 +105,16 @@ const VideoPlayer = ({
 
   return (
     <div
-      className={`bg-white dark:bg-primary-900/20 rounded-xl p-6 ${className}`}
+      className={`bg-primary-panel rounded-panel p-6 ${className}`}
     >
       {title && (
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h3 className="text-xl font-semibold text-primary-50 mb-4">
           {title}
         </h3>
       )}
 
       <div className={`${getVideoContainerClass()}`}>
-        <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+        <div className="relative bg-black rounded-control overflow-hidden mb-4">
           <video
             ref={videoRef}
             src={videoUrl}
@@ -132,7 +132,7 @@ const VideoPlayer = ({
               className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer transition-opacity hover:bg-black/40"
               onClick={handlePlayPause}
             >
-              <div className="bg-white/90 backdrop-blur-sm rounded-full p-6 shadow-2xl transform transition-transform hover:scale-110">
+              <div className="bg-primary-50/90 backdrop-blur-sm rounded-full p-6 transform transition-transform hover:scale-110">
                 <Play
                   className="w-12 h-12 text-accent-600 ml-1"
                   fill="currentColor"
@@ -151,12 +151,12 @@ const VideoPlayer = ({
             max="100"
             value={duration ? (currentTime / duration) * 100 : 0}
             onChange={handleSeek}
-            className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+            className="flex-1 h-2 bg-primary-900 rounded-control appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, #4d7c0f 0%, #4d7c0f ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb ${duration ? (currentTime / duration) * 100 : 0}%, #e5e7eb 100%)`,
+              background: `linear-gradient(to right, #a3e635 0%, #a3e635 ${duration ? (currentTime / duration) * 100 : 0}%, #1e293b ${duration ? (currentTime / duration) * 100 : 0}%, #1e293b 100%)`,
             }}
           />
-          <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[80px] text-right">
+          <span className="text-sm text-primary-300 min-w-[80px] text-right">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
@@ -164,15 +164,15 @@ const VideoPlayer = ({
         <div className="flex items-center justify-center space-x-4">
           <button
             onClick={handleRewind}
-            className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-3 bg-primary-800 hover:bg-primary-700 rounded-control transition-colors"
             aria-label="Rewind"
           >
-            <RotateCcw className="w-5 h-5 text-accent-700 dark:text-accent-300" />
+            <RotateCcw className="w-5 h-5 text-accent-400" />
           </button>
 
           <button
             onClick={handlePlayPause}
-            className="p-4 bg-accent-600 hover:bg-accent-700 text-white rounded-lg transition-colors"
+            className="p-4 bg-accent-400 hover:bg-accent-300 text-primary-800 rounded-control transition-colors"
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
@@ -184,20 +184,20 @@ const VideoPlayer = ({
 
           <button
             onClick={handleMuteToggle}
-            className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-3 bg-primary-800 hover:bg-primary-700 rounded-control transition-colors"
             aria-label={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted ? (
-              <VolumeX className="w-5 h-5 text-accent-700 dark:text-accent-300" />
+              <VolumeX className="w-5 h-5 text-accent-400" />
             ) : (
-              <Volume2 className="w-5 h-5 text-accent-700 dark:text-accent-300" />
+              <Volume2 className="w-5 h-5 text-accent-400" />
             )}
           </button>
         </div>
       </div>
 
       {description && (
-        <p className="mt-4 text-gray-700 dark:text-gray-300">{description}</p>
+        <p className="mt-4 text-primary-100">{description}</p>
       )}
     </div>
   );

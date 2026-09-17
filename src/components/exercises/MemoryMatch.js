@@ -270,7 +270,7 @@ export default function MemoryMatch({
   if (!vocabulary || vocabulary.length === 0) {
     return (
       <div className="text-center p-8">
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-primary-300">
           No vocabulary available for this lesson.
         </p>
       </div>
@@ -289,7 +289,7 @@ export default function MemoryMatch({
       <button
         onClick={toggleMute}
         aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-        className="absolute top-0 right-1 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="absolute top-0 right-1 p-2 text-primary-300 hover:text-primary-50 rounded-full hover:bg-primary-800 transition-colors"
       >
         {isMuted ? (
           <VolumeX className="w-5 h-5" />
@@ -310,20 +310,20 @@ export default function MemoryMatch({
         <div className="flex gap-2 sm:gap-4 mb-4">
           <button
             onClick={() => handleGridSizeChange("3x4")}
-            className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-full font-medium text-sm sm:text-base transition-colors ${
               gridSize === "3x4"
-                ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                ? "bg-accent-400 text-primary-800"
+                : "bg-primary-800 text-primary-100 hover:bg-primary-700"
             }`}
           >
             3x4 (12 cards)
           </button>
           <button
             onClick={() => handleGridSizeChange("4x4")}
-            className={`px-3 sm:px-4 py-2 rounded-2xl font-medium text-sm sm:text-base transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-full font-medium text-sm sm:text-base transition-colors ${
               gridSize === "4x4"
-                ? "bg-gradient-to-br from-primary-500 to-accent-500 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                ? "bg-accent-400 text-primary-800"
+                : "bg-primary-800 text-primary-100 hover:bg-primary-700"
             }`}
           >
             4x4 (16 cards)
@@ -333,7 +333,7 @@ export default function MemoryMatch({
 
       {showSuccess && (
         <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-bounce">
-          <div className="bg-accent-500 bg-opacity-50 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+          <div className="bg-accent-400/80 text-primary-800 px-6 py-3 rounded-full flex items-center gap-2">
             <Check className="w-6 h-6" />
             <span className="font-bold">Perfect Match!</span>
           </div>
@@ -342,7 +342,7 @@ export default function MemoryMatch({
 
       {showError && (
         <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-pulse transition delay-150 duration-300 ease-in-out">
-          <div className="bg-[#dc2626] bg-opacity-50 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+          <div className="bg-signal-alert/80 text-primary-50 px-6 py-3 rounded-full flex items-center gap-2">
             <X className="w-6 h-6" />
             <span className="font-bold">Try Again!</span>
           </div>
@@ -364,7 +364,7 @@ export default function MemoryMatch({
                 key={i}
                 onClick={() => handleFlip(i)}
                 disabled={isFlipped}
-                className={`${cardSize} relative rounded-xl shadow-md font-medium text-sm transition-all duration-500 transform-gpu ${
+                className={`${cardSize} relative rounded-panel font-medium text-sm transition-all duration-500 transform-gpu ${
                   isMatched
                     ? "scale-95 opacity-90"
                     : isFlipped
@@ -383,10 +383,10 @@ export default function MemoryMatch({
                 {/* For matched cards, show the vocabulary directly without transform */}
                 {isMatched ? (
                   <div
-                    className={`absolute inset-0 flex items-center justify-center rounded-xl overflow-hidden ${
+                    className={`absolute inset-0 flex items-center justify-center rounded-panel overflow-hidden border-2 border-accent-400 ${
                       card.isImage
-                        ? "bg-white dark:bg-gray-700"
-                        : "bg-gradient-to-br from-accent-600 to-accent-800 text-white p-2"
+                        ? "bg-primary-panel"
+                        : "bg-primary-panel text-primary-50 p-2"
                     }`}
                   >
                     {card.isImage ? (
@@ -402,22 +402,22 @@ export default function MemoryMatch({
                         {card.text}
                       </span>
                     )}
-                    <Check className="absolute top-1 right-1 w-4 h-4 text-white drop-shadow" />
+                    <Check className="absolute top-1 right-1 w-4 h-4 text-accent-400" />
                   </div>
                 ) : (
                   <>
                     {/* Front face - Target icon */}
                     <div
-                      className="absolute inset-0 flex items-center justify-center rounded-xl backface-hidden bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-500 dark:to-primary-700 text-white"
+                      className="absolute inset-0 flex items-center justify-center rounded-panel backface-hidden bg-accent-400/15 border border-accent-400/30 text-primary-50"
                       style={{ backfaceVisibility: "hidden" }}
                     >
-                      <Target className="w-6 h-6 sm:w-8 sm:h-8 text-[#dc2626]" />
+                      <Target className="w-6 h-6 sm:w-8 sm:h-8 text-accent-400" />
                     </div>
                     {/* Back face - Vocabulary or image */}
                     <div
-                      className={`absolute inset-0 flex items-center justify-center rounded-xl rotate-y-180 backface-hidden overflow-hidden ${
+                      className={`absolute inset-0 flex items-center justify-center rounded-panel rotate-y-180 backface-hidden overflow-hidden border border-primary-700 ${
                         card.isImage
-                          ? "bg-white dark:bg-gray-700"
+                          ? "bg-primary-panel"
                           : card.lang === "en"
                             ? "bg-fieldtalk-400 text-primary-900 p-2"
                             : "bg-attention-400 text-primary-900 p-2"
@@ -457,7 +457,7 @@ export default function MemoryMatch({
             does. */}
         {matchedPairs.length > 0 && (
           <div className="w-full lg:w-auto lg:flex-shrink space-y-2">
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400 font-semibold">
+            <p className="text-xs text-center text-primary-400 font-semibold">
               {userLanguage === "pt" ? "Pares encontrados" : "Matched pairs"}
             </p>
             <div
@@ -508,7 +508,7 @@ export default function MemoryMatch({
 
       {isComplete ? (
         <div className="text-center space-y-4 animate-fadeIn">
-          <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white p-4 rounded-xl shadow-xl">
+          <div className="bg-primary-panel border border-primary-700 p-4 rounded-panel">
             {/* <Trophy className="w-8 h-8 mx-auto mb-2 animate-bounce" />
             <h3 className="text-xl font-bold mb-2">Congratulations!</h3>
             <p className="text-sm mb-4">
@@ -517,7 +517,7 @@ export default function MemoryMatch({
             <div className="flex justify-center gap-3">
               <button
                 onClick={handleRestart}
-                className="flex items-center gap-2 px-6 py-[6px] bg-white text-accent-600 rounded-xl font-bold hover:bg-orange-50 transition-colors"
+                className="flex items-center gap-2 px-6 py-[6px] bg-accent-400 text-primary-800 rounded-full font-bold hover:bg-accent-300 transition-colors"
               >
                 <RefreshCw className="w-5 h-5" />
                 Play again
@@ -532,19 +532,19 @@ export default function MemoryMatch({
       )}
 
       <div className="flex gap-4 sm:gap-8 text-center">
-        <div className="bg-gray-50 dark:bg-accent-900/20 px-3 sm:px-4 py-2 rounded-lg">
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+        <div className="bg-primary-800 px-3 sm:px-4 py-2 rounded-control">
+          <p className="text-xs sm:text-sm text-primary-300">
             Attempts
           </p>
-          <p className="text-xl sm:text-2xl font-bold text-accent-600 dark:text-accent-400">
+          <p className="text-xl sm:text-2xl font-bold text-accent-400">
             {attempts}
           </p>
         </div>
-        <div className="bg-gray-50 dark:bg-accent-900/20 px-3 sm:px-4 py-2 rounded-lg">
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+        <div className="bg-primary-800 px-3 sm:px-4 py-2 rounded-control">
+          <p className="text-xs sm:text-sm text-primary-300">
             Matches
           </p>
-          <p className="text-xl sm:text-2xl font-bold text-accent-600 dark:text-accent-400">
+          <p className="text-xl sm:text-2xl font-bold text-accent-400">
             {correctMatches}/{cards.length / 2}
           </p>
         </div>
@@ -553,7 +553,7 @@ export default function MemoryMatch({
       {!isComplete && gameStarted && (
         <button
           onClick={handleRestart}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-200 dark:bg-primary-700 text-primary-700 dark:text-primary-300 rounded-2xl hover:bg-primary-300 dark:hover:bg-primary-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-800 text-primary-100 rounded-full hover:bg-primary-700 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Start again
@@ -598,14 +598,14 @@ function MatchedPairCard({ pair, idx, canSave, isSaved, lang, onSave }) {
 
   return (
     <div
-      className="rounded-lg bg-white/[0.02] dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 p-2 space-y-1.5 animate-slideIn"
+      className="rounded-control bg-primary-panel border border-primary-700 p-2 space-y-1.5 animate-slideIn"
       style={{ animationDelay: `${idx * 0.1}s` }}
     >
       <div className="grid grid-cols-2 gap-2">
         <div
-          className={`relative rounded-md shadow-sm overflow-hidden flex items-center justify-center h-12 ${
+          className={`relative rounded-md overflow-hidden flex items-center justify-center h-12 ${
             pair.enIsImage
-              ? "bg-white dark:bg-gray-700 p-0"
+              ? "bg-primary-800 p-0"
               : "bg-fieldtalk-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
           }`}
         >
@@ -622,9 +622,9 @@ function MatchedPairCard({ pair, idx, canSave, isSaved, lang, onSave }) {
           )}
         </div>
         <div
-          className={`relative rounded-md shadow-sm overflow-hidden flex items-center justify-center h-12 ${
+          className={`relative rounded-md overflow-hidden flex items-center justify-center h-12 ${
             pair.ptIsImage
-              ? "bg-white dark:bg-gray-700 p-0"
+              ? "bg-primary-800 p-0"
               : "bg-attention-400 text-primary-900 px-2 py-1 text-center text-xs font-semibold"
           }`}
         >
@@ -649,14 +649,14 @@ function MatchedPairCard({ pair, idx, canSave, isSaved, lang, onSave }) {
           aria-label={label}
           className={`w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
             isSaved
-              ? "border-accent-500/40 bg-accent-500/10 text-accent-600 dark:text-accent-400 cursor-default"
+              ? "border-accent-400/40 bg-accent-400/10 text-accent-400 cursor-default"
               : saving
-                ? "border-gray-200 dark:border-gray-600 text-accent-500"
-                : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:text-accent-600 hover:bg-accent-50 dark:hover:text-accent-400 dark:hover:bg-accent-900/10"
+                ? "border-primary-700 text-accent-400"
+                : "border-primary-700 text-primary-300 hover:text-accent-400 hover:bg-accent-400/10"
           }`}
         >
           {isSaved ? (
-            <BookmarkCheck className="w-4 h-4 fill-accent-500/20 shrink-0" />
+            <BookmarkCheck className="w-4 h-4 fill-accent-400/20 shrink-0" />
           ) : saving ? (
             <Loader2 className="w-4 h-4 animate-spin shrink-0" />
           ) : (

@@ -20,6 +20,7 @@ import { useSoundPreference } from "@/lib/hooks/useSoundPreference";
 import { getStepXp } from "@/lib/xp/stepTypeDefaults";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import Button from "@/components/ui/button";
 
 /**
  * DragDropGroups Step
@@ -455,7 +456,7 @@ export default function DragDropGroups({
 
   if (containers.length === 0 || cards.length === 0) {
     return (
-      <p className="text-center text-gray-600 dark:text-gray-400 py-8">
+      <p className="text-center text-primary-300 py-8">
         {labels.empty}
       </p>
     );
@@ -468,12 +469,12 @@ export default function DragDropGroups({
     const { isPlaced = false, isShaking = false, isDragging = false } = opts;
     return (
       <div
-        className={`inline-flex items-center gap-2 select-none touch-none pl-1.5 pr-3 py-1 sm:pl-2 sm:pr-4 sm:py-1.5 rounded-full font-medium text-xs sm:text-sm shadow-sm border-2 transition-colors whitespace-nowrap ${
+        className={`inline-flex items-center gap-2 select-none touch-none pl-1.5 pr-3 py-1 sm:pl-2 sm:pr-4 sm:py-1.5 rounded-full font-medium text-xs sm:text-sm border-2 transition-colors whitespace-nowrap ${
           isShaking ? "animate-shake" : ""
         } ${isDragging ? "opacity-50" : ""} ${
           isPlaced
-            ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-400 text-emerald-900 dark:text-emerald-100"
-            : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:border-accent-500 cursor-grab active:cursor-grabbing"
+            ? "bg-accent-400/15 border-accent-400 text-accent-400"
+            : "bg-primary-900 border-primary-700 text-primary-50 hover:border-accent-400 cursor-grab active:cursor-grabbing"
         }`}
       >
         {card.image_url && (
@@ -527,14 +528,14 @@ export default function DragDropGroups({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        <p className="text-sm text-primary-100">
           {step?.content ||
             (validation === "match_group"
               ? labels.instructionMatch
               : labels.instructionFree)}
         </p>
         <div className="flex items-center gap-3 text-sm">
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-primary-50">
             {placedCount}/{totalCards}{" "}
             {validation === "match_group"
               ? labels.progressMatch
@@ -543,7 +544,7 @@ export default function DragDropGroups({
           <button
             onClick={toggleMute}
             aria-label={isMuted ? "Unmute sounds" : "Mute sounds"}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-1"
+            className="text-primary-300 hover:text-primary-50 p-1"
           >
             {isMuted ? (
               <VolumeX className="w-4 h-4" />
@@ -554,7 +555,7 @@ export default function DragDropGroups({
           {placedCount > 0 && !completed && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="flex items-center gap-1 text-xs text-primary-300 hover:text-primary-50"
             >
               <RotateCcw className="w-3 h-3" />
               {labels.reset}
@@ -565,7 +566,7 @@ export default function DragDropGroups({
 
       {/* Error toast */}
       {errorMessage && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+        <div className="flex items-center gap-2 px-3 py-2 bg-signal-alert/15 text-signal-alert border border-signal-alert/40 rounded-control text-sm">
           <AlertCircle className="w-4 h-4" />
           {errorMessage}
         </div>
@@ -577,12 +578,12 @@ export default function DragDropGroups({
             - Draft (no save yet)                       — quiet hint  */}
       {isPredictionStep && !restoring && (
         <div
-          className={`flex items-start gap-2 px-3 py-2 rounded-lg text-sm border ${
+          className={`flex items-start gap-2 px-3 py-2 rounded-control text-sm border ${
             isLocked
-              ? "bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800"
+              ? "bg-signal-performance/15 text-signal-performance border-signal-performance/40"
               : submitted
-                ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
-                : "bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-200 border-blue-200 dark:border-blue-800"
+                ? "bg-accent-400/15 text-accent-400 border-accent-400/40"
+                : "bg-signal-english/15 text-signal-english border-signal-english/40"
           }`}
         >
           {isLocked ? (
@@ -659,9 +660,9 @@ export default function DragDropGroups({
             <div
               key={container.id}
               ref={(el) => (containerRefs.current[container.id] = el)}
-              className="bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-3 sm:p-4"
+              className="bg-primary-800 rounded-panel border-2 border-primary-700 p-3 sm:p-4"
             >
-              <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-2 text-center">
+              <h4 className="font-semibold text-sm text-primary-50 mb-2 text-center">
                 {container.label || container.id}
               </h4>
               <div className={`grid gap-2 ${slotsGridCols}`}>
@@ -670,10 +671,10 @@ export default function DragDropGroups({
                   return (
                     <div
                       key={idx}
-                      className={`min-h-[44px] flex items-center justify-center rounded-lg ${
+                      className={`min-h-[44px] flex items-center justify-center rounded-control ${
                         placed
                           ? ""
-                          : "border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/40 dark:bg-gray-900/30"
+                          : "border-2 border-dashed border-primary-700 bg-primary-900"
                       }`}
                     >
                       {placed && (
@@ -695,7 +696,7 @@ export default function DragDropGroups({
             - prediction step is locked (deadline passed)              */}
       {trayCards.length > 0 &&
         (isPredictionStep ? !isLocked : !completed) && (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-primary-800 rounded-panel p-4 border border-primary-700">
             <div className="flex flex-wrap gap-2 justify-center">
               {trayCards.map((card) => {
                 const isShaking = shakeCardId === card.id;
@@ -719,41 +720,34 @@ export default function DragDropGroups({
       {isPredictionStep && !isLocked && (
         <div className="flex flex-col items-center gap-2">
           {saveError && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+            <div className="flex items-center gap-2 px-3 py-2 bg-signal-alert/15 text-signal-alert border border-signal-alert/40 rounded-control text-sm">
               <AlertCircle className="w-4 h-4" />
               {saveError}
             </div>
           )}
-          <button
-            type="button"
+          <Button
+            variant="primary"
             onClick={handleSavePrediction}
             disabled={!allPlaced || submitting}
-            className={`px-6 py-2.5 rounded-full font-bold text-sm sm:text-base tracking-wide transition-all ${
-              justSaved
-                ? "bg-emerald-500 text-white"
-                : "bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-[#070707]"
-            }`}
+            loading={submitting}
+            Icon={justSaved ? CheckCircle : undefined}
           >
-            {submitting ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                {isPortuguese ? "Salvando…" : "Saving…"}
-              </span>
-            ) : justSaved ? (
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4" />
-                {isPortuguese ? "Salvo" : "Saved"}
-              </span>
-            ) : submitted ? (
-              isPortuguese
-                ? "Atualizar predição"
-                : "Update your prediction"
-            ) : isPortuguese ? (
-              "Salvar predição"
-            ) : (
-              "Save your prediction"
-            )}
-          </button>
+            {submitting
+              ? isPortuguese
+                ? "Salvando…"
+                : "Saving…"
+              : justSaved
+                ? isPortuguese
+                  ? "Salvo"
+                  : "Saved"
+                : submitted
+                  ? isPortuguese
+                    ? "Atualizar predição"
+                    : "Update your prediction"
+                  : isPortuguese
+                    ? "Salvar predição"
+                    : "Save your prediction"}
+          </Button>
         </div>
       )}
 

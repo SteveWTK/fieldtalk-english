@@ -611,19 +611,21 @@ function DynamicLessonContent() {
   // FIXED: Better error boundaries and loading states
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6 min-h-screen">
-        <div className="animate-pulse">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="h-6 bg-gray-200 rounded w-24"></div>
-            <div className="h-4 bg-gray-200 rounded w-16"></div>
+      <div className="min-h-screen bg-primary-900 text-primary-50">
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="animate-pulse">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="h-6 bg-primary-800 rounded w-24"></div>
+              <div className="h-4 bg-primary-800 rounded w-16"></div>
+            </div>
+            <div className="h-8 bg-primary-800 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-primary-800 rounded w-1/2 mb-8"></div>
+            <div className="h-64 bg-primary-panel border border-primary-700 rounded-card mb-8"></div>
+            <div className="h-12 bg-primary-800 rounded-control"></div>
           </div>
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-          <div className="h-64 bg-gray-200 rounded mb-8"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
-        </div>
-        <div className="text-center mt-4">
-          <p className="text-gray-600 dark:text-gray-400">{t("loading")}</p>
+          <div className="text-center mt-4">
+            <p className="text-primary-400">{t("loading")}</p>
+          </div>
         </div>
       </div>
     );
@@ -632,24 +634,24 @@ function DynamicLessonContent() {
   // FIXED: Error state with better navigation
   if (error || !lesson) {
     return (
-      <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-display font-bold text-primary-50 mb-3">
             {t("lesson_not_found")}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-primary-300 mb-6 leading-relaxed">
             {error || t("lesson_doesnt_exist")}
           </p>
-          <div className="space-x-4">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <button
               onClick={() => router.push("/dashboard")}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-accent-400 hover:bg-accent-300 text-primary-900 px-5 py-2.5 rounded-full font-bold text-sm transition-colors"
             >
               {dashboardBackLabel}
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="bg-primary-800 hover:bg-primary-700 text-primary-100 border border-primary-600 px-5 py-2.5 rounded-full font-bold text-sm transition-colors"
             >
               {t("reload_page")}
             </button>
@@ -666,7 +668,7 @@ function DynamicLessonContent() {
   // path for users who can't view this lesson.
   if (!access.loading && !lessonAllowed) {
     return (
-      <div className="min-h-screen bg-[#070707] text-white px-4 py-10 sm:py-14">
+      <div className="min-h-screen bg-primary-900 text-primary-50 px-4 py-10 sm:py-14">
         <PaywallCard edition={lessonEdition || "wc2026"} variant="full" />
       </div>
     );
@@ -681,10 +683,10 @@ function DynamicLessonContent() {
   // Don't render if lesson data is not properly loaded
   if (!lesson || !currentStepData) {
     return (
-      <div className="max-w-4xl mx-auto p-6 min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-primary-900 text-primary-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t("loading")}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-400 mx-auto mb-4"></div>
+          <p className="text-primary-400">{t("loading")}</p>
         </div>
       </div>
     );
@@ -3329,22 +3331,22 @@ function DynamicLessonContent() {
           <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-[16px] lg:text-lg my-1 sm:my-[6px]">
             <button
               onClick={() => handleNavigateAway("/lesson")}
-              className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+              className="flex items-center space-x-2 text-primary-300 hover:text-accent-400 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-gray-600 dark:text-gray-300 font-semibold">
+              <span className="text-primary-300 font-semibold">
                 {lesson.pillar?.display_name || t("lesson")}
               </span>
               {/* <span>{t("lessons")}</span> */}
             </button>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600 dark:text-gray-300 font-semibold">
+            <span className="text-primary-500">•</span>
+            <span className="text-primary-300 font-semibold">
               {lesson.title || t("lesson")}
             </span>
           </div>
           <button
             onClick={() => router.push("/lesson")}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-primary-500 hover:text-primary-300 transition-colors"
           >
             {/* <Home className="w-5 h-5" /> */}
           </button>
@@ -3386,17 +3388,17 @@ function DynamicLessonContent() {
             Pro Path style. */}
         {isProPath ? (
           <>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+            <div className="w-full bg-primary-700 rounded-full h-3 mb-2">
               <div
                 className={`h-3 rounded-full transition-all duration-500 ${
                   lessonPassed
-                    ? "bg-gradient-to-r from-accent-500 to-accent-300"
-                    : "bg-gradient-to-r from-accent-400 to-accent-200"
+                    ? "bg-accent-400"
+                    : "bg-accent-400"
                 }`}
                 style={{ width: `${lessonProgressPct}%` }}
               ></div>
             </div>
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex justify-between text-sm text-primary-300">
               <span>
                 {lessonPassThresholdXp === 0
                   ? `${xpEarned} XP earned`
@@ -3408,7 +3410,7 @@ function DynamicLessonContent() {
                       ? `${xpEarned} XP · ${lessonXpToPass} XP para passar`
                       : `${xpEarned} XP · ${lessonXpToPass} XP to pass`}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-primary-400">
                 {t("step_of_total")
                   .replace("{current}", currentStep + 1)
                   .replace("{total}", steps.length)}
@@ -3417,19 +3419,19 @@ function DynamicLessonContent() {
           </>
         ) : (
           <>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+            <div className="w-full bg-primary-700 rounded-full h-3 mb-2">
               <div
-                className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+                className="bg-accent-400 h-3 rounded-full transition-all duration-500"
                 style={{ width: `${packProgressPct}%` }}
               ></div>
             </div>
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex justify-between text-sm text-primary-300">
               <span>
                 {xpToNextPack === 0
                   ? "🎉 New pack ready!"
                   : `${xpToNextPack} XP to your next pack`}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-primary-400">
                 {t("step_of_total")
                   .replace("{current}", currentStep + 1)
                   .replace("{total}", steps.length)}
@@ -3443,7 +3445,7 @@ function DynamicLessonContent() {
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
           {getStepIcon(currentStepData?.type)}
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-semibold text-primary-50">
             {translations[`step-title-${currentStep}`] ||
               currentStepData?.title ||
               `Step ${currentStep + 1}`}
@@ -3452,7 +3454,7 @@ function DynamicLessonContent() {
 
         {/* Step completion indicator */}
         {stepCompleted && (
-          <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 text-green-800 dark:text-green-200 rounded-lg flex items-center space-x-2">
+          <div className="mb-4 p-3 bg-accent-400/10 text-accent-400 rounded-control flex items-center space-x-2">
             <CheckCircle className="w-5 h-5" />
             <span className="font-semibold">{t("step_complete")}</span>
           </div>
@@ -3462,11 +3464,11 @@ function DynamicLessonContent() {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-row gap-4 sm:flex-row justify-between sm:justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-row gap-4 sm:flex-row justify-between sm:justify-between items-center pt-6 border-t border-primary-700">
         {currentStep === 0 ? (
           <Link
             href="/lesson"
-            className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 text-primary-100 hover:text-primary-50 border-2 border-accent-400 rounded-control disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {/* <span>{t("back")}</span> */}
@@ -3475,7 +3477,7 @@ function DynamicLessonContent() {
           <button
             onClick={handlePrevious}
             disabled={currentStep === 0 || completing}
-            className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white border-2 border-accent-600 dark:border-accent-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 text-primary-100 hover:text-primary-50 border-2 border-accent-400 rounded-control disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {/* <span>{t("previous_activity")}</span> */}
@@ -3517,7 +3519,7 @@ function DynamicLessonContent() {
           return (
             <div className="flex flex-col items-end gap-1">
               {nextBlockedByAttempt && (
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                <p className="text-[11px] text-primary-400">
                   {userLanguage === "pt"
                     ? "Faça uma tentativa para continuar"
                     : "Have a go at this step to continue"}
@@ -3530,11 +3532,11 @@ function DynamicLessonContent() {
                     : handleNext
                 }
                 disabled={disabled}
-                className="flex items-center space-x-2 px-6 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center space-x-2 px-6 py-2 bg-accent-400 text-primary-900 rounded-control hover:bg-accent-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {completing ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-primary-900 border-t-transparent rounded-full animate-spin"></div>
                     <span>{t("completing")}</span>
                   </>
                 ) : (

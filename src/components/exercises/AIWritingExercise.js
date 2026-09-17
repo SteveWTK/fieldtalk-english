@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/components/AuthProvider";
+import { Button } from "@/components/ui/button";
 
 export default function AIWritingExercise({
   prompt,
@@ -298,41 +299,41 @@ export default function AIWritingExercise({
   };
 
   const getScoreColor = (score) => {
-    if (score >= 8) return "text-green-600";
-    if (score >= 6) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 8) return "text-accent-400";
+    if (score >= 6) return "text-signal-performance";
+    return "text-signal-alert";
   };
 
   return (
     <div className="max-w-4xl mx-auto">
       {/* Writing Prompt */}
-      <div className="bg-primary-50 dark:bg-accent-900/20 border border-primary-200 dark:border-accent-800 rounded-lg p-6 mb-6">
+      <div className="bg-signal-english/10 border border-signal-english/30 rounded-control p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
-            <BookOpen className="w-6 h-6 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-1" />
+            <BookOpen className="w-6 h-6 text-signal-english flex-shrink-0 mt-1" />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-primary-50 mb-2">
                 {t("writing_task")}
               </h3>
-              <p className="text-gray-800 dark:text-gray-300 pb-2">{prompt}</p>
-              <p className="text-accent-800 dark:text-accent-300 font-bold">
+              <p className="text-primary-100 pb-2">{prompt}</p>
+              <p className="text-accent-400 font-bold">
                 {example}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              <p className="text-sm text-primary-300 mt-2">
                 {t("write_words")} {minWords}-{maxWords} {t("words")}
               </p>
             </div>
           </div>
           <button
             onClick={() => speakText(prompt)}
-            className="p-2 bg-white hover:bg-accent-100 dark:bg-accent-900/30 dark:hover:bg-accent-900/50 
-                     rounded-lg transition-colors flex items-center space-x-1 ml-4"
+            className="p-2 bg-primary-800 hover:bg-primary-700
+                     rounded-control transition-colors flex items-center space-x-1 ml-4"
             title="Listen to prompt"
           >
             {playingAudio ? (
-              <Pause className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+              <Pause className="w-4 h-4 text-accent-400" />
             ) : (
-              <Play className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+              <Play className="w-4 h-4 text-accent-400" />
             )}
           </button>
         </div>
@@ -345,59 +346,44 @@ export default function AIWritingExercise({
             value={text}
             onChange={handleTextChange}
             placeholder={t("start_writing")}
-            className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg 
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full h-48 p-4 border border-primary-600 rounded-control
+                     bg-primary-900 text-primary-100 placeholder:text-primary-500
+                     focus:border-accent-400 focus:ring-accent-400/30 focus:ring-2 resize-none outline-none transition-colors"
             disabled={loading || showFeedback}
           />
-          <div className="absolute bottom-2 right-2 text-sm text-gray-500">
+          <div className="absolute bottom-2 right-2 text-sm text-primary-400">
             {wordCount} words
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-primary-300">
             {wordCount < minWords && (
-              <span className="text-orange-600">
+              <span className="text-signal-performance">
                 {t("need_more_words")} {minWords - wordCount} {t("words")}
               </span>
             )}
           </div>
           <div className="space-x-3">
             {showFeedback ? (
-              <button
+              <Button
+                variant="secondary"
                 onClick={tryAgain}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
-                         rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors
-                         flex items-center space-x-2"
+                Icon={RefreshCw}
               >
-                <RefreshCw className="w-4 h-4" />
-                <span>{t("try_again")}</span>
-              </button>
+                {t("try_again")}
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="primary"
                 onClick={submitForFeedback}
                 disabled={loading || wordCount < minWords}
-                className={`px-6 py-2 rounded-lg font-medium transition-all
-                  ${
-                    wordCount >= minWords
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  } flex items-center space-x-2`}
+                loading={loading}
+                Icon={loading ? undefined : Send}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>{t("analyzing")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>{t("submit_for_feedback")}</span>
-                  </>
-                )}
-              </button>
+                {loading ? t("analyzing") : t("submit_for_feedback")}
+              </Button>
             )}
           </div>
         </div>
@@ -407,10 +393,10 @@ export default function AIWritingExercise({
       {showFeedback && feedback && (
         <div className="space-y-4 animate-fadeIn">
           {/* Score */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-primary-panel rounded-control p-6 border border-primary-700">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
+              <h4 className="text-lg font-semibold text-primary-50 flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-signal-performance" />
                 <span>{t("ai_feedback")}</span>
               </h4>
               {feedback.score && (
@@ -427,27 +413,27 @@ export default function AIWritingExercise({
               Array.isArray(feedback.grammar) &&
               feedback.grammar.length > 0 && (
                 <div className="mb-4">
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
-                    <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <h5 className="font-medium text-primary-50 mb-2 flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 text-signal-performance" />
                     <span>{t("grammar_notes")}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.grammar.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-gray-700 dark:text-gray-300"
+                        className="text-sm text-primary-100"
                       >
                         {item.error && item.correction ? (
                           <>
-                            <span className="line-through text-red-500">
+                            <span className="line-through text-signal-alert">
                               {item.error}
                             </span>
                             {" → "}
-                            <span className="text-green-600 dark:text-green-400">
+                            <span className="text-accent-400">
                               {item.correction}
                             </span>
                             {item.explanation && (
-                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                              <p className="text-xs text-primary-300 mt-1">
                                 {item.explanation}
                               </p>
                             )}
@@ -470,25 +456,25 @@ export default function AIWritingExercise({
               Array.isArray(feedback.vocabulary) &&
               feedback.vocabulary.length > 0 && (
                 <div className="mb-4">
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
-                    <BookOpen className="w-4 h-4 text-blue-500" />
+                  <h5 className="font-medium text-primary-50 mb-2 flex items-center space-x-2">
+                    <BookOpen className="w-4 h-4 text-signal-english" />
                     <span>{t("vocabulary_suggestions")}</span>
                   </h5>
                   <ul className="space-y-2">
                     {feedback.vocabulary.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-gray-700 dark:text-gray-300"
+                        className="text-sm text-primary-100"
                       >
                         {item.original && item.suggestion ? (
                           <>
                             <span className="font-medium">{item.original}</span>
                             {" → "}
-                            <span className="text-blue-600 dark:text-blue-400 font-medium">
+                            <span className="text-signal-english font-medium">
                               {item.suggestion}
                             </span>
                             {item.reason && (
-                              <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
+                              <span className="text-xs text-primary-300 ml-2">
                                 ({item.reason})
                               </span>
                             )}
@@ -509,10 +495,10 @@ export default function AIWritingExercise({
             {/* Overall Clarity */}
             {feedback.clarity && (
               <div className="mb-4">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                <h5 className="font-medium text-primary-50 mb-2">
                   {t("overall_clarity")}
                 </h5>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-primary-100">
                   {feedback.clarity}
                 </p>
               </div>
@@ -523,17 +509,17 @@ export default function AIWritingExercise({
               Array.isArray(feedback.improvements) &&
               feedback.improvements.length > 0 && (
                 <div className="mb-4">
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-purple-500" />
+                  <h5 className="font-medium text-primary-50 mb-2 flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-signal-mental" />
                     <span>{t("next_steps")}</span>
                   </h5>
                   <ul className="space-y-1">
                     {feedback.improvements.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-gray-700 dark:text-gray-300 flex items-start"
+                        className="text-sm text-primary-100 flex items-start"
                       >
-                        <span className="text-purple-500 mr-2">•</span>
+                        <span className="text-signal-mental mr-2">•</span>
                         {item}
                       </li>
                     ))}
@@ -543,8 +529,8 @@ export default function AIWritingExercise({
 
             {/* Encouragement */}
             {feedback.encouragement && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-sm text-green-800 dark:text-green-300 flex items-start space-x-2">
+              <div className="bg-accent-400/10 border border-accent-400/30 rounded-control p-4">
+                <p className="text-sm text-accent-400 flex items-start space-x-2">
                   <CheckCircle className="w-5 h-5 flex-shrink-0" />
                   <span>{feedback.encouragement}</span>
                 </p>
@@ -563,40 +549,40 @@ export default function AIWritingExercise({
                 !Array.isArray(feedback.improvements) ||
                 feedback.improvements.length === 0) &&
               !feedback.encouragement && (
-                <div className="text-gray-700 dark:text-gray-300">
+                <div className="text-primary-100">
                   {typeof feedback === "string" ? (
                     <div className="whitespace-pre-wrap">{feedback}</div>
                   ) : feedback.feedback ? (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                      <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    <div className="bg-signal-english/10 border border-signal-english/30 p-4 rounded-control">
+                      <h5 className="font-medium text-primary-50 mb-2">
                         AI Feedback
                       </h5>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                      <div className="text-sm text-primary-100 whitespace-pre-wrap">
                         {feedback.feedback}
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                      <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    <div className="bg-signal-performance/10 p-4 rounded-control border border-signal-performance/30">
+                      <h5 className="font-medium text-primary-50 mb-2">
                         🔍 Debug: Raw AI Response
                       </h5>
-                      <div className="text-xs text-gray-700 dark:text-gray-300 font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded max-h-40 overflow-y-auto">
+                      <div className="text-xs text-primary-100 font-mono bg-primary-800 p-2 rounded max-h-40 overflow-y-auto">
                         {Object.entries(feedback).map(([key, value]) => (
                           <div key={key} className="mb-1">
-                            <strong className="text-blue-600">{key}:</strong>{" "}
+                            <strong className="text-signal-english">{key}:</strong>{" "}
                             {typeof value === "object" ? (
                               <pre className="inline whitespace-pre-wrap">
                                 {JSON.stringify(value, null, 2)}
                               </pre>
                             ) : (
-                              <span className="text-green-600">
+                              <span className="text-accent-400">
                                 {String(value)}
                               </span>
                             )}
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-yellow-800 dark:text-yellow-300 mt-2">
+                      <p className="text-xs text-signal-performance mt-2">
                         This is debug output. The AI response structure needs to
                         be fixed.
                       </p>
@@ -610,37 +596,41 @@ export default function AIWritingExercise({
           <div className="flex justify-center space-x-4">
             {feedback.score && feedback.score >= 7 ? (
               <div className="text-center space-y-4">
-                <p className="text-green-600 dark:text-green-400 font-medium">
+                <p className="text-accent-400 font-medium">
                   {t("you_demonstrated_excellent")}
                 </p>
-                <button
-                  onClick={() => {
-                    // Clear saved content
-                    try {
-                      localStorage.removeItem(storageKey);
-                    } catch (error) {
-                      console.error("Error clearing saved text:", error);
-                    }
-                    if (onComplete) {
-                      onComplete(feedback.score * 10); // Convert to XP
-                    }
-                  }}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 mx-auto"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  <span>{t("continue")}</span>
-                </button>
+                <div className="flex justify-center">
+                  <Button
+                    variant="primary"
+                    Icon={CheckCircle}
+                    onClick={() => {
+                      // Clear saved content
+                      try {
+                        localStorage.removeItem(storageKey);
+                      } catch (error) {
+                        console.error("Error clearing saved text:", error);
+                      }
+                      if (onComplete) {
+                        onComplete(feedback.score * 10); // Convert to XP
+                      }
+                    }}
+                  >
+                    {t("continue")}
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex space-x-4">
-                <button
+                <Button
+                  variant="secondary"
+                  Icon={RefreshCw}
                   onClick={tryAgain}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>{t("try_again")}</span>
-                </button>
-                <button
+                  {t("try_again")}
+                </Button>
+                <Button
+                  variant="primary"
+                  Icon={CheckCircle}
                   onClick={() => {
                     // Clear saved content
                     try {
@@ -652,11 +642,9 @@ export default function AIWritingExercise({
                       onComplete(Math.max(feedback.score * 10, 50)); // Minimum 50 XP
                     }
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                 >
-                  <CheckCircle className="w-4 h-4" />
-                  <span>{t("continue_anyway")}</span>
-                </button>
+                  {t("continue_anyway")}
+                </Button>
               </div>
             )}
           </div>
