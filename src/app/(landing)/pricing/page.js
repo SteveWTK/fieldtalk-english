@@ -48,13 +48,25 @@ import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Eyebrow from "@/components/ui/eyebrow";
 import CalendlyButton from "@/components/pricing/CalendlyButton";
-import PricingCalculator from "@/components/pricing/PricingCalculator";
+// import PricingCalculator from "@/components/pricing/PricingCalculator";
 import InquiryForm from "@/components/pricing/InquiryForm";
 
 // The only edition Pro Path pricing surfaces at. If a second
 // concurrent edition ever ships, spawn a dedicated page rather than
 // resurrecting the edition-aware routing that used to live here.
 const EDITION_ID = "propath_26_27";
+
+// Individual-player pricing shown on the quiet card at the bottom
+// of the page. Kept as a separate constant (rather than reading
+// live from Stripe) so the page always renders a real number even
+// when the Stripe offering rows for `propath_26_27` aren't
+// configured or return incomplete data. Actual checkout still fires
+// against whatever Stripe has — if the two ever drift, sync here or
+// in editions.js / Stripe dashboard.
+const INDIVIDUAL_PRICES = {
+  monthlyBrl: 79,
+  yearlyBrl: 790, // 10 months priced ≈ 17% off (matches the 2-months-free frame)
+};
 
 // Tier catalogue — copy + prices in one place. If David revises
 // prices, they change here (and in the calculator TIERS constant).
@@ -78,7 +90,13 @@ const TIERS = [
   {
     id: "agency",
     monthlyBrl: 2997,
-    annualBrl: null, // custom / from-price
+    // Annual = 10 months priced (matches Squad/Roster ratio). Shows
+    // as "From R$ 29,970 / year" so the toggle feels consistent with
+    // the cheaper tiers — an agency evaluating this already knows
+    // R$ 3k/mo = R$ 30-36k/yr, so the sticker number isn't the
+    // scary part; the visual inconsistency of one card not
+    // responding to the toggle was.
+    annualBrl: 29970,
     athletes: "200+",
     highlight: false,
     icon: "sparkles",
@@ -166,7 +184,10 @@ const translations = {
         { label: "CSV / API export", vals: [false, true, true] },
         { label: "White-label branding", vals: [false, false, true] },
         { label: "Data ownership + LGPD export", vals: [false, false, true] },
-        { label: "Tactical customization (destination league)", vals: [false, false, true] },
+        {
+          label: "Tactical customization (destination league)",
+          vals: [false, false, true],
+        },
         { label: "Dedicated onboarding", vals: [false, false, true] },
         { label: "Setup fee", vals: ["—", "—", "R$ 2,000+"] },
       ],
@@ -203,11 +224,14 @@ const translations = {
       signedOutNote: "Sign up first so the code can attach to your account.",
       signedOutCta: "Create your account",
       errors: {
-        unknown_code: "We don't recognise that code. Check with your teacher / coordinator.",
+        unknown_code:
+          "We don't recognise that code. Check with your teacher / coordinator.",
         expired: "That code has expired. Ask for a new one.",
         no_seats: "All seats on that code have already been claimed.",
-        already_redeemed: "You've already redeemed this code — you're good to go.",
-        not_signed_in: "Sign in first so we can attach the code to your account.",
+        already_redeemed:
+          "You've already redeemed this code — you're good to go.",
+        not_signed_in:
+          "Sign in first so we can attach the code to your account.",
         generic: "Something went wrong. Please try again.",
       },
     },
@@ -266,7 +290,7 @@ const translations = {
         features: [
           "Painel administrativo do elenco inteiro",
           "Relatório semanal de engajamento",
-          "Alertas de crise (depressão, ansiedade, frustração)",
+          // "Alertas de crise (depressão, ansiedade, frustração)",
           "Suporte bilíngue (PT + EN)",
         ],
         cta: "Começar com o Base",
@@ -288,7 +312,8 @@ const translations = {
       agency: {
         name: "Agência",
         tagline: "Marca própria. Dados seus. Ajuste tático.",
-        blurb: "Para grandes agências e clubes profissionais — escala Roc Nation.",
+        blurb:
+          "Para grandes agências e clubes profissionais — escala Roc Nation.",
         perAthlete: "Vagas customizadas",
         features: [
           "Tudo do Elenco",
@@ -319,13 +344,16 @@ const translations = {
       rows: [
         { label: "Painel administrativo", vals: [true, true, true] },
         { label: "Relatório semanal de engajamento", vals: [true, true, true] },
-        { label: "Alertas de crise", vals: [true, true, true] },
+        // { label: "Alertas de crise", vals: [true, true, true] },
         { label: "Máximo de atletas", vals: ["20", "50", "200+"] },
         { label: "Suporte prioritário", vals: [false, true, true] },
         { label: "Exportação CSV / API", vals: [false, true, true] },
         { label: "Marca branca", vals: [false, false, true] },
         { label: "Propriedade dos dados + LGPD", vals: [false, false, true] },
-        { label: "Customização tática (liga de destino)", vals: [false, false, true] },
+        {
+          label: "Customização tática (liga de destino)",
+          vals: [false, false, true],
+        },
         { label: "Onboarding dedicado", vals: [false, false, true] },
         { label: "Taxa de setup", vals: ["—", "—", "R$ 2.000+"] },
       ],
@@ -359,14 +387,17 @@ const translations = {
       submitting: "Resgatando…",
       successTitle: "Pronto!",
       successBody: "Acesso liberado. Indo para o painel…",
-      signedOutNote: "Crie sua conta primeiro para que o código fique vinculado a ela.",
+      signedOutNote:
+        "Crie sua conta primeiro para que o código fique vinculado a ela.",
       signedOutCta: "Criar conta",
       errors: {
-        unknown_code: "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
+        unknown_code:
+          "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
         expired: "Esse código expirou. Peça um novo.",
         no_seats: "Todas as vagas desse código já foram usadas.",
         already_redeemed: "Você já resgatou esse código — está tudo certo.",
-        not_signed_in: "Entre primeiro para que possamos vincular o código à sua conta.",
+        not_signed_in:
+          "Entre primeiro para que possamos vincular o código à sua conta.",
         generic: "Algo deu errado. Tente novamente.",
       },
     },
@@ -433,9 +464,12 @@ function PricingPageContent() {
     const all = listOfferingsForEdition(EDITION_ID);
     return {
       monthly:
-        all.find((o) => o.mode === "subscription" && o.interval === "monthly") || null,
+        all.find(
+          (o) => o.mode === "subscription" && o.interval === "monthly",
+        ) || null,
       yearly:
-        all.find((o) => o.mode === "subscription" && o.interval === "yearly") || null,
+        all.find((o) => o.mode === "subscription" && o.interval === "yearly") ||
+        null,
     };
   }, []);
 
@@ -577,7 +611,13 @@ function PricingPageContent() {
             sting="rise"
           />
           <div className="mt-5">
-            <Eyebrow className="mb-2">{copy.hero.eyebrow}</Eyebrow>
+            {/* whitespace-normal here overrides the primitive's
+                default nowrap — this eyebrow is a long "Global Player
+                · for agencies, academies, clubs" string that
+                overflows on mobile if forced to a single line. */}
+            <Eyebrow className="mb-2 whitespace-normal max-w-md">
+              {copy.hero.eyebrow}
+            </Eyebrow>
           </div>
           <h1
             className="font-display font-black tracking-tight leading-[1.05] text-primary-50 max-w-3xl"
@@ -589,9 +629,9 @@ function PricingPageContent() {
             {copy.hero.sub}
           </p>
           <div className="mt-6 flex items-center gap-3 flex-wrap justify-center">
-            <CalendlyButton label={copy.hero.primaryCta} size="lg" tier="hero" />
+            {/* <CalendlyButton label={copy.hero.primaryCta} size="lg" tier="hero" /> */}
             <Button
-              variant="secondary"
+              variant="primary"
               size="lg"
               onClick={scrollToPlans}
               type="button"
@@ -612,7 +652,7 @@ function PricingPageContent() {
         </section>
 
         {/* ─── Interactive calculator ──────────────────────────── */}
-        <PricingCalculator lang={lang === "en" ? "en" : "pt"} />
+        {/* <PricingCalculator lang={lang === "en" ? "en" : "pt"} /> */}
 
         {/* ─── B2B tier cards ──────────────────────────────────── */}
         <section id="plans" className="space-y-5">
@@ -704,7 +744,11 @@ function PricingPageContent() {
           <p className="text-sm text-primary-300 mt-3 mb-5 leading-relaxed">
             {copy.footerCta.sub}
           </p>
-          <CalendlyButton label={copy.hero.primaryCta} size="md" tier="footer" />
+          <CalendlyButton
+            label={copy.hero.primaryCta}
+            size="md"
+            tier="footer"
+          />
         </section>
       </main>
     </div>
@@ -737,7 +781,9 @@ function BillingToggle({ value, onChange, labels }) {
         }`}
       >
         {labels.annual}
-        <span className={`text-[10px] font-bold ${value === "annual" ? "text-primary-900/70" : "text-accent-400"}`}>
+        <span
+          className={`text-[10px] font-bold ${value === "annual" ? "text-primary-900/70" : "text-accent-400"}`}
+        >
           {labels.save}
         </span>
       </button>
@@ -752,25 +798,18 @@ function TierCard({ tier, copy, billing }) {
   const isAgency = tier.id === "agency";
   const isHighlighted = !!tier.highlight;
 
+  // Price display honours the billing toggle for every tier —
+  // including Agency, which now has an annualBrl and just carries
+  // the "From" prefix so it reads as a starting point rather than a
+  // fixed number. Keeping the toggle behaviour consistent across all
+  // three cards avoids the "one card feels dead" moment the earlier
+  // version had.
   const priceDisplay = (() => {
-    if (isAgency) {
-      return {
-        prefix: t.fromPrefix,
-        amount: `R$ ${formatBrl(tier.monthlyBrl)}`,
-        suffix: copy.priceMonth,
-      };
-    }
-    if (billing === "annual") {
-      return {
-        prefix: null,
-        amount: `R$ ${formatBrl(tier.annualBrl)}`,
-        suffix: copy.priceYear,
-      };
-    }
+    const isAnnual = billing === "annual" && tier.annualBrl != null;
     return {
-      prefix: null,
-      amount: `R$ ${formatBrl(tier.monthlyBrl)}`,
-      suffix: copy.priceMonth,
+      prefix: isAgency ? t.fromPrefix : null,
+      amount: `R$ ${formatBrl(isAnnual ? tier.annualBrl : tier.monthlyBrl)}`,
+      suffix: isAnnual ? copy.priceYear : copy.priceMonth,
     };
   })();
 
@@ -817,17 +856,26 @@ function TierCard({ tier, copy, billing }) {
           <span className="text-3xl sm:text-4xl font-display font-black text-primary-50 tabular-nums">
             {priceDisplay.amount}
           </span>
-          <span className="text-sm text-primary-400">{priceDisplay.suffix}</span>
+          <span className="text-sm text-primary-400">
+            {priceDisplay.suffix}
+          </span>
         </p>
         <p className="text-[11px] text-primary-500 mt-1">
-          {billing === "annual" ? copy.annualNote : copy.monthlyNote} · {athletesLine} · {t.perAthlete}
+          {billing === "annual" ? copy.annualNote : copy.monthlyNote} ·{" "}
+          {athletesLine} · {t.perAthlete}
         </p>
       </div>
 
       <ul className="space-y-2 mb-5 flex-1">
         {t.features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-primary-200">
-            <Check className="w-4 h-4 text-accent-400 mt-0.5 shrink-0" strokeWidth={2.5} />
+          <li
+            key={i}
+            className="flex items-start gap-2 text-sm text-primary-200"
+          >
+            <Check
+              className="w-4 h-4 text-accent-400 mt-0.5 shrink-0"
+              strokeWidth={2.5}
+            />
             <span>{f}</span>
           </li>
         ))}
@@ -873,7 +921,9 @@ function ComparisonTable({ copy }) {
         <tbody className="divide-y divide-primary-700">
           {copy.rows.map((row, i) => (
             <tr key={i} className="hover:bg-primary-800/50 transition-colors">
-              <td className="px-4 py-3 text-primary-300 text-sm">{row.label}</td>
+              <td className="px-4 py-3 text-primary-300 text-sm">
+                {row.label}
+              </td>
               {row.vals.map((v, j) => (
                 <td key={j} className="px-3 py-3 text-center">
                   {v === true ? (
@@ -917,11 +967,32 @@ function IndividualPlayerCard({
   yearlySavingsAmount,
   fill,
 }) {
-  const priceStr =
-    activeOffering && Number.isFinite(Number(activeOffering.priceAmount))
-      ? `R$ ${formatBrl(Number(activeOffering.priceAmount))}`
-      : "—";
   const isYearly = billing === "yearly";
+  // Prefer the live Stripe offering's price when present, fall back
+  // to the fixed INDIVIDUAL_PRICES constants above so the card never
+  // renders a "—" placeholder. Checkout still calls Stripe with
+  // whatever offering was resolved by the parent, so if Stripe returns
+  // a different real amount the checkout is truth; the display just
+  // guarantees a friendly number.
+  const livePrice =
+    activeOffering && Number.isFinite(Number(activeOffering.priceAmount))
+      ? Number(activeOffering.priceAmount)
+      : null;
+  const fallbackPrice = isYearly
+    ? INDIVIDUAL_PRICES.yearlyBrl
+    : INDIVIDUAL_PRICES.monthlyBrl;
+  const displayPrice = livePrice ?? fallbackPrice;
+  const priceStr = `R$ ${formatBrl(displayPrice)}`;
+
+  // Yearly equivalent + savings labels — same fallback logic:
+  // parent computes from live Stripe offerings and passes them in;
+  // if either is null (Stripe offerings missing), compute from the
+  // INDIVIDUAL_PRICES constants so the card still tells the "annual
+  // is cheaper" story.
+  const yearlyEqLocal = yearlyEquivalentMonthly ||
+    `R$ ${formatBrl(INDIVIDUAL_PRICES.yearlyBrl / 12)}`;
+  const savingsLocal = yearlySavingsAmount ||
+    `R$ ${formatBrl(INDIVIDUAL_PRICES.monthlyBrl * 12 - INDIVIDUAL_PRICES.yearlyBrl)}`;
 
   return (
     <section className="max-w-2xl mx-auto rounded-panel bg-primary-panel border border-primary-700 p-5 sm:p-7">
@@ -970,22 +1041,28 @@ function IndividualPlayerCard({
             {isYearly ? copy.yearlyPricePer : copy.monthlyPricePer}
           </span>
         </p>
-        {isYearly && yearlyEquivalentMonthly && (
+        {isYearly && (
           <p className="text-xs text-primary-400 mt-1">
-            {fill(copy.yearlyEquivalent, { monthly: yearlyEquivalentMonthly })}
+            {fill(copy.yearlyEquivalent, { monthly: yearlyEqLocal })}
           </p>
         )}
-        {isYearly && yearlySavingsAmount && (
+        {isYearly && (
           <p className="text-xs text-accent-400 font-semibold mt-1">
-            {fill(copy.yearlySavings, { amount: yearlySavingsAmount })}
+            {fill(copy.yearlySavings, { amount: savingsLocal })}
           </p>
         )}
       </div>
 
       <ul className="space-y-2 mb-5 max-w-md mx-auto">
         {copy.features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-primary-200">
-            <Check className="w-4 h-4 text-accent-400 mt-0.5 shrink-0" strokeWidth={2.5} />
+          <li
+            key={i}
+            className="flex items-start gap-2 text-sm text-primary-200"
+          >
+            <Check
+              className="w-4 h-4 text-accent-400 mt-0.5 shrink-0"
+              strokeWidth={2.5}
+            />
             <span>{f}</span>
           </li>
         ))}
