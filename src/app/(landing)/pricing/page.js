@@ -1,29 +1,31 @@
 // src/app/(landing)/pricing/page.js
 //
-// FieldTalk Pro Path 26/27 pricing. Pro Path is the only active
-// edition (WC2026 references were stripped on 2026-08-27 — new
-// content editions can be added later with fresh dedicated pages
-// rather than resurrecting the edition-aware routing that used to
-// live here).
+// Global Player pricing — B2B-first as of 2026-09.
 //
-// Layout (top of viewport → bottom):
-//   1. Compact hero (eyebrow + title)
-//   2. Toggle subscription card — Mensal ↔ Anual, yearly default.
-//      This is the primary CTA; sits above the fold on mobile.
-//   3. Full Access code panel — inline redeem for cohort codes.
-//   4. Season Pass — one-time alternative, quieter styling.
-//   5. FAQ
+// The page's job is to sell the argument, not the product features:
+// "One lost signing costs an agent more than a year of Global Player."
+// Everything else on the page — tier cards, calculator, FAQ — serves
+// that framing.
 //
-// The toggle-card pattern (vs two side-by-side cards) was chosen
-// because it's what modern SaaS defaults to and — with yearly as
-// the pre-selected option — reliably converts more users to yearly
-// than a side-by-side "pick your plan" layout. Default-selected
-// options carry disproportionate weight in subscription pricing.
+// Layout (top → bottom):
+//   1. Hero — the sales pitch, one primary CTA (Talk to us / Book a demo)
+//   2. Interactive calculator — visitor moves sliders, math sells itself
+//   3. B2B tier cards — Squad / Roster / Agency (Roster highlighted)
+//   4. Feature comparison table — side-by-side matrix
+//   5. Inquiry form — leads land in /admin/leads with source_detail tagged
+//   6. Individual player quiet card — Stripe checkout (unchanged)
+//   7. Full Access code panel — cohort-code redeem (unchanged)
+//   8. FAQ
 //
-// Language: syncs to the app-wide LanguageContext (works because
-// (landing)/layout.js provides LanguageProvider). Local top-right
-// PT/EN toggle stays for landing-page visitors who haven't clicked
-// through the main site nav yet.
+// Preserved from the pre-2026-09 version:
+//   - Stripe checkout hook (handleBuy) — individual player subscription
+//   - FullAccessPanel — cohort-code redeem for partner schools
+//   - Language toggle synced to the app-wide LanguageContext
+//
+// Related infra:
+//   - Calendly widget (client-side lazy-loaded) — NEXT_PUBLIC_CALENDLY_URL
+//     env var points at the booking page. See CalendlyButton.js.
+//   - /api/leads/inquiry — public endpoint the inquiry form posts to.
 
 "use client";
 
@@ -31,55 +33,164 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Trophy,
   ArrowRight,
   Shield,
   ChevronDown,
   Loader2,
-  Tag,
   KeyRound,
-  // Calendar,
+  Check,
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
+import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import Button from "@/components/ui/button";
+import Eyebrow from "@/components/ui/eyebrow";
+import CalendlyButton from "@/components/pricing/CalendlyButton";
+import PricingCalculator from "@/components/pricing/PricingCalculator";
+import InquiryForm from "@/components/pricing/InquiryForm";
 
-// The only edition Pro Path pricing surfaces. If we ever run a
-// second concurrent edition, spawn a dedicated page rather than
-// resurrecting edition-aware routing here — those trade-offs muddy
-// the toggle-card conversion story.
+// The only edition Pro Path pricing surfaces at. If a second
+// concurrent edition ever ships, spawn a dedicated page rather than
+// resurrecting the edition-aware routing that used to live here.
 const EDITION_ID = "propath_26_27";
+
+// Tier catalogue — copy + prices in one place. If David revises
+// prices, they change here (and in the calculator TIERS constant).
+const TIERS = [
+  {
+    id: "squad",
+    monthlyBrl: 397,
+    annualBrl: 3970, // 10 months priced (2 months free)
+    athletes: 20,
+    highlight: false,
+    icon: "shield",
+  },
+  {
+    id: "roster",
+    monthlyBrl: 897,
+    annualBrl: 8970,
+    athletes: 50,
+    highlight: true, // "Mais popular"
+    icon: "trophy",
+  },
+  {
+    id: "agency",
+    monthlyBrl: 2997,
+    annualBrl: null, // custom / from-price
+    athletes: "200+",
+    highlight: false,
+    icon: "sparkles",
+  },
+];
 
 const translations = {
   en: {
     hero: {
-      eyebrow: "Pricing",
-      titleHighlight: "Start training with",
+      eyebrow: "Global Player · for agencies, academies, clubs",
+      title: "Not just English. A safety net for your athletes.",
+      sub: "Track 20+ players from one dashboard. Spot problems before they become losses.",
+      primaryCta: "Book a demo",
+      secondaryCta: "See plans ↓",
     },
-    toggle: {
-      monthly: "Monthly",
-      yearly: "Yearly",
-      yearlyBadge: "SAVE 48%",
+    valueCallout: {
+      title: "One lost signing costs more than a year of Global Player.",
+      body: "A promising contract slipping through your fingers is years of your commission. This costs less than the gas you spend visiting dorms.",
     },
-    subscription: {
-      pillLabel: "Subscription",
-      title: "Pro Path",
+    tiers: {
+      squad: {
+        name: "Squad",
+        tagline: "Get every athlete on your radar.",
+        blurb: "For small agencies and academies with up to 20 athletes.",
+        perAthlete: "Under R$ 20 per athlete / month",
+        features: [
+          "Admin dashboard for the whole roster",
+          "Weekly engagement report",
+          "Crisis alerts (depression, anxiety, frustration)",
+          "Bilingual support (PT + EN)",
+        ],
+        cta: "Start with Squad",
+      },
+      roster: {
+        name: "Roster",
+        tagline: "Everything in Squad, at scale.",
+        blurb: "For mid-size agencies managing up to 50 athletes.",
+        perAthlete: "Under R$ 18 per athlete / month",
+        badge: "Most popular",
+        features: [
+          "Everything in Squad",
+          "Up to 50 athletes",
+          "Priority support",
+          "CSV export of engagement data",
+        ],
+        cta: "Get Roster",
+      },
+      agency: {
+        name: "Agency",
+        tagline: "White-labelled. Data-owned. Tactically tuned.",
+        blurb: "For big agencies and pro clubs — Roc Nation-scale operations.",
+        perAthlete: "Custom seat counts",
+        features: [
+          "Everything in Roster",
+          "White-label branding (your logo, your voice)",
+          "Full data ownership + LGPD-compliant export",
+          "Tactical customization (Premier League / La Liga / Portugal focus)",
+          "Dedicated onboarding",
+          "Setup fee from R$ 2,000 (one-time)",
+        ],
+        cta: "Talk to us",
+        fromPrefix: "From",
+      },
+      priceMonth: "/ month",
+      priceYear: "/ year",
+      priceCustom: "Custom",
+      athletesLabelSingular: "athlete",
+      athletesLabelPlural: "athletes",
+      upTo: "Up to",
+      annualNote: "Annual · 2 months free",
+      monthlyNote: "Monthly · no lock-in",
+      billingMonthly: "Monthly",
+      billingAnnual: "Annual",
+      billingSave: "Save 2 months",
+    },
+    comparison: {
+      heading: "What's in each plan",
+      cols: ["Squad", "Roster", "Agency"],
+      rows: [
+        { label: "Admin dashboard", vals: [true, true, true] },
+        { label: "Weekly engagement report", vals: [true, true, true] },
+        { label: "Crisis alerts", vals: [true, true, true] },
+        { label: "Max athletes", vals: ["20", "50", "200+"] },
+        { label: "Priority support", vals: [false, true, true] },
+        { label: "CSV / API export", vals: [false, true, true] },
+        { label: "White-label branding", vals: [false, false, true] },
+        { label: "Data ownership + LGPD export", vals: [false, false, true] },
+        { label: "Tactical customization (destination league)", vals: [false, false, true] },
+        { label: "Dedicated onboarding", vals: [false, false, true] },
+        { label: "Setup fee", vals: ["—", "—", "R$ 2,000+"] },
+      ],
+    },
+    individual: {
+      eyebrow: "Just for me",
+      title: "Individual player plan",
+      sub: "The whole product, for one athlete.",
       monthlyPricePer: "per month",
       yearlyPricePer: "per year",
       yearlyEquivalent: "≈ {monthly}/month",
       yearlySavings: "You save {amount} vs paying monthly",
       features: [
-        "Access to all Pro Path lessons",
+        "Access to every Pro Path lesson",
         "Skill Radar to track your progress",
         "Certificate as you complete each Level",
-        "Virtual Coach on WhatsApp for practice + questions",
+        "Virtual Coach on WhatsApp",
       ],
       cta: "Start now",
       loading: "Loading…",
+      billingMonthly: "Monthly",
+      billingAnnual: "Annual",
+      couponHint: "Discount codes → add at Stripe Checkout.",
     },
-    couponHint:
-      "Got a discount coupon? Add it at the next step on Stripe Checkout.",
     fullAccess: {
       eyebrow: "Got a Full Access code?",
       heading: "Skip checkout — redeem here",
@@ -92,73 +203,153 @@ const translations = {
       signedOutNote: "Sign up first so the code can attach to your account.",
       signedOutCta: "Create your account",
       errors: {
-        unknown_code:
-          "We don't recognise that code. Check with your teacher / coordinator.",
+        unknown_code: "We don't recognise that code. Check with your teacher / coordinator.",
         expired: "That code has expired. Ask for a new one.",
         no_seats: "All seats on that code have already been claimed.",
-        already_redeemed:
-          "You've already redeemed this code — you're good to go.",
-        not_signed_in:
-          "Sign in first so we can attach the code to your account.",
+        already_redeemed: "You've already redeemed this code — you're good to go.",
+        not_signed_in: "Sign in first so we can attach the code to your account.",
         generic: "Something went wrong. Please try again.",
       },
     },
-    seasonPass: {
-      eyebrow: "One-time alternative",
-      title: "Season Pass",
-      subtitle: "Full access until {accessEndDate} — no auto-renewal.",
-      cta: "Get Season Pass",
-    },
     faq: {
-      title: "Questions",
+      title: "Frequently asked questions",
       items: [
-        // {
-        //   q: "What's the difference between the subscription and the Season Pass?",
-        //   a: "The subscription (monthly or yearly) gives you continuing access as long as you're subscribed. The Season Pass is a single up-front payment for full access until {accessEndDate} — no auto-renewal.",
-        // },
         {
-          q: "Can I cancel my subscription anytime?",
-          a: "Yes. You can cancel from the Customer Portal at any time. Access stays until the end of the period you've already paid for.",
+          q: "What counts as an athlete?",
+          a: "An active dashboard seat — one athlete linked to your agency account. Athletes who leave your roster free the seat up.",
         },
         {
-          q: "How do coupon codes work?",
-          a: 'Stripe Checkout has a built-in "Add promotion code" field. Enter your code there — the discount applies automatically.',
+          q: "Can I upgrade mid-cycle?",
+          a: "Yes. Upgrade any time; we prorate the difference. Downgrade at renewal.",
         },
         {
-          q: "What payment methods do you accept?",
-          a: "All major credit cards and PIX (Brazilian users). Stripe handles the payment securely; we never see your card details.",
+          q: "How do crisis alerts work?",
+          a: "The bot flags language patterns (depression, acute anxiety, frustration) in athletes' text responses. Agents get an email + WhatsApp alert with the context. Human review before any contact — we never automate reaching out during a crisis moment.",
+        },
+        {
+          q: "What data does the agency own on Agency tier?",
+          a: "Aggregate + per-player engagement logs, exportable via CSV or API. LGPD-compliant. The data belongs to your agency — you can migrate off anytime.",
+        },
+        {
+          q: "International pricing (USD / EUR)?",
+          a: "Talk to us — we quote in USD or EUR for agencies operating outside Brazil. Setup + monthly rates are equivalent.",
+        },
+        {
+          q: "How does the coupon field work?",
+          a: 'The individual player plan has a "Add promotion code" field at Stripe Checkout. Enter your code there — the discount applies automatically.',
         },
       ],
+    },
+    footerCta: {
+      title: "Ready to talk?",
+      sub: "Book a 15-minute demo or drop us a message — Paul or David will follow up personally.",
     },
   },
   pt: {
     hero: {
-      eyebrow: "Planos",
-      titleHighlight: "Comece a treinar com",
+      eyebrow: "Global Player · para agências, escolinhas, clubes",
+      title: "Não é só inglês. É proteção para o seu ativo.",
+      sub: "Acompanhe 20+ atletas em um painel. Detecte problemas antes que virem prejuízo.",
+      primaryCta: "Agendar demo",
+      secondaryCta: "Ver planos ↓",
     },
-    toggle: {
-      monthly: "Mensal",
-      yearly: "Anual",
-      yearlyBadge: "ECONOMIZE 48%",
+    valueCallout: {
+      title: "Um contrato perdido custa mais do que um ano de Global Player.",
+      body: "Um contrato promissor escapando das suas mãos são anos da sua comissão. Isto custa menos que a gasolina que você gasta indo aos alojamentos.",
     },
-    subscription: {
-      pillLabel: "Assinatura",
-      title: "Pro Path",
+    tiers: {
+      squad: {
+        name: "Base",
+        tagline: "Coloque cada atleta no seu radar.",
+        blurb: "Para agências pequenas e escolinhas com até 20 atletas.",
+        perAthlete: "Menos de R$ 20 por atleta / mês",
+        features: [
+          "Painel administrativo do elenco inteiro",
+          "Relatório semanal de engajamento",
+          "Alertas de crise (depressão, ansiedade, frustração)",
+          "Suporte bilíngue (PT + EN)",
+        ],
+        cta: "Começar com o Base",
+      },
+      roster: {
+        name: "Elenco",
+        tagline: "Tudo do Base, em escala.",
+        blurb: "Para agências de médio porte gerenciando até 50 atletas.",
+        perAthlete: "Menos de R$ 18 por atleta / mês",
+        badge: "Mais popular",
+        features: [
+          "Tudo do Base",
+          "Até 50 atletas",
+          "Suporte prioritário",
+          "Exportação CSV dos dados de engajamento",
+        ],
+        cta: "Escolher Elenco",
+      },
+      agency: {
+        name: "Agência",
+        tagline: "Marca própria. Dados seus. Ajuste tático.",
+        blurb: "Para grandes agências e clubes profissionais — escala Roc Nation.",
+        perAthlete: "Vagas customizadas",
+        features: [
+          "Tudo do Elenco",
+          "Marca branca (seu logo, sua voz)",
+          "Propriedade total dos dados + exportação LGPD",
+          "Customização tática (foco Premier League / La Liga / Portugal)",
+          "Onboarding dedicado",
+          "Taxa de setup a partir de R$ 2.000 (pagamento único)",
+        ],
+        cta: "Fale com a gente",
+        fromPrefix: "A partir de",
+      },
+      priceMonth: "/ mês",
+      priceYear: "/ ano",
+      priceCustom: "Customizado",
+      athletesLabelSingular: "atleta",
+      athletesLabelPlural: "atletas",
+      upTo: "Até",
+      annualNote: "Anual · 2 meses grátis",
+      monthlyNote: "Mensal · sem fidelidade",
+      billingMonthly: "Mensal",
+      billingAnnual: "Anual",
+      billingSave: "Economize 2 meses",
+    },
+    comparison: {
+      heading: "O que vem em cada plano",
+      cols: ["Base", "Elenco", "Agência"],
+      rows: [
+        { label: "Painel administrativo", vals: [true, true, true] },
+        { label: "Relatório semanal de engajamento", vals: [true, true, true] },
+        { label: "Alertas de crise", vals: [true, true, true] },
+        { label: "Máximo de atletas", vals: ["20", "50", "200+"] },
+        { label: "Suporte prioritário", vals: [false, true, true] },
+        { label: "Exportação CSV / API", vals: [false, true, true] },
+        { label: "Marca branca", vals: [false, false, true] },
+        { label: "Propriedade dos dados + LGPD", vals: [false, false, true] },
+        { label: "Customização tática (liga de destino)", vals: [false, false, true] },
+        { label: "Onboarding dedicado", vals: [false, false, true] },
+        { label: "Taxa de setup", vals: ["—", "—", "R$ 2.000+"] },
+      ],
+    },
+    individual: {
+      eyebrow: "Só para mim",
+      title: "Plano individual",
+      sub: "O produto inteiro, para um atleta.",
       monthlyPricePer: "por mês",
       yearlyPricePer: "por ano",
       yearlyEquivalent: "≈ {monthly}/mês",
       yearlySavings: "Você economiza {amount} vs pagar mensalmente",
       features: [
-        "Acesso a todas as aulas Pro Path",
+        "Acesso a todas as aulas do Pro Path",
         "Radar de Habilidades pra acompanhar seu progresso",
         "Certificado a cada Nível concluído",
-        "Técnico Virtual no WhatsApp pra prática + dúvidas",
+        "Técnico Virtual no WhatsApp",
       ],
       cta: "Começar agora",
       loading: "Carregando…",
+      billingMonthly: "Mensal",
+      billingAnnual: "Anual",
+      couponHint: "Cupom de desconto → adicione no Stripe Checkout.",
     },
-    couponHint:
-      "Tem um cupom de desconto? Adicione no próximo passo, no Stripe Checkout.",
     fullAccess: {
       eyebrow: "Tem um código de Acesso Completo?",
       heading: "Pule o checkout — resgate aqui",
@@ -168,65 +359,57 @@ const translations = {
       submitting: "Resgatando…",
       successTitle: "Pronto!",
       successBody: "Acesso liberado. Indo para o painel…",
-      signedOutNote:
-        "Crie sua conta primeiro para que o código fique vinculado a ela.",
+      signedOutNote: "Crie sua conta primeiro para que o código fique vinculado a ela.",
       signedOutCta: "Criar conta",
       errors: {
-        unknown_code:
-          "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
+        unknown_code: "Não reconhecemos esse código. Confirme com seu professor / coordenador.",
         expired: "Esse código expirou. Peça um novo.",
         no_seats: "Todas as vagas desse código já foram usadas.",
         already_redeemed: "Você já resgatou esse código — está tudo certo.",
-        not_signed_in:
-          "Entre primeiro para que possamos vincular o código à sua conta.",
+        not_signed_in: "Entre primeiro para que possamos vincular o código à sua conta.",
         generic: "Algo deu errado. Tente novamente.",
       },
     },
-    seasonPass: {
-      eyebrow: "Alternativa avulsa",
-      title: "Season Pass",
-      subtitle: "Acesso total até {accessEndDate} — sem renovação automática.",
-      cta: "Comprar Season Pass",
-    },
     faq: {
-      title: "Perguntas",
+      title: "Perguntas frequentes",
       items: [
-        // {
-        //   q: "Qual a diferença entre a assinatura e o Season Pass?",
-        //   a: "A assinatura (mensal ou anual) dá acesso contínuo enquanto você mantiver a assinatura ativa. O Season Pass é um pagamento único que libera acesso total até {accessEndDate} — sem renovação automática.",
-        // },
         {
-          q: "Posso cancelar a assinatura a qualquer momento?",
-          a: "Sim. Você pode cancelar pelo Portal do Cliente quando quiser. O acesso continua até o fim do período já pago.",
+          q: "O que conta como atleta?",
+          a: "Uma vaga ativa no painel — um atleta vinculado à conta da sua agência. Atletas que saem da sua carteira liberam a vaga.",
         },
         {
-          q: "Como funcionam os cupons?",
-          a: 'O Stripe Checkout tem um campo "Adicionar código promocional". Digite seu código lá — o desconto se aplica automaticamente.',
+          q: "Posso subir de plano no meio do ciclo?",
+          a: "Sim. Faça upgrade a qualquer momento; a gente pró-rateia a diferença. Downgrade fica para a renovação.",
         },
         {
-          q: "Quais formas de pagamento vocês aceitam?",
-          a: "Todos os principais cartões e PIX (para usuários brasileiros). O Stripe processa o pagamento com segurança — nunca vemos seus dados de cartão.",
+          q: "Como funcionam os alertas de crise?",
+          a: "O bot detecta padrões de linguagem (depressão, ansiedade aguda, frustração) nas respostas escritas dos atletas. O empresário recebe email + WhatsApp com o contexto. Revisão humana sempre antes de qualquer contato — nunca automatizamos o momento de crise.",
+        },
+        {
+          q: "O que a agência possui no plano Agência?",
+          a: "Logs de engajamento agregados e por-atleta, exportáveis por CSV ou API. LGPD-compliant. Os dados pertencem à sua agência — você pode migrar quando quiser.",
+        },
+        {
+          q: "Preços internacionais (USD / EUR)?",
+          a: "Fale com a gente — cotamos em USD ou EUR para agências fora do Brasil. Setup + mensalidade em valores equivalentes.",
+        },
+        {
+          q: "Como funciona o campo de cupom?",
+          a: 'O plano individual tem um campo "Adicionar código promocional" no Stripe Checkout. Cole o código lá — o desconto aplica automaticamente.',
         },
       ],
+    },
+    footerCta: {
+      title: "Vamos conversar?",
+      sub: "Agende uma demo de 15 minutos ou nos mande uma mensagem — Paul ou David vão te retornar pessoalmente.",
     },
   },
 };
 
 function PricingPageFallback() {
   return (
-    <div className="min-h-screen bg-[#070707] relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(132,204,22,0.20), rgba(132,204,22,0) 70%)",
-          }}
-        />
-      </div>
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
-      </div>
+    <div className="min-h-screen bg-primary-900 flex items-center justify-center">
+      <Loader2 className="w-6 h-6 animate-spin text-accent-400" />
     </div>
   );
 }
@@ -250,45 +433,30 @@ function PricingPageContent() {
     const all = listOfferingsForEdition(EDITION_ID);
     return {
       monthly:
-        all.find(
-          (o) => o.mode === "subscription" && o.interval === "monthly",
-        ) || null,
+        all.find((o) => o.mode === "subscription" && o.interval === "monthly") || null,
       yearly:
-        all.find((o) => o.mode === "subscription" && o.interval === "yearly") ||
-        null,
-      oneTime: all.find((o) => o.mode === "one_time") || null,
+        all.find((o) => o.mode === "subscription" && o.interval === "yearly") || null,
     };
   }, []);
 
-  // Yearly default per subscription-conversion best practice — the
-  // pre-selected option in a toggle disproportionately drives the
-  // choice for users who don't have a strong prior preference.
-  const [billingInterval, setBillingInterval] = useState("yearly");
+  // Individual player billing toggle — yearly default for the same
+  // conversion reason as before (default-selected option carries
+  // disproportionate weight).
+  const [individualBilling, setIndividualBilling] = useState("yearly");
   const activeOffering =
-    billingInterval === "yearly" ? offerings.yearly : offerings.monthly;
+    individualBilling === "yearly" ? offerings.yearly : offerings.monthly;
 
-  const accessEndDate = useMemo(() => {
-    if (!edition?.oneTimeAccessEnd) return null;
-    try {
-      return new Intl.DateTimeFormat(lang === "pt" ? "pt-BR" : "en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date(edition.oneTimeAccessEnd));
-    } catch {
-      return null;
-    }
-  }, [edition, lang]);
+  // B2B tier billing toggle — separate from individual so agencies
+  // can eyeball the annual saving without disturbing the individual
+  // card below.
+  const [tierBilling, setTierBilling] = useState("annual");
 
-  // Effective monthly cost of the yearly plan → surfaces the savings
-  // narrative below the price. Formatted in BRL because Pro Path
-  // pricing is BR-market-first; extend when we add USD tiers.
   const yearlyEquivalentMonthly = useMemo(() => {
     if (!offerings.yearly) return null;
     const price = Number(offerings.yearly.priceAmount);
     if (!Number.isFinite(price)) return null;
     const perMonth = price / 12;
-    return `R$ ${perMonth.toFixed(0).replace(/^(\d)(\d{3})$/, "$1.$2")}`;
+    return `R$ ${formatBrl(perMonth)}`;
   }, [offerings.yearly]);
 
   const yearlySavingsAmount = useMemo(() => {
@@ -298,13 +466,12 @@ function PricingPageContent() {
     if (!Number.isFinite(m) || !Number.isFinite(y)) return null;
     const saved = m * 12 - y;
     if (saved <= 0) return null;
-    return `R$ ${saved.toFixed(0).replace(/^(\d)(\d{3})$/, "$1.$2")}`;
+    return `R$ ${formatBrl(saved)}`;
   }, [offerings.monthly, offerings.yearly]);
 
   const fill = (s, vars = {}) => {
     if (typeof s !== "string") return s;
     let out = s;
-    if (accessEndDate) out = out.replace(/\{accessEndDate\}/g, accessEndDate);
     for (const [k, v] of Object.entries(vars)) {
       out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
     }
@@ -312,7 +479,6 @@ function PricingPageContent() {
   };
 
   const [checkoutLoading, setCheckoutLoading] = useState(null);
-
   const handleBuy = async (offeringId) => {
     if (!user) {
       router.push(`/join?edition=${encodeURIComponent(EDITION_ID)}`);
@@ -342,16 +508,22 @@ function PricingPageContent() {
 
   if (!edition) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#070707] text-white/70 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-primary-900 text-primary-300 p-6">
         Unknown edition. Contact support.
       </div>
     );
   }
 
+  const scrollToPlans = () => {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById("plans");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="min-h-screen bg-[#070707] text-white relative overflow-hidden">
-      {/* Ambient glows — lime + slate matching /propath and the
-          Pro Path dashboard so the whole funnel reads as one world. */}
+    <div className="min-h-screen bg-primary-900 text-primary-50 relative overflow-hidden">
+      {/* Ambient wash — matches /, /join, /signin so the whole
+          funnel reads as one continuous surface. */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-[-20%] left-[-15%] w-[60vw] h-[60vw] rounded-full blur-3xl opacity-70"
@@ -369,8 +541,7 @@ function PricingPageContent() {
         />
       </div>
 
-      {/* Top-right lang toggle — synced with the shared LanguageContext
-          so switching here also switches the rest of the app. */}
+      {/* Top-right lang toggle */}
       <div className="absolute top-4 right-4 z-20 flex gap-1 text-[10px] sm:text-xs">
         <button
           type="button"
@@ -378,7 +549,7 @@ function PricingPageContent() {
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "en"
               ? "bg-accent-400 text-primary-900"
-              : "bg-white/5 text-white/60 hover:text-white"
+              : "bg-primary-800 text-primary-400 hover:text-primary-100"
           }`}
         >
           EN
@@ -389,253 +560,456 @@ function PricingPageContent() {
           className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
             lang === "pt"
               ? "bg-accent-400 text-primary-900"
-              : "bg-white/5 text-white/60 hover:text-white"
+              : "bg-primary-800 text-primary-400 hover:text-primary-100"
           }`}
         >
           PT
         </button>
       </div>
 
-      <main className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10">
-        {/* Hero — compact + centred so the primary card lands above
-            the fold on 375px iPhones. */}
-        <section className="text-center pt-2">
-          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-accent-300/80 font-semibold mb-2 sm:mb-3">
-            {copy.hero.eyebrow}
-          </p>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-            {copy.hero.titleHighlight}{" "}
-            <span className="bg-gradient-to-r from-accent-300 to-accent-200 bg-clip-text text-transparent">
-              {edition.name}
-            </span>
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12 sm:space-y-16">
+        {/* ─── Hero ────────────────────────────────────────────── */}
+        <section className="text-center flex flex-col items-center">
+          <GlobalPlayerLogo
+            variant="crest"
+            tone="tonalDark"
+            size={64}
+            sting="rise"
+          />
+          <div className="mt-5">
+            <Eyebrow className="mb-2">{copy.hero.eyebrow}</Eyebrow>
+          </div>
+          <h1
+            className="font-display font-black tracking-tight leading-[1.05] text-primary-50 max-w-3xl"
+            style={{ fontSize: "clamp(1.75rem, 5.5vw, 3.25rem)" }}
+          >
+            {copy.hero.title}
           </h1>
+          <p className="mt-4 text-base sm:text-lg text-primary-300 max-w-2xl leading-relaxed">
+            {copy.hero.sub}
+          </p>
+          <div className="mt-6 flex items-center gap-3 flex-wrap justify-center">
+            <CalendlyButton label={copy.hero.primaryCta} size="lg" tier="hero" />
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={scrollToPlans}
+              type="button"
+            >
+              {copy.hero.secondaryCta}
+            </Button>
+          </div>
         </section>
 
-        {/* Primary subscription toggle card. Sits above the fold on
-            mobile so the first thing a visitor sees is the price,
-            the toggle, and a single unambiguous CTA. */}
-        {offerings.monthly && offerings.yearly && (
-          <section className="max-w-md mx-auto">
-            <div className="relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-accent-400/30 p-5 sm:p-7 shadow-[0_0_40px_rgba(163,230,53,0.10)]">
-              {/* Floating "Subscription" pill */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent-400 text-[10px] sm:text-xs font-bold text-primary-900 tracking-wider uppercase shadow">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {copy.subscription.pillLabel}
-                </span>
-              </div>
+        {/* ─── Value callout ───────────────────────────────────── */}
+        <section className="text-center max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-display font-black tracking-tight text-primary-50 leading-tight">
+            {copy.valueCallout.title}
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-primary-300 leading-relaxed">
+            {copy.valueCallout.body}
+          </p>
+        </section>
 
-              {/* Title */}
-              <div className="flex items-center gap-3 mb-5 mt-1">
-                <div className="w-11 h-11 rounded-2xl bg-accent-400/15 flex items-center justify-center shrink-0">
-                  <Trophy className="w-5 h-5 text-accent-300" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold leading-tight">
-                    {copy.subscription.title}
-                  </h2>
-                  {/* <p className="text-xs text-white/50 mt-0.5">
-                    {edition.tagline}
-                  </p> */}
-                </div>
-              </div>
+        {/* ─── Interactive calculator ──────────────────────────── */}
+        <PricingCalculator lang={lang === "en" ? "en" : "pt"} />
 
-              {/* Toggle: Monthly ↔ Yearly. Yearly wraps a "SAVE 48%"
-                  badge above the tab to visibly tilt the choice
-                  toward yearly without hiding monthly. */}
-              <div className="relative mb-5">
-                {billingInterval === "yearly" && (
-                  <div className="absolute -top-4 right-2 z-10">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-accent-200 text-[9px] font-black text-primary-900 tracking-wider">
-                      {copy.toggle.yearlyBadge}
-                    </span>
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-1 p-1 rounded-full bg-white/5 border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setBillingInterval("monthly")}
-                    className={`py-2 rounded-full text-sm font-bold transition-colors ${
-                      billingInterval === "monthly"
-                        ? "bg-white text-primary-900"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    {copy.toggle.monthly}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBillingInterval("yearly")}
-                    className={`py-2 rounded-full text-sm font-bold transition-colors ${
-                      billingInterval === "yearly"
-                        ? "bg-accent-400 text-primary-900"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    {copy.toggle.yearly}
-                  </button>
-                </div>
-              </div>
+        {/* ─── B2B tier cards ──────────────────────────────────── */}
+        <section id="plans" className="space-y-5">
+          {/* Billing interval toggle */}
+          <div className="flex items-center justify-center">
+            <BillingToggle
+              value={tierBilling}
+              onChange={setTierBilling}
+              labels={{
+                monthly: copy.tiers.billingMonthly,
+                annual: copy.tiers.billingAnnual,
+                save: copy.tiers.billingSave,
+              }}
+            />
+          </div>
 
-              {/* Price + savings narrative */}
-              <div className="mb-5">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl sm:text-5xl font-black tracking-tight">
-                    {activeOffering?.displayPrice ?? "—"}
-                  </span>
-                  <span className="text-sm text-white/40">
-                    {billingInterval === "yearly"
-                      ? copy.subscription.yearlyPricePer
-                      : copy.subscription.monthlyPricePer}
-                  </span>
-                </div>
-                {billingInterval === "yearly" && yearlyEquivalentMonthly && (
-                  <p className="mt-1 text-xs text-accent-200/90 font-semibold">
-                    {fill(copy.subscription.yearlyEquivalent, {
-                      monthly: yearlyEquivalentMonthly,
-                    })}
-                  </p>
-                )}
-                {billingInterval === "yearly" && yearlySavingsAmount && (
-                  <p className="mt-0.5 text-xs text-white/50">
-                    {fill(copy.subscription.yearlySavings, {
-                      amount: yearlySavingsAmount,
-                    })}
-                  </p>
-                )}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            {TIERS.map((tier) => (
+              <TierCard
+                key={tier.id}
+                tier={tier}
+                copy={copy.tiers}
+                billing={tierBilling}
+              />
+            ))}
+          </div>
+        </section>
 
-              {/* Features */}
-              <ul className="space-y-2 mb-6">
-                {copy.subscription.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-accent-300 shrink-0" />
-                    <span className="text-white/80 leading-relaxed">{f}</span>
-                  </li>
-                ))}
-              </ul>
+        {/* ─── Feature comparison table ────────────────────────── */}
+        <section>
+          <h2 className="text-lg sm:text-xl font-display font-black tracking-tight text-center mb-5 text-primary-50">
+            {copy.comparison.heading}
+          </h2>
+          <ComparisonTable copy={copy.comparison} />
+        </section>
 
-              {/* CTA */}
-              <button
-                type="button"
-                onClick={() => activeOffering && handleBuy(activeOffering.id)}
-                disabled={!activeOffering || checkoutLoading !== null}
-                className="w-full py-3 px-5 rounded-full bg-accent-400 hover:bg-accent-300 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
-              >
-                {checkoutLoading === activeOffering?.id ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {copy.subscription.loading}
-                  </>
-                ) : (
-                  <>
-                    {copy.subscription.cta}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
+        {/* ─── Inquiry form ────────────────────────────────────── */}
+        <InquiryForm lang={lang === "en" ? "en" : "pt"} />
 
-              {/* Coupon hint — right under the CTA so users with a
-                  discount code know their entry point is Stripe
-                  Checkout, not a field on this page. */}
-              <p className="mt-3 flex items-start gap-1.5 text-xs sm:text-sm text-white/55 leading-relaxed">
-                <Tag className="w-4 h-4 text-accent-300/70 mt-0.5 shrink-0" />
-                <span>{copy.couponHint}</span>
-              </p>
-            </div>
-          </section>
-        )}
+        {/* ─── Individual player quiet card ────────────────────── */}
+        <IndividualPlayerCard
+          copy={copy.individual}
+          billing={individualBilling}
+          onBillingChange={setIndividualBilling}
+          activeOffering={activeOffering}
+          checkoutLoading={checkoutLoading}
+          handleBuy={handleBuy}
+          yearlyEquivalentMonthly={yearlyEquivalentMonthly}
+          yearlySavingsAmount={yearlySavingsAmount}
+          fill={fill}
+        />
 
-        {/* Full Access code panel — sits directly under the
-            subscription card so cohort students don't accidentally
-            click through to Stripe when they have a code in hand. */}
+        {/* ─── Full Access code redeem ─────────────────────────── */}
         <FullAccessPanel
           copy={copy.fullAccess}
           isSignedIn={!!user}
           edition={EDITION_ID}
-          onSuccess={() => {
-            setTimeout(() => router.push("/dashboard"), 1200);
-          }}
+          onSuccess={() => router.push("/lesson")}
         />
 
-        {/* Season Pass — one-time alternative. Quieter styling so
-            the subscription card stays the primary read. */}
-        {/* {offerings.oneTime && (
-          <section className="max-w-md mx-auto">
-            <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors p-5">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 font-bold mb-1">
-                {copy.seasonPass.eyebrow}
-              </p>
-              <h3 className="text-base font-bold text-white">
-                {copy.seasonPass.title}
-              </h3>
-              <p className="text-xs text-white/50 mt-0.5 mb-3 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
-                {fill(copy.seasonPass.subtitle)}
-              </p>
-              <div className="flex items-baseline gap-1.5 mb-4">
-                <span className="text-2xl sm:text-3xl font-black">
-                  {offerings.oneTime.displayPrice}
-                </span>
-                <span className="text-xs text-white/40">
-                  {offerings.oneTime.displayInterval}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleBuy(offerings.oneTime.id)}
-                disabled={checkoutLoading !== null}
-                className="w-full py-2.5 px-4 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-              >
-                {checkoutLoading === offerings.oneTime.id ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    {copy.seasonPass.cta}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
-          </section>
-        )} */}
-
-        {/* FAQ */}
-        <section className="max-w-2xl mx-auto pb-6">
-          <h2 className="text-lg sm:text-xl font-bold text-center mb-4">
+        {/* ─── FAQ ─────────────────────────────────────────────── */}
+        <section className="max-w-2xl mx-auto">
+          <h2 className="text-lg sm:text-xl font-display font-black tracking-tight text-center mb-4 text-primary-50">
             {copy.faq.title}
           </h2>
           <div className="space-y-2">
             {copy.faq.items.map((item, i) => (
               <details
                 key={i}
-                className="group rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/15 transition-colors"
+                className="group rounded-card bg-primary-panel border border-primary-700 hover:border-primary-600 transition-colors"
               >
-                <summary className="cursor-pointer list-none p-4 flex items-start justify-between gap-3 font-semibold text-white text-sm">
+                <summary className="cursor-pointer list-none p-4 flex items-start justify-between gap-3 font-semibold text-primary-50 text-sm">
                   <span>{item.q}</span>
-                  <ChevronDown className="w-4 h-4 text-accent-300 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
+                  <ChevronDown className="w-4 h-4 text-accent-400 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
-                <p className="px-4 pb-4 text-white/65 text-sm leading-relaxed">
+                <p className="px-4 pb-4 text-primary-300 text-sm leading-relaxed">
                   {fill(item.a)}
                 </p>
               </details>
             ))}
           </div>
         </section>
+
+        {/* ─── Footer CTA ──────────────────────────────────────── */}
+        <section className="text-center max-w-2xl mx-auto rounded-panel bg-primary-panel border border-accent-400/30 p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-display font-black tracking-tight text-primary-50 leading-tight">
+            {copy.footerCta.title}
+          </h2>
+          <p className="text-sm text-primary-300 mt-3 mb-5 leading-relaxed">
+            {copy.footerCta.sub}
+          </p>
+          <CalendlyButton label={copy.hero.primaryCta} size="md" tier="footer" />
+        </section>
       </main>
     </div>
   );
 }
 
-/**
- * Inline Full Access code panel — sits directly below the primary
- * card so partner-school students see the redeem path without having
- * to spot a small "Have a code?" link at the bottom of the page.
- *
- * Signed-out users see a sign-up nudge instead of the form — the
- * code has to attach to a real player row, so signup has to happen
- * first.
- */
+/* ─── BillingToggle ────────────────────────────────────────── */
+
+function BillingToggle({ value, onChange, labels }) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full bg-primary-panel border border-primary-700 p-1">
+      <button
+        type="button"
+        onClick={() => onChange("monthly")}
+        className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+          value === "monthly"
+            ? "bg-primary-800 text-primary-50"
+            : "text-primary-400 hover:text-primary-100"
+        }`}
+      >
+        {labels.monthly}
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("annual")}
+        className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+          value === "annual"
+            ? "bg-accent-400 text-primary-900"
+            : "text-primary-400 hover:text-primary-100"
+        }`}
+      >
+        {labels.annual}
+        <span className={`text-[10px] font-bold ${value === "annual" ? "text-primary-900/70" : "text-accent-400"}`}>
+          {labels.save}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/* ─── TierCard ─────────────────────────────────────────────── */
+
+function TierCard({ tier, copy, billing }) {
+  const t = copy[tier.id];
+  const isAgency = tier.id === "agency";
+  const isHighlighted = !!tier.highlight;
+
+  const priceDisplay = (() => {
+    if (isAgency) {
+      return {
+        prefix: t.fromPrefix,
+        amount: `R$ ${formatBrl(tier.monthlyBrl)}`,
+        suffix: copy.priceMonth,
+      };
+    }
+    if (billing === "annual") {
+      return {
+        prefix: null,
+        amount: `R$ ${formatBrl(tier.annualBrl)}`,
+        suffix: copy.priceYear,
+      };
+    }
+    return {
+      prefix: null,
+      amount: `R$ ${formatBrl(tier.monthlyBrl)}`,
+      suffix: copy.priceMonth,
+    };
+  })();
+
+  const athletesLine = (() => {
+    if (typeof tier.athletes === "string") {
+      // Agency: "200+"
+      return `${tier.athletes} ${copy.athletesLabelPlural}`;
+    }
+    return `${copy.upTo} ${tier.athletes} ${copy.athletesLabelPlural}`;
+  })();
+
+  return (
+    <div
+      className={`relative flex flex-col rounded-panel bg-primary-panel border p-5 sm:p-6 transition-colors ${
+        isHighlighted
+          ? "border-accent-400 shadow-[0_0_40px_rgba(163,230,53,0.10)]"
+          : "border-primary-700 hover:border-primary-600"
+      }`}
+    >
+      {isHighlighted && t.badge && (
+        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-400 text-primary-900 text-[10px] font-bold uppercase tracking-label">
+          <Sparkles className="w-3 h-3" strokeWidth={2.5} />
+          {t.badge}
+        </span>
+      )}
+
+      <div className="mb-4">
+        <h3 className="text-xl sm:text-2xl font-display font-black tracking-tight text-primary-50">
+          {t.name}
+        </h3>
+        <p className="text-sm text-primary-300 leading-relaxed mt-1">
+          {t.tagline}
+        </p>
+        <p className="text-xs text-primary-500 mt-2">{t.blurb}</p>
+      </div>
+
+      <div className="mb-4">
+        {priceDisplay.prefix && (
+          <p className="text-[11px] uppercase tracking-label text-primary-400 font-semibold">
+            {priceDisplay.prefix}
+          </p>
+        )}
+        <p className="flex items-baseline gap-1.5">
+          <span className="text-3xl sm:text-4xl font-display font-black text-primary-50 tabular-nums">
+            {priceDisplay.amount}
+          </span>
+          <span className="text-sm text-primary-400">{priceDisplay.suffix}</span>
+        </p>
+        <p className="text-[11px] text-primary-500 mt-1">
+          {billing === "annual" ? copy.annualNote : copy.monthlyNote} · {athletesLine} · {t.perAthlete}
+        </p>
+      </div>
+
+      <ul className="space-y-2 mb-5 flex-1">
+        {t.features.map((f, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm text-primary-200">
+            <Check className="w-4 h-4 text-accent-400 mt-0.5 shrink-0" strokeWidth={2.5} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* Card CTA — Squad + Roster get an inquiry Calendly CTA;
+          Agency gets a Talk-to-us Calendly CTA (same widget, different
+          tier param for attribution). The one lime highlight in this
+          row belongs to the Most Popular (Roster) card, so Squad +
+          Agency CTAs use the secondary variant. */}
+      <CalendlyButton
+        label={t.cta}
+        variant={isHighlighted ? "primary" : "secondary"}
+        size="md"
+        fullWidth
+        tier={tier.id}
+      />
+    </div>
+  );
+}
+
+/* ─── ComparisonTable ──────────────────────────────────────── */
+
+function ComparisonTable({ copy }) {
+  return (
+    <div className="rounded-card border border-primary-700 bg-primary-panel overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="border-b border-primary-700 bg-primary-800">
+          <tr>
+            <th className="text-left px-4 py-3 text-[10px] uppercase tracking-label text-primary-400 font-semibold" />
+            {copy.cols.map((c, i) => (
+              <th
+                key={i}
+                className={`text-center px-3 py-3 text-[11px] uppercase tracking-label font-bold ${
+                  i === 1 ? "text-accent-400" : "text-primary-200"
+                }`}
+              >
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-primary-700">
+          {copy.rows.map((row, i) => (
+            <tr key={i} className="hover:bg-primary-800/50 transition-colors">
+              <td className="px-4 py-3 text-primary-300 text-sm">{row.label}</td>
+              {row.vals.map((v, j) => (
+                <td key={j} className="px-3 py-3 text-center">
+                  {v === true ? (
+                    <Check
+                      className={`w-4 h-4 mx-auto ${
+                        j === 1 ? "text-accent-400" : "text-primary-300"
+                      }`}
+                      strokeWidth={2.5}
+                    />
+                  ) : v === false ? (
+                    <span className="text-primary-600">—</span>
+                  ) : (
+                    <span
+                      className={`text-sm tabular-nums font-semibold ${
+                        j === 1 ? "text-accent-400" : "text-primary-100"
+                      }`}
+                    >
+                      {v}
+                    </span>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─── IndividualPlayerCard ─────────────────────────────────── */
+
+function IndividualPlayerCard({
+  copy,
+  billing,
+  onBillingChange,
+  activeOffering,
+  checkoutLoading,
+  handleBuy,
+  yearlyEquivalentMonthly,
+  yearlySavingsAmount,
+  fill,
+}) {
+  const priceStr =
+    activeOffering && Number.isFinite(Number(activeOffering.priceAmount))
+      ? `R$ ${formatBrl(Number(activeOffering.priceAmount))}`
+      : "—";
+  const isYearly = billing === "yearly";
+
+  return (
+    <section className="max-w-2xl mx-auto rounded-panel bg-primary-panel border border-primary-700 p-5 sm:p-7">
+      <div className="mb-4 text-center">
+        <Eyebrow className="mb-1">{copy.eyebrow}</Eyebrow>
+        <h2 className="text-lg sm:text-xl font-display font-bold tracking-tight text-primary-50">
+          {copy.title}
+        </h2>
+        <p className="text-sm text-primary-400 mt-1">{copy.sub}</p>
+      </div>
+
+      {/* Monthly / Yearly toggle */}
+      <div className="flex items-center justify-center mb-5">
+        <div className="inline-flex items-center gap-1 rounded-full bg-primary-900 border border-primary-700 p-1">
+          <button
+            type="button"
+            onClick={() => onBillingChange("monthly")}
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
+              billing === "monthly"
+                ? "bg-primary-800 text-primary-50"
+                : "text-primary-400 hover:text-primary-100"
+            }`}
+          >
+            {copy.billingMonthly}
+          </button>
+          <button
+            type="button"
+            onClick={() => onBillingChange("yearly")}
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
+              billing === "yearly"
+                ? "bg-accent-400 text-primary-900"
+                : "text-primary-400 hover:text-primary-100"
+            }`}
+          >
+            {copy.billingAnnual}
+          </button>
+        </div>
+      </div>
+
+      <div className="text-center mb-5">
+        <p className="flex items-baseline justify-center gap-2">
+          <span className="text-3xl sm:text-4xl font-display font-black text-primary-50 tabular-nums">
+            {priceStr}
+          </span>
+          <span className="text-sm text-primary-400">
+            {isYearly ? copy.yearlyPricePer : copy.monthlyPricePer}
+          </span>
+        </p>
+        {isYearly && yearlyEquivalentMonthly && (
+          <p className="text-xs text-primary-400 mt-1">
+            {fill(copy.yearlyEquivalent, { monthly: yearlyEquivalentMonthly })}
+          </p>
+        )}
+        {isYearly && yearlySavingsAmount && (
+          <p className="text-xs text-accent-400 font-semibold mt-1">
+            {fill(copy.yearlySavings, { amount: yearlySavingsAmount })}
+          </p>
+        )}
+      </div>
+
+      <ul className="space-y-2 mb-5 max-w-md mx-auto">
+        {copy.features.map((f, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm text-primary-200">
+            <Check className="w-4 h-4 text-accent-400 mt-0.5 shrink-0" strokeWidth={2.5} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-col items-center gap-2">
+        <Button
+          variant="primary"
+          size="md"
+          Icon={ArrowRight}
+          onClick={() => handleBuy(activeOffering?.id)}
+          disabled={!activeOffering || checkoutLoading !== null}
+          loading={checkoutLoading === activeOffering?.id}
+        >
+          {checkoutLoading === activeOffering?.id ? copy.loading : copy.cta}
+        </Button>
+        <p className="text-[11px] text-primary-500">{copy.couponHint}</p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FullAccessPanel (preserved from pre-rewrite) ─────────── */
+
 function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -678,43 +1052,39 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
 
   return (
     <section className="max-w-md mx-auto">
-      <div className="relative rounded-3xl bg-amber-300/[0.06] backdrop-blur-sm border border-amber-300/40 p-5 sm:p-6 shadow-[0_0_28px_rgba(252,211,77,0.08)]">
+      <div className="relative rounded-panel bg-signal-performance/[0.06] border border-signal-performance/40 p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-amber-300/15 flex items-center justify-center shrink-0">
-            <KeyRound className="w-5 h-5 text-amber-200" />
+          <div className="w-10 h-10 rounded-control bg-signal-performance/15 flex items-center justify-center shrink-0">
+            <KeyRound className="w-5 h-5 text-signal-performance" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] sm:text-xs tracking-[0.25em] uppercase text-amber-200/80 font-bold">
+            <p className="text-[10px] sm:text-xs tracking-label uppercase text-signal-performance font-bold">
               {copy.eyebrow}
             </p>
-            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">
+            <h3 className="text-base sm:text-lg font-bold text-primary-50 leading-tight">
               {copy.heading}
             </h3>
           </div>
         </div>
 
-        {/* <p className="text-xs sm:text-sm text-white/65 leading-relaxed mb-4">
-          {copy.body}
-        </p> */}
-
         {success ? (
           <div className="py-4 text-center">
             <div className="w-12 h-12 rounded-full bg-accent-400/20 flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-6 h-6 text-accent-300" />
+              <Shield className="w-6 h-6 text-accent-400" />
             </div>
-            <p className="text-base font-bold text-white mb-1">
+            <p className="text-base font-bold text-primary-50 mb-1">
               {copy.successTitle}
             </p>
-            <p className="text-sm text-white/60">{copy.successBody}</p>
+            <p className="text-sm text-primary-400">{copy.successBody}</p>
           </div>
         ) : !isSignedIn ? (
           <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-white/55">
+            <p className="text-xs sm:text-sm text-primary-400">
               {copy.signedOutNote}
             </p>
             <Link
               href={`/join?edition=${encodeURIComponent(edition)}`}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-amber-300 hover:bg-amber-200 text-[#1a0e00] font-bold text-sm tracking-wide transition-colors"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-signal-performance hover:brightness-110 text-primary-900 font-bold text-sm tracking-wide transition-all"
             >
               {copy.signedOutCta}
               <ArrowRight className="w-4 h-4" />
@@ -728,11 +1098,11 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
               onChange={(e) => setCode(e.target.value)}
               placeholder={copy.placeholder}
               disabled={submitting}
-              className="w-full px-3 py-3 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/30 focus:outline-none focus:border-amber-300 font-mono uppercase tracking-wide text-sm sm:text-base text-center"
+              className="w-full px-3 py-3 rounded-control border border-primary-600 bg-primary-900 text-primary-100 placeholder-primary-500 focus:outline-none focus:border-signal-performance font-mono uppercase tracking-wide text-sm sm:text-base text-center"
             />
 
             {error && (
-              <div className="p-2.5 rounded-lg bg-red-500/15 border border-red-500/40 text-red-200 text-sm">
+              <div className="p-2.5 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
                 {error}
               </div>
             )}
@@ -740,7 +1110,7 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
             <button
               type="submit"
               disabled={submitting || !code.trim()}
-              className="w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-full bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-[#1a0e00] font-bold text-sm tracking-wide transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-full bg-signal-performance hover:brightness-110 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-all"
             >
               {submitting ? (
                 <>
@@ -759,4 +1129,13 @@ function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
       </div>
     </section>
   );
+}
+
+/* ─── BRL formatter ────────────────────────────────────────── */
+
+function formatBrl(v) {
+  return Number(v).toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 }
