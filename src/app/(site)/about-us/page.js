@@ -3,7 +3,7 @@
 
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { motion } from "framer-motion";
-import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+// import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 // import Image from "next/image";
 
@@ -182,7 +182,7 @@ export default function AboutUsPage() {
 
       {/* Hero — crested mark + wordmark title + subtitle. Same
           pattern as root /. */}
-      <section className="relative z-10 pt-14 sm:pt-20 pb-8 px-6 text-center">
+      {/* <section className="relative z-10 pt-14 sm:pt-20 pb-8 px-6 text-center">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
           <div className="mb-6">
             <GlobalPlayerLogo
@@ -199,7 +199,7 @@ export default function AboutUsPage() {
             {copy.subtitle}
           </p>
         </div>
-      </section>
+      </section> */}
 
       {/* Team Section */}
       <section className="relative z-10 py-12 px-6">
@@ -360,10 +360,7 @@ export default function AboutUsPage() {
                 image: "/images/journey/week2-laughing.jpeg",
               },
             ].map((feature, index) => (
-              <div
-                key={index}
-                className="text-center group"
-              >
+              <div key={index} className="text-center group">
                 <div className="w-24 h-20 mx-auto mb-4 bg-primary-800 rounded-card overflow-hidden border border-primary-700 group-hover:border-accent-400 transition-colors duration-ui">
                   <motion.img
                     src={feature.image}
