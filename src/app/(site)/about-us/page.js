@@ -148,7 +148,7 @@ export default function AboutUsPage() {
       name: "Paul Watkins",
       title: copy.founder2Title,
       bio: copy.founder2Bio,
-      image: "/team/paul-watkins-lake.jpg",
+      image: "/team/paul-avatar-dark-320.jpg",
     },
     {
       id: 3,
