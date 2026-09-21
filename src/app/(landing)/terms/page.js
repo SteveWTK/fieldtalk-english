@@ -23,7 +23,7 @@ export default function TermsOfService() {
                 1. Acceptance of Terms
               </h2>
               <p className="text-gray-700 mb-4">
-                By accessing and using FieldTalk English (&quot;the
+                By accessing and using Global Player (&quot;the
                 Service&quot;), you accept and agree to be bound by the terms
                 and provision of this agreement. If you do not agree to abide by
                 the above, please do not use this service.
@@ -35,7 +35,7 @@ export default function TermsOfService() {
                 2. Description of Service
               </h2>
               <p className="text-gray-700 mb-4">
-                FieldTalk English is an online English learning platform
+                Global Player is an online English learning platform
                 specifically designed for football players. We provide
                 interactive lessons, assessments, and progress tracking to help
                 football professionals improve their English communication
@@ -119,9 +119,9 @@ export default function TermsOfService() {
                 6. Intellectual Property
               </h2>
               <p className="text-gray-700 mb-4">
-                All content on FieldTalk English, including but not limited to
+                All content on Global Player, including but not limited to
                 text, graphics, logos, audio clips, and software, is the
-                property of FieldTalk English or its content suppliers and is
+                property of Global Player or its content suppliers and is
                 protected by copyright and other intellectual property laws.
               </p>
             </section>
@@ -153,7 +153,7 @@ export default function TermsOfService() {
                 9. Limitation of Liability
               </h2>
               <p className="text-gray-700 mb-4">
-                FieldTalk English shall not be liable for any indirect,
+                Global Player shall not be liable for any indirect,
                 incidental, special, or consequential damages resulting from
                 your use of the service, even if we have been advised of the
                 possibility of such damages.
@@ -204,11 +204,11 @@ export default function TermsOfService() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> legal@fieldtalkenglish.com
+                  <strong>Email:</strong> legal@globalplayerpro.com
                   <br />
                   <strong>Address:</strong> [Your Business Address]
                   <br />
-                  <strong>Website:</strong> https://fieldtalk-english.vercel.app
+                  <strong>Website:</strong> https://www.globalplayerpro.com
                 </p>
               </div>
             </section>

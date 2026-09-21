@@ -434,7 +434,7 @@ async function seedDatabase() {
     console.log("🎯 Creating main demo account...");
     const { data: mainDemo, error: mainDemoError } =
       await supabase.auth.admin.createUser({
-        email: "demo@fieldtalkenglish.com",
+        email: "demo@globalplayerpro.com",
         password: "demo123",
         user_metadata: {
           full_name: "João Silva",
@@ -458,13 +458,13 @@ async function seedDatabase() {
       });
 
       console.log(
-        "✅ Main demo account created: demo@fieldtalkenglish.com / demo123"
+        "✅ Main demo account created: demo@globalplayerpro.com / demo123"
       );
     }
 
     console.log("\n🎉 Database seeding completed successfully!");
     console.log("\n📋 Demo Accounts Created:");
-    console.log("- demo@fieldtalkenglish.com / demo123 (Main demo)");
+    console.log("- demo@globalplayerpro.com / demo123 (Main demo)");
     console.log("- joao.silva@demo.com / demo123");
     console.log("- carlos.rodriguez@demo.com / demo123");
   } catch (error) {

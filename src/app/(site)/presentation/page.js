@@ -26,7 +26,7 @@ export default function FieldTalkPresentation() {
   const slides = [
     {
       id: "title",
-      title: "FieldTalk English",
+      title: "Global Player",
       subtitle: "Elite Language Training for Football Professionals",
       content: "Partnership Opportunity Presentation",
       footer: "The WTK Team • 2025",
@@ -307,7 +307,7 @@ export default function FieldTalkPresentation() {
         "Discuss custom Watford content development",
         "Plan pilot program with priority players",
       ],
-      contact: "Contact: paul@fieldtalkenglish.com",
+      contact: "Contact: paul@globalplayerpro.com",
       guarantee: "Money-back guarantee on player engagement metrics",
     },
   ];
@@ -836,7 +836,7 @@ export default function FieldTalkPresentation() {
                 <Globe className="w-3 h-3 md:w-4 md:h-4 text-white" />
               </div>
               <span className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
-                {currentSlideData.footer || "FieldTalk English"}
+                {currentSlideData.footer || "Global Player"}
               </span>
             </div>
             <div className="hidden md:flex items-center space-x-4">

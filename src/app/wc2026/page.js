@@ -112,7 +112,7 @@ function WorldCup2026LandingContent() {
             fontSize: "clamp(2.5rem, 12vw, 6rem)",
           }}
         >
-          FieldTalk English
+          Global Player
         </h1>
 
         <div

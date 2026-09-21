@@ -67,10 +67,11 @@ export async function notifyEscalation(escalation) {
 
   const from =
     process.env.WHATSAPP_ESCALATION_FROM ||
-    // Sender-address hostname stays fieldtalkenglish.com until the
-    // new domain is purchased + DNS/SES verified. Display name
-    // updated to reflect the Global Player rebrand.
-    "Global Player Alerts <alerts@fieldtalkenglish.com>";
+    // Sender address on the new brand domain — Resend verifies the
+    // globalplayerpro.com sending identity via SPF/DKIM/DMARC set
+    // at Ionos. Inbound replies to alerts@ forward through ImprovMX
+    // into the team Gmail.
+    "Global Player Alerts <alerts@globalplayerpro.com>";
 
   const who = escalation.playerName || "Unmatched user";
   const subject = `[Global Player] WhatsApp escalation — ${who} (${escalation.intent})`;

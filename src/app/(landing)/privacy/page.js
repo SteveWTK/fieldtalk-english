@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
                 1. Introduction
               </h2>
               <p className="text-gray-700 mb-4">
-                Welcome to FieldTalk English (&quot;we,&quot; &quot;our,&quot;
+                Welcome to Global Player (&quot;we,&quot; &quot;our,&quot;
                 or &quot;us&quot;). We are committed to protecting your personal
                 information and your right to privacy. This Privacy Policy
                 explains how we collect, use, and safeguard your information
@@ -172,11 +172,11 @@ export default function PrivacyPolicy() {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> privacy@fieldtalkenglish.com
+                  <strong>Email:</strong> privacy@globalplayerpro.com
                   <br />
                   <strong>Address:</strong> [Your Business Address]
                   <br />
-                  <strong>Website:</strong> https://fieldtalk-english.vercel.app
+                  <strong>Website:</strong> https://www.globalplayerpro.com
                 </p>
               </div>
             </section>

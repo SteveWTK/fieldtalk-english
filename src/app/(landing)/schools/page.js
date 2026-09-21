@@ -568,7 +568,7 @@ export default function BrazilianLandingPage() {
               <h3 className="font-semibold mb-4">Contato</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>📞 (11) 9999-9999</li>
-                <li>📧 contato@fieldtalkenglish.com</li>
+                <li>📧 contato@globalplayerpro.com</li>
                 <li>📍 São Paulo, SP</li>
               </ul>
             </div>

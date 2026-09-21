@@ -42,6 +42,8 @@ import {
   UserPlus,
   Brain,
   Gauge,
+  Send,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -134,6 +136,20 @@ function AdminHubContent() {
             Icon={UserPlus}
             title="Leads"
             body="Register, filter and work sales & partnership leads — list + kanban, WhatsApp send, activity log."
+            accent="emerald"
+          />
+          <AdminCard
+            href="/admin/leads/outreach"
+            Icon={Send}
+            title="Launch funnel outreach"
+            body="Generate a WhatsApp outreach link. Lead sends 'Oi', funnel takes over with Q1, Q2, and a 2-minute demo."
+            accent="emerald"
+          />
+          <AdminCard
+            href="/admin/whatsapp/lead-funnel"
+            Icon={Sparkles}
+            title="Lead funnel questions"
+            body="Author the two 3-button questions (Q1 hook + Q2 flip) the funnel sends to a new lead on WhatsApp."
             accent="emerald"
           />
           <AdminCard

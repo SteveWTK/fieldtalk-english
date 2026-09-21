@@ -31,6 +31,7 @@ import {
   Upload,
   Zap,
   Target,
+  Send,
 } from "lucide-react";
 import Button from "@/components/ui/button";
 import Eyebrow from "@/components/ui/eyebrow";
@@ -128,6 +129,12 @@ export default function LeadsAdminHeader({
                 title={isPt ? "Metas" : "Targets"}
                 Icon={Target}
                 label={isPt ? "Metas" : "Targets"}
+              />
+              <QuickAction
+                href="/admin/leads/outreach"
+                title={isPt ? "Funil WhatsApp" : "WhatsApp funnel"}
+                Icon={Send}
+                label={isPt ? "Funil" : "Funnel"}
               />
               {/* The "New lead" CTA — the single lime action per this
                   screen (see DS: one accent button per view). */}

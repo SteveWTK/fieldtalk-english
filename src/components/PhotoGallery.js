@@ -79,7 +79,7 @@ const PhotoGallery = () => {
               alt={photo.alt}
               className="w-full h-48 md:h-64 object-cover group-hover:scale-110 transition-transform duration-300"
               onError={(e) => {
-                e.target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='200' y='140' text-anchor='middle' fill='%236b7280' font-size='14'%3E${photo.alt}%3C/text%3E%3Ctext x='200' y='160' text-anchor='middle' fill='%236b7280' font-size='10'%3EFieldTalk English%3C/text%3E%3C/svg%3E`;
+                e.target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='200' y='140' text-anchor='middle' fill='%236b7280' font-size='14'%3E${photo.alt}%3C/text%3E%3Ctext x='200' y='160' text-anchor='middle' fill='%236b7280' font-size='10'%3EGlobal Player%3C/text%3E%3C/svg%3E`;
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">

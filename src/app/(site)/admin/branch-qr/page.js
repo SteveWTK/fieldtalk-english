@@ -42,7 +42,7 @@ import Button from "@/components/ui/button";
 // Production site URL — used to build the QR target. Falls back to
 // window.location.origin in the browser so the page still works
 // locally on http://localhost:3000.
-const SITE_ORIGIN_FALLBACK = "https://www.fieldtalkenglish.com";
+const SITE_ORIGIN_FALLBACK = "https://www.globalplayerpro.com";
 
 // QR rendering options. Q-level error correction (~25% recoverable)
 // is a sweet spot for posters: dense enough to scan, robust to

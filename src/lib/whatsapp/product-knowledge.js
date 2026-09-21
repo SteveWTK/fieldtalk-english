@@ -43,7 +43,7 @@ Users cannot be on both at once. Edition is set at signup.
 
 ## Global Player English link:
 
-- Dashboard: www.fieldtalkenglish.com/dashboard
+- Dashboard: www.globalplayerpro.com/dashboard
 
 ## Skill Radar (Pro Path only)
 - 6 skill axes, 4 segments per axis = 24 cells total per Level.

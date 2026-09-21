@@ -610,7 +610,7 @@ export default function AcademyLandingPage() {
               Inglês especializado para jovens talentos do futebol brasileiro
             </p>
             <p className="text-sm text-gray-500">
-              © 2025 FieldTalk English. Construído para academias e jovens
+              © 2026 Global Player. Construído para academias e jovens
               sonhadores.
             </p>
           </div>

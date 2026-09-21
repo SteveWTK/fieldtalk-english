@@ -24,7 +24,7 @@ export default function AuthDebug() {
   const testDemoLogin = async () => {
     console.log("Testing demo login...");
     try {
-      const result = await signIn("demo@fieldtalkenglish.com", "demo123");
+      const result = await signIn("demo@globalplayerpro.com", "demo123");
       console.log("Demo login result:", result);
     } catch (error) {
       console.error("Demo login error:", error);

@@ -84,7 +84,7 @@ function SignUpPageContent() {
     // Create a unique demo email
     const timestamp = Date.now();
     const demoCredentials = {
-      email: `demo_${timestamp}@fieldtalkenglish.com`,
+      email: `demo_${timestamp}@globalplayerpro.com`,
       password: "demo123456",
       fullName: "Demo Player",
       user_type: "player",

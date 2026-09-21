@@ -43,7 +43,7 @@ export default function SignInPage() {
 
     // Demo credentials - in production, create these accounts
     const { user, error } = await signIn(
-      "demo@fieldtalkenglish.com",
+      "demo@globalplayerpro.com",
       "demo123"
     );
 

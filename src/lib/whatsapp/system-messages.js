@@ -25,7 +25,7 @@
 
 import { sendWhatsapp } from "@/lib/integrations/zapi";
 
-const DASHBOARD_URL = "www.fieldtalkenglish.com/dashboard";
+const DASHBOARD_URL = "www.globalplayerpro.com/dashboard";
 
 const DEFAULTS = {
   welcome: {
