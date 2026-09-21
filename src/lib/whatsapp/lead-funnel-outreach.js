@@ -75,3 +75,17 @@ export function parseTokenFromInbound(body) {
   if (!match) return null;
   return match[1].toLowerCase();
 }
+
+/**
+ * Build the /demo/<token> URL the lead lands on when tapping the
+ * WhatsApp CTA. Reads NEXT_PUBLIC_SITE_URL for the origin (falls
+ * back to globalplayerpro.com so the router can't fail closed if
+ * the env var is missing).
+ */
+export function buildCtaLink(token) {
+  if (!token) throw new Error("buildCtaLink: token required");
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.globalplayerpro.com";
+  const cleanOrigin = origin.replace(/\/$/, "");
+  return `${cleanOrigin}/demo/${encodeURIComponent(token)}`;
+}

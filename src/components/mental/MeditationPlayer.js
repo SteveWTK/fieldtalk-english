@@ -23,6 +23,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X, Play, Pause, Volume2, VolumeX, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import {
@@ -129,7 +130,8 @@ export default function MeditationPlayer({
     if (mode !== "guided" || phase !== "playing") return;
     const audio = audioRef.current;
     if (!audio) return;
-    const src = audioLang === "en" ? activity?.audio_url_en : activity?.audio_url_pt;
+    const src =
+      audioLang === "en" ? activity?.audio_url_en : activity?.audio_url_pt;
     if (!src) return;
     audio.src = src;
     audio.muted = muted;
@@ -195,8 +197,7 @@ export default function MeditationPlayer({
 
   function transitionToQuestionOrComplete() {
     const hasQuestion =
-      mode === "guided" &&
-      activity?.content?.comprehension_question?.prompt;
+      mode === "guided" && activity?.content?.comprehension_question?.prompt;
     if (hasQuestion) {
       setPhase("question");
     } else {
@@ -217,7 +218,10 @@ export default function MeditationPlayer({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           activity_id: activity?.id || null,
-          activity_type: activity?.activity_type || mode === "silent" ? "silent_timer" : "meditation",
+          activity_type:
+            activity?.activity_type || mode === "silent"
+              ? "silent_timer"
+              : "meditation",
           duration_seconds: spentSec,
           metadata:
             answer != null
@@ -251,7 +255,8 @@ export default function MeditationPlayer({
 
   // ── Render ─────────────────────────────────────────────────────
 
-  const title = pickLang(activity?.title, lang) || t("hub.silentTimerCard.title", lang);
+  const title =
+    pickLang(activity?.title, lang) || t("hub.silentTimerCard.title", lang);
 
   return (
     <div
@@ -361,16 +366,17 @@ function AmbientBackdrop({ accent }) {
   // Signal-tinted radial washes — one per LivingOrb accent key. These
   // sit behind the orb art so they're allowed to use raw signal hexes
   // (feature identity), not brand tokens.
-  const gradient = {
-    mental:
-      "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
-    english:
-      "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,58,138,0.10), transparent 55%)",
-    performance:
-      "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(124,45,18,0.10), transparent 55%)",
-    slate:
-      "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,41,59,0.30), transparent 55%)",
-  }[accent] || "";
+  const gradient =
+    {
+      mental:
+        "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
+      english:
+        "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,58,138,0.10), transparent 55%)",
+      performance:
+        "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(124,45,18,0.10), transparent 55%)",
+      slate:
+        "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(30,41,59,0.30), transparent 55%)",
+    }[accent] || "";
 
   return (
     <div
@@ -387,7 +393,7 @@ function AmbientBackdrop({ accent }) {
           50% {
             transform: translate(2%, -2%) scale(1.05);
             opacity: 1;
-          }
+          }s
         }
         .animate-ambient {
           animation: ambient-drift 40s ease-in-out infinite;
@@ -409,7 +415,12 @@ function PhaseAndOrb({
   breatheHold,
   breatheOut,
 }) {
-  const phase = phaseFromElapsed(elapsedSec, breatheIn, breatheHold, breatheOut);
+  const phase = phaseFromElapsed(
+    elapsedSec,
+    breatheIn,
+    breatheHold,
+    breatheOut,
+  );
   const phaseLabel =
     phase === "in"
       ? t("player.breatheIn", lang)
@@ -417,8 +428,7 @@ function PhaseAndOrb({
         ? t("player.hold", lang)
         : t("player.breatheOut", lang);
   const title = pickLang(activity?.title, audioLang);
-  const subLabel =
-    mode === "silent" ? t("player.justBreathe", lang) : null;
+  const subLabel = mode === "silent" ? t("player.justBreathe", lang) : null;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -499,10 +509,16 @@ function PlayerControls({
         <button
           type="button"
           onClick={onPauseToggle}
-          aria-label={paused ? t("player.resume", lang) : t("player.pause", lang)}
+          aria-label={
+            paused ? t("player.resume", lang) : t("player.pause", lang)
+          }
           className="w-14 h-14 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-500 flex items-center justify-center text-primary-50 transition-colors"
         >
-          {paused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+          {paused ? (
+            <Play className="w-6 h-6" />
+          ) : (
+            <Pause className="w-6 h-6" />
+          )}
         </button>
         {showMute && (
           <IconButton
@@ -535,13 +551,13 @@ function SilentSetup({
   onStart,
 }) {
   const presets =
-    (Array.isArray(content.presets) && content.presets.length > 0
+    Array.isArray(content.presets) && content.presets.length > 0
       ? content.presets
-      : SILENT_TIMER_LENGTHS);
+      : SILENT_TIMER_LENGTHS;
   const bellOptions =
-    (Array.isArray(content.bell_intervals) && content.bell_intervals.length > 0
+    Array.isArray(content.bell_intervals) && content.bell_intervals.length > 0
       ? content.bell_intervals
-      : SILENT_TIMER_BELL_INTERVALS);
+      : SILENT_TIMER_BELL_INTERVALS;
 
   return (
     <div className="w-full max-w-lg text-center">
@@ -620,7 +636,15 @@ function SilentSetup({
   );
 }
 
-function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onContinue, lang, submitting }) {
+function ComprehensionQuestion({
+  activity,
+  audioLang,
+  selectedIdx,
+  onSelect,
+  onContinue,
+  lang,
+  submitting,
+}) {
   const question = activity?.content?.comprehension_question;
   if (!question) return null;
   const prompt = pickLang(question.prompt, audioLang);
@@ -634,7 +658,9 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
       <p className="text-[10px] uppercase tracking-[0.35em] text-primary-500 font-semibold mb-2">
         {t("player.comprehensionTitle", lang)}
       </p>
-      <h2 className="text-xl font-light tracking-tight mb-6 text-primary-50">{prompt}</h2>
+      <h2 className="text-xl font-light tracking-tight mb-6 text-primary-50">
+        {prompt}
+      </h2>
       <div className="space-y-2 mb-6">
         {options.map((opt, i) => {
           const label = pickLang(opt.label, audioLang);
@@ -664,7 +690,13 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
       </div>
       {answered && explanation && (
         <p className="text-sm text-primary-300 mb-4">
-          <span className={correct ? "text-accent-300 font-bold" : "text-signal-performance font-bold"}>
+          <span
+            className={
+              correct
+                ? "text-accent-300 font-bold"
+                : "text-signal-performance font-bold"
+            }
+          >
             {correct ? t("player.correct", lang) : t("player.notQuite", lang)}
           </span>{" "}
           {explanation}
@@ -688,13 +720,9 @@ function ComprehensionQuestion({ activity, audioLang, selectedIdx, onSelect, onC
 function CompletionScreen({ title, xpAwarded, onClose, lang }) {
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
-      {/* Completion glyph — swapped from Sparkles to a check mark
-          to match the "Session banked / Sessão registrada" register.
-          Reads like a training log confirmation, not a celebration
-          shimmer. */}
-      <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
-        <CheckCircle2 className="w-7 h-7 text-accent-300" strokeWidth={2} />
-      </div>
+      {/* <div className="mx-auto w-16 h-16 rounded-full bg-accent-400/20 flex items-center justify-center mb-4">
+        <Sparkles className="w-7 h-7 text-accent-300" />
+      </div> */}
       <h2 className="text-2xl font-light tracking-tight mb-2 text-primary-50">
         {t("player.completedCelebration", lang)}
       </h2>
@@ -711,8 +739,14 @@ function CompletionScreen({ title, xpAwarded, onClose, lang }) {
       </div>
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         .animate-fade-in {
           animation: fade-in 0.4s ease-out;

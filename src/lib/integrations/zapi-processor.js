@@ -31,6 +31,7 @@ import { parseZapiInbound } from "@/lib/integrations/zapi";
 import { decideAgentAction } from "@/lib/whatsapp/agent";
 import { executeAgentAction } from "@/lib/whatsapp/execute";
 import { routeReviewQuizReply } from "@/lib/whatsapp/review-quiz-router";
+import { routeLeadFunnelReply } from "@/lib/whatsapp/lead-funnel-router";
 
 // Whole-message match, case-insensitive, whitespace tolerated. We do
 // NOT match on substring — "SAIRAM cedo hoje" (someone talking about
@@ -150,6 +151,20 @@ export async function processZapiEvent(supabase, event) {
     },
   });
 
+  // Lead-funnel router runs FIRST for unmatched inbounds (matched
+  // players fall through immediately). Placed before the leads-CRM
+  // lookup so a first-contact "Oi <token>" from a phone we've never
+  // seen can capture phone_e164 onto the lead row — then the CRM
+  // helper below finds it by phone and logs the activity in the same
+  // turn. Returns handled=false for anything not lead-related.
+  const funnel = await routeLeadFunnelReply(supabase, {
+    player,
+    phoneE164,
+    parsed,
+    senderName: senderName ?? null,
+    inboundMessageId: inboundId,
+  });
+
   if (player) {
     const nowIso = new Date().toISOString();
     await supabase
@@ -174,6 +189,12 @@ export async function processZapiEvent(supabase, event) {
       inboundMessageId: inboundId,
       senderName: senderName ?? null,
     });
+  }
+
+  // Funnel handled → don't invoke the review-quiz router or agent.
+  // (Router has already sent the appropriate reply.)
+  if (funnel.handled) {
+    return { ok: true, note: funnel.note ?? "funnel_handled" };
   }
 
   // Review-quiz router — MUST run before the agent gate. If the

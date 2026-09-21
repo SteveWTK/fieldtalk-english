@@ -6,11 +6,16 @@
 //
 // Config:
 //   RESEND_API_KEY               — already set in .env.local
-//   WHATSAPP_ESCALATION_EMAIL    — comma-separated recipient list
-//                                  (e.g. steve@…,david@…). Defaults to
+//   WHATSAPP_ESCALATION_EMAIL    — comma-separated recipient list for
+//                                  COACH / SUPPORT intents (e.g.
+//                                  steve@…,david@…). Defaults to
 //                                  Stephen's address per user memory.
-//   WHATSAPP_ESCALATION_FROM     — sender identity Resend will use
-//                                  (defaults to a FieldTalk address).
+//   WHATSAPP_LEAD_SALES_EMAIL    — comma-separated recipient list for
+//                                  LEAD_SALES escalations. When unset,
+//                                  falls back to WHATSAPP_ESCALATION_EMAIL
+//                                  so a single-recipient setup still
+//                                  works out of the box.
+//   WHATSAPP_ESCALATION_FROM     — sender identity Resend will use.
 //
 // Failure mode: if Resend is not configured or the send errors,
 // this function logs and returns — the escalation row itself has
@@ -30,9 +35,16 @@ function getClient() {
   return clientSingleton;
 }
 
-function getRecipients() {
+function getRecipients(intent) {
+  // LEAD_SALES escalations route to the sales team, not tech triage.
+  // If WHATSAPP_LEAD_SALES_EMAIL is unset, fall back to the general
+  // escalation recipients so a solo-team setup still receives them.
   const raw =
-    process.env.WHATSAPP_ESCALATION_EMAIL || "steveinspirewtk@gmail.com";
+    intent === "LEAD_SALES"
+      ? process.env.WHATSAPP_LEAD_SALES_EMAIL ||
+        process.env.WHATSAPP_ESCALATION_EMAIL ||
+        "steveinspirewtk@gmail.com"
+      : process.env.WHATSAPP_ESCALATION_EMAIL || "steveinspirewtk@gmail.com";
   return raw
     .split(",")
     .map((s) => s.trim())
@@ -59,11 +71,13 @@ export async function notifyEscalation(escalation) {
     return { ok: false, skipped: "resend_not_configured" };
   }
 
-  const to = getRecipients();
+  const to = getRecipients(escalation.intent);
   if (to.length === 0) {
     console.warn("[whatsapp/notify] no recipients configured");
     return { ok: false, skipped: "no_recipients" };
   }
+
+  const isSales = escalation.intent === "LEAD_SALES";
 
   const from =
     process.env.WHATSAPP_ESCALATION_FROM ||
@@ -71,12 +85,40 @@ export async function notifyEscalation(escalation) {
     // globalplayerpro.com sending identity via SPF/DKIM/DMARC set
     // at Ionos. Inbound replies to alerts@ forward through ImprovMX
     // into the team Gmail.
-    "Global Player Alerts <alerts@globalplayerpro.com>";
+    (isSales
+      ? "Global Player Sales <alerts@globalplayerpro.com>"
+      : "Global Player Alerts <alerts@globalplayerpro.com>");
 
   const who = escalation.playerName || "Unmatched user";
-  const subject = `[Global Player] WhatsApp escalation — ${who} (${escalation.intent})`;
+  const subject = isSales
+    ? `[Sales lead] ${who} needs a human on WhatsApp`
+    : `[Global Player] WhatsApp escalation — ${who} (${escalation.intent})`;
 
-  const bodyText = [
+  const bodyText = isSales
+    ? buildLeadSalesBody(escalation, who)
+    : buildGenericBody(escalation, who);
+
+  try {
+    await client.emails.send({
+      from,
+      to,
+      subject,
+      text: bodyText,
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error("[whatsapp/notify] email send failed:", err);
+    return {
+      ok: false,
+      skipped: `send_error: ${err?.message ?? String(err)}`,
+    };
+  }
+}
+
+/* ─── body builders ───────────────────────────────────────────── */
+
+function buildGenericBody(escalation, who) {
+  return [
     `A user needs a human on WhatsApp.`,
     ``,
     `Player: ${who}`,
@@ -94,20 +136,27 @@ export async function notifyEscalation(escalation) {
     `Escalation ID: ${escalation.escalationId}`,
     `Open in Supabase: whatsapp_escalations where id = '${escalation.escalationId}'`,
   ].join("\n");
+}
 
-  try {
-    await client.emails.send({
-      from,
-      to,
-      subject,
-      text: bodyText,
-    });
-    return { ok: true };
-  } catch (err) {
-    console.error("[whatsapp/notify] email send failed:", err);
-    return {
-      ok: false,
-      skipped: `send_error: ${err?.message ?? String(err)}`,
-    };
-  }
+function buildLeadSalesBody(escalation, who) {
+  // Sales-facing: no "agent" jargon, no support-triage framing. The
+  // reader is Paul or David deciding whether to grab their phone and
+  // reply personally. Front-load who and what they said.
+  return [
+    `A lead just went off-script mid-funnel and needs a human reply on WhatsApp.`,
+    ``,
+    `Lead: ${who}`,
+    `Phone: ${escalation.phoneE164}`,
+    ``,
+    `What they said:`,
+    `> ${escalation.inboundText || "(empty)"}`,
+    ``,
+    `Auto-reply we sent while you catch up:`,
+    `> ${escalation.agentReply || "(none)"}`,
+    ``,
+    `Reason code: ${escalation.reason}`,
+    `Escalation ID: ${escalation.escalationId}`,
+    ``,
+    `The funnel is now paused for this lead. Reply from WA Web / phone as normal — inbound + outbound get logged to the CRM automatically.`,
+  ].join("\n");
 }
