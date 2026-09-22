@@ -57,6 +57,29 @@ import { notifyEscalation } from "@/lib/whatsapp/notify";
 const MAX_BUTTON_LABEL_CHARS = 20;
 const LEAD_STAGES_LIVE = new Set(["pending_oi", "q1_sent", "q2_sent"]);
 
+// Test-mode whitelist. Phones on this list bypass the "existing player"
+// short-circuit — so the sales team can repeat-test the funnel from
+// their own WhatsApp accounts even though those numbers are already
+// tied to production players rows.
+//
+//   WHATSAPP_TEST_PHONES="+551199999999,+551188888888"
+//
+// Set in .env.local (dev) and Vercel (preview/prod-if-you-must). The
+// only side effect is that inbound messages from these phones route
+// as leads first — their player rows and progress are untouched, and
+// the review-quiz / agent path can never fire while the funnel owns
+// the conversation. Leave unset in real prod for real leads.
+function loadTestPhoneSet() {
+  const raw = process.env.WHATSAPP_TEST_PHONES;
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+}
+
 /**
  * @param {import("@supabase/supabase-js").SupabaseClient} supabase — service role
  * @param {{
@@ -82,10 +105,31 @@ export async function routeLeadFunnelReply(supabase, opts) {
 async function routeInner(supabase, opts) {
   const { player, phoneE164, parsed, senderName, inboundMessageId } = opts;
 
+  const testPhones = loadTestPhoneSet();
+  const isTestPhone = phoneE164 && testPhones.has(phoneE164);
+
   // Existing signup — not a lead. Never intercept.
-  if (player?.id) return { handled: false };
+  // Test phones bypass this so the sales team can repeat-test using
+  // their own WhatsApp accounts (see WHATSAPP_TEST_PHONES above).
+  if (player?.id && !isTestPhone) return { handled: false };
 
   const token = parseTokenFromInbound(parsed?.text);
+
+  // Diagnostic: if the inbound looks like an outreach attempt ("Oi ..."
+  // or contains our zero-width alphabet) but we couldn't decode a
+  // token, log it so a WhatsApp / URL-encoding regression doesn't hide
+  // as a silent fall-through to the AI agent.
+  if (!token && looksLikeOutreach(parsed?.text)) {
+    console.warn(
+      "[lead-funnel-router] Oi-like inbound with no decodable token — falling through",
+      {
+        phoneE164,
+        isTestPhone,
+        rawLength: (parsed?.text || "").length,
+        hasZwChars: containsZeroWidthChars(parsed?.text),
+      },
+    );
+  }
 
   // Try token match first (initial "Oi <token>" from a phone we may
   // not yet have on file).
@@ -100,6 +144,11 @@ async function routeInner(supabase, opts) {
     if (data) {
       lead = data;
       matchedBy = "token";
+    } else {
+      console.warn(
+        "[lead-funnel-router] token decoded but no matching lead",
+        { token, phoneE164 },
+      );
     }
   }
 
@@ -531,6 +580,19 @@ async function escalateFreeText(supabase, opts) {
 
   // We DID reply and DID handle it — don't let the agent double-message.
   return { handled: true, note: `escalated:${reason}` };
+}
+
+/* ─── diagnostics ─────────────────────────────────────────────── */
+
+function looksLikeOutreach(text) {
+  if (typeof text !== "string") return false;
+  if (/^\s*oi\b/i.test(text)) return true;
+  return containsZeroWidthChars(text);
+}
+
+function containsZeroWidthChars(text) {
+  if (typeof text !== "string") return false;
+  return /[​‌‍⁠]/.test(text);
 }
 
 /* ─── DB helpers ──────────────────────────────────────────────── */
