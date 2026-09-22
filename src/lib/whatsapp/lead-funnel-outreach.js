@@ -5,14 +5,23 @@
 //
 // The token is what ties the wa.me link (that the salesperson pastes
 // into their personal WA DM) back to the lead row when the lead
-// actually messages the business number. Lead types "Oi <token>" as
-// their first message; the lead-funnel router (built in PR #2) matches
-// on this token to pull up the lead record before any Q1 send.
+// actually messages the business number.
+//
+// Encoding: the token is pre-filled into the wa.me link as a sequence
+// of zero-width Unicode characters appended after "Oi", so both the
+// lead's and the business account's chat bubble display just "Oi".
+// The router decodes the invisible bytes on receipt. Legacy visible-
+// format tokens (used during PR #2 testing) still parse for backward
+// compatibility — see parseTokenFromInbound.
+
+import {
+  encodeTokenAsZeroWidth,
+  decodeZeroWidthToken,
+} from "@/lib/whatsapp/lead-funnel-token-encoding";
 
 // Token alphabet: lowercase letters + digits, minus visually ambiguous
 // characters (0/o, 1/l/i). Length 8 gives 32^8 ≈ 10^12 space — safely
-// unique for any realistic outreach volume without being unwieldy on
-// screen or in a WhatsApp bubble.
+// unique for any realistic outreach volume.
 const TOKEN_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
 const TOKEN_LENGTH = 8;
 
@@ -39,14 +48,12 @@ export function generateOutreachToken() {
 /**
  * Build the wa.me link the salesperson pastes into their outreach
  * message. `businessNumberE164` should include the leading '+', which
- * wa.me strips. The message body is Portuguese by default because BR
- * is the primary market; callers can override for other locales.
+ * wa.me strips.
  *
- *   buildOutreachLink({
- *     businessNumberE164: "+551132300933",
- *     token: "kg7m3xph",
- *   })
- *   // → "https://wa.me/551132300933?text=Oi%20kg7m3xph"
+ * The pre-filled message is `<greeting><zero-width token>`. The lead
+ * sees just the greeting (e.g. "Oi") in their WhatsApp input; the
+ * router decodes the invisible zero-width chars server-side to match
+ * this outreach.
  */
 export function buildOutreachLink({ businessNumberE164, token, greeting }) {
   if (!businessNumberE164) {
@@ -56,21 +63,31 @@ export function buildOutreachLink({ businessNumberE164, token, greeting }) {
     throw new Error("buildOutreachLink: token required");
   }
   const digits = String(businessNumberE164).replace(/[^\d]/g, "");
-  const messageBody = `${greeting || "Oi"} ${token}`;
+  const zwToken = encodeTokenAsZeroWidth(token);
+  // Safety net: if the encoding failed (shouldn't happen for our own
+  // generated tokens), fall back to the legacy visible format so the
+  // outreach still works.
+  const suffix = zwToken || ` ${token}`;
+  const messageBody = `${greeting || "Oi"}${suffix}`;
   const encoded = encodeURIComponent(messageBody);
   return `https://wa.me/${digits}?text=${encoded}`;
 }
 
 /**
- * Extract the token from an inbound message body. Matches "Oi <token>",
- * case-insensitive, tolerant of leading/trailing whitespace and stray
- * punctuation. Returns lowercase token or null.
- *
- * Used by the lead-funnel router (PR #2) — kept here so the token
- * format is defined in ONE place.
+ * Extract the token from an inbound message body. Tries the zero-width
+ * decoder first (current format); falls back to visible "Oi <token>"
+ * parsing for legacy links sent during PR #2 testing. Returns lowercase
+ * token or null.
  */
 export function parseTokenFromInbound(body) {
   if (typeof body !== "string") return null;
+
+  // Preferred path: zero-width encoded token.
+  const zwDecoded = decodeZeroWidthToken(body);
+  if (zwDecoded) return zwDecoded.toLowerCase();
+
+  // Legacy visible format — kept so tokens minted before the encoding
+  // change still work.
   const match = body.trim().match(/^oi[\s.,!:-]+([a-z0-9]{4,32})\b/i);
   if (!match) return null;
   return match[1].toLowerCase();

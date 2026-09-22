@@ -14,6 +14,7 @@ import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
+import LeadAttributionCapture from "@/components/demo/LeadAttributionCapture";
 
 import { Archivo, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { PRODUCT_NAME } from "@/lib/brand/name";
@@ -83,7 +84,14 @@ export default function RootLayout({ children }) {
           </>
         ) : null}
         <AuthProvider>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>
+            {/* Captures ?attribution_lead_token from any URL and, once
+                auth resolves, posts to /api/leads/attribute-conversion
+                to mark the WhatsApp-funnel lead as converted. Silent
+                no-op when no token is present. */}
+            <LeadAttributionCapture />
+            {children}
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>
