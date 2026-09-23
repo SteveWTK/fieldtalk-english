@@ -3,9 +3,9 @@
 // POST /api/admin/leads/outreach-quick
 //
 // One-shot: create a new lead + mint its outreach token + return the
-// wa.me link, all in a single request. This powers the "quick launch"
-// form on /admin/leads/outreach — the flow the sales team uses most
-// often (David has a name + role, wants a link in <10 seconds).
+// short branded outreach URL, all in a single request. Powers the
+// quick-launch form on /admin/leads/outreach — David has a name + role,
+// wants a shareable link in <10 seconds.
 //
 // Body:
 //   {
@@ -13,13 +13,13 @@
 //     funnel_role: 'agent'|'coach'|'club_staff'|'academy_director'|'other'  (required)
 //     phone_e164: string  (optional — filled if David already has it)
 //     lead_type:  string  (optional — defaults to 'individual_player';
-//                          the sales team may prefer 'academy'/'club'
-//                          for organisational contacts)
+//                          use 'academy'/'club' for organisational contacts)
 //     notes:      string  (optional — goes into leads.summary)
-//     greeting:   string  (optional — customises the pre-filled "Oi")
 //   }
 //
-// Response: { lead_id, token, wa_me }
+// Response: { lead_id, token, outreach_url, ... }
+//   outreach_url is the short branded link (globalplayerpro.com/o/<token>)
+//   that 302-redirects to the wa.me deeplink with the zero-width token.
 //
 // Also inserts:
 //   - lead_activities 'stage_change' row (matches POST /api/admin/leads)
@@ -117,11 +117,6 @@ export async function POST(request) {
       ? body.notes.trim().slice(0, MAX_NOTES)
       : null;
 
-  const greeting =
-    typeof body.greeting === "string" && body.greeting.trim()
-      ? body.greeting.trim().slice(0, 40)
-      : "Oi";
-
   const supabase = await getSupabaseAdmin();
 
   const token = generateOutreachToken();
@@ -173,16 +168,12 @@ export async function POST(request) {
     },
   ]);
 
-  const waMe = buildOutreachLink({
-    businessNumberE164: businessNumber,
-    token,
-    greeting,
-  });
+  const outreachUrl = buildOutreachLink({ token });
 
   return NextResponse.json({
     lead_id: lead.id,
     token,
-    wa_me: waMe,
+    outreach_url: outreachUrl,
     funnel_stage: lead.funnel_stage,
     funnel_role: lead.funnel_role,
     full_name: lead.full_name,

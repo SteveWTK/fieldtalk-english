@@ -46,21 +46,41 @@ export function generateOutreachToken() {
 }
 
 /**
- * Build the wa.me link the salesperson pastes into their outreach
- * message. `businessNumberE164` should include the leading '+', which
- * wa.me strips.
+ * Build the public-facing outreach link the salesperson pastes into
+ * their DM. Short, brand-domained, e.g.
  *
- * The pre-filled message is `<greeting><zero-width token>`. The lead
- * sees just the greeting (e.g. "Oi") in their WhatsApp input; the
- * router decodes the invisible zero-width chars server-side to match
- * this outreach.
+ *   https://www.globalplayerpro.com/o/kg7m3xph
+ *
+ * The lead clicks it and the /o/[token] route 302-redirects to the
+ * wa.me deeplink (built by `buildWhatsappDeeplink`). This keeps the
+ * shared URL clean and trust-worthy — no long %-encoded strings in
+ * the DM, and the domain reassures the recipient about who they're
+ * talking to.
  */
-export function buildOutreachLink({ businessNumberE164, token, greeting }) {
+export function buildOutreachLink({ token }) {
+  if (!token) throw new Error("buildOutreachLink: token required");
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.globalplayerpro.com";
+  const cleanOrigin = origin.replace(/\/$/, "");
+  return `${cleanOrigin}/o/${encodeURIComponent(token)}`;
+}
+
+/**
+ * Build the underlying wa.me deeplink the /o/[token] redirect route
+ * (and only that route) uses to hand off to WhatsApp. Message body is
+ * `<greeting><zero-width token>` so the lead sees just "Oi" in their
+ * chat while the router still receives the invisible token bytes.
+ */
+export function buildWhatsappDeeplink({
+  businessNumberE164,
+  token,
+  greeting,
+}) {
   if (!businessNumberE164) {
-    throw new Error("buildOutreachLink: businessNumberE164 required");
+    throw new Error("buildWhatsappDeeplink: businessNumberE164 required");
   }
   if (!token) {
-    throw new Error("buildOutreachLink: token required");
+    throw new Error("buildWhatsappDeeplink: token required");
   }
   const digits = String(businessNumberE164).replace(/[^\d]/g, "");
   const zwToken = encodeTokenAsZeroWidth(token);

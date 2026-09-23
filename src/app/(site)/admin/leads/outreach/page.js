@@ -330,9 +330,9 @@ function OutreachResult({ result }) {
   const [qrDataUrl, setQrDataUrl] = useState(null);
 
   useEffect(() => {
-    if (!result?.wa_me) return;
+    if (!result?.outreach_url) return;
     let cancelled = false;
-    QRCode.toDataURL(result.wa_me, {
+    QRCode.toDataURL(result.outreach_url, {
       width: 240,
       margin: 1,
       color: { dark: "#f8fafc", light: "#00000000" },
@@ -346,13 +346,13 @@ function OutreachResult({ result }) {
     return () => {
       cancelled = true;
     };
-  }, [result?.wa_me]);
+  }, [result?.outreach_url]);
 
   if (!result) return null;
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(result.wa_me);
+      await navigator.clipboard.writeText(result.outreach_url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -370,11 +370,11 @@ function OutreachResult({ result }) {
       <div className="space-y-3">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold mb-1">
-            wa.me link
+            Short outreach link
           </p>
           <div className="flex items-stretch gap-2">
             <div className="flex-1 min-w-0 bg-primary-900 border border-primary-700 rounded-control px-3 py-2 text-xs text-primary-100 font-mono break-all">
-              {result.wa_me}
+              {result.outreach_url}
             </div>
             <button
               type="button"

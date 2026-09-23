@@ -2,13 +2,13 @@
 //
 // POST /api/admin/leads/[id]/outreach
 //   Mint (or retrieve) the WhatsApp outreach token for an existing lead
-//   and return the wa.me link the salesperson pastes into their
-//   personal WA DM.
+//   and return the short branded outreach URL the salesperson pastes
+//   into their personal WA DM.
 //
 //   Behaviour:
 //     - If the lead has NO outreach_token yet: generate one, set
 //       funnel_stage='pending_oi', persist funnel_role (if provided),
-//       return { token, wa_me }.
+//       return { token, outreach_url }.
 //     - If the lead already has one and funnel_stage is still
 //       'pending_oi', return the existing token (idempotent — David
 //       can re-copy the link without wasting tokens).
@@ -17,8 +17,7 @@
 //       current stage — team should intervene manually.
 //
 // Body (all optional):
-//   { funnel_role: 'agent'|'coach'|'club_staff'|'academy_director'|'other',
-//     greeting: string (defaults to 'Oi') }
+//   { funnel_role: 'agent'|'coach'|'club_staff'|'academy_director'|'other' }
 //
 // Notes:
 //   - We DO NOT auto-set leads.source='whatsapp_funnel' here — the lead
@@ -60,17 +59,6 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "lead id required" }, { status: 400 });
   }
 
-  const businessNumber = process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER;
-  if (!businessNumber) {
-    return NextResponse.json(
-      {
-        error:
-          "NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER not set — configure in .env before minting outreach tokens.",
-      },
-      { status: 500 },
-    );
-  }
-
   let body = {};
   try {
     body = await request.json();
@@ -86,10 +74,6 @@ export async function POST(request, { params }) {
       { status: 400 },
     );
   }
-  const greeting =
-    typeof body.greeting === "string" && body.greeting.trim()
-      ? body.greeting.trim().slice(0, 40)
-      : "Oi";
 
   const supabase = await getSupabaseAdmin();
 
@@ -169,15 +153,11 @@ export async function POST(request, { params }) {
     });
   }
 
-  const waMe = buildOutreachLink({
-    businessNumberE164: businessNumber,
-    token,
-    greeting,
-  });
+  const outreachUrl = buildOutreachLink({ token });
 
   return NextResponse.json({
     token,
-    wa_me: waMe,
+    outreach_url: outreachUrl,
     funnel_stage: patch.funnel_stage ?? lead.funnel_stage ?? "pending_oi",
     funnel_role: patch.funnel_role ?? lead.funnel_role ?? null,
     reused: !patch.outreach_token,

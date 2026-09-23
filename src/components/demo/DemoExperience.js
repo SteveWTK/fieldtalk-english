@@ -21,6 +21,8 @@ import DemoCta from "@/components/demo/DemoCta";
  *   role: string | null,
  *   token: string,
  *   openingLine: string | null,   // WhatsApp → web callback line
+ *   salesperson: { firstName: string | null, phoneE164: string | null } | null,
+ *   businessNumber: string | null,   // fallback wa.me target if salesperson.phone is missing
  * }} props
  */
 export default function DemoExperience({
@@ -29,6 +31,8 @@ export default function DemoExperience({
   role,
   token,
   openingLine,
+  salesperson,
+  businessNumber,
 }) {
   const beats = [
     {
@@ -72,7 +76,15 @@ export default function DemoExperience({
   return (
     <DemoShell
       beats={beats}
-      cta={<DemoCta role={role} token={token} firstName={firstName} />}
+      cta={
+        <DemoCta
+          role={role}
+          token={token}
+          firstName={firstName}
+          salesperson={salesperson}
+          businessNumber={businessNumber}
+        />
+      }
     />
   );
 }
