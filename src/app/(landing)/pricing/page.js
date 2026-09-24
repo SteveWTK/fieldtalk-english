@@ -132,7 +132,7 @@ const translations = {
       secondaryCta: "See plans ↓",
     },
     valueCallout: {
-      title: "One lost signing costs more than a year of Global Player.",
+      title: "One lost signing costs much more than a year of Global Player.",
       body: "A promising contract slipping through your fingers is years of your commission. This costs less than the gas you spend visiting dorms.",
     },
     tiers: {
@@ -301,7 +301,8 @@ const translations = {
       secondaryCta: "Ver planos ↓",
     },
     valueCallout: {
-      title: "Um contrato perdido custa mais do que um ano de Global Player.",
+      title:
+        "Um contrato perdido custa muito mais do que um ano de Global Player.",
       body: "Um contrato promissor escapando das suas mãos são anos da sua comissão. Isto custa menos que a gasolina que você gasta indo aos alojamentos.",
     },
     tiers: {
@@ -1076,9 +1077,11 @@ function IndividualPlayerCard({
   // if either is null (Stripe offerings missing), compute from the
   // INDIVIDUAL_PRICES constants so the card still tells the "annual
   // is cheaper" story.
-  const yearlyEqLocal = yearlyEquivalentMonthly ||
+  const yearlyEqLocal =
+    yearlyEquivalentMonthly ||
     `R$ ${formatBrl(INDIVIDUAL_PRICES.yearlyBrl / 12)}`;
-  const savingsLocal = yearlySavingsAmount ||
+  const savingsLocal =
+    yearlySavingsAmount ||
     `R$ ${formatBrl(INDIVIDUAL_PRICES.monthlyBrl * 12 - INDIVIDUAL_PRICES.yearlyBrl)}`;
 
   return (
