@@ -8,11 +8,11 @@
 // auth wrapper. This is the first surface a prospect ever sees; a
 // login prompt here would kill the funnel.
 //
-// Also loads the salesperson (leads.created_by → players row) so the
-// end-of-demo CTA can deep-link back to their personal WhatsApp for
-// the sale-close conversation. The B2B pivot means the CTA is a hand-
-// off to David / Paul, not a solo signup — the individual join flow
-// waits on the club-portal work (Stage 6 rebrand backlog).
+// The end-of-demo CTA points at the single sales contact configured
+// in src/lib/sales/contact.js (Paul by default). The B2B pivot means
+// the CTA is a hand-off to a human, not a solo signup — the
+// individual join flow waits on the club-portal work (Stage 6 rebrand
+// backlog).
 
 import { notFound } from "next/navigation";
 import getSupabaseAdmin from "@/lib/supabase-admin-lazy";
@@ -31,7 +31,7 @@ export default async function DemoLandingPage({ params }) {
   const { data: lead } = await supabase
     .from("leads")
     .select(
-      "id, full_name, funnel_role, funnel_stage, funnel_q1_snapshot, funnel_q1_is_correct, created_by",
+      "id, full_name, funnel_role, funnel_stage, funnel_q1_snapshot, funnel_q1_is_correct",
     )
     .eq("outreach_token", token.toLowerCase())
     .maybeSingle();
@@ -39,8 +39,6 @@ export default async function DemoLandingPage({ params }) {
   if (!lead) {
     notFound();
   }
-
-  const salesperson = await loadSalesperson(supabase, lead.created_by);
 
   const firstName = extractFirstName(lead.full_name);
   const openingLine = buildOpeningLine(lead);
@@ -51,32 +49,9 @@ export default async function DemoLandingPage({ params }) {
       anchor={anchor}
       firstName={firstName}
       role={lead.funnel_role}
-      token={token}
       openingLine={openingLine}
-      salesperson={salesperson}
-      businessNumber={process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER || null}
     />
   );
-}
-
-/**
- * Load the salesperson who launched this outreach. Returns null if
- * unavailable — the CTA falls back to the business number in that case.
- * We return only what the CTA needs: a first name for the copy and a
- * phone number for the wa.me deeplink.
- */
-async function loadSalesperson(supabase, createdBy) {
-  if (!createdBy) return null;
-  const { data } = await supabase
-    .from("players")
-    .select("full_name, phone_e164")
-    .eq("id", createdBy)
-    .maybeSingle();
-  if (!data) return null;
-  return {
-    firstName: extractFirstName(data.full_name),
-    phoneE164: data.phone_e164 || null,
-  };
 }
 
 /**

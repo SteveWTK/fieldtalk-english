@@ -1,9 +1,25 @@
 // src/components/demo/beats/ListeningBeat.js
 //
-// Beat 2 (~25s): a post-match interview snippet. The demo plays the
-// sentence via SpeechSynthesis (falls back to a silent transcript
-// when TTS isn't available) and asks the user to fill in one blank
-// from 3 options.
+// Beat 2 (~25s): a post-match interview snippet. Plays the pre-
+// recorded audio clip (see AUDIO_SRC below) with browser
+// SpeechSynthesis as a fallback when the file is missing, then asks
+// the user to fill in one blank from 3 options.
+//
+// Recording drop-in:
+//   1. David records the CLIP.fullText line as an mp3 (short — the
+//      whole thing should feel like a 4–6 second post-match soundbite).
+//   2. Save at:  public/audio/demo/listening-clip.mp3
+//   3. Ship. No code changes needed — the <audio> element loads it
+//      at that URL and the TTS fallback stops kicking in automatically.
+//
+// Recording tips (for whoever's behind the mic):
+//   - British / neutral English accent — matches the "European
+//     destination" positioning of the product.
+//   - Natural post-match delivery — slightly out of breath, warm.
+//   - Same pace as an actual interview soundbite; no lesson-narrator
+//     over-enunciation.
+//   - Full sentence, no gaps for the blank — the ear does the work.
+//   - 128kbps mono mp3 is fine. Under 100kB per clip.
 //
 // Mirrors the visual language of AudioComprehension without pulling
 // in the XP / progress writes that component does.
@@ -14,11 +30,10 @@ import { useEffect, useRef, useState } from "react";
 import { Play, RotateCcw, Check, X, Eye } from "lucide-react";
 import Button from "@/components/ui/button";
 
-// A short generic post-match line — deliberately not football-jargon-
-// heavy so the exercise stays about listening for the specific blank,
-// not decoding vocabulary.
-//
-// Structure: transcript with ___ marker + 3 options + correct id.
+// Public-folder path. Next serves files under /public directly from
+// the site root, so the browser fetches this URL literally.
+const AUDIO_SRC = "/audio/demo/listening-clip.mp3";
+
 const CLIP = {
   fullText:
     "We had the better of them in the first half, but we didn't take our chances.",
@@ -39,11 +54,18 @@ export default function ListeningBeat({ onDone }) {
   const [reveal, setReveal] = useState(false);
   const [playedOnce, setPlayedOnce] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
+  // Audio state — starts optimistic; flips to false if the file 404s
+  // or throws on play, at which point we fall back to SpeechSynthesis.
+  const [audioAvailable, setAudioAvailable] = useState(true);
+  const audioRef = useRef(null);
   const utterRef = useRef(null);
 
   useEffect(() => {
+    // Capture the ref inside the effect so the cleanup uses the same
+    // element instance the effect saw, not whatever the ref is
+    // pointing at when the component unmounts later.
+    const audioEl = audioRef.current;
     return () => {
-      // Silence any in-flight speech when the beat unmounts.
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         try {
           window.speechSynthesis.cancel();
@@ -51,12 +73,18 @@ export default function ListeningBeat({ onDone }) {
           /* silent */
         }
       }
+      if (audioEl) {
+        try {
+          audioEl.pause();
+        } catch {
+          /* silent */
+        }
+      }
     };
   }, []);
 
-  function play() {
+  function playTts() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      // No TTS — reveal the transcript so the user can still read it.
       setShowTranscript(true);
       setPlayedOnce(true);
       return;
@@ -75,6 +103,26 @@ export default function ListeningBeat({ onDone }) {
     }
   }
 
+  function play() {
+    if (audioAvailable && audioRef.current) {
+      try {
+        audioRef.current.currentTime = 0;
+        const playPromise = audioRef.current.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {
+            setAudioAvailable(false);
+            playTts();
+          });
+        }
+        setPlayedOnce(true);
+        return;
+      } catch {
+        setAudioAvailable(false);
+      }
+    }
+    playTts();
+  }
+
   function pick(opt) {
     if (reveal) return;
     setPicked(opt);
@@ -85,6 +133,18 @@ export default function ListeningBeat({ onDone }) {
 
   return (
     <div>
+      {/* Real audio element — hidden. Preloads metadata so we know
+          quickly whether the file exists. On any error, audioAvailable
+          flips and subsequent play() calls route through TTS. */}
+      <audio
+        ref={audioRef}
+        src={AUDIO_SRC}
+        preload="metadata"
+        onError={() => setAudioAvailable(false)}
+      >
+        <track kind="captions" />
+      </audio>
+
       <p className="text-sm text-primary-300 leading-relaxed mb-4">
         Ouça a fala do jogador na entrevista e complete a lacuna.
       </p>

@@ -47,7 +47,8 @@ import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Eyebrow from "@/components/ui/eyebrow";
-import CalendlyButton from "@/components/pricing/CalendlyButton";
+import { buildSalesWhatsappLink } from "@/lib/sales/contact";
+import { MessageCircle } from "lucide-react";
 // import PricingCalculator from "@/components/pricing/PricingCalculator";
 import InquiryForm from "@/components/pricing/InquiryForm";
 
@@ -70,6 +71,12 @@ const INDIVIDUAL_PRICES = {
 
 // Tier catalogue — copy + prices in one place. If David revises
 // prices, they change here (and in the calculator TIERS constant).
+//
+// `offeringIds` maps each billing interval to the Stripe offering id
+// defined in src/lib/editions/editions.js. Base and Elenco use these
+// to fire /api/checkout when the card CTA is clicked. Agency ships
+// them for parity/future use, but its card always routes to a sales
+// WhatsApp conversation because those deals are always custom.
 const TIERS = [
   {
     id: "squad",
@@ -78,6 +85,10 @@ const TIERS = [
     athletes: 20,
     highlight: false,
     icon: "shield",
+    offeringIds: {
+      monthly: "gp_base_monthly_brl",
+      annual: "gp_base_yearly_brl",
+    },
   },
   {
     id: "roster",
@@ -86,6 +97,10 @@ const TIERS = [
     athletes: 50,
     highlight: true, // "Mais popular"
     icon: "trophy",
+    offeringIds: {
+      monthly: "gp_elenco_monthly_brl",
+      annual: "gp_elenco_yearly_brl",
+    },
   },
   {
     id: "agency",
@@ -100,6 +115,10 @@ const TIERS = [
     athletes: "200+",
     highlight: false,
     icon: "sparkles",
+    offeringIds: {
+      monthly: "gp_agencia_monthly_brl",
+      annual: "gp_agencia_yearly_brl",
+    },
   },
 ];
 
@@ -171,6 +190,10 @@ const translations = {
       billingMonthly: "Monthly",
       billingAnnual: "Annual",
       billingSave: "Save 2 months",
+      talkToUsAboveCards: "Not sure which plan? Talk to us →",
+      talkToUsPrefill:
+        "Hi Paul! Looking at the pricing page — can you help me figure out which plan fits?",
+      talkToUsSimple: "Talk to us on WhatsApp",
     },
     comparison: {
       heading: "What's in each plan",
@@ -337,6 +360,10 @@ const translations = {
       billingMonthly: "Mensal",
       billingAnnual: "Anual",
       billingSave: "Economize 2 meses",
+      talkToUsAboveCards: "Não sabe qual plano? Fale com agente →",
+      talkToUsPrefill:
+        "Oi Paul! Estou vendo os planos na página de preços — pode me ajudar a escolher qual encaixa melhor?",
+      talkToUsSimple: "Fale com agente no WhatsApp",
     },
     comparison: {
       heading: "O que vem em cada plano",
@@ -669,6 +696,25 @@ function PricingPageContent() {
             />
           </div>
 
+          {/* Talk-to-us above the cards — deliberately placed on the
+              path to the cards, not below, so a phone-screen visitor
+              who's undecided has the human option in view before they
+              start comparing tiers. Neutral pill (not lime) so the
+              tier cards below still own the primary CTA weight. */}
+          <div className="flex items-center justify-center">
+            <Link
+              href={buildSalesWhatsappLink({
+                prefilledMessage: copy.tiers.talkToUsPrefill,
+              })}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-panel border border-primary-700 hover:border-accent-400/50 hover:bg-primary-800 text-primary-200 text-xs font-semibold transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-accent-400" />
+              {copy.tiers.talkToUsAboveCards}
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
             {TIERS.map((tier) => (
               <TierCard
@@ -676,6 +722,9 @@ function PricingPageContent() {
                 tier={tier}
                 copy={copy.tiers}
                 billing={tierBilling}
+                handleBuy={handleBuy}
+                checkoutLoading={checkoutLoading}
+                salesPrefill={copy.tiers.talkToUsPrefill}
               />
             ))}
           </div>
@@ -744,11 +793,17 @@ function PricingPageContent() {
           <p className="text-sm text-primary-300 mt-3 mb-5 leading-relaxed">
             {copy.footerCta.sub}
           </p>
-          <CalendlyButton
-            label={copy.hero.primaryCta}
-            size="md"
-            tier="footer"
-          />
+          <Link
+            href={buildSalesWhatsappLink({
+              prefilledMessage: copy.tiers.talkToUsPrefill,
+            })}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-bold tracking-wide transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" />
+            {copy.tiers.talkToUsSimple}
+          </Link>
         </section>
       </main>
     </div>
@@ -793,10 +848,21 @@ function BillingToggle({ value, onChange, labels }) {
 
 /* ─── TierCard ─────────────────────────────────────────────── */
 
-function TierCard({ tier, copy, billing }) {
+function TierCard({
+  tier,
+  copy,
+  billing,
+  handleBuy,
+  checkoutLoading,
+  salesPrefill,
+}) {
   const t = copy[tier.id];
   const isAgency = tier.id === "agency";
   const isHighlighted = !!tier.highlight;
+  const activeOfferingId = tier.offeringIds
+    ? tier.offeringIds[billing === "annual" ? "annual" : "monthly"]
+    : null;
+  const isBuying = checkoutLoading === activeOfferingId;
 
   // Price display honours the billing toggle for every tier —
   // including Agency, which now has an annualBrl and just carries
@@ -881,18 +947,39 @@ function TierCard({ tier, copy, billing }) {
         ))}
       </ul>
 
-      {/* Card CTA — Squad + Roster get an inquiry Calendly CTA;
-          Agency gets a Talk-to-us Calendly CTA (same widget, different
-          tier param for attribution). The one lime highlight in this
-          row belongs to the Most Popular (Roster) card, so Squad +
-          Agency CTAs use the secondary variant. */}
-      <CalendlyButton
-        label={t.cta}
-        variant={isHighlighted ? "primary" : "secondary"}
-        size="md"
-        fullWidth
-        tier={tier.id}
-      />
+      {/* Card CTA — Squad + Roster fire Stripe checkout for the
+          currently-selected billing interval. Agency is always a
+          talk-to-us WhatsApp handoff because those deals are custom.
+          Only the highlighted (Roster) card gets the lime primary
+          variant per DS "one accent per view" discipline; the
+          neighbouring CTAs use secondary. */}
+      {isAgency ? (
+        <Link
+          href={buildSalesWhatsappLink({ prefilledMessage: salesPrefill })}
+          target="_blank"
+          rel="noopener"
+          className={`w-full inline-flex items-center justify-center gap-2 py-3 rounded-full font-bold text-sm tracking-wide transition-colors ${
+            isHighlighted
+              ? "bg-accent-400 hover:bg-accent-300 text-primary-900"
+              : "bg-primary-800 hover:bg-primary-700 border border-primary-600 hover:border-primary-500 text-primary-100"
+          }`}
+        >
+          <MessageCircle className="w-4 h-4" />
+          {t.cta}
+        </Link>
+      ) : (
+        <Button
+          variant={isHighlighted ? "primary" : "secondary"}
+          size="md"
+          fullWidth
+          onClick={() => activeOfferingId && handleBuy(activeOfferingId)}
+          disabled={!activeOfferingId || checkoutLoading !== null}
+          loading={isBuying}
+          type="button"
+        >
+          {t.cta}
+        </Button>
+      )}
     </div>
   );
 }

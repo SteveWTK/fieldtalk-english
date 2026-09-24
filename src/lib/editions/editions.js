@@ -217,6 +217,96 @@ const OFFERINGS = [
     editionsGranted: ["propath_26_27"],
     priceId: process.env.STRIPE_PROPATH_YEARLY_BRL_PRICE_ID || null,
   },
+
+  // ─── Global Player B2B tiers ──────────────────────────────────
+  //
+  // The three B2B cards on /pricing (Base / Elenco / Agência). Base
+  // and Elenco use these offerings directly — the tier CTA fires
+  // /api/checkout with the offering id and lands the customer on
+  // Stripe. Agência ships the offerings for parity/future use, but
+  // the card itself still routes to a WhatsApp sales conversation
+  // because Agency deals are always customised (setup fee, seat
+  // count, white-label scope).
+  //
+  // editionsGranted: the current content library is propath_26_27,
+  // so B2B purchasers unlock the same edition their players will
+  // use. Seat allocation (which players get access under the
+  // subscription) is handled separately by the coach / club portal
+  // work still in Stage 6 backlog — until then a purchase grants
+  // the buyer access; player invites happen manually via the admin
+  // /seat-licenses flow.
+  {
+    id: "gp_base_monthly_brl",
+    label: "Global Player — Base (monthly)",
+    description: "B2B tier · up to 20 athletes. Monthly billing.",
+    mode: "subscription",
+    interval: "monthly",
+    currency: "BRL",
+    displayPrice: "R$ 397",
+    displayInterval: "/month",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_BASE_MONTHLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "gp_base_yearly_brl",
+    label: "Global Player — Base (yearly)",
+    description: "B2B tier · up to 20 athletes. Annual — 2 months free.",
+    mode: "subscription",
+    interval: "yearly",
+    currency: "BRL",
+    displayPrice: "R$ 3.970",
+    displayInterval: "/year",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_BASE_YEARLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "gp_elenco_monthly_brl",
+    label: "Global Player — Elenco (monthly)",
+    description: "B2B tier · up to 50 athletes. Monthly billing.",
+    mode: "subscription",
+    interval: "monthly",
+    currency: "BRL",
+    displayPrice: "R$ 897",
+    displayInterval: "/month",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_ELENCO_MONTHLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "gp_elenco_yearly_brl",
+    label: "Global Player — Elenco (yearly)",
+    description: "B2B tier · up to 50 athletes. Annual — 2 months free.",
+    mode: "subscription",
+    interval: "yearly",
+    currency: "BRL",
+    displayPrice: "R$ 8.970",
+    displayInterval: "/year",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_ELENCO_YEARLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "gp_agencia_monthly_brl",
+    label: "Global Player — Agência (monthly)",
+    description: "B2B tier · 200+ athletes. Custom terms; UI still routes to sales.",
+    mode: "subscription",
+    interval: "monthly",
+    currency: "BRL",
+    displayPrice: "R$ 2.997",
+    displayInterval: "/month",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_AGENCIA_MONTHLY_BRL_PRICE_ID || null,
+  },
+  {
+    id: "gp_agencia_yearly_brl",
+    label: "Global Player — Agência (yearly)",
+    description: "B2B tier · 200+ athletes. Custom terms; UI still routes to sales.",
+    mode: "subscription",
+    interval: "yearly",
+    currency: "BRL",
+    displayPrice: "R$ 29.970",
+    displayInterval: "/year",
+    editionsGranted: ["propath_26_27"],
+    priceId: process.env.STRIPE_GP_AGENCIA_YEARLY_BRL_PRICE_ID || null,
+  },
 ];
 
 export function getOffering(id) {
