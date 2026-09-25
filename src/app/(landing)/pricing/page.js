@@ -726,7 +726,7 @@ function PricingPageContent() {
                   <ChevronDown className="w-4 h-4 text-accent-400 mt-0.5 shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <p className="px-4 pb-4 text-primary-300 text-sm leading-relaxed">
-                  {fill(item.a)}
+                  {item.a}
                 </p>
               </details>
             ))}
