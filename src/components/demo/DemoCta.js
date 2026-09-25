@@ -102,17 +102,30 @@ export default function DemoCta({
         {buttonLabel}
       </Link>
 
-      {/* Self-serve secondary — only rendered on the direct-sample
-          /demo page (not on the funnel /demo/[token] flow). Deliberately
-          text-link styling so the primary "talk to Paul" action still
-          dominates the eye. */}
+      {/* Self-serve secondaries — only rendered on the direct-sample
+          /demo page (not on the funnel /demo/[token] flow). Text-link
+          styling so the primary "talk to Paul" action still dominates
+          the eye.
+
+          Ordered by escalating commitment: (a) free trial creates an
+          account and gives 2 lessons on the house — the lowest-barrier
+          next step, (b) explore the plans surface for anyone already
+          past the "should I try this" question. */}
       {showSelfServeCta && (
-        <Link
-          href="/pricing"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-300 hover:text-primary-50 underline-offset-4 hover:underline transition-colors"
-        >
-          Prefiro explorar os planos por conta própria →
-        </Link>
+        <div className="mt-5 flex flex-col items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-primary-200 hover:text-primary-50 underline-offset-4 hover:underline transition-colors"
+          >
+            Criar conta e fazer 2 aulas grátis →
+          </Link>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-1.5 text-sm text-primary-300 hover:text-primary-50 underline-offset-4 hover:underline transition-colors"
+          >
+            Prefiro explorar os planos por conta própria →
+          </Link>
+        </div>
       )}
 
       <p className="text-[11px] text-primary-500 mt-6">
