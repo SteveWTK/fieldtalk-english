@@ -1,4 +1,4 @@
-// src/app/(landing)/pricing/page.js
+﻿// src/app/(landing)/pricing/page.js
 //
 // Global Player pricing — B2B-first as of 2026-09.
 //
@@ -29,45 +29,37 @@
 
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowRight,
-  Shield,
   ChevronDown,
   Loader2,
-  KeyRound,
   Check,
   Sparkles,
+  MessageCircle,
+  User,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { getEdition, listOfferingsForEdition } from "@/lib/editions/editions";
+import { getEdition } from "@/lib/editions/editions";
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Eyebrow from "@/components/ui/eyebrow";
 import { buildSalesWhatsappLink } from "@/lib/sales/contact";
-import { MessageCircle } from "lucide-react";
 // import PricingCalculator from "@/components/pricing/PricingCalculator";
 import InquiryForm from "@/components/pricing/InquiryForm";
+import IndividualPlayerCard from "@/components/pricing/IndividualPlayerCard";
+import FullAccessPanel from "@/components/pricing/FullAccessPanel";
+import {
+  useIndividualPricing,
+  useIndividualCheckout,
+} from "@/lib/pricing/helpers";
 
 // The only edition Pro Path pricing surfaces at. If a second
 // concurrent edition ever ships, spawn a dedicated page rather than
 // resurrecting the edition-aware routing that used to live here.
 const EDITION_ID = "propath_26_27";
-
-// Individual-player pricing shown on the quiet card at the bottom
-// of the page. Kept as a separate constant (rather than reading
-// live from Stripe) so the page always renders a real number even
-// when the Stripe offering rows for `propath_26_27` aren't
-// configured or return incomplete data. Actual checkout still fires
-// against whatever Stripe has — if the two ever drift, sync here or
-// in editions.js / Stripe dashboard.
-const INDIVIDUAL_PRICES = {
-  monthlyBrl: 79,
-  yearlyBrl: 790, // 10 months priced ≈ 17% off (matches the 2-months-free frame)
-};
 
 // Tier catalogue — copy + prices in one place. If David revises
 // prices, they change here (and in the calculator TIERS constant).
@@ -130,6 +122,7 @@ const translations = {
       sub: "Track 20+ players from one dashboard. Spot problems before they become losses.",
       primaryCta: "Book a demo",
       secondaryCta: "See plans ↓",
+      individualLink: "Playing yourself? See individual plans →",
     },
     valueCallout: {
       title: "One lost signing costs much more than a year of Global Player.",
@@ -299,6 +292,7 @@ const translations = {
       sub: "Acompanhe 20+ atletas em um painel. Detecte problemas antes que virem prejuízo.",
       primaryCta: "Agendar demo",
       secondaryCta: "Ver planos ↓",
+      individualLink: "Jogador individual? Veja seu plano →",
     },
     valueCallout: {
       title:
@@ -488,85 +482,28 @@ function PricingPageContent() {
   const copy = translations[lang] || translations.pt;
 
   const edition = getEdition(EDITION_ID);
-  const offerings = useMemo(() => {
-    const all = listOfferingsForEdition(EDITION_ID);
-    return {
-      monthly:
-        all.find(
-          (o) => o.mode === "subscription" && o.interval === "monthly",
-        ) || null,
-      yearly:
-        all.find((o) => o.mode === "subscription" && o.interval === "yearly") ||
-        null,
-    };
-  }, []);
 
-  // Individual player billing toggle — yearly default for the same
-  // conversion reason as before (default-selected option carries
-  // disproportionate weight).
-  const [individualBilling, setIndividualBilling] = useState("yearly");
-  const activeOffering =
-    individualBilling === "yearly" ? offerings.yearly : offerings.monthly;
+  // Individual-player pricing state (offerings, monthly/yearly toggle,
+  // savings maths) lives in one hook so the /pricing/individual page
+  // reuses the same logic without duplication.
+  const {
+    billing: individualBilling,
+    setBilling: setIndividualBilling,
+    activeOffering,
+    yearlyEquivalentMonthly,
+    yearlySavingsAmount,
+  } = useIndividualPricing(EDITION_ID);
+
+  // Checkout dispatcher — shared between the individual card and the
+  // B2B tier cards. Redirects to /join when signed out.
+  const { buy: handleBuy, loading: checkoutLoading } = useIndividualCheckout({
+    editionId: EDITION_ID,
+  });
 
   // B2B tier billing toggle — separate from individual so agencies
   // can eyeball the annual saving without disturbing the individual
   // card below.
   const [tierBilling, setTierBilling] = useState("annual");
-
-  const yearlyEquivalentMonthly = useMemo(() => {
-    if (!offerings.yearly) return null;
-    const price = Number(offerings.yearly.priceAmount);
-    if (!Number.isFinite(price)) return null;
-    const perMonth = price / 12;
-    return `R$ ${formatBrl(perMonth)}`;
-  }, [offerings.yearly]);
-
-  const yearlySavingsAmount = useMemo(() => {
-    if (!offerings.monthly || !offerings.yearly) return null;
-    const m = Number(offerings.monthly.priceAmount);
-    const y = Number(offerings.yearly.priceAmount);
-    if (!Number.isFinite(m) || !Number.isFinite(y)) return null;
-    const saved = m * 12 - y;
-    if (saved <= 0) return null;
-    return `R$ ${formatBrl(saved)}`;
-  }, [offerings.monthly, offerings.yearly]);
-
-  const fill = (s, vars = {}) => {
-    if (typeof s !== "string") return s;
-    let out = s;
-    for (const [k, v] of Object.entries(vars)) {
-      out = out.replace(new RegExp(`\\{${k}\\}`, "g"), v);
-    }
-    return out;
-  };
-
-  const [checkoutLoading, setCheckoutLoading] = useState(null);
-  const handleBuy = async (offeringId) => {
-    if (!user) {
-      router.push(`/join?edition=${encodeURIComponent(EDITION_ID)}`);
-      return;
-    }
-    setCheckoutLoading(offeringId);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offering: offeringId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        console.error("[pricing] checkout failed:", data);
-        alert(data.error || "Could not start checkout. Please try again.");
-        return;
-      }
-      window.location.href = data.url;
-    } catch (err) {
-      console.error("[pricing] checkout exception:", err);
-      alert("Network error. Please try again.");
-    } finally {
-      setCheckoutLoading(null);
-    }
-  };
 
   if (!edition) {
     return (
@@ -657,7 +594,6 @@ function PricingPageContent() {
             {copy.hero.sub}
           </p>
           <div className="mt-6 flex items-center gap-3 flex-wrap justify-center">
-            {/* <CalendlyButton label={copy.hero.primaryCta} size="lg" tier="hero" /> */}
             <Button
               variant="primary"
               size="lg"
@@ -667,6 +603,18 @@ function PricingPageContent() {
               {copy.hero.secondaryCta}
             </Button>
           </div>
+
+          {/* Cross-link to the dedicated individual-player page. Quiet
+              styling — this page is B2B-first, and the individual
+              flow is a secondary audience served by a separate page
+              Paul shares directly with parents / teens. */}
+          <Link
+            href="/pricing/individual"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary-400 hover:text-primary-100 transition-colors"
+          >
+            <User className="w-3.5 h-3.5" />
+            {copy.hero.individualLink}
+          </Link>
         </section>
 
         {/* ─── Value callout ───────────────────────────────────── */}
@@ -752,7 +700,6 @@ function PricingPageContent() {
           handleBuy={handleBuy}
           yearlyEquivalentMonthly={yearlyEquivalentMonthly}
           yearlySavingsAmount={yearlySavingsAmount}
-          fill={fill}
         />
 
         {/* ─── Full Access code redeem ─────────────────────────── */}
@@ -1040,269 +987,4 @@ function ComparisonTable({ copy }) {
       </table>
     </div>
   );
-}
-
-/* ─── IndividualPlayerCard ─────────────────────────────────── */
-
-function IndividualPlayerCard({
-  copy,
-  billing,
-  onBillingChange,
-  activeOffering,
-  checkoutLoading,
-  handleBuy,
-  yearlyEquivalentMonthly,
-  yearlySavingsAmount,
-  fill,
-}) {
-  const isYearly = billing === "yearly";
-  // Prefer the live Stripe offering's price when present, fall back
-  // to the fixed INDIVIDUAL_PRICES constants above so the card never
-  // renders a "—" placeholder. Checkout still calls Stripe with
-  // whatever offering was resolved by the parent, so if Stripe returns
-  // a different real amount the checkout is truth; the display just
-  // guarantees a friendly number.
-  const livePrice =
-    activeOffering && Number.isFinite(Number(activeOffering.priceAmount))
-      ? Number(activeOffering.priceAmount)
-      : null;
-  const fallbackPrice = isYearly
-    ? INDIVIDUAL_PRICES.yearlyBrl
-    : INDIVIDUAL_PRICES.monthlyBrl;
-  const displayPrice = livePrice ?? fallbackPrice;
-  const priceStr = `R$ ${formatBrl(displayPrice)}`;
-
-  // Yearly equivalent + savings labels — same fallback logic:
-  // parent computes from live Stripe offerings and passes them in;
-  // if either is null (Stripe offerings missing), compute from the
-  // INDIVIDUAL_PRICES constants so the card still tells the "annual
-  // is cheaper" story.
-  const yearlyEqLocal =
-    yearlyEquivalentMonthly ||
-    `R$ ${formatBrl(INDIVIDUAL_PRICES.yearlyBrl / 12)}`;
-  const savingsLocal =
-    yearlySavingsAmount ||
-    `R$ ${formatBrl(INDIVIDUAL_PRICES.monthlyBrl * 12 - INDIVIDUAL_PRICES.yearlyBrl)}`;
-
-  return (
-    <section className="max-w-2xl mx-auto rounded-panel bg-primary-panel border border-primary-700 p-5 sm:p-7">
-      <div className="mb-4 text-center">
-        <Eyebrow className="mb-1">{copy.eyebrow}</Eyebrow>
-        <h2 className="text-lg sm:text-xl font-display font-bold tracking-tight text-primary-50">
-          {copy.title}
-        </h2>
-        <p className="text-sm text-primary-400 mt-1">{copy.sub}</p>
-      </div>
-
-      {/* Monthly / Yearly toggle */}
-      <div className="flex items-center justify-center mb-5">
-        <div className="inline-flex items-center gap-1 rounded-full bg-primary-900 border border-primary-700 p-1">
-          <button
-            type="button"
-            onClick={() => onBillingChange("monthly")}
-            className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
-              billing === "monthly"
-                ? "bg-primary-800 text-primary-50"
-                : "text-primary-400 hover:text-primary-100"
-            }`}
-          >
-            {copy.billingMonthly}
-          </button>
-          <button
-            type="button"
-            onClick={() => onBillingChange("yearly")}
-            className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
-              billing === "yearly"
-                ? "bg-accent-400 text-primary-900"
-                : "text-primary-400 hover:text-primary-100"
-            }`}
-          >
-            {copy.billingAnnual}
-          </button>
-        </div>
-      </div>
-
-      <div className="text-center mb-5">
-        <p className="flex items-baseline justify-center gap-2">
-          <span className="text-3xl sm:text-4xl font-display font-black text-primary-50 tabular-nums">
-            {priceStr}
-          </span>
-          <span className="text-sm text-primary-400">
-            {isYearly ? copy.yearlyPricePer : copy.monthlyPricePer}
-          </span>
-        </p>
-        {isYearly && (
-          <p className="text-xs text-primary-400 mt-1">
-            {fill(copy.yearlyEquivalent, { monthly: yearlyEqLocal })}
-          </p>
-        )}
-        {isYearly && (
-          <p className="text-xs text-accent-400 font-semibold mt-1">
-            {fill(copy.yearlySavings, { amount: savingsLocal })}
-          </p>
-        )}
-      </div>
-
-      <ul className="space-y-2 mb-5 max-w-md mx-auto">
-        {copy.features.map((f, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2 text-sm text-primary-200"
-          >
-            <Check
-              className="w-4 h-4 text-accent-400 mt-0.5 shrink-0"
-              strokeWidth={2.5}
-            />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="flex flex-col items-center gap-2">
-        <Button
-          variant="primary"
-          size="md"
-          Icon={ArrowRight}
-          onClick={() => handleBuy(activeOffering?.id)}
-          disabled={!activeOffering || checkoutLoading !== null}
-          loading={checkoutLoading === activeOffering?.id}
-        >
-          {checkoutLoading === activeOffering?.id ? copy.loading : copy.cta}
-        </Button>
-        <p className="text-[11px] text-primary-500">{copy.couponHint}</p>
-      </div>
-    </section>
-  );
-}
-
-/* ─── FullAccessPanel (preserved from pre-rewrite) ─────────── */
-
-function FullAccessPanel({ copy, isSignedIn, edition, onSuccess }) {
-  const [code, setCode] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!code.trim()) return;
-    if (!isSignedIn) {
-      setError(copy.errors.not_signed_in);
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/seat-license/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code.trim() }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.ok === false) {
-        if (data.reason === "already_redeemed") {
-          setSuccess(true);
-          onSuccess?.();
-          return;
-        }
-        setError(copy.errors[data.reason] || copy.errors.generic);
-        return;
-      }
-      setSuccess(true);
-      onSuccess?.();
-    } catch {
-      setError(copy.errors.generic);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <section className="max-w-md mx-auto">
-      <div className="relative rounded-panel bg-signal-performance/[0.06] border border-signal-performance/40 p-5 sm:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-control bg-signal-performance/15 flex items-center justify-center shrink-0">
-            <KeyRound className="w-5 h-5 text-signal-performance" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] sm:text-xs tracking-label uppercase text-signal-performance font-bold">
-              {copy.eyebrow}
-            </p>
-            <h3 className="text-base sm:text-lg font-bold text-primary-50 leading-tight">
-              {copy.heading}
-            </h3>
-          </div>
-        </div>
-
-        {success ? (
-          <div className="py-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-accent-400/20 flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-6 h-6 text-accent-400" />
-            </div>
-            <p className="text-base font-bold text-primary-50 mb-1">
-              {copy.successTitle}
-            </p>
-            <p className="text-sm text-primary-400">{copy.successBody}</p>
-          </div>
-        ) : !isSignedIn ? (
-          <div className="space-y-3">
-            <p className="text-xs sm:text-sm text-primary-400">
-              {copy.signedOutNote}
-            </p>
-            <Link
-              href={`/join?edition=${encodeURIComponent(edition)}`}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-signal-performance hover:brightness-110 text-primary-900 font-bold text-sm tracking-wide transition-all"
-            >
-              {copy.signedOutCta}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder={copy.placeholder}
-              disabled={submitting}
-              className="w-full px-3 py-3 rounded-control border border-primary-600 bg-primary-900 text-primary-100 placeholder-primary-500 focus:outline-none focus:border-signal-performance font-mono uppercase tracking-wide text-sm sm:text-base text-center"
-            />
-
-            {error && (
-              <div className="p-2.5 rounded-control bg-signal-alert/15 border border-signal-alert/40 text-signal-alert text-sm">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting || !code.trim()}
-              className="w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-full bg-signal-performance hover:brightness-110 disabled:opacity-60 text-primary-900 font-bold text-sm tracking-wide transition-all"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {copy.submitting}
-                </>
-              ) : (
-                <>
-                  <KeyRound className="w-4 h-4" />
-                  {copy.submit}
-                </>
-              )}
-            </button>
-          </form>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ─── BRL formatter ────────────────────────────────────────── */
-
-function formatBrl(v) {
-  return Number(v).toLocaleString("pt-BR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
 }
