@@ -52,6 +52,7 @@ import InquiryForm from "@/components/pricing/InquiryForm";
 import IndividualPlayerCard from "@/components/pricing/IndividualPlayerCard";
 import FullAccessPanel from "@/components/pricing/FullAccessPanel";
 import {
+  formatBrl,
   useIndividualPricing,
   useIndividualCheckout,
 } from "@/lib/pricing/helpers";
