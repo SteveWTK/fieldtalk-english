@@ -30,11 +30,11 @@ import { useEffect, useRef, useState } from "react";
 import { Play, RotateCcw, Check, X, Eye } from "lucide-react";
 import Button from "@/components/ui/button";
 
-// Public-folder path. Next serves files under /public directly from
-// the site root, so the browser fetches this URL literally.
-const AUDIO_SRC = "/audio/demo/listening-clip.mp3";
+// Default clip = post-match interview line for the advanced variant.
+// The beginner variant passes its own clip prop (in-game shout).
+const DEFAULT_AUDIO_SRC = "/audio/demo/listening-clip.mp3";
 
-const CLIP = {
+const DEFAULT_CLIP = {
   fullText:
     "We had the better of them in the first half, but we didn't take our chances.",
   before: "We had the better of them in the first half, but we didn't take our",
@@ -47,9 +47,26 @@ const CLIP = {
   translation:
     "Fomos melhores que eles no primeiro tempo, mas não aproveitamos as chances.",
   note: '"Take your chances" = aproveitar as oportunidades. Frase clássica de entrevista pós-jogo.',
+  audioSrc: DEFAULT_AUDIO_SRC,
 };
 
-export default function ListeningBeat({ onDone }) {
+/**
+ * @param {{
+ *   onDone: () => void,
+ *   clip?: {
+ *     fullText: string,
+ *     before: string,
+ *     after: string,
+ *     options: Array<{id: string, label: string, correct?: boolean}>,
+ *     translation?: string,
+ *     note?: string,
+ *     audioSrc?: string,   // /public path to the pre-recorded mp3
+ *   },
+ * }} props
+ */
+export default function ListeningBeat({ onDone, clip: clipProp }) {
+  const CLIP = clipProp || DEFAULT_CLIP;
+  const AUDIO_SRC = CLIP.audioSrc || DEFAULT_AUDIO_SRC;
   const [picked, setPicked] = useState(null);
   const [reveal, setReveal] = useState(false);
   const [playedOnce, setPlayedOnce] = useState(false);
@@ -247,7 +264,9 @@ export default function ListeningBeat({ onDone }) {
             <p className="text-sm text-primary-300">
               {isCorrect ? "Boa!" : "Quase — era "}
               {!isCorrect && (
-                <strong className="text-primary-50">chances</strong>
+                <strong className="text-primary-50">
+                  {CLIP.options.find((o) => o.correct === true)?.label || ""}
+                </strong>
               )}
               {!isCorrect && ". "}
               {CLIP.note}

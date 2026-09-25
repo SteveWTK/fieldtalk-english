@@ -16,12 +16,17 @@ import { distractorsForBeat1 } from "@/lib/demo/football-phrases";
 
 /**
  * @param {{
- *   anchor: {en: string, pt: string, note?: string},
+ *   anchor: {id?: string, en: string, pt: string, note?: string},
+ *   options?: Array<object>,   // optional override — beginner variant passes
+ *                              //   position vocab; default variant falls
+ *                              //   through to football-phrases distractors
  *   onDone: () => void,
  * }} props
  */
-export default function VocabTapBeat({ anchor, onDone }) {
-  const [options] = useState(() => distractorsForBeat1(anchor));
+export default function VocabTapBeat({ anchor, options: optionsProp, onDone }) {
+  const [options] = useState(
+    () => optionsProp || distractorsForBeat1(anchor),
+  );
   const [picked, setPicked] = useState(null);
   const [reveal, setReveal] = useState(false);
 
