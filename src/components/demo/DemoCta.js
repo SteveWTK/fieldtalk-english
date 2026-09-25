@@ -57,9 +57,14 @@ const ROLE_COPY = {
  * @param {{
  *   role: string | null,
  *   firstName: string | null,
+ *   showSelfServeCta?: boolean,   // renders the "Ver os planos" secondary link
  * }} props
  */
-export default function DemoCta({ role, firstName }) {
+export default function DemoCta({
+  role,
+  firstName,
+  showSelfServeCta = false,
+}) {
   const { name: salesName } = getSalesContact();
   const copy = ROLE_COPY[role] || ROLE_COPY.other;
   const bodyText = copy.body(salesName);
@@ -96,6 +101,19 @@ export default function DemoCta({ role, firstName }) {
         <MessageCircle className="w-5 h-5" />
         {buttonLabel}
       </Link>
+
+      {/* Self-serve secondary — only rendered on the direct-sample
+          /demo page (not on the funnel /demo/[token] flow). Deliberately
+          text-link styling so the primary "talk to Paul" action still
+          dominates the eye. */}
+      {showSelfServeCta && (
+        <Link
+          href="/pricing"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary-300 hover:text-primary-50 underline-offset-4 hover:underline transition-colors"
+        >
+          Prefiro explorar os planos por conta própria →
+        </Link>
+      )}
 
       <p className="text-[11px] text-primary-500 mt-6">
         Planos, condições e criação de acessos são combinados por lá.

@@ -20,6 +20,7 @@ import DemoCta from "@/components/demo/DemoCta";
  *   firstName: string | null,
  *   role: string | null,
  *   openingLine: string | null,   // WhatsApp → web callback line
+ *   showSelfServeCta?: boolean,   // renders the "explore plans" secondary
  * }} props
  */
 export default function DemoExperience({
@@ -27,6 +28,7 @@ export default function DemoExperience({
   firstName,
   role,
   openingLine,
+  showSelfServeCta = false,
 }) {
   const beats = [
     {
@@ -70,7 +72,13 @@ export default function DemoExperience({
   return (
     <DemoShell
       beats={beats}
-      cta={<DemoCta role={role} firstName={firstName} />}
+      cta={
+        <DemoCta
+          role={role}
+          firstName={firstName}
+          showSelfServeCta={showSelfServeCta}
+        />
+      }
     />
   );
 }
