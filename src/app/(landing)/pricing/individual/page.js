@@ -68,7 +68,7 @@ const translations = {
       couponHint: "Discount codes → add at Stripe Checkout.",
     },
     fullAccess: {
-      eyebrow: "Got a code from your school?",
+      eyebrow: "Got a full-access code?",
       heading: "Skip checkout — redeem here",
       body: "Students of Cultura Inglesa, partner schools, and pre-paid cohorts: paste the code your coordinator gave you.",
       placeholder: "e.g. CC-CEARA-2026A-X9K3F2",
@@ -92,7 +92,7 @@ const translations = {
     },
     footer: {
       title: "Questions? Talk to Paul.",
-      body: "Not sure if it's the right fit for your son / daughter? Ask Paul directly on WhatsApp — he'll take you through it in a couple of minutes.",
+      body: "Ask Paul directly on WhatsApp — he'll take you through it in a couple of minutes.",
       cta: "Talk to Paul on WhatsApp",
     },
     talkToUsPrefill:
@@ -126,7 +126,7 @@ const translations = {
       couponHint: "Cupom de desconto → adicione no Stripe Checkout.",
     },
     fullAccess: {
-      eyebrow: "Tem código da sua escola?",
+      eyebrow: "Tem um código de Acesso Completo?",
       heading: "Pule o checkout — resgate aqui",
       body: "Alunos das Culturas Inglesas, escolas parceiras e turmas pré-pagas: cole o código que seu coordenador te deu.",
       placeholder: "ex: CC-CEARA-2026A-X9K3F2",
@@ -150,7 +150,7 @@ const translations = {
     },
     footer: {
       title: "Ficou com dúvida? Fale com o Paul.",
-      body: "Não sabe se encaixa pro seu filho ou filha? Fala direto com o Paul no WhatsApp — em dois minutos ele te explica tudo.",
+      body: "Fala direto com o Paul no WhatsApp — em dois minutos ele te explica tudo.",
       cta: "Falar com o Paul no WhatsApp",
     },
     talkToUsPrefill:
