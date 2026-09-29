@@ -58,8 +58,12 @@ export default function MindMomentBeat({ onDone }) {
       <p className="text-sm text-primary-300 leading-relaxed mb-2 max-w-md">
         Um momento antes de um jogo grande. Ou de uma entrevista grande.
       </p>
+      <p className="text-sm text-primary-400 leading-relaxed max-w-md mb-1">
+        Exercício de respiração: inspire por 4 segundos, segure por 7, solte
+        por 8. Ajuda a acalmar o corpo antes de um momento importante.
+      </p>
       <p className="text-[11px] text-primary-500 mb-8">
-        Um ciclo 4-7-8 — 19 segundos.
+        Um ciclo — 19 segundos.
       </p>
 
       {/* Orb */}

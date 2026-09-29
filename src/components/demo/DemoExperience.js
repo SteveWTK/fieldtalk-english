@@ -23,11 +23,15 @@ import VocabTapBeat from "@/components/demo/beats/VocabTapBeat";
 import ListeningBeat from "@/components/demo/beats/ListeningBeat";
 import MindMomentBeat from "@/components/demo/beats/MindMomentBeat";
 import VocabGameBeat from "@/components/demo/beats/VocabGameBeat";
-import PitchBeat from "@/components/demo/beats/PitchBeat";
+// PitchBeat is intentionally not wired yet — the SVG marker layout
+// needs another pass before it ships. Beginner variant currently
+// reuses the memory game with position vocab; when PitchBeat is
+// polished, swap it back in below.
 import DemoCta from "@/components/demo/DemoCta";
 import {
   getBeginnerVocabOptions,
   BEGINNER_LISTENING_CLIP,
+  BEGINNER_POSITIONS,
 } from "@/lib/demo/beginner-content";
 
 /**
@@ -114,10 +118,12 @@ function buildBeats({ variant, anchor, firstName, openingLine }) {
       },
       mindMoment,
       {
-        key: "pitch",
-        title: "No campo",
+        key: "vocab_game",
+        title: "Jogo de memória",
         targetSeconds: 30,
-        render: ({ onDone }) => <PitchBeat onDone={onDone} />,
+        render: ({ onDone }) => (
+          <VocabGameBeat phrases={BEGINNER_POSITIONS} onDone={onDone} />
+        ),
       },
     ];
   }

@@ -43,8 +43,18 @@ const PAIR_STYLES = [
   },
 ];
 
-export default function VocabGameBeat({ anchor, onDone }) {
-  const [phrases] = useState(() => pickForBeat4(anchor));
+/**
+ * @param {{
+ *   anchor?: {id: string, en: string, pt: string, note?: string},
+ *   phrases?: Array<{id: string, en: string, pt: string, note?: string}>,
+ *     // Optional override — beginner variant passes the 4 beginner-content
+ *     // positions directly; default variant lets pickForBeat4 build a set
+ *     // from football-phrases using the supplied anchor.
+ *   onDone: () => void,
+ * }} props
+ */
+export default function VocabGameBeat({ anchor, phrases: phrasesProp, onDone }) {
+  const [phrases] = useState(() => phrasesProp || pickForBeat4(anchor));
   const [cards] = useState(() => buildCards(phrases));
   const [selected, setSelected] = useState([]); // array of card indices
   const [matchedOrder, setMatchedOrder] = useState([]); // phraseIds in match order
