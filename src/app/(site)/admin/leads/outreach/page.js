@@ -39,6 +39,7 @@ import {
   Users,
 } from "lucide-react";
 import Button from "@/components/ui/button";
+import FunnelMetricsPanel from "@/components/admin/leads/FunnelMetricsPanel";
 
 const ROLES = [
   { value: "agent", label: "Agent" },
@@ -170,6 +171,8 @@ export default function LeadFunnelOutreachPage() {
             2-minute demo.
           </p>
         </header>
+
+        <FunnelMetricsPanel />
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Form */}
