@@ -28,8 +28,8 @@ export const BEGINNER_POSITIONS = [
     note: "Guarda o gol. Só ele pode usar as mãos dentro da área.",
   },
   {
-    id: "defender",
-    en: "defender",
+    id: "centre-back",
+    en: "centre back",
     pt: "zagueiro",
     x: 32,
     y: 95,
@@ -38,7 +38,7 @@ export const BEGINNER_POSITIONS = [
   {
     id: "midfielder",
     en: "midfielder",
-    pt: "meio-campo",
+    pt: "meio-campista",
     x: 50,
     y: 62,
     note: "Liga a defesa ao ataque. Corre o campo inteiro.",
@@ -86,8 +86,7 @@ export const BEGINNER_LISTENING_CLIP = {
     { id: "away", label: "away", correct: false },
   ],
   translation: "Marcação! Passa pra trás!",
-  note:
-    '"Man on" = alguém tá vindo pra pegar a bola. "Pass it back" = passa pra trás. Duas frases que qualquer treinador grita 20 vezes por jogo.',
+  note: '"Man on" = alguém tá vindo pra pegar a bola. "Pass it back" = passa pra trás. Duas frases que qualquer treinador grita 20 vezes por jogo.',
   audioSrc: "/audio/demo/listening-clip-beginner.mp3",
 };
 
