@@ -104,13 +104,30 @@ export default function VocabGameBeat({ anchor, phrases: phrasesProp, onDone }) 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 gap-3">
+      {/* Top row: prompt + counter, plus the "Ver a plataforma"
+          completion CTA that appears in-place the moment the fourth
+          pair lands. Placed at the top of the card so mobile visitors
+          who scrolled through the grid never miss it — the summary
+          list can otherwise push the CTA below the viewport. */}
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <p className="text-sm text-primary-300 leading-relaxed max-w-md">
           Ligue cada expressão à sua tradução.
         </p>
-        <div className="text-[11px] text-primary-500 tabular-nums font-mono shrink-0">
-          {matchedOrder.length} / 4 · {formatSS(elapsed)}
-        </div>
+        {allMatched ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={onDone}
+            Icon={ArrowRight}
+          >
+            Ver a plataforma
+          </Button>
+        ) : (
+          <div className="text-[11px] text-primary-500 tabular-nums font-mono shrink-0">
+            {matchedOrder.length} / 4 · {formatSS(elapsed)}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
@@ -179,21 +196,13 @@ export default function VocabGameBeat({ anchor, phrases: phrasesProp, onDone }) 
         </div>
       )}
 
+      {/* Completion note — the CTA itself has moved to the header row
+          above so it's always in view; this line stays for the small
+          "you did it" moment without competing for the visitor's eye. */}
       {allMatched && (
-        <div className="mt-6 flex items-center gap-3 flex-wrap">
-          <p className="text-sm text-accent-300 font-semibold flex-1">
-            Boa! 4 expressões em {formatSS(elapsed)}.
-          </p>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={onDone}
-            Icon={ArrowRight}
-          >
-            Ver a plataforma
-          </Button>
-        </div>
+        <p className="mt-6 text-sm text-accent-300 font-semibold">
+          Boa! 4 pares em {formatSS(elapsed)}.
+        </p>
       )}
     </div>
   );

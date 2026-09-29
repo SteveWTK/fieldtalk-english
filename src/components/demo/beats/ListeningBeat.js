@@ -195,12 +195,14 @@ export default function ListeningBeat({ onDone, clip: clipProp }) {
         </p>
         <p className="text-base sm:text-lg text-primary-50 leading-relaxed">
           {showTranscript ? (
+            // "Mostrar texto" is a listening aid — it always reveals the
+            // full sentence including the answer word. Waiting until the
+            // user picks would defeat the point (the button is meant to
+            // help lower-confidence listeners read along).
             <>
               {CLIP.before}{" "}
               <span className="text-accent-300 font-semibold">
-                {reveal
-                  ? CLIP.options.find((o) => o.correct === true).label
-                  : "___"}
+                {CLIP.options.find((o) => o.correct === true).label}
               </span>
               {CLIP.after}
             </>
