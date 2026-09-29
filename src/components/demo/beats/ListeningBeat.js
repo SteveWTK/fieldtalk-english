@@ -32,7 +32,7 @@ import Button from "@/components/ui/button";
 
 // Default clip = post-match interview line for the advanced variant.
 // The beginner variant passes its own clip prop (in-game shout).
-const DEFAULT_AUDIO_SRC = "/audio/demo/listening-clip.mp3";
+const DEFAULT_AUDIO_SRC = "/audio/demo/listening-clip.m4a";
 
 const DEFAULT_CLIP = {
   fullText:
@@ -174,7 +174,11 @@ export default function ListeningBeat({ onDone, clip: clipProp }) {
             onClick={play}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-accent-400 hover:bg-accent-300 text-primary-900 text-sm font-semibold transition-colors"
           >
-            {playedOnce ? <RotateCcw className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {playedOnce ? (
+              <RotateCcw className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
             {playedOnce ? "Ouvir de novo" : "Tocar"}
           </button>
           <button
@@ -228,14 +232,13 @@ export default function ListeningBeat({ onDone, clip: clipProp }) {
       <div className="grid grid-cols-3 gap-2">
         {CLIP.options.map((opt) => {
           const isPicked = picked?.id === opt.id;
-          const state =
-            !reveal
-              ? "idle"
-              : opt.correct
-                ? "right"
-                : isPicked
-                  ? "wrong"
-                  : "faded";
+          const state = !reveal
+            ? "idle"
+            : opt.correct
+              ? "right"
+              : isPicked
+                ? "wrong"
+                : "faded";
           const cls = {
             idle: "border-primary-700 bg-primary-800/60 hover:border-primary-600 hover:bg-primary-800 text-primary-100",
             right: "border-accent-400/70 bg-accent-400/[0.10] text-primary-50",

@@ -87,7 +87,7 @@ export const BEGINNER_LISTENING_CLIP = {
   ],
   translation: "Marcação! Passa pra trás!",
   note: '"Man on" = alguém tá vindo pra pegar a bola. "Pass it back" = passa pra trás. Duas frases que qualquer treinador grita 20 vezes por jogo.',
-  audioSrc: "/audio/demo/listening-clip-beginner.mp3",
+  audioSrc: "/audio/demo/listening-clip-beginner.m4a",
 };
 
 function shuffle(arr) {
