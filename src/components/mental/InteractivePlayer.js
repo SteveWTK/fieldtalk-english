@@ -21,14 +21,11 @@ import {
   CheckCircle2,
   Volume2,
   VolumeX,
+  Sparkles,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { awardXp } from "@/lib/xp/awardXp";
-import {
-  t,
-  pickLang,
-  ACTIVITY_TONES,
-} from "@/lib/mental/constants";
+import { t, pickLang, ACTIVITY_TONES } from "@/lib/mental/constants";
 import Button from "@/components/ui/button";
 
 /**
@@ -55,9 +52,7 @@ export default function InteractivePlayer({ activity, onClose, onCompleted }) {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const spentSec = Math.round(
-        (Date.now() - startedAtRef.current) / 1000,
-      );
+      const spentSec = Math.round((Date.now() - startedAtRef.current) / 1000);
       const res = await fetch("/api/mental/progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +131,11 @@ export default function InteractivePlayer({ activity, onClose, onCompleted }) {
                 tone={tone}
                 lang={lang}
                 onComplete={(picked) =>
-                  submitCompletion(picked ? { picked_index: picked.index, correct: picked.correct } : {})
+                  submitCompletion(
+                    picked
+                      ? { picked_index: picked.index, correct: picked.correct }
+                      : {},
+                  )
                 }
               />
             )}
@@ -166,16 +165,18 @@ export default function InteractivePlayer({ activity, onClose, onCompleted }) {
 // english=sky #38bdf8, slate=neutral).
 
 function AmbientTint({ accent }) {
-  const gradient = {
-    mental:
-      "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
-    performance:
-      "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.18), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.10), transparent 55%)",
-    english:
-      "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(163,230,53,0.10), transparent 55%)",
-    slate:
-      "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.12), transparent 55%)",
-  }[accent] || "radial-gradient(ellipse at center, rgba(255,255,255,0.05), transparent)";
+  const gradient =
+    {
+      mental:
+        "radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.10), transparent 55%)",
+      performance:
+        "radial-gradient(ellipse at 20% 20%, rgba(251,146,60,0.18), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.10), transparent 55%)",
+      english:
+        "radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.15), transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(163,230,53,0.10), transparent 55%)",
+      slate:
+        "radial-gradient(ellipse at 20% 20%, rgba(148,163,184,0.12), transparent 55%)",
+    }[accent] ||
+    "radial-gradient(ellipse at center, rgba(255,255,255,0.05), transparent)";
   return (
     <div
       className="fixed inset-0 pointer-events-none"
@@ -201,7 +202,9 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
 
   return (
     <div className="w-full max-w-2xl text-center">
-      <p className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}>
+      <p
+        className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}
+      >
         {pickLang(tone.label, lang)}
       </p>
       <h2 className="text-lg sm:text-xl font-light text-primary-50 leading-relaxed mb-8 whitespace-pre-wrap">
@@ -214,11 +217,14 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
           const isCorrect = opt.correct === true;
           let styleClass;
           if (!answered) {
-            styleClass = "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500 hover:bg-primary-800";
+            styleClass =
+              "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500 hover:bg-primary-800";
           } else if (isCorrect) {
-            styleClass = "border-accent-400/60 bg-accent-400/10 text-primary-50";
+            styleClass =
+              "border-accent-400/60 bg-accent-400/10 text-primary-50";
           } else if (isPicked) {
-            styleClass = "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
+            styleClass =
+              "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
           } else {
             styleClass = "border-primary-700 bg-primary-panel text-primary-500";
           }
@@ -240,7 +246,9 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
 
       {answered && (
         <div className="mt-6 max-w-xl mx-auto text-left space-y-3">
-          <p className={`text-sm font-bold ${pickedCorrect ? "text-accent-300" : "text-amber-300"}`}>
+          <p
+            className={`text-sm font-bold ${pickedCorrect ? "text-accent-300" : "text-amber-300"}`}
+          >
             {pickedCorrect
               ? t("player.correct", lang)
               : t("player.notQuite", lang)}
@@ -250,14 +258,16 @@ function ChampionScenario({ activity, tone, lang, onComplete }) {
               {pickLang(picked.explanation, lang)}
             </p>
           )}
-          {!pickedCorrect && correctIdx >= 0 && options[correctIdx]?.explanation && (
-            <p className="text-sm text-primary-300 leading-relaxed border-l-2 border-accent-400/40 pl-3">
-              <span className="text-accent-300 font-bold">
-                {isPt ? "A resposta certa:" : "The right answer:"}
-              </span>{" "}
-              {pickLang(options[correctIdx].explanation, lang)}
-            </p>
-          )}
+          {!pickedCorrect &&
+            correctIdx >= 0 &&
+            options[correctIdx]?.explanation && (
+              <p className="text-sm text-primary-300 leading-relaxed border-l-2 border-accent-400/40 pl-3">
+                <span className="text-accent-300 font-bold">
+                  {isPt ? "A resposta certa:" : "The right answer:"}
+                </span>{" "}
+                {pickLang(options[correctIdx].explanation, lang)}
+              </p>
+            )}
           <div className="pt-3">
             <Button
               variant="primary"
@@ -282,9 +292,8 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
   const content = activity?.content || {};
   const technique = pickLang(content.technique, lang);
   const phrases = Array.isArray(content.phrases) ? content.phrases : [];
-  const audioUrl = lang === "en"
-    ? activity?.audio_url_en
-    : activity?.audio_url_pt;
+  const audioUrl =
+    lang === "en" ? activity?.audio_url_en : activity?.audio_url_pt;
 
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -297,7 +306,10 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
       audio.pause();
       setPlaying(false);
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {});
+      audio
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     }
   }
 
@@ -308,7 +320,9 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
 
   return (
     <div className="w-full max-w-2xl">
-      <p className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}>
+      <p
+        className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}
+      >
         {pickLang(tone.label, lang)}
       </p>
       <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-primary-50 mb-2">
@@ -353,7 +367,9 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
       {audioUrl && (
         <div className="rounded-control border border-primary-700 bg-primary-800 p-4 mb-6">
           <p className="text-[11px] uppercase tracking-wider text-primary-300 font-semibold mb-2">
-            {isPt ? "Ouça antes do próximo jogo" : "Listen before your next match"}
+            {isPt
+              ? "Ouça antes do próximo jogo"
+              : "Listen before your next match"}
           </p>
           <div className="flex items-center gap-3">
             <button
@@ -372,7 +388,11 @@ function MatchPrepRitual({ activity, tone, lang, onComplete }) {
               onClick={() => setMuted((m) => !m)}
               className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-700 flex items-center justify-center text-primary-300"
             >
-              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {muted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
             </button>
             <audio
               ref={audioRef}
@@ -402,9 +422,8 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
   const quoteEn = pickLang(content.quote, "en");
   const quotePt = pickLang(content.quote, "pt");
   const background = pickLang(content.background, lang);
-  const audioUrl = lang === "en"
-    ? activity?.audio_url_en
-    : activity?.audio_url_pt;
+  const audioUrl =
+    lang === "en" ? activity?.audio_url_en : activity?.audio_url_pt;
 
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -423,7 +442,10 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
       audio.pause();
       setPlaying(false);
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {});
+      audio
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     }
   }
   useEffect(() => {
@@ -448,7 +470,9 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
 
   return (
     <div className="w-full max-w-2xl">
-      <p className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}>
+      <p
+        className={`text-[10px] uppercase tracking-[0.35em] font-semibold mb-3 ${tone.chip} inline-block px-3 py-1 rounded-full`}
+      >
         {pickLang(tone.label, lang)}
       </p>
 
@@ -519,7 +543,11 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
                   onClick={() => setMuted((m) => !m)}
                   className="w-10 h-10 rounded-full bg-primary-800 hover:bg-primary-700 border border-primary-700 flex items-center justify-center text-primary-300"
                 >
-                  {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {muted ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
                 </button>
                 <audio
                   ref={audioRef}
@@ -549,13 +577,17 @@ function VoiceOfChampion({ activity, tone, lang, onComplete }) {
               const isCorrect = opt.correct === true;
               let styleClass;
               if (!answered) {
-                styleClass = "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500";
+                styleClass =
+                  "border-primary-600 bg-primary-900 text-primary-100 hover:border-primary-500";
               } else if (isCorrect) {
-                styleClass = "border-accent-400/60 bg-accent-400/10 text-primary-50";
+                styleClass =
+                  "border-accent-400/60 bg-accent-400/10 text-primary-50";
               } else if (isPicked) {
-                styleClass = "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
+                styleClass =
+                  "border-signal-alert/60 bg-signal-alert/10 text-primary-50";
               } else {
-                styleClass = "border-primary-700 bg-primary-panel text-primary-500";
+                styleClass =
+                  "border-primary-700 bg-primary-panel text-primary-500";
               }
               return (
                 <button
@@ -623,10 +655,18 @@ function CompletionScreen({ title, xpAwarded, onClose, lang, submitting }) {
       </div>
       <style jsx>{`
         @keyframes fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        .animate-fade-in { animation: fade-in 0.4s ease-out; }
+        .animate-fade-in {
+          animation: fade-in 0.4s ease-out;
+        }
       `}</style>
     </div>
   );
