@@ -20,10 +20,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, MessageCircle } from "lucide-react";
-import {
-  getSalesContact,
-  buildSalesWhatsappLink,
-} from "@/lib/sales/contact";
+import { getSalesContact, buildSalesWhatsappLink } from "@/lib/sales/contact";
 
 const ROLE_COPY = {
   agent: {
@@ -60,11 +57,7 @@ const ROLE_COPY = {
  *   showSelfServeCta?: boolean,   // renders the "Ver os planos" secondary link
  * }} props
  */
-export default function DemoCta({
-  role,
-  firstName,
-  showSelfServeCta = false,
-}) {
+export default function DemoCta({ role, firstName, showSelfServeCta = false }) {
   const { name: salesName } = getSalesContact();
   const copy = ROLE_COPY[role] || ROLE_COPY.other;
   const bodyText = copy.body(salesName);

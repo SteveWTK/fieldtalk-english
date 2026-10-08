@@ -118,7 +118,7 @@ const TIERS = [
 const translations = {
   en: {
     hero: {
-      eyebrow: "Global Player · for agencies, academies, clubs",
+      eyebrow: "For agencies, academies, clubs",
       title: "Not just English. A safety net for your athletes.",
       sub: "Track 20+ players from one dashboard. Spot problems before they become losses.",
       primaryCta: "Book a demo",
@@ -136,6 +136,7 @@ const translations = {
         blurb: "For small agencies and academies with up to 20 athletes.",
         perAthlete: "Under R$ 20 per athlete / month",
         features: [
+          "Up to 20 athletes",
           "Admin dashboard for the whole roster",
           "Weekly engagement report",
           "Crisis alerts (depression, anxiety, frustration)",
@@ -288,7 +289,7 @@ const translations = {
   },
   pt: {
     hero: {
-      eyebrow: "Global Player · para agências, escolinhas, clubes",
+      eyebrow: "Para agências, escolinhas, clubes",
       title: "Não é só inglês. É proteção para o seu ativo.",
       sub: "Acompanhe 20+ atletas em um painel. Detecte problemas antes que virem prejuízo.",
       primaryCta: "Agendar demo",
@@ -307,6 +308,7 @@ const translations = {
         blurb: "Para agências pequenas e escolinhas com até 20 atletas.",
         perAthlete: "Menos de R$ 20 por atleta / mês",
         features: [
+          "Até 20 atletas",
           "Painel administrativo do elenco inteiro",
           "Relatório semanal de engajamento",
           // "Alertas de crise (depressão, ansiedade, frustração)",
@@ -611,7 +613,7 @@ function PricingPageContent() {
               Paul shares directly with parents / teens. */}
           <Link
             href="/pricing/individual"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary-400 hover:text-primary-100 transition-colors"
+            className="mt-4 inline-flex items-center gap-1.5 text-[16px] text-accent-300 hover:text-accent-200 transition-colors"
           >
             <User className="w-3.5 h-3.5" />
             {copy.hero.individualLink}
@@ -863,7 +865,7 @@ function TierCard({
 
       <div className="mb-4">
         {priceDisplay.prefix && (
-          <p className="text-[11px] uppercase tracking-label text-primary-400 font-semibold">
+          <p className="text-[11px] uppercase tracking-label text-primary-300 font-semibold">
             {priceDisplay.prefix}
           </p>
         )}
