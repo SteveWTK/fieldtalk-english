@@ -860,7 +860,7 @@ function TierCard({
         <p className="text-sm text-primary-300 leading-relaxed mt-1">
           {t.tagline}
         </p>
-        <p className="text-xs text-primary-500 mt-2">{t.blurb}</p>
+        <p className="text-xs text-primary-300 mt-2">{t.blurb}</p>
       </div>
 
       <div className="mb-4">
@@ -877,7 +877,7 @@ function TierCard({
             {priceDisplay.suffix}
           </span>
         </p>
-        <p className="text-[11px] text-primary-500 mt-1">
+        <p className="text-[11px] text-primary-300 mt-1">
           {billing === "annual" ? copy.annualNote : copy.monthlyNote} ·{" "}
           {athletesLine} · {t.perAthlete}
         </p>

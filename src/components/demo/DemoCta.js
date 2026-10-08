@@ -112,12 +112,12 @@ export default function DemoCta({ role, firstName, showSelfServeCta = false }) {
           >
             Criar conta e fazer 2 aulas grátis →
           </Link>
-          <Link
+          {/* <Link
             href="/pricing"
             className="inline-flex items-center gap-1.5 text-sm text-primary-300 hover:text-primary-50 underline-offset-4 hover:underline transition-colors"
           >
             Prefiro explorar os planos por conta própria →
-          </Link>
+          </Link> */}
         </div>
       )}
 
