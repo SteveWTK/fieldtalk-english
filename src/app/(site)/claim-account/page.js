@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
@@ -136,6 +136,25 @@ export default function ClaimAccountPage() {
 
   // Check if user is a guest (email ends with @fieldtalk.guest or user_metadata.is_guest)
   const isGuest = user?.email?.endsWith("@fieldtalk.guest") || user?.user_metadata?.is_guest || false;
+
+  // When a guest lands here, stash their user id in localStorage so
+  // the /auth/callback can migrate progress (lesson_completions,
+  // player_progress) from the guest id to whatever new user id
+  // Google OAuth creates. Set `pending_edition` to propath_26_27 so
+  // the ensure-player call inside the callback stamps the right
+  // edition on the new row — otherwise the Google user lands with
+  // the DEFAULT_EDITION (also propath, but belt-and-braces).
+  useEffect(() => {
+    if (!isGuest || !user?.id) return;
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("guest_claim_from_id", user.id);
+      localStorage.setItem("pending_edition", "propath_26_27");
+    } catch {
+      /* localStorage may be blocked — fail-closed, email+password
+         path still works via its own server-side session read */
+    }
+  }, [isGuest, user?.id]);
 
   // Loading state
   if (loading) {

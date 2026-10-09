@@ -72,6 +72,7 @@ import DragDropVocabulary from "@/components/exercises/DragDropVocabulary";
 import DragDropGroups from "@/components/exercises/DragDropGroups";
 import ConversationVote from "@/components/ConversationVote";
 import PaywallCard from "@/components/PaywallCard";
+import GuestClaimPrompt from "@/components/guest/GuestClaimPrompt";
 import SegmentPassedCelebration from "@/components/lesson/SegmentPassedCelebration";
 import { usePlayerAccess, canViewLesson } from "@/lib/access/usePlayerAccess";
 import Link from "next/link";
@@ -680,6 +681,17 @@ function DynamicLessonContent() {
   // `currentStepData` guard so we don't run the step-rendering code
   // path for users who can't view this lesson.
   if (!access.loading && !lessonAllowed) {
+    // Guests see a claim-account prompt instead of the paywall: Lesson
+    // 2 is still free, they just need an account to save their XP and
+    // continue. Paywall framing ("unlock the full edition / see plans")
+    // would be wrong — they haven't hit the paywall yet.
+    if (isGuestUser) {
+      return (
+        <div className="min-h-screen bg-primary-900 text-primary-50 px-4 py-10 sm:py-14">
+          <GuestClaimPrompt />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-primary-900 text-primary-50 px-4 py-10 sm:py-14">
         <PaywallCard edition={lessonEdition || undefined} variant="full" />

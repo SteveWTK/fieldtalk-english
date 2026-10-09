@@ -88,6 +88,48 @@ export default function AuthCallbackPage() {
             console.warn("Could not ensure player row:", err);
           }
 
+          // Guest-claim migration — if the user walked in from
+          // /claim-account via Google, the browser stashed the guest's
+          // auth id in localStorage. Re-parent their lesson_completions
+          // + player_progress onto the new Google-auth user, then
+          // clear the stashed id. See /api/guest-access/complete-claim.
+          try {
+            const guestClaimFromId =
+              typeof window !== "undefined"
+                ? localStorage.getItem("guest_claim_from_id")
+                : null;
+            if (guestClaimFromId && guestClaimFromId !== data.session.user.id) {
+              const migrateRes = await fetch(
+                "/api/guest-access/complete-claim",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ from_user_id: guestClaimFromId }),
+                },
+              );
+              if (migrateRes.ok) {
+                console.log("✅ Guest progress migrated to new account");
+              } else {
+                console.warn(
+                  "⚠️ Guest claim migration failed:",
+                  await migrateRes.text(),
+                );
+              }
+            }
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("guest_claim_from_id");
+            }
+          } catch (migrationErr) {
+            console.warn(
+              "Guest claim migration threw:",
+              migrationErr?.message,
+            );
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("guest_claim_from_id");
+            }
+          }
+
           // Redirect to lesson page after short delay
           setTimeout(() => {
             router.push("/lesson");
