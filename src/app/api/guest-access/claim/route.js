@@ -69,36 +69,68 @@ export async function POST(request) {
     }
 
     const supabase = await getSupabaseAdmin();
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if email is already in use
+    // Pre-check both public.users (profile table) and the Supabase
+    // auth.users list — the auth table is the one that enforces email
+    // uniqueness during updateUserById, so a collision there would
+    // have surfaced as a generic 500 before. Checking both up front
+    // lets us return a precise 409 instead of a mystery error.
     const { data: existingUser } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email.toLowerCase().trim())
-      .single();
-
-    if (existingUser) {
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+    if (existingUser && existingUser.id !== user.id) {
       return NextResponse.json(
         { error: "Email already in use" },
         { status: 409 }
       );
     }
 
+    // Supabase admin listUsers doesn't take a filter — we page and
+    // match by email. For a sales-funnel site this is cheap (hundreds
+    // of users at most). If this ever grows past that, swap for an
+    // RPC or a direct auth.users select via the service role.
+    try {
+      const { data: list } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 200,
+      });
+      const emailOwner = (list?.users || []).find(
+        (u) => u.email?.toLowerCase() === normalizedEmail,
+      );
+      if (emailOwner && emailOwner.id !== user.id) {
+        return NextResponse.json(
+          { error: "Email already in use" },
+          { status: 409 }
+        );
+      }
+    } catch (listErr) {
+      // Non-fatal — fall through to updateUserById which will error
+      // with its own message if collision isn't caught here.
+      console.warn("[claim] listUsers probe failed:", listErr?.message);
+    }
+
     // Update Supabase Auth user with real email and password
     const { error: authUpdateError } =
       await supabase.auth.admin.updateUserById(user.id, {
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         password: password,
         email_confirm: true,
         user_metadata: { is_guest: false, name: name || "Player" },
       });
 
     if (authUpdateError) {
-      console.error("Error updating guest auth:", authUpdateError);
-      return NextResponse.json(
-        { error: "Failed to update account credentials" },
-        { status: 500 }
-      );
+      // Surface the real Supabase message to the client so testers
+      // (and real users) can see what actually failed, instead of
+      // staring at a generic "Failed to update credentials". The old
+      // behaviour swallowed the detail; this one blames correctly.
+      console.error("[claim] auth update failed:", authUpdateError);
+      const msg = authUpdateError.message || "Failed to update credentials";
+      const status =
+        /already (been )?registered|duplicate|exists/i.test(msg) ? 409 : 500;
+      return NextResponse.json({ error: msg }, { status });
     }
 
     // Update public.users table

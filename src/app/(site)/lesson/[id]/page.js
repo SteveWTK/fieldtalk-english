@@ -219,12 +219,25 @@ function DynamicLessonContent() {
   const profileAccess = usePlayerAccess(
     profileEdition && profileEdition !== lessonEdition ? profileEdition : null,
   );
-  const lessonAllowed =
-    !lessonEdition ||
-    canViewLesson(access, lesson?.id) ||
-    canViewLesson(profileAccess, lesson?.id) ||
-    access.isAdmin ||
-    profileAccess.isAdmin;
+  // Guest lock — a guest coming through /o-campo can ONLY view the
+  // designated demo lesson (Unit 1 Lesson 1). Any other lesson is
+  // paywalled regardless of the `is_preview` flag; the demo lesson is
+  // our complete taster surface, and letting guests cruise past it
+  // kills the signup pressure. Once they claim an account they're no
+  // longer a guest and the normal preview rules apply.
+  const DEMO_LESSON_ID = "d2f55a9c-6ac6-4276-b5a2-2a67d22b3911";
+  const isGuestUser =
+    user?.user_metadata?.is_guest === true ||
+    (typeof user?.email === "string" &&
+      user.email.endsWith("@fieldtalk.guest"));
+  const guestLessonAllowed = lesson?.id === DEMO_LESSON_ID;
+  const lessonAllowed = isGuestUser
+    ? guestLessonAllowed
+    : !lessonEdition ||
+      canViewLesson(access, lesson?.id) ||
+      canViewLesson(profileAccess, lesson?.id) ||
+      access.isAdmin ||
+      profileAccess.isAdmin;
   const [stepCompleted, setStepCompleted] = useState(false);
   const [autoTranslating, setAutoTranslating] = useState(false);
 
@@ -994,6 +1007,18 @@ function DynamicLessonContent() {
       }
 
       console.log("✅ Lesson completion successful, navigating onward...");
+
+      // Nudge GuestPromptContext to refetch stats immediately so the
+      // floating "Garanta seu XP" button appears before auto-advance
+      // drops the guest into the next lesson. Non-breaking for non-
+      // guests — the context ignores the event when !isGuest.
+      if (typeof window !== "undefined") {
+        try {
+          window.dispatchEvent(new Event("guest-lesson-completed"));
+        } catch {
+          /* silent */
+        }
+      }
     } catch (error) {
       // Spread enumerable fields so PostgrestError instances log
       // visibly. We still navigate — never strand the user on the

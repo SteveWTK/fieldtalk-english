@@ -16,6 +16,7 @@ import {
 import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 const translations = {
   en: {
@@ -33,6 +34,11 @@ const translations = {
     createAccount: "Create Account",
     creating: "Creating...",
     passwordMismatch: "Passwords do not match",
+    orDivider: "or",
+    googleHint:
+      "Faster sign-up. Starts a fresh account — progress from the guest session won't carry over yet.",
+    emailPreservesProgress:
+      "Save your Lesson 1 progress by using email + password.",
     successTitle: "Account Created!",
     successMessage:
       "Your account has been created. All your progress has been preserved. Please sign in with your new credentials.",
@@ -57,6 +63,11 @@ const translations = {
     createAccount: "Criar Conta",
     creating: "Criando...",
     passwordMismatch: "As senhas não coincidem",
+    orDivider: "ou",
+    googleHint:
+      "Cadastro mais rápido. Começa uma conta nova — o progresso de visitante ainda não é transferido.",
+    emailPreservesProgress:
+      "Use email + senha para salvar seu progresso na Aula 1.",
     successTitle: "Conta Criada!",
     successMessage:
       "Sua conta foi criada. Todo seu progresso foi preservado. Faça login com suas novas credenciais.",
@@ -274,6 +285,29 @@ export default function ClaimAccountPage() {
         </div>
 
         <div className="bg-primary-panel border border-primary-700 rounded-panel p-8">
+          {/* Google OAuth — shortcut path for people who'd rather not
+              remember another password. Clearly separated from the
+              email+password form below by the "or" divider and labeled
+              with a hint that progress isn't yet migrated (fresh
+              account on return). Email+password remains the primary
+              path for anyone wanting to keep their Lesson 1 progress. */}
+          <GoogleAuthButton text="Continuar com Google" variant="dark" />
+          <p className="mt-2 text-[11px] text-primary-500 text-center leading-relaxed">
+            {copy.googleHint}
+          </p>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="flex-1 h-px bg-primary-700" />
+            <span className="text-[11px] uppercase tracking-wider text-primary-500 font-semibold">
+              {copy.orDivider}
+            </span>
+            <div className="flex-1 h-px bg-primary-700" />
+          </div>
+
+          <p className="text-xs text-accent-300 text-center mb-4 leading-relaxed">
+            {copy.emailPreservesProgress}
+          </p>
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}

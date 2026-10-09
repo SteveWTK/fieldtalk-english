@@ -27,6 +27,12 @@ export function GuestPromptProvider({ children }) {
     xp: 0,
     level: 1,
   });
+  // Setter is intentionally unused since we stopped calling the
+  // legacy /status endpoint (which was the only source of expiry
+  // data). TimeWarningBanner stays wired through the context so a
+  // future "guests with expiry" flow can set this again without
+  // touching the context shape.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [guestExpiresAt, setGuestExpiresAt] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,13 +57,14 @@ export function GuestPromptProvider({ children }) {
     setPromptState(loadedState);
   }, []);
 
-  // Fetch guest stats
+  // Fetch guest stats from the Supabase-SSR-based /stats endpoint —
+  // works for both /o-campo try-flow guests and QR-flow guests.
   //
-  // Tries the Supabase-SSR-based /stats endpoint first — this is what
-  // works for the /o-campo try-flow guests (and QR-flow guests too,
-  // since both are Supabase-authed). Falls back to the older /status
-  // endpoint for the expiry window data, which only exists for QR-flow
-  // guests that have a guest_sessions row.
+  // The legacy /status endpoint (used only for expiry banners) is
+  // deliberately NOT called here anymore — it 401's for every
+  // Supabase-authed guest since it uses NextAuth, which spammed the
+  // console. QR-flow guests lose the time-warning banner for now;
+  // low-priority since we rarely create expiring guests.
   const fetchGuestData = useCallback(async () => {
     if (!isGuest || !user) {
       setLoading(false);
@@ -78,23 +85,6 @@ export function GuestPromptProvider({ children }) {
           });
         }
       }
-
-      // Legacy status call — only to pull the expiry window for the
-      // time-warning banners. QR-flow guests have one; try-flow
-      // guests don't (no expiry), and the endpoint 401s harmlessly.
-      try {
-        const statusRes = await fetch("/api/guest-access/status", {
-          credentials: "include",
-        });
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          if (statusData.expires_at) {
-            setGuestExpiresAt(statusData.expires_at);
-          }
-        }
-      } catch {
-        /* legacy — silent */
-      }
     } catch (err) {
       console.error("Error fetching guest data:", err);
     } finally {
@@ -102,8 +92,17 @@ export function GuestPromptProvider({ children }) {
     }
   }, [isGuest, user]);
 
-  // Initial fetch and periodic polling for guests
-  // Poll every 30 seconds to catch lesson completions and update CTAs
+  // Initial fetch + fast polling for guests. A short 5s interval
+  // keeps the floating "Garanta seu XP" button appearing within a
+  // few seconds of Lesson 1 completion, instead of up to 30s later
+  // (by which time the auto-advance has already dropped them into
+  // Lesson 2 and the CTA moment is gone).
+  //
+  // Also listens for a 'guest-lesson-completed' window event — the
+  // lesson player can fire this right after a successful completion
+  // to pull a fresh stats read without waiting for the next poll
+  // tick. Non-breaking: if the lesson player doesn't dispatch it,
+  // polling still catches the state within 5s.
   useEffect(() => {
     fetchGuestData();
 
@@ -111,9 +110,21 @@ export function GuestPromptProvider({ children }) {
 
     const pollInterval = setInterval(() => {
       fetchGuestData();
-    }, 30000); // 30 seconds
+    }, 5000);
 
-    return () => clearInterval(pollInterval);
+    function handleCompleted() {
+      fetchGuestData();
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("guest-lesson-completed", handleCompleted);
+    }
+
+    return () => {
+      clearInterval(pollInterval);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("guest-lesson-completed", handleCompleted);
+      }
+    };
   }, [fetchGuestData, isGuest]);
 
   // Update a prompt state and persist to sessionStorage
