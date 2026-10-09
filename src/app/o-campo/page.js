@@ -11,7 +11,7 @@
 // CTA is a client component that activates the guest + redirects.
 
 import TryButton from "@/components/try/TryButton";
-import GlobalPlayerLogo from "@/components/brand/GlobalPlayerLogo";
+import OCampoHero from "@/components/try/OCampoHero";
 
 export const metadata = {
   title: "Global Player — Experimente a primeira aula, grátis",
@@ -42,32 +42,27 @@ export default function OCampoLandingPage() {
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col items-center text-center">
-        {/* Branded hero */}
-        <GlobalPlayerLogo
-          variant="crest"
-          tone="tonalDark"
-          size={80}
-          sting="sweep"
-        />
+        {/* Branded hero — crest + GLOBAL PLAYER wordmark + accent
+            stripe, same sequence as the root landing page so switching
+            between globalplayerpro.com and /o-campo feels like one
+            surface. Mount-gated inside the component to kill the
+            hydration stutter the previous standalone sting had. */}
+        <OCampoHero />
 
-        <p className="mt-8 text-[10px] uppercase tracking-[0.3em] text-accent-400/80 font-semibold">
+        <p className="mt-10 text-[10px] uppercase tracking-[0.3em] text-accent-400/80 font-semibold">
           Aula 1 · O Campo
         </p>
         <h1
           className="mt-3 font-display font-black tracking-tight leading-[1.05] text-primary-50 max-w-2xl"
           style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)" }}
         >
-          Experimente a Global Player.
-          <br />
-          <span className="text-accent-300">
-            A primeira aula, por nossa conta.
-          </span>
+          A primeira aula, por nossa conta.
         </h1>
-        <p className="mt-5 text-base sm:text-lg text-primary-200 leading-relaxed max-w-xl">
+        {/* <p className="mt-5 text-base sm:text-lg text-primary-200 leading-relaxed max-w-xl">
           Vocabulário de verdade do campo, áudio de treino, um momento
           mental e um jogo rápido pra fixar. Alguns minutos no celular —
           dá pra fazer antes do próximo treino.
-        </p>
+        </p> */}
 
         {/* Trust row — chips feel more "landing page" than one tiny line
             of copy, and reinforce the three objections before someone
@@ -87,7 +82,7 @@ export default function OCampoLandingPage() {
             is where we deliver on these promises; the point here is to
             give the visitor an idea of what the next ten minutes look
             like so the click isn't a leap into fog. */}
-        <section className="mt-14 w-full max-w-md text-left">
+        {/* <section className="mt-14 w-full max-w-md text-left">
           <p className="text-[10px] uppercase tracking-[0.3em] text-primary-400 font-semibold mb-4">
             O que tem dentro
           </p>
@@ -113,11 +108,11 @@ export default function OCampoLandingPage() {
               body="Jogo de memória pra fixar as expressões antes de fechar."
             />
           </ul>
-        </section>
+        </section> */}
 
-        <p className="mt-14 text-[11px] text-primary-500 leading-relaxed max-w-md">
-          Ao continuar você entra como visitante. Pode criar conta ao
-          final pra salvar o progresso e desbloquear a Aula 2.
+        <p className="mt-14 text-[11px] text-primary-400 leading-relaxed max-w-md">
+          Ao continuar você entra como visitante. Pode criar conta ao final pra
+          salvar o progresso e desbloquear a Aula 2.
         </p>
       </div>
     </main>
@@ -133,18 +128,18 @@ function TrustChip({ label }) {
   );
 }
 
-function InsideItem({ number, title, body }) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="shrink-0 w-7 h-7 rounded-full bg-primary-panel border border-primary-700 text-accent-400 flex items-center justify-center font-black text-sm tabular-nums">
-        {number}
-      </span>
-      <div className="min-w-0">
-        <p className="font-semibold text-sm text-primary-50">{title}</p>
-        <p className="text-sm text-primary-400 leading-relaxed mt-0.5">
-          {body}
-        </p>
-      </div>
-    </li>
-  );
-}
+// function InsideItem({ number, title, body }) {
+//   return (
+//     <li className="flex items-start gap-3">
+//       <span className="shrink-0 w-7 h-7 rounded-full bg-primary-panel border border-primary-700 text-accent-400 flex items-center justify-center font-black text-sm tabular-nums">
+//         {number}
+//       </span>
+//       <div className="min-w-0">
+//         <p className="font-semibold text-sm text-primary-50">{title}</p>
+//         <p className="text-sm text-primary-400 leading-relaxed mt-0.5">
+//           {body}
+//         </p>
+//       </div>
+//     </li>
+//   );
+// }

@@ -52,6 +52,12 @@ export function GuestPromptProvider({ children }) {
   }, []);
 
   // Fetch guest stats
+  //
+  // Tries the Supabase-SSR-based /stats endpoint first — this is what
+  // works for the /o-campo try-flow guests (and QR-flow guests too,
+  // since both are Supabase-authed). Falls back to the older /status
+  // endpoint for the expiry window data, which only exists for QR-flow
+  // guests that have a guest_sessions row.
   const fetchGuestData = useCallback(async () => {
     if (!isGuest || !user) {
       setLoading(false);
@@ -59,22 +65,35 @@ export function GuestPromptProvider({ children }) {
     }
 
     try {
-      // Fetch stats from guest-access status API
-      const statusRes = await fetch("/api/guest-access/status", {
+      const statsRes = await fetch("/api/guest-access/stats", {
         credentials: "include",
       });
-      if (statusRes.ok) {
-        const statusData = await statusRes.json();
-        if (statusData.stats) {
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        if (statsData.stats) {
           setStats({
-            lessons: statusData.stats.lessons || 0,
-            xp: statusData.stats.xp || 0,
-            level: statusData.stats.level || 1,
+            lessons: statsData.stats.lessons || 0,
+            xp: statsData.stats.xp || 0,
+            level: statsData.stats.level || 1,
           });
         }
-        if (statusData.expires_at) {
-          setGuestExpiresAt(statusData.expires_at);
+      }
+
+      // Legacy status call — only to pull the expiry window for the
+      // time-warning banners. QR-flow guests have one; try-flow
+      // guests don't (no expiry), and the endpoint 401s harmlessly.
+      try {
+        const statusRes = await fetch("/api/guest-access/status", {
+          credentials: "include",
+        });
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          if (statusData.expires_at) {
+            setGuestExpiresAt(statusData.expires_at);
+          }
         }
+      } catch {
+        /* legacy — silent */
       }
     } catch (err) {
       console.error("Error fetching guest data:", err);
