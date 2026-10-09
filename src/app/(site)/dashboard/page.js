@@ -95,13 +95,15 @@ function DashboardContent() {
     (!profile.phone_e164 || profile.phone_e164.trim() === "");
 
   const dashboard =
-    profile.edition === "propath_26_27" ? (
-      <ProPathDashboard />
-    ) : (
-      // Default = WC2026 (also covers legacy "players" edition tags —
-      // those users see the WC dashboard for now; migrating them to
-      // Pro Path is a separate content decision).
+    profile.edition === "wc2026" ? (
+      // WC2026 is now a legacy edition — only players explicitly tagged
+      // to it (early 2026 WC cohort) still see the pack / squad /
+      // predictions dashboard. Everyone else — Pro Path, future
+      // editions, pre-launch "players" tag, guests, null — lands on
+      // the Pro Path dashboard.
       <WC2026DashboardContent />
+    ) : (
+      <ProPathDashboard />
     );
 
   return (

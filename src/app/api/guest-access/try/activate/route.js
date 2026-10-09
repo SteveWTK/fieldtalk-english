@@ -117,6 +117,36 @@ export async function POST() {
       );
     }
 
+    // public.players row — required because lesson_completions.player_id
+    // and player_progress.player_id both FK into players.id. Without
+    // this row the lesson player hits a 23503 the moment it tries to
+    // record the first completion, and the floating "Garanta seu XP"
+    // button never fires (no lessons counted). Same shape as the
+    // first-login insert in /api/auth/ensure-player.
+    const { error: playerError } = await supabaseAdmin
+      .from("players")
+      .insert({
+        id: authData.user.id,
+        email: guestEmail,
+        full_name: "Guest Player",
+        user_type: "player",
+        edition: "propath_26_27",
+        preferred_language: "pt",
+      });
+
+    if (playerError) {
+      console.error("[guest-access/try] players insert failed:", playerError);
+      // Roll back users + auth so a half-made guest doesn't block
+      // retries (the auth user would otherwise persist and the
+      // next activate hit would also fail).
+      await supabaseAdmin.from("users").delete().eq("id", authData.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+      return NextResponse.json(
+        { error: "Failed to create guest player row" },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json({
       success: true,
       guest_email: guestEmail,
