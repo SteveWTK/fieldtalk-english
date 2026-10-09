@@ -68,9 +68,12 @@ export function useIndividualPricing(editionId) {
     };
   }, [editionId]);
 
-  // Yearly-default — the annual plan carries the "save 2 months"
-  // frame we want front-loaded on both pages.
-  const [billing, setBilling] = useState("yearly");
+  // Monthly-default — leads with the smallest number the visitor
+  // has to swallow. The annual-first "best value" frame kept pushing
+  // the big yearly total up top, which was turning agents / coaches
+  // off before they'd absorbed the per-player math. Monthly first,
+  // let them flip to annual once sold on the price shape.
+  const [billing, setBilling] = useState("monthly");
   const activeOffering =
     billing === "yearly" ? offerings.yearly : offerings.monthly;
 

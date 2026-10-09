@@ -43,9 +43,9 @@ const translations = {
   en: {
     backLink: "Managing a team? See team plans →",
     hero: {
-      eyebrow: "Global Player · for players",
+      eyebrow: "For players",
       title: "Get ready for the world. Before your agent decides.",
-      sub: "For youth players eyeing European clubs, college scholarships, or their next move. English, mental training, and the vocabulary coaches actually use.",
+      sub: "English, mental training, football vocabulary. Five minutes on your phone.",
     },
     individual: {
       eyebrow: "Individual plan",
@@ -101,9 +101,9 @@ const translations = {
   pt: {
     backLink: "Cuidando de um time? Veja os planos para times →",
     hero: {
-      eyebrow: "Global Player · para jogadores",
+      eyebrow: "Para jogadores",
       title: "Se prepare pro mundo. Antes do agente decidir.",
-      sub: "Pra jogador de base pensando em clube na Europa, bolsa nos EUA, ou o próximo passo. Inglês, treinamento mental e o vocabulário que os técnicos usam de verdade.",
+      sub: "Inglês, treinamento mental, vocabulário do campo. Cinco minutos no celular.",
     },
     individual: {
       eyebrow: "Plano individual",

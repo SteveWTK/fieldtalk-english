@@ -9,13 +9,13 @@
 //
 // Layout (top → bottom):
 //   1. Hero — the sales pitch, one primary CTA (Talk to us / Book a demo)
-//   2. Interactive calculator — visitor moves sliders, math sells itself
-//   3. B2B tier cards — Squad / Roster / Agency (Roster highlighted)
+//   2. B2B tier cards — Squad / Roster / Agency (Roster highlighted)
+//   3. Individual player card — Stripe checkout, sits right under the
+//      B2B tiers so parents / individuals don't miss it
 //   4. Feature comparison table — side-by-side matrix
 //   5. Inquiry form — leads land in /admin/leads with source_detail tagged
-//   6. Individual player quiet card — Stripe checkout (unchanged)
-//   7. Full Access code panel — cohort-code redeem (unchanged)
-//   8. FAQ
+//   6. Full Access code panel — cohort-code redeem (unchanged)
+//   7. FAQ
 //
 // Preserved from the pre-2026-09 version:
 //   - Stripe checkout hook (handleBuy) — individual player subscription
@@ -119,15 +119,15 @@ const translations = {
   en: {
     hero: {
       eyebrow: "For agencies, academies, clubs",
-      title: "Not just English. A safety net for your athletes.",
-      sub: "Track 20+ players from one dashboard. Spot problems before they become losses.",
+      title: "A safety net for your athletes.",
+      sub: "Track your whole roster. Catch problems before they cost you.",
       primaryCta: "Book a demo",
       secondaryCta: "See plans ↓",
       individualLink: "Playing yourself? See individual plans →",
     },
     valueCallout: {
-      title: "One lost signing costs much more than a year of Global Player.",
-      body: "A promising contract slipping through your fingers is years of your commission. This costs less than the gas you spend visiting dorms.",
+      title: "One lost signing costs years of commission.",
+      body: "Global Player costs less than a month of fuel visiting dorms.",
     },
     tiers: {
       squad: {
@@ -177,11 +177,16 @@ const translations = {
       priceMonth: "/ month",
       priceYear: "/ year",
       priceCustom: "Custom",
+      perPlayerMonth: "/ player / month",
+      perPlayerFrom: "From",
+      totalPerMonth: (total) => `${total}/mo`,
+      totalPerYear: (total) => `${total}/yr`,
       athletesLabelSingular: "athlete",
       athletesLabelPlural: "athletes",
       upTo: "Up to",
-      annualNote: "Annual · 2 months free",
-      monthlyNote: "Monthly · no lock-in",
+      annualNote: "2 months free",
+      monthlyNote: "no lock-in",
+      agencyCustom: "Custom terms",
       billingMonthly: "Monthly",
       billingAnnual: "Annual",
       billingSave: "Save 2 months",
@@ -290,16 +295,15 @@ const translations = {
   pt: {
     hero: {
       eyebrow: "Para agências, escolinhas, clubes",
-      title: "Não é só inglês. É proteção para o seu ativo.",
-      sub: "Acompanhe 20+ atletas em um painel. Detecte problemas antes que virem prejuízo.",
+      title: "Rede de proteção pros seus atletas.",
+      sub: "Acompanhe o elenco inteiro. Detecte problemas antes do prejuízo.",
       primaryCta: "Agendar demo",
       secondaryCta: "Ver planos ↓",
       individualLink: "Jogador individual? Veja seu plano →",
     },
     valueCallout: {
-      title:
-        "Um contrato perdido custa muito mais do que um ano de Global Player.",
-      body: "Um contrato promissor escapando das suas mãos são anos da sua comissão. Isto custa menos que a gasolina que você gasta indo aos alojamentos.",
+      title: "Um contrato perdido custa anos de comissão.",
+      body: "A Global Player custa menos que a gasolina de um mês de visitas.",
     },
     tiers: {
       squad: {
@@ -350,11 +354,16 @@ const translations = {
       priceMonth: "/ mês",
       priceYear: "/ ano",
       priceCustom: "Customizado",
+      perPlayerMonth: "/ jogador / mês",
+      perPlayerFrom: "A partir de",
+      totalPerMonth: (total) => `${total}/mês`,
+      totalPerYear: (total) => `${total}/ano`,
       athletesLabelSingular: "atleta",
       athletesLabelPlural: "atletas",
       upTo: "Até",
-      annualNote: "Anual · 2 meses grátis",
-      monthlyNote: "Mensal · sem fidelidade",
+      annualNote: "2 meses grátis",
+      monthlyNote: "sem fidelidade",
+      agencyCustom: "Condições customizadas",
       billingMonthly: "Mensal",
       billingAnnual: "Anual",
       billingSave: "Economize 2 meses",
@@ -503,10 +512,12 @@ function PricingPageContent() {
     editionId: EDITION_ID,
   });
 
-  // B2B tier billing toggle — separate from individual so agencies
-  // can eyeball the annual saving without disturbing the individual
-  // card below.
-  const [tierBilling, setTierBilling] = useState("annual");
+  // B2B tier billing toggle — monthly-first. The per-player math is
+  // the real value frame; starting on monthly keeps the headline
+  // number small (R$ 20 / jogador / mês) and lets the toggle reveal
+  // the annual discount as a reward rather than lead with a big
+  // yearly total.
+  const [tierBilling, setTierBilling] = useState("monthly");
 
   if (!edition) {
     return (
@@ -682,18 +693,12 @@ function PricingPageContent() {
           </div>
         </section>
 
-        {/* ─── Feature comparison table ────────────────────────── */}
-        <section>
-          <h2 className="text-lg sm:text-xl font-display font-black tracking-tight text-center mb-5 text-primary-50">
-            {copy.comparison.heading}
-          </h2>
-          <ComparisonTable copy={copy.comparison} />
-        </section>
-
-        {/* ─── Inquiry form ────────────────────────────────────── */}
-        <InquiryForm lang={lang === "en" ? "en" : "pt"} />
-
-        {/* ─── Individual player quiet card ────────────────────── */}
+        {/* ─── Individual player card ──────────────────────────────
+            Moved up from the bottom of the page per Paul's feedback:
+            individual players (and parents) kept missing it when it
+            sat below the comparison table + inquiry form. Right
+            after the B2B tiers it's the natural "and if it's just
+            you" alternative. */}
         <IndividualPlayerCard
           copy={copy.individual}
           billing={individualBilling}
@@ -704,6 +709,17 @@ function PricingPageContent() {
           yearlyEquivalentMonthly={yearlyEquivalentMonthly}
           yearlySavingsAmount={yearlySavingsAmount}
         />
+
+        {/* ─── Feature comparison table ────────────────────────── */}
+        <section>
+          <h2 className="text-lg sm:text-xl font-display font-black tracking-tight text-center mb-5 text-primary-50">
+            {copy.comparison.heading}
+          </h2>
+          <ComparisonTable copy={copy.comparison} />
+        </section>
+
+        {/* ─── Inquiry form ────────────────────────────────────── */}
+        <InquiryForm lang={lang === "en" ? "en" : "pt"} />
 
         {/* ─── Full Access code redeem ─────────────────────────── */}
         <FullAccessPanel
@@ -815,18 +831,34 @@ function TierCard({
     : null;
   const isBuying = checkoutLoading === activeOfferingId;
 
-  // Price display honours the billing toggle for every tier —
-  // including Agency, which now has an annualBrl and just carries
-  // the "From" prefix so it reads as a starting point rather than a
-  // fixed number. Keeping the toggle behaviour consistent across all
-  // three cards avoids the "one card feels dead" moment the earlier
-  // version had.
+  // Price display leads with the smallest number — per-player per
+  // month — so agents / coaches see "R$ 20/jogador" first instead of
+  // "R$ 397/mês". Total cost moves to the secondary line below.
+  // Agency's "200+" uses the "A partir de" prefix since the per-player
+  // math is a floor, not a fixed number.
   const priceDisplay = (() => {
     const isAnnual = billing === "annual" && tier.annualBrl != null;
+    const monthlyTotal = isAnnual ? tier.annualBrl / 12 : tier.monthlyBrl;
+    // For Agency "200+" we use 200 as the divisor and tag the result
+    // with "From" — the real per-player drops further as seat count
+    // grows, but we never want to show a bigger number than the
+    // visitor would actually pay.
+    const athleteDivisor =
+      typeof tier.athletes === "number" ? tier.athletes : 200;
+    const perPlayer = Math.ceil(monthlyTotal / athleteDivisor);
+    const totalFmt = `R$ ${formatBrl(
+      isAnnual ? tier.annualBrl : tier.monthlyBrl,
+    )}`;
     return {
-      prefix: isAgency ? t.fromPrefix : null,
-      amount: `R$ ${formatBrl(isAnnual ? tier.annualBrl : tier.monthlyBrl)}`,
-      suffix: isAnnual ? copy.priceYear : copy.priceMonth,
+      // Prefix "From" on Agency because its per-player is a floor.
+      prefix: isAgency ? copy.perPlayerFrom : null,
+      perPlayerAmount: `R$ ${formatBrl(perPlayer)}`,
+      perPlayerSuffix: copy.perPlayerMonth,
+      totalLine: isAnnual
+        ? copy.totalPerYear(totalFmt)
+        : copy.totalPerMonth(totalFmt),
+      billingNote: isAnnual ? copy.annualNote : copy.monthlyNote,
+      isAnnual,
     };
   })();
 
@@ -835,7 +867,7 @@ function TierCard({
       // Agency: "200+"
       return `${tier.athletes} ${copy.athletesLabelPlural}`;
     }
-    return `${copy.upTo} ${tier.athletes} ${copy.athletesLabelPlural}`;
+    return `${tier.athletes} ${copy.athletesLabelPlural}`;
   })();
 
   return (
@@ -871,15 +903,29 @@ function TierCard({
         )}
         <p className="flex items-baseline gap-1.5">
           <span className="text-3xl sm:text-4xl font-display font-black text-primary-50 tabular-nums">
-            {priceDisplay.amount}
+            {priceDisplay.perPlayerAmount}
           </span>
           <span className="text-sm text-primary-400">
-            {priceDisplay.suffix}
+            {priceDisplay.perPlayerSuffix}
           </span>
         </p>
-        <p className="text-[11px] text-primary-300 mt-1">
-          {billing === "annual" ? copy.annualNote : copy.monthlyNote} ·{" "}
-          {athletesLine} · {t.perAthlete}
+        {/* Secondary line — the actual total they'd pay, plus the
+            athlete-count + billing note. Lower contrast so the eye
+            goes to the per-player number first. */}
+        <p className="text-[11px] text-primary-400 mt-1 leading-relaxed">
+          {athletesLine}
+          {isAgency ? (
+            <> · {copy.agencyCustom}</>
+          ) : (
+            <>
+              {" · "}
+              <span className="text-primary-300 font-semibold tabular-nums">
+                {priceDisplay.totalLine}
+              </span>
+              {" · "}
+              {priceDisplay.billingNote}
+            </>
+          )}
         </p>
       </div>
 
