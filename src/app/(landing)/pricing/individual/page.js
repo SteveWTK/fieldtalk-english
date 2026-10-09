@@ -45,7 +45,7 @@ const translations = {
     hero: {
       eyebrow: "Global Player · for players",
       title: "Get ready for the world. Before your agent decides.",
-      sub: "For youth players eyeing college scholarships, European clubs, or their next move. English, mental training, and the vocabulary coaches actually use — five minutes a day, on the phone.",
+      sub: "For youth players eyeing European clubs, college scholarships, or their next move. English, mental training, and the vocabulary coaches actually use.",
     },
     individual: {
       eyebrow: "Individual plan",
@@ -103,7 +103,7 @@ const translations = {
     hero: {
       eyebrow: "Global Player · para jogadores",
       title: "Se prepare pro mundo. Antes do agente decidir.",
-      sub: "Pra jogador de base pensando em bolsa nos EUA, clube na Europa, ou o próximo passo. Inglês, treinamento mental e o vocabulário que os técnicos usam de verdade — cinco minutos por dia, no celular.",
+      sub: "Pra jogador de base pensando em clube na Europa, bolsa nos EUA, ou o próximo passo. Inglês, treinamento mental e o vocabulário que os técnicos usam de verdade.",
     },
     individual: {
       eyebrow: "Plano individual",
