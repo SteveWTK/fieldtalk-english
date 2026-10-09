@@ -14,9 +14,13 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, ArrowRight, Sparkles } from "lucide-react";
+import { Lock, ArrowRight, Sparkles, MessageCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DEFAULT_EDITION } from "@/lib/editions/editions";
+import {
+  getSalesContact,
+  buildSalesWhatsappLink,
+} from "@/lib/sales/contact";
 
 const COPY = {
   en: {
@@ -25,6 +29,9 @@ const COPY = {
     body: "You're previewing the free taster. Get full access to every lesson, sticker pack, squad slot and prediction window.",
     cta: "See plans",
     inlineBody: "Most lessons are locked — get full access to keep going.",
+    talkTo: (name) => `Or talk to ${name} on WhatsApp →`,
+    talkPrefill: (name) =>
+      `Hi ${name}! I'm at the Global Player paywall — can you help me figure out the right plan?`,
   },
   pt: {
     eyebrow: "Bloqueado",
@@ -33,6 +40,9 @@ const COPY = {
     cta: "Ver planos",
     inlineBody:
       "A maioria das lições está bloqueada — desbloqueie para continuar.",
+    talkTo: (name) => `Ou fale com ${name} no WhatsApp →`,
+    talkPrefill: (name) =>
+      `Oi ${name}! Cheguei no paywall da Global Player — pode me ajudar a escolher o plano certo?`,
   },
 };
 
@@ -71,6 +81,16 @@ export default function PaywallCard({
     );
   }
 
+  // Secondary CTA — talk to Paul on WhatsApp. For B2B leads (agents,
+  // coaches, academy directors) the self-serve "see plans" path isn't
+  // always the fastest route; a human conversation is. Rendering it
+  // as a text link under the primary button keeps "See plans" the
+  // dominant action while giving the human-help option a visible home.
+  const { name: salesName } = getSalesContact();
+  const talkLink = buildSalesWhatsappLink({
+    prefilledMessage: t.talkPrefill(salesName),
+  });
+
   return (
     <section className="max-w-2xl mx-auto">
       <div className="relative rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-emerald-400/30 p-6 sm:p-10 shadow-[0_0_40px_rgba(16,185,129,0.08)] text-center">
@@ -86,14 +106,25 @@ export default function PaywallCard({
         <p className="text-sm sm:text-base text-white/65 mb-6 max-w-md mx-auto leading-relaxed">
           {t.body}
         </p>
-        <Link
-          href={href}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold text-sm tracking-wide transition-colors"
-        >
-          <Sparkles className="w-4 h-4" />
-          {t.cta}
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex flex-col items-center gap-3">
+          <Link
+            href={href}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#062013] font-bold text-sm tracking-wide transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            {t.cta}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            href={talkLink}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 text-emerald-300" />
+            {t.talkTo(salesName)}
+          </Link>
+        </div>
       </div>
     </section>
   );
