@@ -295,7 +295,7 @@ const translations = {
   pt: {
     hero: {
       eyebrow: "Para agências, escolinhas, clubes",
-      title: "Rede de proteção pros seus atletas.",
+      title: "Rede de proteção para os seus atletas.",
       sub: "Acompanhe o elenco inteiro. Detecte problemas antes do prejuízo.",
       primaryCta: "Agendar demo",
       secondaryCta: "Ver planos ↓",
